@@ -19,7 +19,8 @@ namespace WarpipsReplayability.Mod
             var hiddenRewards = Map.Territories.SelectMany(t =>
             {
                 //each territory has a variable chance for each reward to remain hidden
-                int chance = Plugin.Rand.GaussianOEInt(5.2, .21, .26, 1);
+                int chance = Plugin.Rand.GaussianOEInt(6.5, .26, .21, 1);
+                Plugin.Log.LogDebug($"hidden reward chance {chance}");
                 //each reward has an individual chance to remain hidden
                 return t.operation.itemRewards.Select(r => Plugin.Rand.Next(chance) == 0);
             }).ToArray();
