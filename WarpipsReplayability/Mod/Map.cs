@@ -23,6 +23,7 @@ namespace WarpipsReplayability.Mod
 
         public static void Randomize()
         {
+            //DoShuffle = false;
             if (DoShuffle)
             {
                 Plugin.Log.LogInfo($"{Territories.Length} territories");
@@ -157,6 +158,7 @@ namespace WarpipsReplayability.Mod
             //int min = Math.Max((int)Math.Ceiling(2 * avg - numEdges), count - 1);
             //Plugin.Log.LogInfo($"GaussianCappedInt {avg}, .065, {min}");
             int target = Plugin.Rand.GaussianCappedInt(avg, .065, count - 1);
+            //target = numEdges;
             Plugin.Log.LogInfo($"{numEdges} edges, target {target}");
 
             int attempts = 0, maxAttempts = 6 * numEdges * (numEdges - target);
@@ -344,9 +346,13 @@ namespace WarpipsReplayability.Mod
                 {
                     //TerritoryConnections are inexplicably 1-based
                     int b = connection - 1;
+                    Plugin.Log.LogDebug($"{a} -> {b}");
 
                     //this is a bug, they meant 3 should connect to 2, not 1
-                    if (MissionManagerAsset.WorldMapIndex == 0 && a == 3 && b == 1)
+                    if ((MissionManagerAsset.WorldMapIndex == 0 && a == 3 && b == 1)
+                        //this one seems intentional, as it is relevant in the unmodded game, but graphically they don't look adjacent 
+                        //I'm removing it because it looks extra wack if 0 <-> 2 gets severed but 0 <-> 3 remains
+                        || (MissionManagerAsset.WorldMapIndex == 3 && a == 0 && b == 3))
                     {
                         Plugin.Log.LogInfo($"connection bugfix {a} -/> {b}");
                         continue;
