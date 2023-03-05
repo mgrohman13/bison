@@ -1,13 +1,9 @@
-hide operation map in shroud
-
 rebalance island completion somehow
 	do something with worldMapDifficultyMultipler
-		add marathon mode option
+		add marathon mode option?
+			reduce all tech points, reduce worldMapDifficultyMultipler
 	utilize TerritoryInstance.blocked?
 		test what it does
-	
-buy warpip give x2
-	other useless purchases?
 
 make first island easiest missions harder
 
