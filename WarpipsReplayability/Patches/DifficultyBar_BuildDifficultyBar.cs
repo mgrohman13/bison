@@ -26,7 +26,7 @@ namespace WarpipsReplayability.Patches
             {
                 Plugin.Log.LogDebug("DifficultyBar_BuildDifficultyBar Prefix");
 
-                showBar = Operations.ShowDifficultyBar();
+                showBar = Operations.ShowEnemies();
 
                 if (!showBar)
                 {
@@ -35,6 +35,8 @@ namespace WarpipsReplayability.Patches
                     ___barTexture.Apply();
                     foreach (var warning in ___warningHolder)
                         DifficultyBar.Destroy(((Transform)warning).gameObject);
+
+                    Plugin.Log.LogDebug("hiding difficulty bar");
                 }
             }
             catch (Exception e)

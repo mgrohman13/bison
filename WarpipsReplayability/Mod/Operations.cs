@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine;
 
 namespace WarpipsReplayability.Mod
 {
@@ -50,13 +51,17 @@ namespace WarpipsReplayability.Mod
                 }
             }
         }
-        public static bool ShowDifficultyBar()
-        {
-            return WorldMapUIController == null || SelectedTerritory == null || !HideEnemies(SelectedTerritory);
-        }
+        public static bool ShowRewards() =>
+            ShowInfo(SelectedTerritory, HideRewards);
+        public static bool ShowEnemies() =>
+            ShowEnemies(SelectedTerritory);
+        public static bool ShowEnemies(TerritoryInstance territory) =>
+            ShowInfo(territory, HideEnemies);
+        private static bool ShowInfo(TerritoryInstance territory, Func<TerritoryInstance, bool> Hide) =>
+            WorldMapUIController == null || territory == null || !Hide(territory);
 
         private static bool IsShrouded(TerritoryInstance territory) =>
-           !WorldMapUIController.IsTerritoryAttackable(territory.index);
+            !WorldMapUIController.IsTerritoryAttackable(territory.index);
         private static bool HideEnemies(TerritoryInstance territory) =>
             IsShrouded(territory) && territory.specialTag == TerritoryInstance.SpecialTag.None;
         private static bool HideRewards(TerritoryInstance territory) =>
