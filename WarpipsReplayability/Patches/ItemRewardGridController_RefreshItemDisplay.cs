@@ -24,7 +24,7 @@ namespace WarpipsReplayability.Patches
             {
                 Plugin.Log.LogDebug("ItemRewardGridController_RefreshItemDisplay Postfix");
 
-                if (!Operations.ShowRewards())
+                if (!Operations.ShowRewards() && Operations.SelectedTerritory.specialTag == TerritoryInstance.SpecialTag.None)
                 {
                     foreach (var reward in ___itemRewards)
                     {

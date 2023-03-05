@@ -51,6 +51,7 @@ namespace WarpipsReplayability.Mod
                 }
             }
         }
+
         public static bool ShowRewards() =>
             ShowInfo(SelectedTerritory, HideRewards);
         public static bool ShowEnemies() =>

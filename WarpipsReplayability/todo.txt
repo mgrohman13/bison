@@ -8,9 +8,9 @@ rebalance island completion somehow
 make first island easiest missions harder
 
 vary validation based on difficulty (num territories w/o super soldiers changes)
-0 = 0.080
-1
-2
-3 = 0.115
+0 = 0.080, 12
+1 = 0.090, 11
+2 = 0.100, 10
+3 = 0.115, 9
 
 mess with spawning, true mission randomness

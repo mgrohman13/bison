@@ -183,7 +183,7 @@ namespace WarpipsReplayability.Mod
             //Plugin.Log.LogInfo($"GaussianCappedInt {avg}, .065, {min}");
             int target = Plugin.Rand.GaussianCappedInt(avg, .065, count - 1);
             //target = numEdges;
-            Plugin.Log.LogInfo($"{numEdges} edges, target {target}");
+            Plugin.Log.LogInfo($"{numEdges} edges, target {target} (avg {avg:0.0})");
 
             int attempts = 0, maxAttempts = 6 * numEdges * (numEdges - target);
             while (numEdges > target && attempts < maxAttempts)

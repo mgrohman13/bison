@@ -36,7 +36,7 @@ namespace WarpipsReplayability.Patches
                 Plugin.Log.LogDebug("MissionManagerAsset_AdvanceWorldMapDifficulty Postfix");
 
                 float value = ___worldMapDifficultyMultipler.Value;
-                Plugin.Log.LogInfo($"after {value}, diff {value - __state}, inc {___worldMapDifficultyMultiplerTick}");
+                Plugin.Log.LogInfo($"after {value}, diff {value - __state}, inc {___worldMapDifficultyMultiplerTick.Value}");
 
                 if (__state < 1 && value >= 1)
                     Map.ReduceTechRewards();

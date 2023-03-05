@@ -34,7 +34,7 @@ namespace WarpipsReplayability.Patches
                 Plugin.Log.LogError(e);
             }
         }
-        public static void Postfix(TerritoryInspectorController ___territoryInspector, TextMeshProUGUI ___mapLength, Image ___mapIcon, TextMeshProUGUI ___roundDuration)
+        public static void Postfix(TextMeshProUGUI ___mapLength, Image ___mapIcon, TextMeshProUGUI ___roundDuration)
         {
             try
             {

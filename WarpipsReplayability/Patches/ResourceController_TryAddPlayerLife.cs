@@ -38,7 +38,7 @@ namespace WarpipsReplayability.Patches
                 {
                     int tokens = 2;
                     __instance.AddTokens(tokens);
-                    Plugin.Log.LogInfo($"Bonus max life tokens {tokens}");
+                    Plugin.Log.LogInfo($"Bonus max life tokens: {tokens}");
                 }
             }
             catch (Exception e)
