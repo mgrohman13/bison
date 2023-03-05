@@ -36,10 +36,6 @@ namespace WarpipsReplayability.Patches
 
                 if (__state == __instance.PlayerLives.value)
                 {
-                    //int points = Plugin.Rand.RangeInt(6, 9);
-                    //__instance.AddTechPoints(points);
-                    //Plugin.Log.LogInfo($"Bonus max life tech points {points}");
-
                     int tokens = 2;
                     __instance.AddTokens(tokens);
                     Plugin.Log.LogInfo($"Bonus max life tokens {tokens}");
