@@ -24,7 +24,7 @@ namespace WarpipsReplayability.Patches
 
                 foreach (var r in ___itemShopStock)
                 {
-                    Plugin.Log.LogDebug($"{r.item.name} - {r.stackSize}, cost {r.item.techNode.purchaseCost}");
+                    Plugin.Log.LogInfo($"{r.item.name} - {r.stackSize}, cost {r.item.techNode.purchaseCost}");
 
                     //if (r.stackCount > 1)
                     //    Plugin.Log.LogInfo($"{r.stackCount}");
