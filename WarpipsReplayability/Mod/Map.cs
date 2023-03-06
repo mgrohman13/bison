@@ -142,17 +142,16 @@ namespace WarpipsReplayability.Mod
             Plugin.Log.LogInfo(operations.Select(o => o.spawnWaveProfile.GetInstanceID().ToString()).Aggregate((a, b) => a + "," + b));
         }
 
-        //const double techIncrease = 3;
-        //const double techMaxDifficultyDiv = 3;
         private static void InitTechRewards(Operation operation)
         {
             //randomize tech rewards, with an average of slightly more per territory   
             int techReward = operation.techReward;
             if (techReward % 5 != 0)
                 Plugin.Log.LogError($"techReward already randomized {techReward}");
+            double avg = techReward + Math.E, dev = 3.9 / techReward + .052, oe = 1.69 / techReward + .039;
             if (techReward >= 5)
-                operation.techReward = Plugin.Rand.GaussianOEInt(techReward + Math.E, 3.9 / techReward + .052, 1.69 / techReward + .039, 3);
-            Plugin.Log.LogInfo($"techReward {techReward} -> {operation.techReward}");
+                operation.techReward = Plugin.Rand.GaussianOEInt(avg, dev, oe, 3);
+            Plugin.Log.LogInfo($"techReward {techReward} -> {operation.techReward} ({avg * (1 - oe):0.00}, {dev * avg * (1 - oe):0.00}, {oe * avg:0.00})");
             //note - if you don't fully complete islands, you should capture 32 territories before the final mission (9*3+5)
             //with Math.E increase, on average this means an additional ~87.0 tech points
         }
@@ -161,9 +160,7 @@ namespace WarpipsReplayability.Mod
             //when difficulty bar hits max, reduce non-special territory tech rewards
             for (int a = 0; a < Territories.Length; a++)
                 if (Territories[a].specialTag == TerritoryInstance.SpecialTag.None)
-                    Persist.Instance.TechRewards[a] = Plugin.Rand.Round(Persist.Instance.TechRewards[a] / 3);//techMaxDifficultyDiv);
-            //else
-            //    Persist.Instance.TechRewards[a] = Plugin.Rand.Round(Persist.Instance.TechRewards[a] - techIncrease);
+                    Persist.Instance.TechRewards[a] = Plugin.Rand.Round(Persist.Instance.TechRewards[a] / 3);
 
             LoadTechRewards();
             Persist.SaveCurrent();
