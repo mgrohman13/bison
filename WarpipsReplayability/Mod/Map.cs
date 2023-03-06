@@ -151,8 +151,9 @@ namespace WarpipsReplayability.Mod
             if (techReward % 5 != 0)
                 Plugin.Log.LogError($"techReward already randomized {techReward}");
             if (techReward >= 5)
-                operation.techReward = Plugin.Rand.GaussianOEInt(techReward + Math.E, 3.9 / techReward + .052, 1.69 / techReward + .039, 3);
-            Plugin.Log.LogInfo($"techReward {techReward} -> {operation.techReward}");
+                operation.techReward = Plugin.Rand.GaussianOEInt(techReward //+ Math.E
+                    , 3.9 / techReward + .052, 1.69 / techReward + .039, 3);
+            Plugin.Log.LogDebug($"techReward {techReward} -> {operation.techReward}");
             //note - if you don't fully complete islands, you should capture 32 territories before the final mission (9*3+5)
             //with Math.E increase, on average this means an additional ~87.0 tech points
         }
@@ -161,7 +162,7 @@ namespace WarpipsReplayability.Mod
             //when difficulty bar hits max, reduce non-special territory tech rewards
             for (int a = 0; a < Territories.Length; a++)
                 if (Territories[a].specialTag == TerritoryInstance.SpecialTag.None)
-                    Persist.Instance.TechRewards[a] = Plugin.Rand.Round(Persist.Instance.TechRewards[a] / 3);//techMaxDifficultyDiv);
+                    Persist.Instance.TechRewards[a] = Plugin.Rand.Round(Persist.Instance.TechRewards[a]);// / 3);//techMaxDifficultyDiv);
             //else
             //    Persist.Instance.TechRewards[a] = Plugin.Rand.Round(Persist.Instance.TechRewards[a] - techIncrease);
 
