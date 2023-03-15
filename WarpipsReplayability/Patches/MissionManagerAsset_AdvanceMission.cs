@@ -27,9 +27,7 @@ namespace WarpipsReplayability.Patches
                 {
                     Map.DoShuffle = true;
                     Plugin.Log.LogInfo("DoShuffle set for new WorldMapIndex");
-                }
-
-                //typeof(MissionManagerAsset).GetProperty("WorldMapIndex").SetValue(__instance, 2);
+                } 
             }
             catch (Exception e)
             {

@@ -22,7 +22,7 @@ namespace WarpipsReplayability.Mod
             Rand.StartTick();
             Log = Logger;
 
-            Harmony harmony = new Harmony("WarpipsReplayability.mod");
+            Harmony harmony = new("WarpipsReplayability.mod");
             harmony.PatchAll();
 
             Log.LogInfo($"Plugin {PluginInfo.PLUGIN_GUID} is loaded!");
