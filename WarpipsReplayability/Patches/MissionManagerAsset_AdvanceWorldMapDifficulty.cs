@@ -16,11 +16,14 @@ namespace WarpipsReplayability.Patches
     [HarmonyPatch("AdvanceWorldMapDifficulty")]
     internal class MissionManagerAsset_AdvanceWorldMapDifficulty
     {
-        public static void Prefix(FloatDynamicStat ___worldMapDifficultyMultipler, ref float __state)
+        public static void Prefix(FloatDynamicStat ___worldMapDifficultyMultipler, FloatDynamicStat ___worldMapDifficultyMultiplerTick, ref float __state)
         {
             try
             {
                 Plugin.Log.LogDebug("MissionManagerAsset_AdvanceWorldMapDifficulty Prefix");
+
+                //I have no explanation for why ___worldMapDifficultyMultiplerTick shows nonsensical values
+                Plugin.Log.LogInfo($"Prefix worldMapDifficultyMultiplerTick {___worldMapDifficultyMultiplerTick.Value} (???)");
 
                 __state = ___worldMapDifficultyMultipler.Value;
             }
@@ -29,14 +32,31 @@ namespace WarpipsReplayability.Patches
                 Plugin.Log.LogError(e);
             }
         }
-        public static void Postfix(FloatDynamicStat ___worldMapDifficultyMultipler, FloatDynamicStat ___worldMapDifficultyMultiplerTick, float __state)
+        public static void Postfix(MissionManagerAsset __instance, FloatDynamicStat ___worldMapDifficultyMultipler, FloatDynamicStat ___worldMapDifficultyMultiplerTick, float __state)
         {
             try
             {
                 Plugin.Log.LogDebug("MissionManagerAsset_AdvanceWorldMapDifficulty Postfix");
 
-                float value = ___worldMapDifficultyMultipler.Value;
-                Plugin.Log.LogInfo($"after {value}, diff {value - __state}, inc {___worldMapDifficultyMultiplerTick.Value}");
+                //I have no explanation for why ___worldMapDifficultyMultiplerTick shows nonsensical values
+                Plugin.Log.LogInfo($"Postfix worldMapDifficultyMultiplerTick {___worldMapDifficultyMultiplerTick.Value} (???)");
+
+                float value, inc;
+                Calc();
+                void Calc()
+                {
+                    value = ___worldMapDifficultyMultipler.Value;
+                    inc = value - __state;
+                };
+
+                if (inc > 0.06875 && (__instance.WorldMapIndex == 3))// || __instance.WorldMapIndex == 0))
+                {
+                    ___worldMapDifficultyMultipler.Value = value - inc / 2;
+                    Calc();
+                    Plugin.Log.LogInfo($"slowing worldMapDifficultyMultipler increase");
+                }
+
+                Plugin.Log.LogInfo($"worldMapDifficultyMultipler {value} (+{inc})");
 
                 if (__state < 1 && value >= 1)
                     Map.ReduceTechRewards();
