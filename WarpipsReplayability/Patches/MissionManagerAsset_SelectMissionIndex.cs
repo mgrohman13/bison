@@ -6,26 +6,26 @@ using HarmonyLib;
 using GameUI;
 using System.Runtime.CompilerServices;
 using LevelGeneration.WorldMap;
-using LevelGeneration;
 using WarpipsReplayability.Mod;
+using LevelGeneration;
 
 namespace WarpipsReplayability.Patches
 {
     [HarmonyPatch(typeof(MissionManagerAsset))]
-    [HarmonyPatch(nameof(MissionManagerAsset.InitializeWorldMap))]
-    internal class MissionManagerAsset_InitializeWorldMap
+    [HarmonyPatch(nameof(MissionManagerAsset.SelectMissionIndex))]
+    internal class MissionManagerAsset_SelectMissionIndex
     {
-        public static void Prefix(MissionManagerAsset __instance, ref int worldMapIndex)
+        public static void Prefix(ref int worldMapIndex)
         {
             try
             {
-                Plugin.Log.LogDebug("MissionManagerAsset_InitializeWorldMap Prefix");
-
-                Map.MissionManagerAsset = __instance;
+                Plugin.Log.LogDebug("MissionManagerAsset_SelectMissionIndex Prefix");
 
                 int? forceWorldMapIndex = MissionManagerAsset_NewGameConquest.ForceWorldMapIndex;
                 if (forceWorldMapIndex.HasValue)
                     worldMapIndex = forceWorldMapIndex.Value;
+
+                Plugin.Log.LogInfo($"SelectMissionIndex '{Operations.SelectedTerritory?.operation.spawnWaveProfile.name}'");
             }
             catch (Exception e)
             {
