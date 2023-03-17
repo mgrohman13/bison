@@ -28,6 +28,8 @@ namespace WarpipsReplayability.Patches
 
                 //needed for ItemRewardGridController_RefreshItemDisplay
                 Operations.SelectedTerritory = __instance.InspectedTerritoryInstance;
+
+                Plugin.Log.LogInfo($"select {Operations.SelectedTerritory.operation.spawnWaveProfile.name}");
             }
             catch (Exception e)
             {

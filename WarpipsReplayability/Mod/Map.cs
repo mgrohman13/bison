@@ -24,6 +24,8 @@ namespace WarpipsReplayability.Mod
         public static void Randomize()
         {
             //DoShuffle = false;
+            //Persist.SaveNew(Enumerable.Range(0, Territories.Length).ToArray());
+
             if (DoShuffle)
             {
                 Plugin.Log.LogInfo($"{Territories.Length} territories");
