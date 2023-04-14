@@ -19,7 +19,7 @@ namespace WarpipsReplayability.Patches
     [HarmonyPatch(nameof(DifficultyBar.BuildDifficultyBar))]
     internal class DifficultyBar_BuildDifficultyBar
     {
-        public static bool Prefix(Texture2D ___barTexture, Transform ___warningHolder)
+        public static bool Prefix(SpawnWaveProfile waveProfile, Texture2D ___barTexture, Transform ___warningHolder)
         {
             bool showBar = true;
             try
@@ -27,8 +27,13 @@ namespace WarpipsReplayability.Patches
                 Plugin.Log.LogDebug("DifficultyBar_BuildDifficultyBar Prefix");
 
                 showBar = Operations.ShowEnemies();
-
-                if (!showBar)
+                if (showBar)
+                {
+                    //Plugin.Log.LogInfo($"displayThreshold: {waveProfile.DisplayThreshold}");
+                    ////normalize the display threshold so the relative difficulty of different missions is more apparent
+                    //AccessTools.Field(typeof(SpawnWaveProfile), "displayThreshold").SetValue(waveProfile, 1 / 3f);
+                }
+                else
                 {
                     for (int i = 0; i < ___barTexture.width; i++)
                         ___barTexture.SetPixel(i, 0, Color.black);
