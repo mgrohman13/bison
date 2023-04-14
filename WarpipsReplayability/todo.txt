@@ -1,11 +1,17 @@
+update screenshots
+
 rebalance island completion somehow
 	do something with worldMapDifficultyMultipler
 		add marathon mode option?
 			reduce all tech points, reduce worldMapDifficultyMultipler
 	utilize TerritoryInstance.blocked?
 		test what it does
-
-make first island easiest missions harder
+		
+difficulty for things ive made contsant
+	starting cash (commented out)
+	lives
+	
+bug - after multiple cycles in a mission, shows stronger bar on next operation
 
 vary validation based on difficulty (num territories w/o super soldiers changes)
 0 = 0.080, 12
@@ -14,3 +20,7 @@ vary validation based on difficulty (num territories w/o super soldiers changes)
 3 = 0.115, 9
 
 mess with spawning, true mission randomness
+
+normalize difficulty bar threshhold?
+
+incl all territies in tech decrease, but cap at 20?
