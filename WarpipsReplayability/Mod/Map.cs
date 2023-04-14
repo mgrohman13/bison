@@ -8,6 +8,7 @@ using GameIO;
 using MonoMod.Utils;
 using HarmonyLib;
 using System.Xml.Linq;
+using UnityEngine.UI;
 
 namespace WarpipsReplayability.Mod
 {
@@ -41,6 +42,7 @@ namespace WarpipsReplayability.Mod
         }
         public static void Load()
         {
+            SetOriginalConnections();
             Persist.Load();
             LoadShuffle();
             if (!Validate(null, null))
@@ -327,11 +329,7 @@ namespace WarpipsReplayability.Mod
         private static void GenerateConnections(GraphInfo graph)
         {
             if (MissionManagerAsset.WorldMapIndex == 0)
-                OriginalConnections = WorldMapAsset.TerritoryConnections
-                    .Select(c => new WorldMapAsset.TerritoryConnection()
-                    {
-                        connection = c.connection.ToList()
-                    }).ToList();
+                SetOriginalConnections();
 
             int count = WorldMapAsset.TerritoryConnections.Count;
             WorldMapAsset.TerritoryConnections.Clear();
@@ -348,6 +346,17 @@ namespace WarpipsReplayability.Mod
             }
 
             Plugin.Log.LogInfo($"Generated {CountEdges(graph.Edges)} connections");
+        }
+
+        private static void SetOriginalConnections()
+        {
+            OriginalConnections = WorldMapAsset.TerritoryConnections
+                .Select(c => new WorldMapAsset.TerritoryConnection()
+                {
+                    connection = c.connection.ToList()
+                }).ToList();
+            Plugin.Log.LogInfo($"OriginalConnections {OriginalConnections.Count}");
+
         }
 
         private static GraphInfo GetEdges(TerritoryInstance[] territories)
