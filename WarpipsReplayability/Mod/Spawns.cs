@@ -11,35 +11,37 @@ namespace WarpipsReplayability.Mod
 {
     internal class Spawns
     {
-        public static bool ModifySpawns(string logDesc, InvokeableType spawnTech, float min, float max, float t, ref int __result)
+        public static bool ModifySpawns(bool cap, InvokeableType spawnTech, float min, float max, float t, ref int __result)
         {
-            if (Map.MissionManagerAsset != null)
-            {
-                LevelGeneration.WorldMap.TerritoryInstance territory = Map.Territories[Map.MissionManagerAsset.CurrentWorldMap.lastAttackedTerritory];
-                if (Map.MissionManagerAsset.WorldMapIndex == 0 && territory.specialTag == SpecialTag.None)
+            if (Plugin.DifficultMode)
+                //Plugin.Log.LogDebug($"{Map.Territories} {Map.MissionManagerAsset.CurrentWorldMap.lastAttackedTerritory}");
+                if (Map.MissionManagerAsset != null && Map.MissionManagerAsset.CurrentWorldMap.lastAttackedTerritory > -1)
                 {
-                    const float totalMult = 1.69f, minInc = .39f;
+                    string logDesc = cap ? "SpawnCap" : "SpawnCount";
+                    LogInfo(logDesc, spawnTech, min, max);
 
-                    min *= totalMult;
-                    max *= totalMult;
-                    min = Mathf.Lerp(min, max, minInc);
-                    __result = Plugin.Rand.Round(Mathf.Lerp(min, max, t));
+                    HashSet<string> techTypes = new() { "PistolPip", "Shotgunner", "Warfighter", };// "UAZ", "Warmule", };             
+                    if (techTypes.Contains(spawnTech.name))
+                    {
+                        max *= 1.25f;
+                        min = (min + 2f * max) / 4f;
+                        LogInfo(logDesc, spawnTech, min, max);
 
-                    Log(logDesc, spawnTech, __result);
-
-                    return false;
+                        __result = Plugin.Rand.Round(Mathf.Lerp(min, max, t));
+                        LogResult(logDesc, spawnTech, __result);
+                        return false;
+                    }
                 }
-            }
-            else
-            {
-                Plugin.Log.LogInfo($"Spawns null MissionManagerAsset");
-            }
+                else
+                {
+                    Plugin.Log.LogDebug($"Spawns skipping due to initialization");
+                }
             return true;
         }
 
         private static string Mission = string.Empty;
-        private static readonly Dictionary<string, string> PreviousLog = new();
-        private static void Log(string logDesc, InvokeableType spawnTech, int __result)
+        private static readonly HashSet<string> LoggedInfo = new();
+        private static void LogInfo(string logDesc, InvokeableType spawnTech, float min, float max)
         {
             string mission = Map.MissionManagerAsset.CurrentOperation.spawnWaveProfile.name;
             if (Mission != mission)
@@ -48,14 +50,24 @@ namespace WarpipsReplayability.Mod
                 Plugin.Log.LogInfo(mission);
             }
 
-            string key = $"{spawnTech} {logDesc}";
+            string info = $"{mission} {spawnTech.name} {logDesc}: {min}-{max}";
+            if (!LoggedInfo.Contains(info))
+            {
+                LoggedInfo.Add(info);
+                Plugin.Log.LogInfo(info);
+            }
+        }
+        private static readonly Dictionary<string, string> PreviousLog = new();
+        private static void LogResult(string logDesc, InvokeableType spawnTech, int __result)
+        {
+            string key = $"{spawnTech.name} {logDesc}";
             string log = $"{key}: {__result}";
 
             PreviousLog.TryGetValue(key, out string prev);
             if (prev != log)
             {
                 PreviousLog[key] = log;
-                Plugin.Log.LogInfo(log);
+                Plugin.Log.LogDebug(log);
             }
         }
     }
