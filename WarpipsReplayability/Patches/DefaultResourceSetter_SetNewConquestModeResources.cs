@@ -19,8 +19,12 @@ namespace WarpipsReplayability.Patches
             {
                 Plugin.Log.LogDebug("DefaultResourceSetter_SetNewConquestModeResources Postfix");
 
-                ___resourceController.HardSetPlayerLives(3, 3);
-                Plugin.Log.LogInfo("HardSetPlayerLives");
+                if (Config.PlayerLives.HasValue)
+                {
+                    int value = Config.PlayerLives.Value;
+                    ___resourceController.HardSetPlayerLives(value, value);
+                    Plugin.Log.LogInfo($"HardSetPlayerLives to {value}");
+                }
             }
             catch (Exception e)
             {

@@ -24,7 +24,7 @@ namespace WarpipsReplayability.Patches
         {
             try
             {
-                if (Plugin.DifficultMode)
+                if (Config.DifficultMode)
                 {
                     Plugin.Log.LogDebug("UnitDeathController_OnDeath Prefix");
 

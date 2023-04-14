@@ -123,7 +123,7 @@ namespace WarpipsReplayability.Mod
                 //territory.operation = operations[a];
                 territory.index = b;
 
-                InitTechRewards(territory.operation);
+                InitTechRewards(territory);
             }
 
             Plugin.Log.LogInfo("Shuffled territories");
@@ -146,25 +146,55 @@ namespace WarpipsReplayability.Mod
             Plugin.Log.LogInfo(operations.Select(o => o.spawnWaveProfile.GetInstanceID().ToString()).Aggregate((a, b) => a + "," + b));
         }
 
-        private static void InitTechRewards(Operation operation)
+        private static void InitTechRewards(TerritoryInstance territory)
         {
             //randomize tech rewards, with an average of slightly more per territory   
+
+            Operation operation = territory.operation;
+
             int techReward = operation.techReward;
             if (techReward % 5 != 0)
                 Plugin.Log.LogError($"techReward already randomized {techReward}");
-            double avg = techReward + Math.E, dev = 3.9 / techReward + .052, oe = 1.69 / techReward + .039;
+
+            //note - if you don't fully complete islands, you should capture 32 territories before the final mission (9*3+5)
+            //with Math.E bonus, on average this means an additional ~87.0 tech points
+            double bonus = Config.RebalanceTech ? Math.E : 0;
+
+            double avg = techReward + bonus, dev = 3.9 / techReward + .052, oe = 1.69 / techReward + .039;
+
+            if (Config.RebalanceTech)
+                if (territory.specialTag == TerritoryInstance.SpecialTag.None)
+                {
+                    //multiply the average tech points by the relative number of missions you can complete
+                    //since this is only applied to non-special territories, you will still end up with more tech points on easier difficulties
+                    double mult = MissionManagerAsset.GameDifficultyIndex switch
+                    {
+                        3 => 9.0 / 12,
+                        1 => 9.0 / 11,
+                        0 => 9.0 / 10,
+                        2 => 9.0 / 9,
+                        _ => throw new Exception($"Map.MissionManagerAsset.GameDifficultyIndex {MissionManagerAsset.GameDifficultyIndex}"),
+                    };
+                    Plugin.Log.LogInfo($"GameDifficultyIndex: {MissionManagerAsset.GameDifficultyIndex}, mult: {mult}");
+                    avg *= mult;
+                }
+                else if (MissionManagerAsset.GameDifficultyIndex != 2)
+                {
+                    //no bonus for non-special territories outside of General difficulty
+                    avg -= bonus;
+                }
+
             if (techReward >= 5)
                 operation.techReward = Plugin.Rand.GaussianOEInt(avg, dev, oe, 3);
             Plugin.Log.LogInfo($"techReward {techReward} -> {operation.techReward} ({avg * (1 - oe):0.00}, {dev * avg * (1 - oe):0.00}, {oe * avg:0.00})");
-            //note - if you don't fully complete islands, you should capture 32 territories before the final mission (9*3+5)
-            //with Math.E increase, on average this means an additional ~87.0 tech points
         }
         public static void ReduceTechRewards()
         {
             //when difficulty bar hits max, reduce non-special territory tech rewards
-            for (int a = 0; a < Territories.Length; a++)
-                if (Territories[a].specialTag == TerritoryInstance.SpecialTag.None)
-                    Persist.Instance.TechRewards[a] = Plugin.Rand.Round(Persist.Instance.TechRewards[a] / 3);
+            if (Config.RebalanceTech)
+                for (int a = 0; a < Territories.Length; a++)
+                    if (Territories[a].specialTag == TerritoryInstance.SpecialTag.None)
+                        Persist.Instance.TechRewards[a] = Plugin.Rand.Round(Persist.Instance.TechRewards[a] / 3);
 
             LoadTechRewards();
             Persist.SaveCurrent();
@@ -252,6 +282,7 @@ namespace WarpipsReplayability.Mod
 
         private static bool Validate(int[] shuffle, GraphInfo graph)
         {
+            // todo: vary with difficulty
             const int numMissions = 9;
             //Plugin.Log.LogInfo($"GameRandom.Territories {GameRandom.Territories}");
             //Plugin.Log.LogInfo($"graph {graph}");

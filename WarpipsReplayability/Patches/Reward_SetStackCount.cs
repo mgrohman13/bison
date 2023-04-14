@@ -23,7 +23,7 @@ namespace WarpipsReplayability.Patches
             {
                 Plugin.Log.LogDebug("Reward_SetStackCount Prefix");
 
-                if (Plugin.DifficultMode)
+                if (Config.DifficultMode)
                 {
                     __instance.stackCount = Plugin.Rand.RangeInt(__instance.stackSize.x, __instance.stackSize.y);
                     Plugin.Log.LogInfo($"{__instance.item.name}: {__instance.stackCount} ({__instance.stackSize.x}-{__instance.stackSize.y})");

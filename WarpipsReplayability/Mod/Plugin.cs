@@ -13,8 +13,6 @@ namespace WarpipsReplayability.Mod
     [BepInProcess("Warpips.exe")]
     public class Plugin : BaseUnityPlugin
     {
-        public static bool DifficultMode = false;
-
         public static MTRandom Rand { get; private set; }
         public static ManualLogSource Log { get; private set; }
 
