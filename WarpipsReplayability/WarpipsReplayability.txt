@@ -1,0 +1,16 @@
+# --- WarpipsReplayability configuration file ---
+#
+# default settings:
+#PlayerLives=3
+#FixArmsDealer=true
+#RebalanceTech=true
+#DifficultMode=false
+#
+# PlayerLives can be left blank to use the original game difficulty-based values
+# Restart the game for changes to take effect
+#
+
+PlayerLives=3
+FixArmsDealer=true
+RebalanceTech=true
+DifficultMode=false
