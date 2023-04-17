@@ -23,8 +23,9 @@ namespace WarpipsReplayability.Mod
                     HashSet<string> techTypes = new() { "PistolPip", "Shotgunner", "Warfighter", };// "UAZ", "Warmule", };             
                     if (techTypes.Contains(spawnTech.name))
                     {
-                        max *= 1.25f;
-                        min = (min + 2f * max) / 4f;
+                        float mult = 1.25f;
+                        min = (min + (1 + mult) * max) / 4f;
+                        max *= mult;
                         LogInfo(logDesc, spawnTech, min, max);
 
                         __result = Plugin.Rand.Round(Mathf.Lerp(min, max, t));

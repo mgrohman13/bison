@@ -15,21 +15,24 @@ namespace WarpipsReplayability.Patches
     [HarmonyPatch(nameof(ResourceController.SetCash))]
     internal class ResourceController_SetCash
     {
-        public static void Prefix()//ref int newValue)
+        public static void Prefix(ref int newValue)
         {
             try
             {
                 Plugin.Log.LogDebug("ResourceController_SetCash Prefix");
 
-                //if (Map.MissionManagerAsset != null)
-                //    newValue = Map.MissionManagerAsset.WorldMapIndex switch
-                //    {
-                //        0 => 40,
-                //        1 => 60,
-                //        2 => 80,
-                //        3 => 100,
-                //        _ => throw new Exception($"Map.MissionManagerAsset.WorldMapIndex {Map.MissionManagerAsset.WorldMapIndex}"),
-                //    };
+                if (Config.DifficultMode)
+                    if (Map.MissionManagerAsset != null)
+                        newValue = 5 * Plugin.Rand.GaussianOEInt((40 + 5 * Map.MissionManagerAsset.WorldMapIndex) / 3.0, .169, .078);
+
+                //Map.MissionManagerAsset.WorldMapIndex switch
+                //        {
+                //            0 => 40,
+                //            1 => 60,
+                //            2 => 80,
+                //            3 => 100,
+                //            _ => throw new Exception($"Map.MissionManagerAsset.WorldMapIndex {Map.MissionManagerAsset.WorldMapIndex}"),
+                //        };
             }
             catch (Exception e)
             {

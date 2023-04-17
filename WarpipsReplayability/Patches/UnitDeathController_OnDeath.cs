@@ -37,21 +37,19 @@ namespace WarpipsReplayability.Patches
                         { "Shotgunner", 1 / 3f },
                     };
 
-                    string unit = ___statController.UnitData.name;
-                    if (!mappings.TryGetValue(unit, out float exp))
-                        exp = __state;
-                    else
+                    if (!mappings.TryGetValue(___statController.UnitData.name, out float mult))
+                        mult = 1f;
+                    if (IsSuperEnemy(___statController.gameObject))
                     {
-                        if (IsSuperEnemy(___statController.gameObject))
-                        {
-                            exp *= superEnemyMult;
-                            Plugin.Log.LogDebug("SuperEnemy detected");
-                        }
-                        ___statController.UnitData.xpBaseOnKill = Plugin.Rand.GaussianOE(exp, .13f / (float)Math.Sqrt(exp), 0.052f / exp, .05f);
+                        mult *= superEnemyMult;
+                        Plugin.Log.LogDebug("SuperEnemy detected");
                     }
 
-                    //exp *= 1.01f;
-                    //___statController.UnitData.xpBaseOnKill = Plugin.Rand.GaussianOE(exp, .13f / (float)Math.Sqrt(exp), 0.052f / exp, .05f);
+                    if (mult != 1f)
+                    {
+                        float exp = __state * mult;
+                        ___statController.UnitData.xpBaseOnKill = Plugin.Rand.GaussianOE(exp, .13f / (float)Math.Sqrt(exp), 0.052f / exp, .05f);
+                    }
                 }
             }
             catch (Exception e)

@@ -33,7 +33,8 @@ namespace WarpipsReplayability.Patches
                     {
                         Plugin.Log.LogInfo($"displayThreshold: {waveProfile.DisplayThreshold}");
                         //normalize the display threshold so the relative difficulty of different missions is more apparent
-                        AccessTools.Field(typeof(SpawnWaveProfile), "displayThreshold").SetValue(waveProfile, 1 / 3f);
+                        float displayThreshold = .3f + .1f * Map.MissionManagerAsset.WorldMapIndex;
+                        AccessTools.Field(typeof(SpawnWaveProfile), "displayThreshold").SetValue(waveProfile, displayThreshold);
                     }
                 }
                 else
