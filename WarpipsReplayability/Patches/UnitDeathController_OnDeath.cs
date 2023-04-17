@@ -24,12 +24,11 @@ namespace WarpipsReplayability.Patches
         {
             try
             {
+                Plugin.Log.LogDebug("UnitDeathController_OnDeath Prefix");
+                __state = ___statController.UnitData.xpBaseOnKill;
+
                 if (Config.DifficultMode)
                 {
-                    Plugin.Log.LogDebug("UnitDeathController_OnDeath Prefix");
-
-                    __state = ___statController.UnitData.xpBaseOnKill;
-
                     const float superEnemyMult = 5f;
                     Dictionary<string, float> mappings = new() {
                         { "PistolPip",  1 / 4f },
@@ -59,9 +58,9 @@ namespace WarpipsReplayability.Patches
         }
         public static void Postfix(UnitStatController ___statController, float __state)
         {
+            Plugin.Log.LogDebug("UnitDeathController_OnDeath Postfix");
             ___statController.UnitData.xpBaseOnKill = __state;
         }
-
 
         private static readonly FieldInfo unitBuffsField = AccessTools.Field(AccessTools.TypeByName(
             "UpgradeController+BuffSource"), "unitBuffs");
