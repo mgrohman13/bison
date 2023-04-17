@@ -21,7 +21,7 @@ namespace WarpipsReplayability.Patches
             {
                 Plugin.Log.LogDebug("MissionManagerAsset_SelectMissionIndex Prefix");
 
-                int? forceWorldMapIndex = MissionManagerAsset_NewGameConquest.ForceWorldMapIndex;
+                int? forceWorldMapIndex = Map.ForceWorldMapIndex;
                 if (forceWorldMapIndex.HasValue)
                     worldMapIndex = forceWorldMapIndex.Value;
 

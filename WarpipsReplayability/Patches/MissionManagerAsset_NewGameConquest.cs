@@ -15,17 +15,14 @@ namespace WarpipsReplayability.Patches
     [HarmonyPatch(nameof(MissionManagerAsset.NewGameConquest))]
     internal class MissionManagerAsset_NewGameConquest
     {
-        //for testing and debugging different world maps
-        public static readonly int? ForceWorldMapIndex = null;//3;
-
         public static void Postfix(MissionManagerAsset __instance)
         {
             try
             {
                 Plugin.Log.LogDebug("MissionManagerAsset_NewGameConquest Postfix");
 
-                if (ForceWorldMapIndex.HasValue)
-                    typeof(MissionManagerAsset).GetProperty("WorldMapIndex").SetValue(__instance, ForceWorldMapIndex.Value);
+                if (Map.ForceWorldMapIndex.HasValue)
+                    typeof(MissionManagerAsset).GetProperty("WorldMapIndex").SetValue(__instance, Map.ForceWorldMapIndex.Value);
             }
             catch (Exception e)
             {

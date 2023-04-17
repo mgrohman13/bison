@@ -14,6 +14,9 @@ namespace WarpipsReplayability.Mod
 {
     internal class Map
     {
+        //for testing and debugging different world maps
+        public static readonly int? ForceWorldMapIndex = null;
+
         //properties set externally through patches
         public static MissionManagerAsset MissionManagerAsset { get; set; }
         public static WorldMapAsset WorldMapAsset { get; set; }

@@ -23,7 +23,7 @@ namespace WarpipsReplayability.Patches
 
                 Map.MissionManagerAsset = __instance;
 
-                int? forceWorldMapIndex = MissionManagerAsset_NewGameConquest.ForceWorldMapIndex;
+                int? forceWorldMapIndex = Map.ForceWorldMapIndex;
                 if (forceWorldMapIndex.HasValue)
                     worldMapIndex = forceWorldMapIndex.Value;
             }
