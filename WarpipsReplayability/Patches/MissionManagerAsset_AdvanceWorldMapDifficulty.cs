@@ -23,7 +23,7 @@ namespace WarpipsReplayability.Patches
                 Plugin.Log.LogDebug("MissionManagerAsset_AdvanceWorldMapDifficulty Prefix");
 
                 //I have no explanation for why ___worldMapDifficultyMultiplerTick shows nonsensical values
-                Plugin.Log.LogInfo($"Prefix worldMapDifficultyMultiplerTick {___worldMapDifficultyMultiplerTick.Value} (???)");
+                Plugin.Log.LogDebug($"Prefix worldMapDifficultyMultiplerTick {___worldMapDifficultyMultiplerTick.Value} (???)");
 
                 __state = ___worldMapDifficultyMultipler.Value;
             }
@@ -39,7 +39,7 @@ namespace WarpipsReplayability.Patches
                 Plugin.Log.LogDebug("MissionManagerAsset_AdvanceWorldMapDifficulty Postfix");
 
                 //I have no explanation for why ___worldMapDifficultyMultiplerTick shows nonsensical values
-                Plugin.Log.LogInfo($"Postfix worldMapDifficultyMultiplerTick {___worldMapDifficultyMultiplerTick.Value} (???)");
+                Plugin.Log.LogDebug($"Postfix worldMapDifficultyMultiplerTick {___worldMapDifficultyMultiplerTick.Value} (???)");
 
                 float value, inc;
                 Calc();

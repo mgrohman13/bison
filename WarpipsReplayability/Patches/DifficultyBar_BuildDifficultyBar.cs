@@ -26,12 +26,24 @@ namespace WarpipsReplayability.Patches
             {
                 Plugin.Log.LogDebug("DifficultyBar_BuildDifficultyBar Prefix");
 
+
+                //float max = 0f;
+                //int width = ___barTexture.width;
+                //for (int i = 0; i < width; i++)
+                //{
+                //    float timeScalar = Mathf.Clamp01(((float)i) / ((float)width));
+                //    float num7 = waveProfile.ReturnDifficultyAtNormalizedTime(timeScalar);
+                //    max = Math.Max(max, num7);
+                //}
+                //Plugin.Log.LogInfo("max difficulty: " + max);
+
+
                 showBar = Operations.ShowEnemies();
                 if (showBar)
                 {
                     if (Config.DifficultMode)
                     {
-                        Plugin.Log.LogInfo($"displayThreshold: {waveProfile.DisplayThreshold}");
+                        Plugin.Log.LogDebug($"displayThreshold: {waveProfile.DisplayThreshold}");
                         //normalize the display threshold so the relative difficulty of different missions is more apparent
                         float displayThreshold = .3f + .1f * Map.MissionManagerAsset.WorldMapIndex;
                         AccessTools.Field(typeof(SpawnWaveProfile), "displayThreshold").SetValue(waveProfile, displayThreshold);

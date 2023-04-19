@@ -26,7 +26,7 @@ namespace WarpipsReplayability.Patches
                 if (Config.FixArmsDealer)
                     foreach (var r in ___itemShopStock)
                     {
-                        Plugin.Log.LogInfo($"{r.item.name} - {r.stackSize}, cost {r.item.techNode.purchaseCost}");
+                        Plugin.Log.LogDebug($"{r.item.name} - {r.stackSize}, cost {r.item.techNode.purchaseCost}");
 
                         //if (r.stackCount > 1)
                         //    Plugin.Log.LogInfo($"{r.stackCount}");

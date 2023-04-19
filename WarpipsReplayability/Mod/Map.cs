@@ -40,6 +40,8 @@ namespace WarpipsReplayability.Mod
                 var graph = ModifyConnections();
                 GenerateConnections(graph);
 
+                //Operations.Randomize();
+
                 Persist.SaveNew(shuffle);
             }
         }
@@ -178,7 +180,7 @@ namespace WarpipsReplayability.Mod
                         2 => 9.0 / 9,
                         _ => throw new Exception($"Map.MissionManagerAsset.GameDifficultyIndex {MissionManagerAsset.GameDifficultyIndex}"),
                     };
-                    Plugin.Log.LogInfo($"GameDifficultyIndex: {MissionManagerAsset.GameDifficultyIndex}, mult: {mult}");
+                    Plugin.Log.LogDebug($"GameDifficultyIndex: {MissionManagerAsset.GameDifficultyIndex}, mult: {mult}");
                     avg *= mult;
                 }
                 else if (MissionManagerAsset.GameDifficultyIndex != 2)
@@ -362,7 +364,7 @@ namespace WarpipsReplayability.Mod
 
         private static void GenerateConnections(GraphInfo graph)
         {
-            if (MissionManagerAsset.WorldMapIndex == 0)
+            if (MissionManagerAsset.WorldMapIndex == (ForceWorldMapIndex ?? 0))
                 SetOriginalConnections();
 
             int count = WorldMapAsset.TerritoryConnections.Count;

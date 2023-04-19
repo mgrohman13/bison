@@ -33,10 +33,10 @@ namespace WarpipsReplayability.Mod
                         return false;
                     }
                 }
-                else
-                {
-                    Plugin.Log.LogDebug($"Spawns skipping due to initialization");
-                }
+            else
+            {
+                Plugin.Log.LogDebug($"Spawns skipping due to initialization");
+            }
             return true;
         }
 
@@ -48,14 +48,14 @@ namespace WarpipsReplayability.Mod
             if (Mission != mission)
             {
                 Mission = mission;
-                Plugin.Log.LogInfo(mission);
+                Plugin.Log.LogDebug(mission);
             }
 
             string info = $"{mission} {spawnTech.name} {logDesc}: {min}-{max}";
             if (!LoggedInfo.Contains(info))
             {
                 LoggedInfo.Add(info);
-                Plugin.Log.LogInfo(info);
+                Plugin.Log.LogDebug(info);
             }
         }
         private static readonly Dictionary<string, string> PreviousLog = new();

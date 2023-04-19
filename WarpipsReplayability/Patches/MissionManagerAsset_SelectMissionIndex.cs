@@ -25,7 +25,7 @@ namespace WarpipsReplayability.Patches
                 if (forceWorldMapIndex.HasValue)
                     worldMapIndex = forceWorldMapIndex.Value;
 
-                Plugin.Log.LogInfo($"SelectMissionIndex '{Operations.SelectedTerritory?.operation.spawnWaveProfile.name}'");
+                Plugin.Log.LogDebug($"SelectMissionIndex '{Operations.SelectedTerritory?.operation.spawnWaveProfile.name}'");
             }
             catch (Exception e)
             {
