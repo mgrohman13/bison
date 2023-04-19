@@ -41,13 +41,13 @@ namespace WarpipsReplayability.Patches
                 showBar = Operations.ShowEnemies();
                 if (showBar)
                 {
-                    if (Config.DifficultMode)
-                    {
-                        Plugin.Log.LogDebug($"displayThreshold: {waveProfile.DisplayThreshold}");
-                        //normalize the display threshold so the relative difficulty of different missions is more apparent
-                        float displayThreshold = .3f + .1f * Map.MissionManagerAsset.WorldMapIndex;
-                        AccessTools.Field(typeof(SpawnWaveProfile), "displayThreshold").SetValue(waveProfile, displayThreshold);
-                    }
+                    //if (Config.DifficultMode)
+                    //{
+                    Plugin.Log.LogDebug($"displayThreshold: {waveProfile.DisplayThreshold}");
+                    //normalize the display threshold so the relative difficulty of different missions is more apparent
+                    float displayThreshold = .3f + .1f * Map.MissionManagerAsset.WorldMapIndex;
+                    AccessTools.Field(typeof(SpawnWaveProfile), "displayThreshold").SetValue(waveProfile, displayThreshold);
+                    //}
                 }
                 else
                 {

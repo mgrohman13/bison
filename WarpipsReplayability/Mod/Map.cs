@@ -40,7 +40,7 @@ namespace WarpipsReplayability.Mod
                 var graph = ModifyConnections();
                 GenerateConnections(graph);
 
-                //Operations.Randomize();
+                Operations.Randomize();
 
                 Persist.SaveNew(shuffle);
             }

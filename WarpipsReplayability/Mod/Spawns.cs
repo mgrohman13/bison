@@ -13,26 +13,26 @@ namespace WarpipsReplayability.Mod
     {
         public static bool ModifySpawns(bool cap, InvokeableType spawnTech, float min, float max, float t, ref int __result)
         {
-            if (Config.DifficultMode)
-                //Plugin.Log.LogDebug($"{Map.Territories} {Map.MissionManagerAsset.CurrentWorldMap.lastAttackedTerritory}");
-                if (Map.MissionManagerAsset != null && Map.MissionManagerAsset.CurrentWorldMap.lastAttackedTerritory > -1)
-                {
-                    string logDesc = cap ? "SpawnCap" : "SpawnCount";
-                    LogInfo(logDesc, spawnTech, min, max);
+            //Plugin.Log.LogDebug($"{Map.Territories} {Map.MissionManagerAsset.CurrentWorldMap.lastAttackedTerritory}");
+            if (Map.MissionManagerAsset != null && Map.MissionManagerAsset.CurrentWorldMap.lastAttackedTerritory > -1)
+            {
+                string logDesc = cap ? "SpawnCap" : "SpawnCount";
+                LogInfo(logDesc, spawnTech, min, max);
 
-                    HashSet<string> techTypes = new() { "PistolPip", "Shotgunner", "Warfighter", };// "UAZ", "Warmule", };             
+                HashSet<string> techTypes = new() { "PistolPip", "Shotgunner", "Warfighter", };// "UAZ", "Warmule", };     
+                if (Config.DifficultMode)
                     if (techTypes.Contains(spawnTech.name))
                     {
                         float mult = 1.25f;
                         min = (min + (1 + mult) * max) / 4f;
                         max *= mult;
                         LogInfo(logDesc, spawnTech, min, max);
-
-                        __result = Plugin.Rand.Round(Mathf.Lerp(min, max, t));
-                        LogResult(logDesc, spawnTech, __result);
-                        return false;
                     }
-                }
+
+                __result = Plugin.Rand.Round(Mathf.Lerp(min, max, t));
+                LogResult(logDesc, spawnTech, __result);
+                return false;
+            }
             else
             {
                 Plugin.Log.LogDebug($"Spawns skipping due to initialization");
@@ -68,7 +68,7 @@ namespace WarpipsReplayability.Mod
             if (prev != log)
             {
                 PreviousLog[key] = log;
-                Plugin.Log.LogDebug(log);
+                Plugin.Log.LogInfo(log);
             }
         }
     }

@@ -6,11 +6,28 @@ add marathon mode option?
 test TerritoryInstance.blocked
 		
 difficulty for things ive made constant?
-	starting cash (commented out)
+	starting cash (difficult mode only)
 	lives
 	
 bug - after multiple cycles in a mission, shows stronger bar on next operation
+	use ignoreCycleDifficulty?
 
 mess with spawning, true mission randomness
+	save/load
+	ensure StartAtDifficulty below max difficulty curve value
+	active/deactivation of spawners?
+		StartAtDifficulty
+	other SpawnerData properties
+	randomize difficulty bar
+		normalize display
+		cycle difficulty increase?
+	clean up warning indicators
+	bombs?
+	enemyBuildSites
+	what happens on mission loss?
+	force predator in final missions?
+	rethink rocket?
 
 incl all territies in tech decrease, but cap at 20?
+
+revisit reward upper limit outside difficult mode
