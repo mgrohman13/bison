@@ -13,7 +13,7 @@ Warpips does not natively support modding, so this was written as a BepInEx plug
 6) The number of War Bucks received throughout the campaign has been rebalanced. More are given out for each individual operation, but once the difficulty bar hits maximum, the amount in remaining territories is reduced to 1/3rd of its previous value (except for the High Value Reward and Enemy Objective territories which are not decreased). This is to disincentivize completing every operation on each island in order to be swimming in tech points, and ensure that you can fully complete the upgrade tree without ever maxing out the difficulty bar even on General difficulty. Even with these changes, it's probably still advantageous to complete islands, but less so. This feature can be disabled - see CONFIGURATION section below.
 
 --- CONFIGURATION ---  
-There is a configuration file located at /BepInEx/plugins/WarpipsReplayability.txt that can be used to control some of the mod features. It currently has 4 options:
+There is a configuration file located at /BepInEx/plugins/WarpipsReplayability.txt that can be used to control some of the mod features. Lines starting with the # character indicate file comments, so edit the options at the bottom of the file. It currently has 4 options:
 1) PlayerLives - can be set to any reasonable number, or left blank to use the built in difficulty-based numbers. Defaults to 3
 2) FixArmsDealer - increases the amount of certain low-value items the Arms dealer sells (see #5 in the DEFAULT FEATURES section above). Defaults to true
 3) RebalanceTech - rebalances the number of War Bucks, making it a more appealing option to play through without conquering all island territories (see #6 in the DEFAULT FEATURES section above). Defaults to true
