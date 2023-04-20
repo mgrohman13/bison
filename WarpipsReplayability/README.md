@@ -12,7 +12,7 @@ Warpips does not natively support modding, so this was written as a BepInEx plug
 5) The Arms Dealer now occasionally sells 2x of certain items. Many items were configured to do this, but the game was coded to reduce the maximum possible amount by 1. This makes many items that were previously never worth buying occasionally useful now. This feature can be disabled - see CONFIGURATION section below.
 6) The number of War Bucks received throughout the campaign has been rebalanced. More are given out for each individual operation, but once the difficulty bar hits maximum, the amount in remaining territories is reduced to 1/3rd of its previous value (except for the High Value Reward and Enemy Objective territories which are not decreased). This is to disincentivize completing every operation on each island in order to be swimming in tech points, and ensure that you can fully complete the upgrade tree without ever maxing out the difficulty bar even on General difficulty. Even with these changes, it's probably still advantageous to complete islands, but less so. This feature can be disabled - see CONFIGURATION section below.
 
---- CONFIGURATION ---
+--- CONFIGURATION ---  
 There is a configuration file located at /BepInEx/plugins/WarpipsReplayability.txt that can be used to control some of the mod features. It currently has 4 options:
 1) PlayerLives - can be set to any reasonable number, or left blank to use the built in difficulty-based numbers. Defaults to 3
 2) FixArmsDealer - increases the amount of certain low-value items the Arms dealer sells (see #5 in the DEFAULT FEATURES section above). Defaults to true
