@@ -17,7 +17,7 @@ There is a configuration file located at /BepInEx/plugins/WarpipsReplayability.t
 1) PlayerLives - can be set to any reasonable number, or left blank to use the built in difficulty-based numbers. Defaults to 3
 2) FixArmsDealer - increases the amount of certain low-value items the Arms dealer sells (see #5 in the DEFAULT FEATURES section above). Defaults to true
 3) RebalanceTech - rebalances the number of War Bucks, making it a more appealing option to play through without conquering all island territories (see #6 in the DEFAULT FEATURES section above). Defaults to true
-4) DifficultMode - this is an optional mode that makes early and easy operations much more difficult. You will need to bring a decent loadout to beat even the easiest operations, but will receive more rewards to make up for it. This will be a fun mode to try out if you are looking for additional replay value. Defaults to false
+4) DifficultMode - this is an optional mode that makes early and easy operations much more difficult. You will need to bring a decent loadout to beat even the easiest operations, but will receive more rewards to make up for it. This will be a fun mode to try out if you are looking for additional replay value, or like me get tired of being able to beat 2/3rds of the first island's operations with nothing but a single Warpip even on General difficulty. Defaults to false
 
 --- ADDITIONAL NOTES ---  
 Check the log file at /BepInEx/LogOutput.log and send me any errors. If you run into anything weird or unexpected, describe what you were doing and send me the log file. Future updates are planned, most especially the ability to generate fully randomized operations, instead of simply moving existing ones around. Stay tuned!  
