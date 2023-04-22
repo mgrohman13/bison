@@ -21,7 +21,7 @@ namespace WarpipsReplayability.Patches
             {
                 Plugin.Log.LogDebug("MissionManagerAsset_NewGameConquest Postfix");
 
-                if (Map.ForceWorldMapIndex.HasValue)
+                if (Map.ForceWorldMapIndex.HasValue && __instance.WorldMapIndex != Map.ForceWorldMapIndex.Value)
                     typeof(MissionManagerAsset).GetProperty("WorldMapIndex").SetValue(__instance, Map.ForceWorldMapIndex.Value);
             }
             catch (Exception e)

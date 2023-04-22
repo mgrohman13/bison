@@ -24,7 +24,7 @@ namespace WarpipsReplayability.Patches
                 Map.MissionManagerAsset = __instance;
 
                 int? forceWorldMapIndex = Map.ForceWorldMapIndex;
-                if (forceWorldMapIndex.HasValue)
+                if (forceWorldMapIndex.HasValue && worldMapIndex != forceWorldMapIndex.Value)
                     worldMapIndex = forceWorldMapIndex.Value;
             }
             catch (Exception e)
