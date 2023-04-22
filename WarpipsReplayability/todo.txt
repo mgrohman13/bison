@@ -13,20 +13,35 @@ bug - after multiple cycles in a mission, shows stronger bar on next operation
 	use ignoreCycleDifficulty?
 
 mess with spawning, true mission randomness
-	save/load
-	ensure StartAtDifficulty below max difficulty curve value
-	active/deactivation of spawners?
-		StartAtDifficulty
 	other SpawnerData properties
-	randomize difficulty bar
-		normalize display
+		cycle stuff
 		cycle difficulty increase?
-	clean up warning indicators
-	bombs?
+	difficulty bar
+		difficultyCurve tangents??
+		CycleDifficultyMultipler logic should use new combination algorithm 
+		show bombs on island map difficulty bar
+	bombs?			
 	enemyBuildSites
-	what happens on mission loss?
-	force predator in final missions?
 	rethink rocket?
+	starting new game without exiting game
+	correlate difficulty with tech pts?
+		increase tech pts bonus more? - can be less choosy about territories now
+	use difficult mode xp tweak? but not spawn increase
+		maybe a little less extreme?
+		if not, consider weaklings dirung balance
+	starting cash??
+	limit to 10? keep some defences being cut off? order in certain way?
+	not enough lives?
+		ensure more new lives always reachable?
+	tough missions give more combat coupons?
+		adding too many token rewards?
+	contrainsts:
+		all missions have a .01 start at difficulty unit
+		at least one unit has a spawan range
+
+hide # of rewards in shroud on special territories
+
+fix duplicate WorldMap_00_Territory_01
 
 incl all territies in tech decrease, but cap at 20?
 
