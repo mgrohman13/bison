@@ -9,6 +9,7 @@ using MonoMod.Utils;
 using HarmonyLib;
 using System.Xml.Linq;
 using UnityEngine.UI;
+using static WarpipsReplayability.Mod.Operations;
 
 namespace WarpipsReplayability.Mod
 {
@@ -40,11 +41,12 @@ namespace WarpipsReplayability.Mod
                 var graph = ModifyConnections();
                 GenerateConnections(graph);
 
-                Operations.Randomize();
+                SpawnerInfo[] spawnerInfo = Operations.Randomize();
 
-                Persist.SaveNew(shuffle);
+                Persist.SaveNew(shuffle, spawnerInfo);
             }
         }
+
         public static void Load()
         {
             SetOriginalConnections();
@@ -52,6 +54,8 @@ namespace WarpipsReplayability.Mod
             LoadShuffle();
             if (!Validate(null, null))
                 Plugin.Log.LogError($"loaded invalid state");
+
+            Operations.Load(Persist.Instance.SpawnerInfo);
         }
 
         private static void LoadShuffle()
@@ -392,7 +396,6 @@ namespace WarpipsReplayability.Mod
                     connection = c.connection.ToList()
                 }).ToList();
             Plugin.Log.LogInfo($"OriginalConnections {OriginalConnections.Count}");
-
         }
 
         private static GraphInfo GetEdges(TerritoryInstance[] territories)
