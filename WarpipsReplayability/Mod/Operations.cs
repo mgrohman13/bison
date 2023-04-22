@@ -83,7 +83,7 @@ namespace WarpipsReplayability.Mod
         private static bool IsShrouded(TerritoryInstance territory) =>
             !WorldMapUIController.IsTerritoryAttackable(territory.index);
         private static bool HideEnemies(TerritoryInstance territory) =>
-            false;// IsShrouded(territory) && territory.specialTag != TerritoryInstance.SpecialTag.EnemyObjective;
+            IsShrouded(territory) && territory.specialTag != TerritoryInstance.SpecialTag.EnemyObjective;
         private static bool HideRewards(TerritoryInstance territory) =>
             IsShrouded(territory) || territory.specialTag == TerritoryInstance.SpecialTag.HighValueReward;
 
