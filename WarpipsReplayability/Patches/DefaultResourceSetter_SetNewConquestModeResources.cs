@@ -25,6 +25,9 @@ namespace WarpipsReplayability.Patches
                     ___resourceController.HardSetPlayerLives(value, value);
                     Plugin.Log.LogInfo($"HardSetPlayerLives to {value}");
                 }
+
+                ___resourceController.SetTokens(3);
+
             }
             catch (Exception e)
             {
