@@ -13,6 +13,9 @@ namespace CityWarWinApp
         [STAThread]
         static void Main()
         {
+            Game.Random.ToString();
+
+
             //double minC = int.MaxValue, maxC = 0, avgC = 0, minW = int.MaxValue, maxW = 0, avgW = 0;
 
             //int times = 1000000;
@@ -49,16 +52,15 @@ namespace CityWarWinApp
             //Console.WriteLine(maxW);
 
 
-            Game.Random.ToString();
-
             //Player p1 = new Player("Dwarf", System.Drawing.Color.FloralWhite, "hi");
             //Player p2 = new Player("Fae", System.Drawing.Color.FloralWhite, "hi");
             //Player p3 = new Player("Human", System.Drawing.Color.FloralWhite, "hi");
             //Game g = new Game(new[] { p1, p2, p3 }, 13);
 
-            //PrintCosts(Player.SplitPortalCost(g, "Dwarf"));
-            //PrintCosts(Player.SplitPortalCost(g, "Fae"));
-            //PrintCosts(Player.SplitPortalCost(g, "Human"));
+            //PrintCosts(Portal.SplitPortalCost(g, "Dwarf"));
+            //PrintCosts(Portal.SplitPortalCost(g, "Fae"));
+            //PrintCosts(Portal.SplitPortalCost(g, "Human"));
+
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);

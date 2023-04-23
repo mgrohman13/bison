@@ -9,7 +9,7 @@ namespace CityWar
     {
         #region fields and constructors
 
-        private readonly List<string> units = new List<string>();
+        private readonly List<string> units = new();
 
         internal Wizard(Player owner, Tile tile, out bool canUndo)
             : base(1, owner, tile, "Wizard")
@@ -20,14 +20,14 @@ namespace CityWar
 
         private static List<string> InitUnits(Game game)
         {
-            List<string> units = new List<string>();
+            List<string> units = new();
             foreach (string[] race in Game.Races.Values)
             {
                 bool any = false;
                 foreach (string u in race)
                 {
                     double chance;
-                    switch (Unit.CreateTempUnit(game, u).CostType)
+                    switch (Unit.CreateTempUnit(u).CostType)
                     {
                         case CostType.Death:
                             chance = .6;
@@ -52,7 +52,7 @@ namespace CityWar
 
         public override List<string> GetBuildList()
         {
-            return this.units.Where(u => Unit.CreateTempUnit(owner.Game, u).Race == this.owner.Race).ToList();
+            return this.units.Where(u => Unit.CreateTempUnit(u).Race == this.owner.Race).ToList();
         }
 
         #endregion //fields and constructors
@@ -64,7 +64,7 @@ namespace CityWar
             if (name == "Wizard" || name.EndsWith(" Portal"))
                 return true;
 
-            Unit unit = Unit.CreateTempUnit(owner.Game, name);
+            Unit unit = Unit.CreateTempUnit(name);
             if (!RaceCheck(unit))
                 return false;
             if (units.Contains(name))
@@ -92,8 +92,7 @@ namespace CityWar
 
         protected override bool CanMoveChild(Tile t)
         {
-            Player p;
-            return (!(t.Occupied(out p) && p != owner));
+            return (!(t.Occupied(out Player p) && p != owner));
         }
 
         protected override bool DoMove(Tile t, bool gamble, out bool canUndo)

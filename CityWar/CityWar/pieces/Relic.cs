@@ -26,7 +26,7 @@ namespace CityWar
                 foreach (string u in race)
                 {
                     double val;
-                    Unit unit = Unit.CreateTempUnit(game, u);
+                    Unit unit = Unit.CreateTempUnit(u);
                     if (unit.CostType == CostType.Production)
                         val = .3;
                     else if (unit.CostType == CostType.Death)
@@ -53,7 +53,7 @@ namespace CityWar
             //chance to remove units matching the old terrain
             foreach (string u in this.units.ToArray())
             {
-                Unit unit = Unit.CreateTempUnit(owner.Game, u);
+                Unit unit = Unit.CreateTempUnit(u);
                 if (tile.MatchesTerrain(unit.CostType) && Game.Random.Bool(1 - (unmatchChance / matchChance)))
                     this.units.Remove(u);
             }
@@ -61,7 +61,7 @@ namespace CityWar
             foreach (string[] race in Game.Races.Values)
                 foreach (string u in race)
                 {
-                    Unit unit = Unit.CreateTempUnit(owner.Game, u);
+                    Unit unit = Unit.CreateTempUnit(u);
                     if (!this.units.Contains(u) && Tile.MatchesTerrain(unit.CostType, newTerrain)
                             && Game.Random.Bool((matchChance - unmatchChance) / (1 - unmatchChance)))
                         this.units.Add(u);
@@ -77,7 +77,7 @@ namespace CityWar
             if (name == "Wizard")
                 return true;
 
-            if (!raceCheck(name))
+            if (!RaceCheck(name))
                 return false;
             return (units.Contains(name));
         }

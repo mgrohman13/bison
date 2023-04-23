@@ -1,0 +1,153 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using BepInEx;
+using HarmonyLib;
+using GameUI;
+using System.Runtime.CompilerServices;
+using LevelGeneration.WorldMap;
+using LevelGeneration;
+using WarpipsReplayability.Mod;
+using DynamicEnums;
+using UnityEngine;
+using System.Reflection;
+using System.Collections;
+
+namespace WarpipsReplayability.Patches
+{
+    [HarmonyPatch(typeof(DifficultyBar))]
+    [HarmonyPatch(nameof(DifficultyBar.BuildDifficultyBar))]
+    internal class DifficultyBar_BuildDifficultyBar
+    {
+        static DifficultyBar_BuildDifficultyBar()
+        {
+            DisplayThreshold = float.NaN;
+        }
+
+        public static float DisplayThreshold
+        {
+            get;
+            set;
+        }
+
+        public static bool Prefix(Texture2D ___barTexture, Transform ___warningHolder, SpawnWaveProfile waveProfile)
+        {
+            bool showBar = true;
+            try
+            {
+                Plugin.Log.LogDebug("DifficultyBar_BuildDifficultyBar Prefix");
+
+                //float max = 0f;
+                //int width = ___barTexture.width;
+                //for (int i = 0; i < width; i++)
+                //{
+                //    float timeScalar = Mathf.Clamp01(((float)i) / ((float)width));
+                //    float num7 = waveProfile.ReturnDifficultyAtNormalizedTime(timeScalar);
+                //    max = Math.Max(max, num7);
+                //}
+                //Plugin.Log.LogInfo("max difficulty: " + max);
+
+                showBar = Operations.ShowEnemies();
+                if (showBar)
+                {
+                    BuildDifficultyBar(waveProfile);
+                    //if (Config.DifficultMode)
+                    //{
+                    Plugin.Log.LogInfo($"displayThreshold: {waveProfile.DisplayThreshold} -> {DisplayThreshold}");
+                    //normalize the display threshold so the relative difficulty of different missions is more apparent
+                    //float displayThreshold = displayThreshold;
+                    //Map.MissionManagerAsset.WorldMapIndex switch
+                    //{
+                    //    0 => .40f,
+                    //    1 => .50f,
+                    //    2 => .75f,
+                    //    3 => .90f,
+                    //    _ => throw new Exception()
+                    //};
+                    AccessTools.Field(typeof(SpawnWaveProfile), "displayThreshold").SetValue(waveProfile, DisplayThreshold);
+                    //}
+                }
+                else
+                {
+                    for (int i = 0; i < ___barTexture.width; i++)
+                        ___barTexture.SetPixel(i, 0, Color.black);
+                    ___barTexture.Apply();
+                    foreach (var warning in ___warningHolder)
+                        DifficultyBar.Destroy(((Transform)warning).gameObject);
+
+                    Plugin.Log.LogDebug("hiding difficulty bar");
+                }
+            }
+            catch (Exception e)
+            {
+                Plugin.Log.LogError(e);
+            }
+            return showBar;
+        }
+
+        public static void BuildDifficultyBar(SpawnWaveProfile waveProfile)
+        {
+        }
+
+        //public static void BuildDifficultyBar(SpawnWaveProfile waveProfile)
+        //{
+        //    float stripeX = 0f;
+        //    bool flag = false;
+        //    List<WarningStripe> list = new List<WarningStripe>();
+        //    int width = this.barTexture.width;
+        //    for (int i = 0; i < width; i++)
+        //    {
+        //        float timeScalar = Mathf.Clamp01(((float)i) / ((float)width));
+        //        float num7 = waveProfile.ReturnDifficultyAtNormalizedTime(timeScalar);
+        //        float displayThreshold = waveProfile.DisplayThreshold;
+        //        if (!this.ignoreCycleDifficulty)
+        //        {
+        //            num7 = Mathf.Clamp01(num7 + this.missionManager.CycleDifficultyMultipler);
+        //        }
+        //        float time = num7 / displayThreshold;
+        //        if ((num7 > displayThreshold) && !flag)
+        //        {
+        //            flag = true;
+        //            stripeX = timeScalar;
+        //        }
+        //        else if (((num7 < displayThreshold) & flag) || (flag && (i == (width - 1))))
+        //        {
+        //            flag = false;
+        //            list.Add(new WarningStripe(stripeX, timeScalar - stripeX));
+        //        }
+        //        this.barTexture.SetPixel(i, 0, this.textureGradiant.Evaluate(time));
+        //    }
+        //    this.barTexture.Apply();
+        //    using (IEnumerator enumerator = this.warningHolder.GetEnumerator())
+        //    {
+        //        while (enumerator.MoveNext())
+        //        {
+        //            Destroy(((Transform)enumerator.Current).gameObject);
+        //        }
+        //    }
+        //    int index = 0;
+        //    foreach (WarningStripe stripe in list)
+        //    {
+        //        WaveWarningStripeController component = Instantiate<GameObject>(this.warningStripe, this.warningHolder).GetComponent<WaveWarningStripeController>();
+        //        if (component)
+        //        {
+        //            component.InitializeStripe(index, this.holderRect.rect.width * stripe.stripeX, this.holderRect.rect.width * stripe.stripeWidth);
+        //            index++;
+        //        }
+        //    }
+        //    foreach (float num12 in waveProfile.ReturnAllWarningMessageTimings())
+        //    {
+        //        Utilities.SetPositionWithinBar(Instantiate<GameObject>(this.warningIndicatorPrefab, this.warningHolder).transform, this.startLerp, this.endLerp, num12);
+        //    }
+        //    if (!this.missionManager.RunningTutorial && (this.missionManager.CycleIndex == waveProfile.bombsOnCycle))
+        //    {
+        //        for (int j = 0; j < this.bombIndicatorPrefabs.Count; j++)
+        //        {
+        //            float num14 = SpawnWaveProfile.BombTimings[j];
+        //            float t = Mathf.Min((float)1f, (float)((((waveProfile.RoundDuration * num14) * 60f) + 10f) / (waveProfile.RoundDuration * 60f)));
+        //            Utilities.SetPositionWithinBar(Instantiate<GameObject>(this.bombIndicatorPrefabs[j], this.warningHolder).transform, this.startLerp, this.endLerp, t);
+        //        }
+        //    }
+        //}
+    }
+}

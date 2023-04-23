@@ -72,8 +72,8 @@ namespace CityWar
                 if (terrain != value)
                 {
                     foreach (Piece p in this.pieces)
-                        if (p is Relic)
-                            ((Relic)p).ChangedTerrain(value);
+                        if (p is Relic relic)
+                            relic.ChangedTerrain(value);
                     terrain = value;
                 }
             }
@@ -202,7 +202,7 @@ namespace CityWar
         }
         public static Piece[] FindAllPieces(IEnumerable<Piece> pieces, Predicate<Piece> match)
         {
-            List<Piece> result = new List<Piece>();
+            List<Piece> result = new();
             foreach (Piece p in pieces)
             {
                 if (match(p))
@@ -212,11 +212,10 @@ namespace CityWar
         }
         public static Unit[] FindAllUnits(IEnumerable<Piece> pieces, Predicate<Unit> match)
         {
-            List<Unit> result = new List<Unit>();
+            List<Unit> result = new();
             foreach (Piece p in pieces)
             {
-                Unit u = p as Unit;
-                if (u != null && match(u))
+                if (p is Unit u && match(u))
                     result.Add(u);
             }
             return result.ToArray();
@@ -253,8 +252,7 @@ namespace CityWar
 
         public void Group()
         {
-            Player player;
-            Occupied(out player);
+            Occupied(out Player player);
             if (Game.CurrentPlayer != player)
                 return;
 
@@ -264,8 +262,7 @@ namespace CityWar
         }
         public void Ungroup()
         {
-            Player player;
-            Occupied(out player);
+            Occupied(out Player player);
             if (Game.CurrentPlayer != player)
                 return;
 
@@ -475,7 +472,7 @@ namespace CityWar
             {
                 Piece[] selectedPieces = this.GetSelectedPieces();
                 //only move pieces with move left
-                List<Piece> pieces = new List<Piece>(selectedPieces.Length);
+                List<Piece> pieces = new(selectedPieces.Length);
                 foreach (Piece cur in selectedPieces)
                     if (cur.Movement > 0)
                         pieces.Add(cur);
@@ -488,23 +485,19 @@ namespace CityWar
         public Dictionary<Piece, bool> MovePiece(Piece p, Tile tile, bool gamble)
         {
             if (p.Group == group && p.Movement > 0 && CanMove(tile))
-            {
-                bool canUndo;
-                if (p.Move(tile, gamble, out canUndo) || p.Movement == 0)
+                if (p.Move(tile, gamble, out bool canUndo) || p.Movement == 0)
                 {
                     //just move a single piece
-                    Dictionary<Piece, bool> undoPieces = new Dictionary<Piece, bool>(1);
+                    Dictionary<Piece, bool> undoPieces = new(1);
                     undoPieces.Add(p, canUndo);
                     return undoPieces;
                 }
-            }
             return null;
         }
         private bool CanMove(Tile tile)
         {
-            Player thisP, tileP;
-            return (IsNeighbor(tile) && Occupied(out thisP) &&
-                    (!tile.OccupiedByUnit(out tileP) || thisP == tileP) && this.GetSelectedPieces().Length > 0);
+            return (IsNeighbor(tile) && Occupied(out Player thisP) &&
+                    (!tile.OccupiedByUnit(out Player tileP) || thisP == tileP) && this.GetSelectedPieces().Length > 0);
         }
 
         internal void Reset()
@@ -570,9 +563,7 @@ namespace CityWar
             {
                 Portal highest = null;
                 foreach (Piece p in Game.Random.Iterate(pieces))
-                {
-                    Portal portal;
-                    if ((portal = p as Portal) != null)
+                    if (p is Portal portal)
                     {
                         int portalCost = portal.Cost;
                         if (portalCost > cost)
@@ -581,7 +572,6 @@ namespace CityWar
                             highest = portal;
                         }
                     }
-                }
                 return highest;
             }
 
@@ -596,9 +586,7 @@ namespace CityWar
             cost = -1;
             Unit highestUnit = null;
             foreach (Piece p in Game.Random.Iterate(pieces))
-            {
-                Unit unit;
-                if ((unit = p as Unit) != null)
+                if (p is Unit unit)
                 {
                     //unit type all takes precedence
                     if (unit.Type == UnitType.Immobile)
@@ -623,7 +611,6 @@ namespace CityWar
                         highestUnit = unit;
                     }
                 }
-            }
 
             return highestUnit;
         }
@@ -702,9 +689,9 @@ namespace CityWar
                     switch (a)
                     {
                         case Ability.Aircraft:
-                            return 6;
-                        case Ability.AircraftCarrier:
                             return 5;
+                        case Ability.AircraftCarrier:
+                            return 6;
                     }
                 switch (u.Type)
                 {
@@ -720,26 +707,14 @@ namespace CityWar
             }
 
             //give ample padding to make sure wizards are always above portals, etc.
-            Relic r;
-            if ((r = piece as Relic) != null)
-            {
+            if (piece is Relic r)
                 return 100000000 + r.CanBuildCount;
-            }
-            City c;
-            if ((c = piece as City) != null)
-            {
+            if (piece is City c)
                 return 400000000 + c.CanBuildCount;
-            }
-            Portal p;
-            if ((p = piece as Portal) != null)
-            {
+            if (piece is Portal p)
                 return 700000000 + p.Cost;
-            }
-            Wizard w;
-            if ((w = piece as Wizard) != null)
-            {
+            if (piece is Wizard w)
                 return 1000000000 + w.CanBuildCount;
-            }
 
             throw new Exception();
         }
@@ -788,7 +763,7 @@ namespace CityWar
             }
 
             //have to make a copy so it can be used in the anonymous method
-            Dictionary<Tile, Tile> CanGetCarrierCopy = new Dictionary<Tile, Tile>(CanGetCarrier);
+            Dictionary<Tile, Tile> CanGetCarrierCopy = new(CanGetCarrier);
 
             //find the distance to the nearest tile where the aircraft can land
             //check if a friendly carrier can move into the tile this turn
@@ -806,11 +781,10 @@ namespace CityWar
                     if (t != null)
                     {
                         int newMove = move;
-                        Player occupying;
-                        UnitType carrierType = (piece is Unit ? ((Unit)piece).Type : UnitType.Immobile);
+                        UnitType carrierType = (piece is Unit unit ? unit.Type : UnitType.Immobile);
                         Terrain terrain = t.Terrain;
                         //check if the carrier can move onto the tile
-                        if (!(tile.OccupiedByUnit(out occupying) && occupying != piece.Owner) &&
+                        if (!(tile.OccupiedByUnit(out Player occupying) && occupying != piece.Owner) &&
                             (carrierType == UnitType.Air || carrierType == UnitType.Immobile ||
                             ((carrierType == UnitType.Water || carrierType == UnitType.Amphibious) && terrain == Terrain.Water) ||
                             ((carrierType == UnitType.Ground || carrierType == UnitType.Amphibious) && (terrain == Terrain.Plains ||
@@ -839,7 +813,7 @@ namespace CityWar
             if (match(this))
                 return 0;
 
-            Dictionary<Tile, int> distances = new Dictionary<Tile, int> { { this, 0 } };
+            Dictionary<Tile, int> distances = new() { { this, 0 } };
             int dist = 0;
             while (dist < stopAtDist)
             {

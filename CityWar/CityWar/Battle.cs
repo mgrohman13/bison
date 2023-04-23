@@ -43,15 +43,17 @@ namespace CityWar
         {
             if (canRetaliate)
             {
+                foreach (Unit u in attackers)
+                    u.StartRetaliation();
+
                 canRetaliate = false;
-                SortedSet<Unit> temp = attackers;
+                var temp = attackers;
                 attackers = defenders;
                 defenders = temp;
             }
             else
             {
-                attackers.Clear();
-                defenders.Clear();
+                throw new Exception();
             }
         }
 

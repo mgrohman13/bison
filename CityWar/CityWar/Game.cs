@@ -42,6 +42,7 @@ namespace CityWar
         private Stack<object[]> UndoArgs = new();
         private readonly Dictionary<Unit, List<Tile>> UnitTiles = new();
         private readonly Dictionary<Tile, List<Unit>> TileUnits = new();
+        private readonly Dictionary<Piece, List<Piece>> AirHeal = new();
 
         #endregion //fields
 
@@ -163,7 +164,7 @@ namespace CityWar
             UnitSchema us = UnitTypes.GetSchema();
             int numUnits = us.Unit.Rows.Count;
             Dictionary<string, List<string>> tempRaces = new();
-            var unitsHave = new Dictionary<string, int>(numUnits);
+            Dictionary<string, int> unitsHave = new(numUnits);
             for (int a = -1; ++a < numUnits;)
             {
                 UnitSchema.UnitRow row = ((UnitSchema.UnitRow)us.Unit.Rows[a]);
@@ -188,6 +189,7 @@ namespace CityWar
             UndoArgs.Clear();
             UnitTiles.Clear();
             TileUnits.Clear();
+            AirHeal.Clear();
         }
 
         public bool CanUndoCommand()
@@ -268,7 +270,7 @@ namespace CityWar
                         if (targets.Any() && Random.Bool(chance))
                         {
                             Unit splashTarget = Random.SelectValue(targets);
-                            int oldHits = splashTarget.hits;
+                            int oldHits = splashTarget.Hits;
                             int splashDmg = attack.AttackUnit(splashTarget, false, out double splashRelic);
                             if (splashDmg > 0)
                                 splash = new Tuple<Unit, int, int, double>(splashTarget, splashDmg, oldHits, splashRelic);
@@ -434,7 +436,7 @@ namespace CityWar
                 if (oldTerrain == terrain)
                 {
                     //trying to change to the same terrain counts as a heal
-                    HealPieces(new Piece[] { wizard });
+                    HealPieces(new[] { wizard });
                 }
                 else
                 {
@@ -482,7 +484,7 @@ namespace CityWar
                         AddTileUnit(u.Tile, u);
 
                     UndoCommands.Push(UndoBuildPiece);
-                    UndoArgs.Push(new object[] { capt, piece });
+                    UndoArgs.Push(new[] { capt, piece });
                 }
                 else
                 {
@@ -632,16 +634,41 @@ namespace CityWar
                 //weed out futile calls
                 if (info > -1)
                 {
-                    if (!any)
-                        any = true;
+                    any = true;
                     undoInfo.Add(curPiece, info);
+
+                    //if this unit is an aircraft relying on a movable carrier to heal, block undoing the carrier if this unit ever can't undo
+                    if (info < 1 && curPiece.IsAir())
+                    {
+                        IEnumerable<Piece> carriers = curPiece.Tile.FindAllPieces(p => p.IsAbility(Ability.AircraftCarrier));
+                        if (carriers.Any())
+                        {
+                            AirHeal.TryGetValue(curPiece, out List<Piece> existing);
+                            if (existing == null)
+                                existing = new List<Piece>();
+                            if (!carriers.Any(c =>
+                                    c.MaxMove == 0 || existing.Contains(c)))
+                            {
+                                var priority = carriers.Where(c => AirHeal.Values.SelectMany(v => v).Contains(c));
+                                if (carriers.Count() > 1)
+                                    ;
+                                if (priority.Any())
+                                    carriers = priority;
+                                if (carriers.Count() > 1)
+                                    ;
+                                AddAirHeal(curPiece, Random.SelectValue(carriers));
+                            }
+                        }
+                        else
+                            ;
+                    }
                 }
             }
 
             if (any)
             {
                 UndoCommands.Push(UndoHealPieces);
-                UndoArgs.Push(new object[] { undoInfo });
+                UndoArgs.Push(new[] { undoInfo });
             }
         }
         private Piece UndoHealPieces(object[] args)
@@ -742,7 +769,7 @@ namespace CityWar
                 undoInfo.Add(unit, unit.Disband());
 
             UndoCommands.Push(UndoDisbandUnits);
-            UndoArgs.Push(new object[] { undoInfo });
+            UndoArgs.Push(new[] { undoInfo });
         }
         private Piece UndoDisbandUnits(object[] args)
         {
@@ -773,15 +800,21 @@ namespace CityWar
 
         private void AddUnitTile(Unit u, Tile t)
         {
-            if (!UnitTiles.ContainsKey(u))
-                UnitTiles.Add(u, new List<Tile>());
-            UnitTiles[u].Add(t);
+            AddDict(UnitTiles, u, t);
         }
         private void AddTileUnit(Tile t, Unit u)
         {
-            if (!TileUnits.ContainsKey(t))
-                TileUnits.Add(t, new List<Unit>());
-            TileUnits[t].Add(u);
+            AddDict(TileUnits, t, u);
+        }
+        private void AddAirHeal(Piece air, Piece carrier)
+        {
+            AddDict(AirHeal, air, carrier);
+        }
+        private static void AddDict<K, V>(Dictionary<K, List<V>> dict, K key, V value)
+        {
+            if (!dict.ContainsKey(key))
+                dict.Add(key, new List<V>());
+            dict[key].Add(value);
         }
         private void RemoveUndosForTile(Tile tile)
         {
@@ -852,6 +885,10 @@ namespace CityWar
 
             if (removeArgs.Count > 0)
                 RemoveUndosForPiecesInArgs(removeArgs);
+
+            var carriers = pieces.OfType<Piece>().Where(AirHeal.ContainsKey).SelectMany(p => AirHeal[p]).Distinct();
+            if (carriers.Any())
+                RemoveUndosForPiecesInArgs(carriers);
         }
         private bool IsUndoTerrain(UndoDelegate undo, object[] args, IEnumerable<object> pieces)
         {
@@ -934,7 +971,7 @@ namespace CityWar
 
         public int GetUnitNeeds(string name)
         {
-            return Unit.CreateTempUnit(this, name).BaseTotalCost;
+            return Unit.CreateTempUnit(name).BaseTotalCost;
         }
 
         public static int NewGroup()
@@ -1101,7 +1138,7 @@ namespace CityWar
 
         private Dictionary<Type, Dictionary<Player, int>> GetPlayerCounts(IEnumerable<Type> capts)
         {
-            var counts = new Dictionary<Type, Dictionary<Player, int>>();
+            Dictionary<Type, Dictionary<Player, int>> counts = new();
             foreach (Type type in capts)
                 counts.Add(type, new Dictionary<Player, int>());
 
@@ -1172,7 +1209,7 @@ namespace CityWar
         }
         private Dictionary<string, string> GetForRaces(string targetName)
         {
-            Unit targetUnit = Unit.CreateTempUnit(this, targetName);
+            Unit targetUnit = Unit.CreateTempUnit(targetName);
             double avgRaceTotal = freeUnits.Values.Sum() / (double)Races.Count;
 
             return Races.ToDictionary(race => race.Key, race =>
@@ -1238,11 +1275,11 @@ namespace CityWar
             if (type == typeof(Portal))
             {
                 //account for partially finished units
-                portalAvg = Races.Values.SelectMany(units => units).Select(unit => Unit.CreateTempUnit(this, unit))
+                portalAvg = Races.Values.SelectMany(units => units).Select(unit => Unit.CreateTempUnit(unit))
                         .Where(unit => unit.CostType != CostType.Production).Sum(unit => unit.BaseTotalCost);
                 portalAvg *= .39 * Portal.ValuePct / (double)Races.Count / 5.0;
 
-                portalAvg += Portal.AvgPortalCost;
+                portalAvg += Portal.CostTotalAvg;
             }
 
             foreach (Player player in players)
@@ -1334,7 +1371,7 @@ namespace CityWar
                 Tile tile = RandomTile();
                 if (!tile.Occupied())
                 {
-                    Treasure.TreasureType type = Random.SelectValue(new Treasure.TreasureType[] {
+                    Treasure.TreasureType type = Random.SelectValue(new[] {
                         Treasure.TreasureType.Magic, Treasure.TreasureType.Relic, Treasure.TreasureType.Unit });
                     tile.CreateTreasure(type);
                 }

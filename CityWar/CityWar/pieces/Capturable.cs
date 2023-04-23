@@ -37,13 +37,12 @@ namespace CityWar
             else if (name.EndsWith(" Portal"))
             {
                 CostType poralType = (CostType)Enum.Parse(typeof(CostType), name.Split(' ')[0]);
-                int magic, element;
-                Player.SplitPortalCost(Owner.Game, Owner.Race, poralType, out magic, out element);
+                Portal.SplitPortalCost(Owner.Race, poralType, out int magic, out int element);
 
                 return (owner.Magic >= magic) && (owner.GetResource(poralType.ToString()) >= element);
             }
 
-            Unit unit = Unit.CreateTempUnit(owner.Game, name);
+            Unit unit = Unit.CreateTempUnit(name);
             return (owner.Population >= unit.BasePplCost && owner.GetResource(unit.CostType.ToString()) >= unit.BaseOtherCost);
         }
 
@@ -72,8 +71,7 @@ namespace CityWar
                 else if (name.EndsWith(" Portal"))
                 {
                     CostType poralType = (CostType)Enum.Parse(typeof(CostType), name.Split(' ')[0]);
-                    int magic, element;
-                    Player.SplitPortalCost(owner.Game, Owner.Race, poralType, out magic, out element);
+                    Portal.SplitPortalCost(Owner.Race, poralType, out int magic, out int element);
 
                     owner.SpendMagic(magic);
                     owner.Spend(element, poralType, 0);
@@ -91,16 +89,14 @@ namespace CityWar
         }
         internal void UndoBuildPiece(Piece piece)
         {
-            Portal portal;
             if (piece is Wizard)
             {
                 owner.SpendMagic(-Player.WizardCost);
             }
-            else if ((portal = piece as Portal) != null)
+            else if (piece is Portal portal)
             {
                 CostType poralType = portal.Type;
-                int magic, element;
-                Player.SplitPortalCost(owner.Game, Owner.Race, poralType, out magic, out element);
+                Portal.SplitPortalCost(Owner.Race, poralType, out int magic, out int element);
 
                 owner.SpendMagic(-magic);
                 owner.Spend(-element, poralType, 0);
@@ -111,6 +107,9 @@ namespace CityWar
                 owner.Spend(-unit.BaseOtherCost, unit.CostType, -unit.BasePplCost);
                 owner.Remove(unit);
                 tile.Remove(unit);
+
+                if (unit.IsAir())
+                    owner.AddUpkeep(-unit.Fuel * Unit.FuelWorkCost * Player.UpkeepMult / Player.WorkMult);
             }
 
             piece.Tile.Remove(piece);
@@ -141,13 +140,13 @@ namespace CityWar
         public virtual List<string> GetBuildList() { return new List<string>(); }
 
         public abstract bool CapableBuild(string name);
-        protected bool raceCheck(string name)
+        protected bool RaceCheck(string name)
         {
             if (name == "Wizard")
                 return true;
             if (name.EndsWith(" Portal"))
                 return true;
-            return RaceCheck(Unit.CreateTempUnit(owner.Game, name));
+            return RaceCheck(Unit.CreateTempUnit(name));
         }
         protected bool RaceCheck(Unit temp)
         {

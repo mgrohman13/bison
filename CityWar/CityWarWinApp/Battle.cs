@@ -570,36 +570,15 @@ namespace CityWarWinApp
             return lbAtt.SelectedItem as Attack;
         }
 
-        private void panelAttackers_MouseDown(object sender, MouseEventArgs e)
+        private void PiecesPanel_MouseDown(object sender, MouseEventArgs e)
         {
+            PiecesPanel piecesPanel = (PiecesPanel)sender;
             if (e.Button == MouseButtons.Right)
             {
-                Unit clicked = panelAttackers.GetClickedPiece(e) as Unit;
+                Piece clicked = piecesPanel.GetClickedPiece(e);
                 if (clicked != null)
                 {
-                    bool used = false;
-                    foreach (Attack a in clicked.Attacks)
-                        if (a.Used)
-                        {
-                            used = true;
-                            break;
-                        }
-                    unitInfo = new UnitInfo(clicked, panelAttackers.PointToScreen(e.Location),
-                            battle.CanRetaliate ? clicked.Movement - (used ? 1 : 0) : -1);
-                    unitInfo.Show();
-                }
-            }
-        }
-
-        private void panelDefenders_MouseDown(object sender, MouseEventArgs e)
-        {
-            if (e.Button == MouseButtons.Right)
-            {
-                Piece clicked = panelDefenders.GetClickedPiece(e);
-                if (clicked != null)
-                {
-                    unitInfo = new UnitInfo(clicked, panelDefenders.PointToScreen(e.Location),
-                            battle.CanRetaliate ? -1 : clicked.Movement - 1);
+                    unitInfo = new UnitInfo(clicked, piecesPanel.PointToScreen(e.Location));
                     unitInfo.Show();
                 }
             }

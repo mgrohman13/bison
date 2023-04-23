@@ -9,7 +9,7 @@ namespace CityWar
     {
         #region fields and constructors
 
-        private readonly List<string> units = new List<string>();
+        private readonly List<string> units = new();
 
         internal City(Player owner, Tile tile)
             : base(0, owner, tile, "City", Ability.AircraftCarrier)
@@ -24,33 +24,31 @@ namespace CityWar
             baseWaterChance = 1 - 1 / (1.0 + 13 * baseWaterChance / (5.2 + CountNeighbors(tile, terrain => true)));
 
             IEnumerable<string> units = Enumerable.Empty<string>();
-            foreach (IEnumerable<Unit> race in Game.Races.Select(pair => pair.Value.Select(name => Unit.CreateTempUnit(tile.Game, name))))
+            foreach (IEnumerable<Unit> race in Game.Races.Select(pair => pair.Value.Select(name => Unit.CreateTempUnit(name))))
             {
-                Func<Func<UnitType, bool>, int> CountUnits = Predicate => race
-                        .Count(unit => unit.CostType == CostType.Production && Predicate(unit.Type));
+                int CountUnits(Func<UnitType, bool> Predicate) =>
+                    race.Count(unit => unit.CostType == CostType.Production && Predicate(unit.Type));
 
                 int waterCount = CountUnits(unitType => unitType == UnitType.Water || unitType == UnitType.Amphibious);
                 int otherCount = CountUnits(unitType => unitType != UnitType.Water && unitType != UnitType.Amphibious);
-                double waterChance, otherChance;
-                GetChances(waterCount, otherCount, baseWaterChance, out waterChance, out otherChance);
+                GetChances(waterCount, otherCount, baseWaterChance, out double waterChance, out double otherChance);
 
-                Func<Unit, double> GetChance = unit =>
+                double GetChance(Unit unit)
                 {
                     if (unit.CostType != CostType.Production)
                         return avgChance;
-                    switch (unit.Type)
+                    return unit.Type switch
                     {
-                        case UnitType.Air:
-                        case UnitType.Ground:
-                        case UnitType.Immobile:
-                            return otherChance;
-                        case UnitType.Amphibious:
-                        case UnitType.Water:
-                            return waterChance;
-                        default:
-                            throw new Exception();
-                    }
-                };
+                        UnitType.Air or
+                        UnitType.Ground or
+                        UnitType.Immobile
+                            => otherChance,
+                        UnitType.Amphibious or
+                        UnitType.Water
+                            => waterChance,
+                        _ => throw new Exception(),
+                    };
+                }
 
                 var addUnits = race.Where(unit => Game.Random.Bool(GetChance(unit))).ToList();
                 if (!addUnits.Any(unit => unit.CostType == CostType.Production))
@@ -89,7 +87,7 @@ namespace CityWar
         public override List<string> GetBuildList()
         {
             //if (this.owner != current) return null;
-            return this.units.Where(u => Unit.CreateTempUnit(owner.Game, u).Race == this.owner.Race).ToList();
+            return this.units.Where(u => Unit.CreateTempUnit(u).Race == this.owner.Race).ToList();
         }
 
         #endregion //fields and constructors
@@ -117,7 +115,7 @@ namespace CityWar
             if (name == "Wizard")
                 return true;
 
-            Unit unit = Unit.CreateTempUnit(owner.Game, name);
+            Unit unit = Unit.CreateTempUnit(name);
             if (!RaceCheck(unit))
                 return false;
             if (!units.Contains(name))
@@ -173,7 +171,7 @@ namespace CityWar
             {
                 bool can = true;
                 foreach (string available in units)
-                    if (RaceCheck(unit) && Unit.CreateTempUnit(owner.Game, available).CostType == CostType.Production)
+                    if (RaceCheck(unit) && Unit.CreateTempUnit(available).CostType == CostType.Production)
                     {
                         if (can && available == name)
                             return true;
