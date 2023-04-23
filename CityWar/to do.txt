@@ -1,3 +1,5 @@
+unused atack when when die to retalliation
+
 gameplay
 	heal aircraft on carrier prevent undo carrier move
 	wiz pts 52?  or other numbers mults of 5?
