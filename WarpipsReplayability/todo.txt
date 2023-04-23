@@ -5,8 +5,8 @@ add marathon mode option?
 
 test TerritoryInstance.blocked
 		
-difficulty for things ive made constant?
-	starting cash (difficult mode only)
+difficulty modifier for things ive made constant?
+	starting cash?
 	lives
 	starting tokens
 	
@@ -41,7 +41,18 @@ mess with spawning, true mission randomness
 		all missions have a .01 start at difficulty unit
 		at least one unit has a spawan range
 	difficultmode?
+	final map missions w/ extra lives harder?
 
 incl all territies in tech decrease, but cap at 20?
 
 revisit reward upper limit outside difficult mode
+
+start missions with 0 points, but more supply?
+	starting cash?
+	
+rebalance enemy unit XP?
+	rand xpModifierPerUpgrade: 2, xpModifierPerTier: 3, xpModifierOnKill: 10?
+
+always consume hotbar items on loss
+
+randomize worldMapDifficultyMultipler?
