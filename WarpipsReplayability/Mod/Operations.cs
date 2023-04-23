@@ -414,7 +414,7 @@ namespace WarpipsReplayability.Mod
                     copy[a % MTRandom.MAX_SEED_SIZE] += seed[a] * (1 + a);
                 seed = copy;
             }
-            Plugin.Log.LogInfo("seed:" + seed.Select(s => s.ToString("X")).Aggregate(" ", (a, b) => a + b));
+            Plugin.Log.LogInfo("Operations.Load seed:" + seed.Select(s => s.ToString("X")).Aggregate(" ", (a, b) => a + b));
             return seed;
         }
         private static void RandEnemySpawnProfiles(MTRandom deterministic, EnemySpawnProfile[] enemySpawnProfiles)

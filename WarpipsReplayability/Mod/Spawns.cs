@@ -48,14 +48,14 @@ namespace WarpipsReplayability.Mod
             if (Mission != mission)
             {
                 Mission = mission;
-                Plugin.Log.LogDebug(mission);
+                Plugin.Log.LogInfo(mission);
             }
 
             string info = $"{mission} {spawnTech.name} {logDesc}: {min}-{max}";
             if (!LoggedInfo.Contains(info))
             {
                 LoggedInfo.Add(info);
-                Plugin.Log.LogDebug(info);
+                Plugin.Log.LogInfo(info);
             }
         }
         private static readonly Dictionary<string, string> PreviousLog = new();
