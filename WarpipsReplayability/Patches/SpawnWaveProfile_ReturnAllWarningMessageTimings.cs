@@ -34,9 +34,11 @@ namespace WarpipsReplayability.Patches
                 float warningDifficulty = profiles.Max(p => p.UnitSpawnData.StartAtDifficulty);
                 if (warningDifficulty > DifficultyBar_BuildDifficultyBar.DisplayThreshold)
                 {
-                    MTRandom temp = new(profiles.Select(p => p.UnitSpawnData).SelectMany(d =>
+                    uint[] seed = profiles.Select(p => p.UnitSpawnData).SelectMany(d =>
                         new object[] { d.CooldownAfterSpawn, d.SpawnCapCycleMultipler, d.StartAtDifficulty, d.TimeBetweenClusters })
-                        .Select(o => (uint)o.GetHashCode()).ToArray());
+                        .Select(o => (uint)o.GetHashCode()).ToArray();
+                    Plugin.Log.LogInfo("alert timings seed:" + seed.Select(s => s.ToString("X")).Aggregate(" ", (a, b) => a + b));
+                    MTRandom temp = new(seed);
 
                     AnimationCurve difficultyCurve = (AnimationCurve)field_difficultyCurve.GetValue(__instance);
                     bool prev = false;
@@ -52,7 +54,7 @@ namespace WarpipsReplayability.Patches
                                 result = Mathf.Lerp(prevTime, result, temp.FloatHalf());
                                 eval = difficultyCurve.Evaluate(result);
                             }
-                            while (result > prevTime && eval > warningDifficulty);
+                            while (eval > warningDifficulty && result > prevTime);
                             if (eval > warningDifficulty)
                                 Plugin.Log.LogWarning($"setting alert to {result}");
                             Plugin.Log.LogInfo($"alert {prevTime:0.000}-{k.time:0.000}: {result:0.000}");
