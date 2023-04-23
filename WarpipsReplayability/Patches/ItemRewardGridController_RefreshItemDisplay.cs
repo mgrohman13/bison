@@ -18,20 +18,22 @@ namespace WarpipsReplayability.Patches
     [HarmonyPatch(nameof(ItemRewardGridController.RefreshItemDisplay))]
     internal class ItemRewardGridController_RefreshItemDisplay
     {
-        public static void Postfix(ItemRewardController[] ___itemRewards)
+        public static void Postfix(ItemRewardController[] ___itemRewards, Operation inspectedOperation)
         {
             try
             {
                 Plugin.Log.LogDebug("ItemRewardGridController_RefreshItemDisplay Postfix");
 
-                if (!Operations.ShowRewards() && Operations.SelectedTerritory.specialTag == TerritoryInstance.SpecialTag.None)
+                if (!Operations.ShowRewards())
                 {
-                    foreach (var reward in ___itemRewards)
-                    {
-                        reward.gameObject.SetActive(true);
-                        reward.SetImageToMysteryItem();
-                    }
-
+                    List<Reward> itemRewards = inspectedOperation.itemRewards;
+                    for (int a = 0; a < ___itemRewards.Length; a++)
+                        if (a >= itemRewards.Count || !itemRewards[a].item.extraLife)
+                        {
+                            ItemRewardController controller = ___itemRewards[a];
+                            controller.gameObject.SetActive(true);
+                            controller.SetImageToMysteryItem();
+                        }
                     Plugin.Log.LogDebug("hiding rewards");
                 }
             }

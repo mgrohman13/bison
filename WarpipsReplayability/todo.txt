@@ -8,6 +8,7 @@ test TerritoryInstance.blocked
 difficulty for things ive made constant?
 	starting cash (difficult mode only)
 	lives
+	starting tokens
 	
 bug - after multiple cycles in a mission, shows stronger bar on next operation
 	use ignoreCycleDifficulty?
@@ -29,6 +30,7 @@ mess with spawning, true mission randomness
 	use difficult mode xp tweak? but not spawn increase
 		maybe a little less extreme?
 		if not, consider weaklings dirung balance
+		nerf pistol pip only?
 	starting cash??
 	limit to 10? keep some defences being cut off? order in certain way?
 	not enough lives?
@@ -38,10 +40,7 @@ mess with spawning, true mission randomness
 	contrainsts:
 		all missions have a .01 start at difficulty unit
 		at least one unit has a spawan range
-
-hide # of rewards in shroud on special territories
-
-fix duplicate WorldMap_00_Territory_01
+	difficultmode?
 
 incl all territies in tech decrease, but cap at 20?
 

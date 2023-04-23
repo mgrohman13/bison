@@ -55,7 +55,7 @@ namespace WarpipsReplayability.Mod
             foreach (TerritoryInstance territory in Map.Territories)
             {
                 bool hideEnemies = HideEnemies(territory);
-                bool hideRewards = HideRewards(territory);
+                bool hideRewards = HideRewards(territory) || territory.specialTag == TerritoryInstance.SpecialTag.HighValueReward;
 
                 Operation operation = territory.operation;
                 //revealEnemyIcons needs to be high enough to reveal all icons
@@ -85,7 +85,7 @@ namespace WarpipsReplayability.Mod
         private static bool HideEnemies(TerritoryInstance territory) =>
             IsShrouded(territory) && territory.specialTag != TerritoryInstance.SpecialTag.EnemyObjective;
         private static bool HideRewards(TerritoryInstance territory) =>
-            IsShrouded(territory) || territory.specialTag == TerritoryInstance.SpecialTag.HighValueReward;
+            IsShrouded(territory);
 
         public static SpawnerInfo[] Randomize()
         {
@@ -369,7 +369,8 @@ namespace WarpipsReplayability.Mod
                     group => group.OrderBy(info => info.profileIdx).Select(info => info.profile).ToArray());
                 foreach (TerritoryInstance territory in deterministic.Iterate(Map.Territories.OrderBy(t => t.index)))
                 {
-                    SpawnWaveProfile spawnWaveProfile = territory.operation.spawnWaveProfile;
+                    SpawnWaveProfile spawnWaveProfile = UnityEngine.Object.Instantiate(territory.operation.spawnWaveProfile);
+                    territory.operation.spawnWaveProfile = spawnWaveProfile;
                     if (territorySpawns.TryGetValue(territory.index, out EnemySpawnProfile[] enemySpawnProfiles))
                     {
                         Plugin.Log.LogInfo(spawnWaveProfile.name);
