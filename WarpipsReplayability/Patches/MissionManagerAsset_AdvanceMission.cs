@@ -27,7 +27,12 @@ namespace WarpipsReplayability.Patches
                 {
                     Map.DoShuffle = true;
                     Plugin.Log.LogInfo("DoShuffle set for new WorldMapIndex");
-                } 
+                }
+
+                //IntDynamicStat cycleIndex = (IntDynamicStat)AccessTools.Field(typeof(MissionManagerAsset), "cycleIndex").GetValue(__instance);
+                //Plugin.Log.LogInfo("cycleIndex: " + cycleIndex.Value);
+                //cycleIndex.Value = 0;
+                //Plugin.Log.LogInfo("cycleIndex: " + cycleIndex.Value);
             }
             catch (Exception e)
             {
