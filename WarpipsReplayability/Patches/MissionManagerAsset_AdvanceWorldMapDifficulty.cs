@@ -1,14 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using BepInEx;
-using HarmonyLib;
-using GameUI;
-using System.Runtime.CompilerServices;
-using LevelGeneration.WorldMap;
+﻿using HarmonyLib;
 using LevelGeneration;
+using System;
 using WarpipsReplayability.Mod;
-using UnityEngine;
 
 namespace WarpipsReplayability.Patches
 {
@@ -51,7 +44,7 @@ namespace WarpipsReplayability.Patches
 
                 if (inc > 0.06875 && (__instance.WorldMapIndex == 3))// || __instance.WorldMapIndex == 0))
                 {
-                    ___worldMapDifficultyMultipler.Value = value - inc / 2;
+                    ___worldMapDifficultyMultipler.Value = value - inc / 2f;
                     Calc();
                     Plugin.Log.LogInfo($"slowing worldMapDifficultyMultipler increase");
                 }

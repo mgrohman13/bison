@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using BepInEx;
-using HarmonyLib;
-using GameUI;
-using System.Runtime.CompilerServices;
+﻿using HarmonyLib;
 using LevelGeneration.WorldMap;
-using GameIO;
+using System;
 using WarpipsReplayability.Mod;
 
 namespace WarpipsReplayability.Patches

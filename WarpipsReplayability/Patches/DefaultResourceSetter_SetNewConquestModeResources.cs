@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using BepInEx;
-using HarmonyLib;
-using GameUI;
-using System.Runtime.CompilerServices;
+﻿using HarmonyLib;
+using System;
 using WarpipsReplayability.Mod;
 
 namespace WarpipsReplayability.Patches
@@ -27,7 +22,6 @@ namespace WarpipsReplayability.Patches
                 }
 
                 ___resourceController.SetTokens(3);
-
             }
             catch (Exception e)
             {

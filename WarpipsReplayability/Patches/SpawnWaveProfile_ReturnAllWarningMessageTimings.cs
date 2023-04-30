@@ -1,18 +1,12 @@
-﻿using System;
+﻿using HarmonyLib;
+using LevelGeneration;
+using MattUtil;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using BepInEx;
-using HarmonyLib;
-using GameUI;
-using System.Runtime.CompilerServices;
-using WarpipsReplayability.Mod;
-using DynamicEnums;
-using UnityEngine;
-using static LevelGeneration.WorldMap.TerritoryInstance;
-using SpecialTag = LevelGeneration.WorldMap.TerritoryInstance.SpecialTag;
-using LevelGeneration;
 using System.Reflection;
-using MattUtil;
+using UnityEngine;
+using WarpipsReplayability.Mod;
 
 namespace WarpipsReplayability.Patches
 {

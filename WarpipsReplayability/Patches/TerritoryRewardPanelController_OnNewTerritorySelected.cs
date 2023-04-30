@@ -1,18 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using BepInEx;
+﻿using GameUI;
 using HarmonyLib;
-using GameUI;
-using System.Runtime.CompilerServices;
-using LevelGeneration.WorldMap;
-using LevelGeneration;
+using System;
 using WarpipsReplayability.Mod;
-using DynamicEnums;
-using UnityEngine;
-using I2.Loc;
-using TMPro;
-using UnityEngine.UI;
 
 namespace WarpipsReplayability.Patches
 {
@@ -29,7 +18,7 @@ namespace WarpipsReplayability.Patches
                 //needed for ItemRewardGridController_RefreshItemDisplay
                 Operations.SelectedTerritory = __instance.InspectedTerritoryInstance;
 
-                Plugin.Log.LogInfo($"select {Operations.SelectedTerritory.operation.spawnWaveProfile.name}");
+                Plugin.Log.LogDebug($"select {Operations.SelectedTerritory.operation.spawnWaveProfile.name}");
             }
             catch (Exception e)
             {

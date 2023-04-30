@@ -1,12 +1,9 @@
 ﻿using HarmonyLib;
 using LevelGeneration.WorldMap;
-using LevelGeneration;
 using MattUtil;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using static LevelGeneration.WorldMap.WorldMapAsset;
 
 namespace WarpipsReplayability.Mod

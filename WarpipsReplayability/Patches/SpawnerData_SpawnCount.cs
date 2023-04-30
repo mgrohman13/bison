@@ -1,14 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using BepInEx;
+﻿using DynamicEnums;
 using HarmonyLib;
-using GameUI;
-using System.Runtime.CompilerServices;
+using System;
 using WarpipsReplayability.Mod;
-using DynamicEnums;
-using UnityEngine;
-using static LevelGeneration.WorldMap.TerritoryInstance;
 
 namespace WarpipsReplayability.Patches
 {

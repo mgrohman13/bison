@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using BepInEx;
+﻿using GameUI;
 using HarmonyLib;
-using GameUI;
-using System.Runtime.CompilerServices;
 using LevelGeneration.WorldMap;
+using System;
 using WarpipsReplayability.Mod;
 
 namespace WarpipsReplayability.Patches
@@ -22,6 +18,7 @@ namespace WarpipsReplayability.Patches
 
                 if (Map.WorldMapAsset != null && Map.OriginalConnections != null)
                 {
+                    //???
                     AccessTools.Field(typeof(WorldMapAsset), "territoryConnections").SetValue(Map.WorldMapAsset, Map.OriginalConnections);
                     Plugin.Log.LogInfo("restored connections");
                 }

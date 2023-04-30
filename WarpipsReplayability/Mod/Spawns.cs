@@ -1,10 +1,5 @@
 ﻿using DynamicEnums;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static LevelGeneration.WorldMap.TerritoryInstance;
 using UnityEngine;
 
 namespace WarpipsReplayability.Mod
@@ -48,7 +43,7 @@ namespace WarpipsReplayability.Mod
             if (Mission != mission)
             {
                 Mission = mission;
-                Plugin.Log.LogInfo(mission);
+                Plugin.Log.LogDebug(mission);
             }
 
             string info = $"{mission} {spawnTech.name} {logDesc}: {min}-{max}";
@@ -68,7 +63,7 @@ namespace WarpipsReplayability.Mod
             if (prev != log)
             {
                 PreviousLog[key] = log;
-                Plugin.Log.LogInfo(log);
+                Plugin.Log.LogDebug(log);
             }
         }
     }

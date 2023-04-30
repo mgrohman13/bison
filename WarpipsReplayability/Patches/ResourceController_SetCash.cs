@@ -1,12 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using BepInEx;
-using HarmonyLib;
-using GameUI;
-using System.Runtime.CompilerServices;
-using LevelGeneration.WorldMap;
-using LevelGeneration;
+﻿using HarmonyLib;
+using System;
 using WarpipsReplayability.Mod;
 
 namespace WarpipsReplayability.Patches
@@ -23,7 +16,7 @@ namespace WarpipsReplayability.Patches
 
                 if (Config.DifficultMode)
                     if (Map.MissionManagerAsset != null)
-                        newValue = 5 * Plugin.Rand.GaussianOEInt((40 + 5 * Map.MissionManagerAsset.WorldMapIndex) / 3.0, .169, .078);
+                        newValue = 5 * Plugin.Rand.GaussianOEInt((40 + 5 * Map.MissionManagerAsset.WorldMapIndex) / 3f, .169f, .078f);
 
                 //Map.MissionManagerAsset.WorldMapIndex switch
                 //        {
