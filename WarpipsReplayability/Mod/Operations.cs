@@ -7,14 +7,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Security.Cryptography;
 using UnityEngine;
-using UnityEngine.Profiling;
 using WarpipsReplayability.Patches;
 using static LevelGeneration.SpawnWaveProfile;
 using static LevelGeneration.WorldMap.TerritoryInstance;
-using static TechTreeMaster;
-using static WarpipsReplayability.Mod.Operations;
 
 namespace WarpipsReplayability.Mod
 {
@@ -33,13 +29,14 @@ namespace WarpipsReplayability.Mod
         private static readonly FieldInfo cooldownAfterSpawn = AccessTools.Field(typeof(SpawnerData), "cooldownAfterSpawn");
         private static readonly FieldInfo timeBetweenClusters = AccessTools.Field(typeof(SpawnerData), "timeBetweenClusters");
         private static readonly FieldInfo difficultyCurve = AccessTools.Field(typeof(SpawnWaveProfile), "difficultyCurve");
+        private static readonly FieldInfo roundDuration = AccessTools.Field(typeof(SpawnWaveProfile), "roundDuration");
 
         public static bool[] RollHiddenRewards()
         {
             var hiddenRewards = Map.Territories.SelectMany(t =>
             {
                 //each territory has a variable chance for each reward to remain hidden
-                int chance = Plugin.Rand.GaussianOEInt(6.5, .26, .21, 1);
+                int chance = Plugin.Rand.GaussianOEInt(6.5f, .26f, .21f, 1);
                 Plugin.Log.LogDebug($"hidden reward chance {chance}");
                 //each reward has an individual chance to remain hidden
                 return t.operation.itemRewards.Select(r => Plugin.Rand.Next(chance) == 0);
@@ -95,7 +92,7 @@ namespace WarpipsReplayability.Mod
                 GenerateSpawnData(spawnAverages, territory, saveSpawnInfo);
 
             SpawnerInfo[] save = saveSpawnInfo.ToArray();
-            Load(save, true);
+            Load(save);//, true);
             return save;
         }
         private static Dictionary<string, SpawnAverages> AggregateSpawnInfo()
@@ -148,7 +145,7 @@ namespace WarpipsReplayability.Mod
                 values.techType = pair.Key;
 
                 //average per territory it is present in
-                double div = values.territories;
+                float div = values.territories;
                 values.countMin /= div;
                 values.countMax /= div;
                 values.capMin /= div;
@@ -192,19 +189,19 @@ namespace WarpipsReplayability.Mod
                 foreach (int idx in Plugin.Rand.Iterate(spawnTechs))
                 {
                     //increase spawn strength for special missions
-                    double mult = territory.specialTag switch
+                    float mult = territory.specialTag switch
                     {
-                        SpecialTag.EnemyObjective => 2.0,
-                        SpecialTag.HighValueReward => 1.5,
-                        _ => 1.0,
+                        SpecialTag.EnemyObjective => (float)Math.Sqrt(3),
+                        SpecialTag.HighValueReward => (float)Math.Sqrt(2),
+                        _ => 1.0f,
                     };
 
                     SpawnAverages values = SelectTechType(spawnAverages, heroTypes, techTypes, mult);
 
                     //randomize spawn amounts, based on island-wide averages
-                    const double deviation = .13;
+                    const float deviation = .13f;
                     int countMin = Plugin.Rand.GaussianCappedInt((values.countMin) * mult, deviation, values.countMin > 1 ? 1 : 0);
-                    int countMax = Plugin.Rand.GaussianCappedInt((values.countMax - values.countMin + 1) * mult + countMin, deviation, countMin);
+                    int countMax = Plugin.Rand.GaussianCappedInt((values.countMax - values.countMin + 1) * mult + countMin, deviation, Math.Max(1, countMin));
                     //if (territory.specialTag == SpecialTag.None && Plugin.Rand.Bool())
                     //{
                     //    //chance to widen range
@@ -213,35 +210,45 @@ namespace WarpipsReplayability.Mod
                     //}
                     int capMin = Plugin.Rand.GaussianCappedInt((values.capMin) * mult + countMax, deviation, countMax);
                     //minimum caps are generally quite a bit higher, so bring down the max cap somewhat
-                    int capMax = Plugin.Rand.GaussianCappedInt((values.capMax - values.capMin + 2) * mult / 2.0 + capMin, deviation, capMin);
+                    int capMax = Plugin.Rand.GaussianCappedInt((values.capMax - values.capMin + 2) / 2f * mult + capMin, deviation, capMin);
 
-                    //because we add a little bit at each step above the averages, we need to be careful not to overdo it with certain tech types 
                     int heroIndex = Array.IndexOf(heroTypes, values.techType) + 1;
-                    bool baseAlwaysOne = values.countMin == values.number && values.countMax == values.number;
-                    if (heroIndex > 0 && baseAlwaysOne)
+                    bool baseAlwaysOne = values.countMax == values.number;
+                    if (techTypes.Count > 1)
                     {
-                        //allow more for higher heroIndex, difficult missions
-                        mult *= values.number * heroIndex;
-                        double lowMult = Math.Sqrt(mult) + Plugin.Rand.Range(0, countMin);
-                        mult = Math.Max(mult + Plugin.Rand.Range(0, countMax), lowMult + 1);
-                        //chance to temper down extreme values
-                        int min = Math.Min(Plugin.Rand.Round(Plugin.Rand.Range(0, lowMult)), countMin);
-                        int max = Math.Min(Plugin.Rand.Round(Plugin.Rand.Range(min, mult)), countMax);
-                        Plugin.Log.LogInfo($"reducing {values.techType} to number: {min}-{max} ({values.number:0.00},{lowMult:0.00},{mult:0.00}), was {countMin}-{countMax}");
-                        countMin = min;
-                        countMax = max;
+                        //because we add a little bit at each step above the averages, we need to be careful not to overdo it with certain tech types                    
+                        if (heroIndex > 0 && baseAlwaysOne)
+                        {
+                            //allow more for higher heroIndex, difficult missions
+                            float highMult = mult * values.number * (1f + heroIndex / (float)heroTypes.Length);
+                            float lowMult = (float)(Math.Sqrt(highMult) + Plugin.Rand.Range(0, countMin));
+                            highMult = Math.Max(highMult + Plugin.Rand.Range(0, countMax), lowMult + 1);
+                            //chance to temper down extreme values
+                            int min = Math.Min(Plugin.Rand.Round(Plugin.Rand.Range(0, lowMult)), countMin);
+                            int max = Math.Min(Plugin.Rand.Round(Plugin.Rand.Range(min, highMult)), countMax);
+                            Plugin.Log.LogInfo($"reducing {values.techType} to number: {min}-{max} ({values.number:0.00},{lowMult:0.00},{mult:0.00}), was {countMin}-{countMax}");
+                            countMin = min;
+                            countMax = max;
+                        }
+                        if (heroIndex > 0 || baseAlwaysOne)
+                        {
+                            Plugin.Log.LogInfo($"reducing {values.techType}, was {countMin}-{countMax} ({capMin}-{capMax})");
+                            //invert heroIndex 
+                            if (heroIndex > 0)
+                                heroIndex = Plugin.Rand.Round(1f + 2f * (heroTypes.Length - heroIndex) / (heroTypes.Length - 1f));
+                            //increasing chance to reduce each
+                            countMin = Math.Max(countMin - Plugin.Rand.RangeInt(0, ++heroIndex), 0);
+                            countMax = Math.Max(countMax - Plugin.Rand.RangeInt(0, ++heroIndex), Math.Max(1, countMin));
+                            capMin = Math.Max(capMin - Plugin.Rand.RangeInt(0, ++heroIndex), Math.Max(1, countMax));
+                            capMax = Math.Max(capMax - Plugin.Rand.RangeInt(0, ++heroIndex), Math.Max(1, capMin));
+                        }
                     }
-                    if (heroIndex > 0 || baseAlwaysOne)
+                    else
                     {
-                        Plugin.Log.LogInfo($"reducing {values.techType}, was {countMin}-{countMax} ({capMin}-{capMax})");
-                        //invert heroIndex 
-                        if (heroIndex > 0)
-                            heroIndex = Plugin.Rand.RangeInt(0, heroTypes.Length - heroIndex + 1);
-                        //increasing chance to reduce each
-                        countMin = Math.Max(countMin - Plugin.Rand.RangeInt(0, ++heroIndex), 0);
-                        countMax = Math.Max(countMax - Plugin.Rand.RangeInt(0, ++heroIndex), Math.Max(1, countMin));
-                        capMin = Math.Max(capMin - Plugin.Rand.RangeInt(0, ++heroIndex), Math.Max(1, countMax));
-                        capMax = Math.Max(capMax - Plugin.Rand.RangeInt(0, ++heroIndex), Math.Max(1, capMin));
+                        Plugin.Log.LogInfo($"ensuring range for first unit {values.techType} ({heroIndex},{baseAlwaysOne})");
+                        countMax += 1;
+                        capMin += 1;
+                        capMax += 2;
                     }
 
                     SpawnerInfo copyFrom = Plugin.Rand.SelectValue(values.info);
@@ -265,6 +272,8 @@ namespace WarpipsReplayability.Mod
 
                     saveSpawnInfo.Add(info);
                 }
+
+            Plugin.Log.LogInfo("Generated random spawns");
         }
         private static void CountTechTypes(SpawnWaveProfile spawnWaveProfile, SpecialTag special, int availableTypes, out int spawnTechs, out int totalTechs)
         {
@@ -277,8 +286,8 @@ namespace WarpipsReplayability.Mod
                    .Select(enemyBuildSite => TrimAfter(enemyBuildSite.name, "_")))
                 .Distinct();
             totalTechs = allDistinctTechTypes.Count();
-            if (totalTechs > 10)
-                Plugin.Log.LogInfo(allDistinctTechTypes.Aggregate(" ", (a, b) => a + " " + b).Trim());
+            //if (totalTechs > 10)
+            //    Plugin.Log.LogInfo(allDistinctTechTypes.Aggregate(" ", (a, b) => a + " " + b).Trim());
 
             bool logFlag = false;
             Plugin.Log.LogInfo($"{spawnWaveProfile.name} count: {spawnTechs} (total: {totalTechs})");
@@ -307,31 +316,42 @@ namespace WarpipsReplayability.Mod
                 return name;
             }
         }
-        private static SpawnAverages SelectTechType(Dictionary<string, SpawnAverages> spawnAverages, string[] heroTypes, HashSet<string> techTypes, double mult)
+        private static SpawnAverages SelectTechType(Dictionary<string, SpawnAverages> spawnAverages, string[] heroTypes, HashSet<string> techTypes, float mult)
         {
-            //ensure we get at elast one unit that isn't a rocket
-            const string skipTech = "Rocket";
-            bool doSkip = !techTypes.Any();
-            if (doSkip)
-                techTypes.Add(skipTech);
-
-            //ensure we can always select something
-            var choices = spawnAverages.Keys.Where(techType => !techTypes.Contains(techType));
-            if (!choices.Any())
+            Dictionary<string, SpawnAverages> temp;
+            if (!techTypes.Any())
             {
-                choices = spawnAverages.Keys;
-                Plugin.Log.LogError("allowing non-distinct techType");
+                //ensure we pick at least one primary attack unit
+                string[] forceTech = new string[] { "PistolPip", "Warfighter", "Shotgunner", "UAZ", "Warmule", "DuneBuggy", "Gruz", "T92" };
+                spawnAverages = Filter(p => forceTech.Contains(p.Key));
+
+                //ensure we pick at least one unit that spawns at low difficulty
+                do
+                    temp = Filter(p => p.Value.startAtDifficulty < Plugin.Rand.Gaussian(1f / 6, 1f / 3));
+                while (!temp.Any());
+                spawnAverages = temp;
             }
-            string alwaysAllow = Plugin.Rand.SelectValue(choices);
+            else
+            {
+                //ensure we can always select something
+                temp = Filter(p => !techTypes.Contains(p.Key));
+                if (temp.Any())
+                    spawnAverages = temp;
+                else
+                    Plugin.Log.LogError("allowing non-distinct techType");
+            }
+
+            string alwaysAllow = Plugin.Rand.SelectValue(spawnAverages.Keys);
             //pick a random type, weighted by count of territories
             SpawnAverages values = Plugin.Rand.SelectValue(spawnAverages.Values, spawnAverages =>
             {
                 string techType = spawnAverages.techType;
-                bool hasType = techTypes.Contains(techType);
-                int chance = (hasType ? 0 : spawnAverages.territories) + (alwaysAllow == techType ? 1 : 0);
+                int chance = spawnAverages.territories;
+                if (alwaysAllow == techType)
+                    chance++;
                 //certain tech types more likely to appear in special missions
-                if (!hasType && heroTypes.Contains(techType))
-                    chance = Plugin.Rand.Round(chance * mult + mult - 1);
+                if (heroTypes.Contains(techType))
+                    chance = Plugin.Rand.Round((chance + mult - 1) * mult);
                 Plugin.Log.LogInfo($"{techType}: {chance}");
                 return chance;
             });
@@ -340,63 +360,65 @@ namespace WarpipsReplayability.Mod
             //reduce probability of being selected in the future 
             if (values.territories > 0)
                 values.territories--;
-
-            if (doSkip)
-                techTypes.Remove(skipTech);
             return values;
+
+            Dictionary<string, SpawnAverages> Filter(Func<KeyValuePair<string, SpawnAverages>, bool> predicate) =>
+                spawnAverages.Where(predicate).ToDictionary(p => p.Key, p => p.Value);
         }
 
-        // operations only need to be reloaded if the application was restarted, otherwise it persists
-        private static bool loadFlag = true;
-        public static void Load(SpawnerInfo[] save, bool force = false)
+        //// operations only need to be reloaded if the application was restarted, otherwise it persists
+        //private static bool loadFlag = true;
+        public static void Load(SpawnerInfo[] save)//, bool force = false)
         {
-            if (loadFlag || force)
+            //if (loadFlag || force)
+            //{
+            //seed a deterministic PRNG so we can procedurally randomize some additional things in here
+            //without having to store every single detail in our save file
+            MTRandom deterministic = new(GenerateSeed(save));
+
+            foreach (SpawnerInfo info in deterministic.Iterate(save))
             {
-                //seed a deterministic PRNG so we can procedurally randomize some additional things in here
-                //without having to store every single detail in our save file
-                MTRandom deterministic = new(GenerateSeed(save));
-
-                foreach (SpawnerInfo info in deterministic.Iterate(save))
-                {
-                    TerritoryInstance territory = Map.Territories.Where(territory => territory.index == info.copyFromTerritoryIdx).Single();
-                    EnemySpawnProfile profile = GetProfiles(territory.operation.spawnWaveProfile)[info.copyFromProfileIdx];
-                    info.AssignSpawnData(profile);
-                }
-
-                float displayThreshold = 0, displayThresholdCount = 0;
-
-                var territorySpawns = save.GroupBy(info => info.territoryIdx).ToDictionary(group => group.Key,
-                    group => group.OrderBy(info => info.profileIdx).Select(info => info.profile).ToArray());
-                foreach (TerritoryInstance territory in deterministic.Iterate(Map.Territories.OrderBy(t => t.index)))
-                {
-                    SpawnWaveProfile spawnWaveProfile = UnityEngine.Object.Instantiate(territory.operation.spawnWaveProfile);
-                    territory.operation.spawnWaveProfile = spawnWaveProfile;
-                    if (territorySpawns.TryGetValue(territory.index, out EnemySpawnProfile[] enemySpawnProfiles))
-                    {
-                        Plugin.Log.LogInfo(spawnWaveProfile.name);
-
-                        spawnWaveProfile.enemySpawnProfiles = enemySpawnProfiles;
-                        spawnWaveProfile.enemySpawnProfilesAtDifficulty = new SpawnWaveProfileAtDifficulty[0];
-
-                        RandEnemySpawnProfiles(deterministic, enemySpawnProfiles);
-                        RandAnimationCurve(deterministic, enemySpawnProfiles, spawnWaveProfile);
-                        RandEnemyBuildSites(deterministic, spawnWaveProfile);
-                        AddTokens(deterministic, enemySpawnProfiles, territory);
-
-                        displayThreshold += enemySpawnProfiles.Max(p => p.UnitSpawnData.StartAtDifficulty);
-                        displayThresholdCount++;
-
-                        //spawnWaveProfile.
-                    }
-                    else
-                    {
-                        Plugin.Log.LogWarning($"No SpawnerInfo for {territory.index} - {spawnWaveProfile.name}");
-                    }
-                }
-
-                DifficultyBar_BuildDifficultyBar.DisplayThreshold = (displayThreshold / displayThresholdCount);
+                TerritoryInstance territory = Map.Territories.Where(territory => territory.index == info.copyFromTerritoryIdx).Single();
+                EnemySpawnProfile profile = GetProfiles(territory.operation.spawnWaveProfile)[info.copyFromProfileIdx];
+                info.AssignSpawnData(profile);
             }
-            loadFlag = false;
+
+            float displayThreshold = 0, displayThresholdCount = 0;
+
+            var territorySpawns = save.GroupBy(info => info.territoryIdx).ToDictionary(group => group.Key,
+                group => group.OrderBy(info => info.profileIdx).Select(info => info.profile).ToArray());
+            foreach (TerritoryInstance territory in deterministic.Iterate(Map.Territories.OrderBy(t => t.index)))
+            {
+                SpawnWaveProfile spawnWaveProfile = UnityEngine.Object.Instantiate(territory.operation.spawnWaveProfile);
+                territory.operation.spawnWaveProfile = spawnWaveProfile;
+                if (territorySpawns.TryGetValue(territory.index, out EnemySpawnProfile[] enemySpawnProfiles))
+                {
+                    Plugin.Log.LogInfo(spawnWaveProfile.name);
+
+                    spawnWaveProfile.enemySpawnProfiles = enemySpawnProfiles;
+                    spawnWaveProfile.enemySpawnProfilesAtDifficulty = new SpawnWaveProfileAtDifficulty[0];
+
+                    RandEnemySpawnProfiles(deterministic, enemySpawnProfiles);
+                    RandAnimationCurve(deterministic, enemySpawnProfiles, spawnWaveProfile);
+                    RandEnemyBuildSites(deterministic, spawnWaveProfile);
+                    AddTokens(deterministic, enemySpawnProfiles, territory);
+
+                    displayThreshold += enemySpawnProfiles.Max(p => p.UnitSpawnData.StartAtDifficulty);
+                    displayThresholdCount++;
+
+                    //spawnWaveProfile.
+                }
+                else
+                {
+                    Plugin.Log.LogWarning($"No SpawnerInfo for {territory.index} - {spawnWaveProfile.name}");
+                }
+            }
+
+            DifficultyBar_BuildDifficultyBar.DisplayThreshold = (displayThreshold / displayThresholdCount);
+
+            Plugin.Log.LogInfo("Loaded random operations");
+            //}
+            //loadFlag = false;
 
             LogInfo();
         }
@@ -408,7 +430,7 @@ namespace WarpipsReplayability.Mod
             }).Select(obj => (uint)obj.GetHashCode()).ToArray();
             if (seed.Length > MTRandom.MAX_SEED_SIZE)
             {
-                Plugin.Log.LogInfo(seed.Length);
+                Plugin.Log.LogInfo("seed.Length: " + seed.Length);
                 uint[] copy = new uint[MTRandom.MAX_SEED_SIZE];
                 for (uint a = 0; a < seed.Length; a++)
                     copy[a % MTRandom.MAX_SEED_SIZE] += seed[a] * (1 + a);
@@ -428,28 +450,36 @@ namespace WarpipsReplayability.Mod
                 float timeBetween = (float)timeBetweenClusters.GetValue(data);
                 float cooldown = (float)cooldownAfterSpawn.GetValue(data);
 
-                delayMin = deterministic.GaussianCapped(delayMin, .13f);
-                delayMax = deterministic.GaussianCapped(delayMax, .13f);
-                timeBetween = deterministic.GaussianCapped(timeBetween, .13f);
-                cooldown = deterministic.GaussianCapped(cooldown, .13f);
+                const float deviation = .13f;
+                delayMin = deterministic.GaussianCapped(delayMin, deviation);
+                delayMax = deterministic.GaussianCapped(delayMax, deviation);
+                if (delayMin < delayMax)
+                    (delayMin, delayMax) = (delayMax, delayMin);
+                timeBetween = deterministic.GaussianCapped(timeBetween, deviation);
+                cooldown = deterministic.GaussianCapped(cooldown, deviation);
 
-                Plugin.Log.LogInfo($"SpawnDelay: {data.SpawnDelay(1):0.0}-{data.SpawnDelay(0):0.0}, TimeBetweenClusters: {data.TimeBetweenClusters:0.00}, CooldownAfterSpawn: {data.CooldownAfterSpawn:0.00}");
+                Plugin.Log.LogInfo($"{p.ReturnTechType().name} SpawnDelay: {data.SpawnDelay(1):0.0}-{data.SpawnDelay(0):0.0}, " +
+                    $"TimeBetweenClusters: {data.TimeBetweenClusters:0.00}, CooldownAfterSpawn: {data.CooldownAfterSpawn:0.00}");
 
                 spawnDelayMin.SetValue(data, delayMin);
                 spawnDelayMax.SetValue(data, delayMax);
                 timeBetweenClusters.SetValue(data, timeBetween);
                 cooldownAfterSpawn.SetValue(data, cooldown);
 
-                Plugin.Log.LogInfo($"SpawnDelay: {data.SpawnDelay(1):0.0}-{data.SpawnDelay(0):0.0}, TimeBetweenClusters: {data.TimeBetweenClusters:0.00}");
+                Plugin.Log.LogInfo($"{p.ReturnTechType().name} SpawnDelay: {data.SpawnDelay(1):0.0}-{data.SpawnDelay(0):0.0}, " +
+                    $"TimeBetweenClusters: {data.TimeBetweenClusters:0.00}, CooldownAfterSpawn: {data.CooldownAfterSpawn:0.00}");
             }
         }
         private static void RandAnimationCurve(MTRandom deterministic, EnemySpawnProfile[] enemySpawnProfiles, SpawnWaveProfile spawnWaveProfile)
         {
+            float duration = deterministic.GaussianOEInt(spawnWaveProfile.RoundDuration, .13f, .13f, 4);
+            roundDuration.SetValue(spawnWaveProfile, duration);
+
             AnimationCurve difficultyCurve = (AnimationCurve)Operations.difficultyCurve.GetValue(spawnWaveProfile);
             float maxStartAtDifficulty = enemySpawnProfiles.Max(p => p.UnitSpawnData.StartAtDifficulty);
             bool fix = maxStartAtDifficulty > difficultyCurve.keys.Max(k => k.value);
             int numKeys = difficultyCurve.keys.Length;
-            int changes = deterministic.GaussianOEInt(2.6 + numKeys / 13.0, .65f, .39f, fix ? 1 : 0);
+            int changes = deterministic.GaussianOEInt(2.6f + numKeys / 13f, .65f, .39f, fix ? 1 : 0);
             Plugin.Log.LogInfo($"key changes {changes} ({fix})");
             var keyEnumerator = Enumerable.Empty<int>().GetEnumerator();
             for (int a = 0; a < changes; a++)
@@ -477,8 +507,8 @@ namespace WarpipsReplayability.Mod
                 }
 
                 //standard deviation for time is in minutes
-                float dev = (.021f + .39f / spawnWaveProfile.RoundDuration) / time;
-                Plugin.Log.LogInfo($"time deviation: {time * dev * spawnWaveProfile.RoundDuration * 60:0.0} ({spawnWaveProfile.RoundDuration:0.0})");
+                float dev = (.021f + .39f / duration) / time;
+                Plugin.Log.LogInfo($"time deviation: {time * dev * duration * 60:0.0} ({duration:0.0})");
                 time = deterministic.GaussianCapped(time, dev);
                 value = .1f + .8f * Mathf.Clamp01(value);
                 if (fix)
@@ -563,7 +593,7 @@ namespace WarpipsReplayability.Mod
         {
             public string techType;
             public List<SpawnerInfo> info = new();
-            public double number, countMin, countMax, capMin, capMax;
+            public float number, countMin, countMax, capMin, capMax;
             public int territories;
 
             public float startAtDifficulty = float.NaN;
@@ -575,7 +605,7 @@ namespace WarpipsReplayability.Mod
                 dev *= dev * .169f;
                 if (avg > .5f)
                     dev *= (1 - avg) / avg;
-                float cap = (float)Math.Max(0, 2 * avg - 1);
+                float cap = Math.Max(0, 2 * avg - 1);
                 startAtDifficulty = Plugin.Rand.GaussianCapped(avg, dev, cap);
                 Plugin.Log.LogInfo($"{techType} startAtDifficulty: {startAtDifficulty:0.00} ({min}-{max}), Gaussian({avg:0.00},{dev:0.000},{cap:0.00})");
             }
