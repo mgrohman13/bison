@@ -1,14 +1,10 @@
-﻿using LevelGeneration;
+﻿using HarmonyLib;
+using LevelGeneration;
 using LevelGeneration.WorldMap;
+using MattUtil;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using MattUtil;
-using GameIO;
-using MonoMod.Utils;
-using HarmonyLib;
-using System.Xml.Linq;
-using UnityEngine.UI;
 using static WarpipsReplayability.Mod.Operations;
 
 namespace WarpipsReplayability.Mod
@@ -167,21 +163,21 @@ namespace WarpipsReplayability.Mod
 
             //note - if you don't fully complete islands, you should capture 32 territories before the final mission (9*3+5)
             //with Math.E bonus, on average this means an additional ~87.0 tech points
-            double bonus = Config.RebalanceTech ? Math.E : 0;
+            float bonus = (float)(Config.RebalanceTech ? Math.E : 0);
 
-            double avg = techReward + bonus, dev = 3.9 / techReward + .052, oe = 1.69 / techReward + .039;
+            float avg = techReward + bonus, dev = 3.9f / techReward + .052f, oe = 1.69f / techReward + .039f;
 
             if (Config.RebalanceTech)
                 if (territory.specialTag == TerritoryInstance.SpecialTag.None)
                 {
                     //multiply the average tech points by the relative number of missions you can complete
                     //since this is only applied to non-special territories, you will still end up with more tech points on easier difficulties
-                    double mult = MissionManagerAsset.GameDifficultyIndex switch
+                    float mult = MissionManagerAsset.GameDifficultyIndex switch
                     {
-                        3 => 9.0 / 12,
-                        1 => 9.0 / 11,
-                        0 => 9.0 / 10,
-                        2 => 9.0 / 9,
+                        3 => 9f / 13,
+                        1 => 9f / 12,
+                        0 => 9f / 10,
+                        2 => 9f / 9,
                         _ => throw new Exception($"Map.MissionManagerAsset.GameDifficultyIndex {MissionManagerAsset.GameDifficultyIndex}"),
                     };
                     Plugin.Log.LogDebug($"GameDifficultyIndex: {MissionManagerAsset.GameDifficultyIndex}, mult: {mult}");
@@ -189,7 +185,7 @@ namespace WarpipsReplayability.Mod
                 }
                 else if (MissionManagerAsset.GameDifficultyIndex != 2)
                 {
-                    //no bonus for non-special territories outside of General difficulty
+                    //no bonus for special territories outside of General difficulty
                     avg -= bonus;
                 }
 
@@ -203,7 +199,7 @@ namespace WarpipsReplayability.Mod
             if (Config.RebalanceTech)
                 for (int a = 0; a < Territories.Length; a++)
                     if (Territories[a].specialTag == TerritoryInstance.SpecialTag.None)
-                        Persist.Instance.TechRewards[a] = Plugin.Rand.Round(Persist.Instance.TechRewards[a] / 3);
+                        Persist.Instance.TechRewards[a] = Plugin.Rand.Round(Persist.Instance.TechRewards[a] / 3f);
 
             LoadTechRewards();
             Persist.SaveCurrent();
@@ -218,10 +214,17 @@ namespace WarpipsReplayability.Mod
 
             int numEdges = CountEdges(graph.Edges);
             //sever roughly half the extra edges, still ensuring a fully connected graph 
-            double avg = (numEdges + count - Math.PI) / 2.0;
+            float avg = (numEdges + count - 3f) / 2f;
             //int min = Math.Max((int)Math.Ceiling(2 * avg - numEdges), count - 1);
-            //Plugin.Log.LogInfo($"GaussianCappedInt {avg}, .065, {min}");
-            int target = Plugin.Rand.GaussianCappedInt(avg, .065, count - 1);
+            //Plugin.Log.LogInfo($"GaussianCappedInt {avg}, .065, {min}"); 
+
+            if (avg < count - 1)
+            {
+                Plugin.Log.LogError($"OriginalConnections did not restore properly ({numEdges} {avg} {count - 1})");
+                return graph;
+            }
+
+            int target = Plugin.Rand.GaussianCappedInt(avg, .065f, count - 1);
             //target = numEdges;
             Plugin.Log.LogInfo($"{numEdges} edges, target {target} (avg {avg:0.0})");
 
@@ -368,8 +371,7 @@ namespace WarpipsReplayability.Mod
 
         private static void GenerateConnections(GraphInfo graph)
         {
-            if (MissionManagerAsset.WorldMapIndex == (ForceWorldMapIndex ?? 0))
-                SetOriginalConnections();
+            SetOriginalConnections();
 
             int count = WorldMapAsset.TerritoryConnections.Count;
             WorldMapAsset.TerritoryConnections.Clear();
@@ -390,12 +392,15 @@ namespace WarpipsReplayability.Mod
 
         private static void SetOriginalConnections()
         {
-            OriginalConnections = WorldMapAsset.TerritoryConnections
-                .Select(c => new WorldMapAsset.TerritoryConnection()
-                {
-                    connection = c.connection.ToList()
-                }).ToList();
-            Plugin.Log.LogInfo($"OriginalConnections {OriginalConnections.Count}");
+            if (OriginalConnections == null)
+            {
+                OriginalConnections = WorldMapAsset.TerritoryConnections
+                    .Select(c => new WorldMapAsset.TerritoryConnection()
+                    {
+                        connection = c.connection.ToList()
+                    }).ToList();
+                Plugin.Log.LogInfo($"OriginalConnections {OriginalConnections.Sum(c => c.connection.Count)}");
+            }
         }
 
         private static GraphInfo GetEdges(TerritoryInstance[] territories)
