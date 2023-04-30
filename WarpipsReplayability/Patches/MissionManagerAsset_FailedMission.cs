@@ -26,7 +26,7 @@ namespace WarpipsReplayability.Patches
 
                 __state = ___gameDifficultyIndex.Value;
                 //ensure ConsumeItemsOnHotbar is always called
-                ___gameDifficultyIndex.Value = -1;
+                ___gameDifficultyIndex.Value = 2;
             }
             catch (Exception e)
             {
@@ -37,8 +37,9 @@ namespace WarpipsReplayability.Patches
         {
             try
             {
-                ___gameDifficultyIndex.Value = __state;
                 Plugin.Log.LogDebug("MissionManagerAsset_FailedMission Postfix");
+
+                ___gameDifficultyIndex.Value = __state;
             }
             catch (Exception e)
             {
