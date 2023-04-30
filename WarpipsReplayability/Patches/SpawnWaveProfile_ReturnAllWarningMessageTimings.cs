@@ -32,7 +32,8 @@ namespace WarpipsReplayability.Patches
 
                 IEnumerable<EnemySpawnProfile> profiles = __instance.enemySpawnProfiles.Cast<EnemySpawnProfile>();
                 float warningDifficulty = profiles.Max(p => p.UnitSpawnData.StartAtDifficulty);
-                if (warningDifficulty > DifficultyBar_BuildDifficultyBar.DisplayThreshold)
+                float displayThreshold = DifficultyBar_BuildDifficultyBar.DisplayThreshold;
+                if (warningDifficulty > displayThreshold)
                 {
                     uint[] seed = profiles.Select(p => p.UnitSpawnData).SelectMany(d =>
                         new object[] { d.CooldownAfterSpawn, d.SpawnCapCycleMultipler, d.StartAtDifficulty, d.TimeBetweenClusters })
@@ -48,14 +49,19 @@ namespace WarpipsReplayability.Patches
                         bool cur = (k.value > warningDifficulty);
                         if (!prev && cur)
                         {
-                            float result = k.time, eval;
+                            float min = prevTime, max = k.time, result;
                             do
                             {
-                                result = Mathf.Lerp(prevTime, result, temp.FloatHalf());
-                                eval = difficultyCurve.Evaluate(result);
-                            }
-                            while (eval > warningDifficulty && result > prevTime);
-                            if (eval > warningDifficulty)
+                                result = Mathf.Lerp(min, max, temp.FloatHalf());
+                                float eval = difficultyCurve.Evaluate(result);
+                                if (eval > warningDifficulty)
+                                    max = result;
+                                else if (eval < displayThreshold)
+                                    min = result;
+                                else
+                                    break;
+                            } while (max > min);
+                            if (max <= min)
                                 Plugin.Log.LogWarning($"setting alert to {result}");
                             Plugin.Log.LogInfo($"alert {prevTime:0.000}-{k.time:0.000}: {result:0.000}");
                             __result.Add(result);

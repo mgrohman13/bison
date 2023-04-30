@@ -12,6 +12,8 @@ using DynamicEnums;
 using UnityEngine;
 using System.Reflection;
 using System.Collections;
+using System.Xml.Linq;
+using MattUtil.RealTimeGame;
 
 namespace WarpipsReplayability.Patches
 {
@@ -23,49 +25,30 @@ namespace WarpipsReplayability.Patches
         {
             DisplayThreshold = float.NaN;
         }
-
         public static float DisplayThreshold
         {
             get;
             set;
         }
 
-        public static bool Prefix(Texture2D ___barTexture, Transform ___warningHolder, SpawnWaveProfile waveProfile)
+        public static bool Prefix(Texture2D ___barTexture, Transform ___warningHolder, SpawnWaveProfile waveProfile, ref List<GameObject> ___bombIndicatorPrefabs)
         {
             bool showBar = true;
             try
             {
                 Plugin.Log.LogDebug("DifficultyBar_BuildDifficultyBar Prefix");
 
-                //float max = 0f;
-                //int width = ___barTexture.width;
-                //for (int i = 0; i < width; i++)
-                //{
-                //    float timeScalar = Mathf.Clamp01(((float)i) / ((float)width));
-                //    float num7 = waveProfile.ReturnDifficultyAtNormalizedTime(timeScalar);
-                //    max = Math.Max(max, num7);
-                //}
-                //Plugin.Log.LogInfo("max difficulty: " + max);
+                //copy the HotbarDifficultyIndicatorController bombIndicatorPrefabs to OperationDetailsController
+                //this way you can see bombs on the island map
+                ManageBombIndicatorPrefabs(ref ___bombIndicatorPrefabs);
 
                 showBar = Operations.ShowEnemies();
                 if (showBar)
                 {
-                    BuildDifficultyBar(waveProfile);
-                    //if (Config.DifficultMode)
-                    //{
+                    //BuildDifficultyBar(waveProfile); 
                     Plugin.Log.LogInfo($"displayThreshold: {waveProfile.DisplayThreshold} -> {DisplayThreshold}");
-                    //normalize the display threshold so the relative difficulty of different missions is more apparent
-                    //float displayThreshold = displayThreshold;
-                    //Map.MissionManagerAsset.WorldMapIndex switch
-                    //{
-                    //    0 => .40f,
-                    //    1 => .50f,
-                    //    2 => .75f,
-                    //    3 => .90f,
-                    //    _ => throw new Exception()
-                    //};
+                    //normalize the display threshold so the relative difficulty of different missions is more apparent 
                     AccessTools.Field(typeof(SpawnWaveProfile), "displayThreshold").SetValue(waveProfile, DisplayThreshold);
-                    //}
                 }
                 else
                 {
@@ -85,9 +68,32 @@ namespace WarpipsReplayability.Patches
             return showBar;
         }
 
-        public static void BuildDifficultyBar(SpawnWaveProfile waveProfile)
+        private static List<GameObject> bombIndicatorPrefabs;
+        private static void ManageBombIndicatorPrefabs(ref List<GameObject> ___bombIndicatorPrefabs)
         {
+            List<GameObject> bombs = ___bombIndicatorPrefabs;
+            if (bombIndicatorPrefabs == null && bombs != null && bombs.Any() && bombs.All(b => b != null))
+            {
+                Plugin.Log.LogInfo("storing off bombIndicatorPrefabs");
+                Plugin.Log.LogInfo($"{SpawnWaveProfile.BombTimings.Aggregate("", (a, b) => a + " " + b)}");
+                bombIndicatorPrefabs = bombs.ToList();
+            }
+            else if (bombIndicatorPrefabs != null)
+            {
+                Plugin.Log.LogInfo("placing bombIndicatorPrefabs");
+                bombs = bombIndicatorPrefabs.Select(b => GameObject.Instantiate(b)).ToList();
+                foreach (var b in bombs)
+                {
+                    const float scale = -.5f;
+                    b.transform.localScale += new Vector3(scale, scale, scale);
+                }
+                ___bombIndicatorPrefabs = bombs;
+            }
         }
+
+        //public static void BuildDifficultyBar(SpawnWaveProfile waveProfile)
+        //{
+        //}
 
         //public static void BuildDifficultyBar(SpawnWaveProfile waveProfile)
         //{
