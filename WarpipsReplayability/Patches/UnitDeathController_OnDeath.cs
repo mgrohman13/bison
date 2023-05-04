@@ -44,7 +44,7 @@ namespace WarpipsReplayability.Patches
                 ////{
                 //float exp = __state * mult;
                 //___statController.UnitData.xpBaseOnKill = Plugin.Rand.GaussianCapped(exp, .1f / exp, .1f);
-                ////___statController.UnitData.xpBaseOnKill = Plugin.Rand.GaussianOE(exp, .13f / (float)Math.Sqrt(exp), 0.052f / exp, .05f);
+                ////___statController.UnitData.xpBaseOnKill = Plugin.Rand.GaussianOE(exp, .13f / (float)Math.Sqrt(exp), .052f / exp, .05f);
                 ////}
                 ////}
             }

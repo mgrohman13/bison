@@ -42,7 +42,7 @@ namespace WarpipsReplayability.Patches
                     inc = value - __state;
                 };
 
-                if (inc > 0.06875 && (__instance.WorldMapIndex == 3))// || __instance.WorldMapIndex == 0))
+                if (inc > .06875 && (__instance.WorldMapIndex == 3))// || __instance.WorldMapIndex == 0))
                 {
                     ___worldMapDifficultyMultipler.Value = value - inc / 2f;
                     Calc();
