@@ -75,7 +75,7 @@ namespace WarpipsReplayability.Patches
                 bombs = bombIndicatorPrefabs.Select(b => GameObject.Instantiate(b)).ToList();
                 foreach (var b in bombs)
                 {
-                    const float scale = -.5f;
+                    const float scale = -1 / 3f;
                     b.transform.localScale += new Vector3(scale, scale, scale);
                 }
                 ___bombIndicatorPrefabs = bombs;
