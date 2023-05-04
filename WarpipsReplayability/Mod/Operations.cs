@@ -31,6 +31,9 @@ namespace WarpipsReplayability.Mod
         private static readonly FieldInfo difficultyCurve = AccessTools.Field(typeof(SpawnWaveProfile), "difficultyCurve");
         private static readonly FieldInfo roundDuration = AccessTools.Field(typeof(SpawnWaveProfile), "roundDuration");
 
+        //especially impactful tech types, in order of impact
+        private static readonly string[] heroTypes = new string[] { "Hind", "Bubba", "Rocket", "Predator", "Tanya" };
+
         public static bool[] RollHiddenRewards()
         {
             var hiddenRewards = Map.Territories.SelectMany(t =>
@@ -165,9 +168,9 @@ namespace WarpipsReplayability.Mod
         {
             SpawnWaveProfile spawnWaveProfile = territory.operation.spawnWaveProfile;
 
-            ////we need to know the highest difficultyCurve values to ensure we only select units that can actually spawn
-            //AnimationCurve difficultyCurve = (AnimationCurve)Operations.difficultyCurve.GetValue(spawnWaveProfile);
-            //float maxDifficulty = difficultyCurve.keys.Max(k => k.value);
+            ////we need to know the highest curve values to ensure we only select units that can actually spawn
+            //AnimationCurve curve = (AnimationCurve)Operations.curve.GetValue(spawnWaveProfile);
+            //float maxDifficulty = curve.curve.keys.Max(k => k.value);
             //Plugin.Log.LogInfo("maxDifficulty: " + maxDifficulty);
 
             //only select units that can actually spawn with this difficulty curve
@@ -178,9 +181,6 @@ namespace WarpipsReplayability.Mod
                 s.GenStartAtDifficulty();
 
             CountTechTypes(spawnWaveProfile, territory.specialTag, spawnAverages.Count, out int spawnTechs, out int totalTechs);
-
-            //especially impactful tech types, in order of impact
-            string[] heroTypes = new string[] { "Hind", "Bubba", "Rocket", "Predator", "Tanya" };
 
             //keep techTypes distinct
             HashSet<string> techTypes = new();
@@ -366,12 +366,8 @@ namespace WarpipsReplayability.Mod
                 spawnAverages.Where(predicate).ToDictionary(p => p.Key, p => p.Value);
         }
 
-        //// operations only need to be reloaded if the application was restarted, otherwise it persists
-        //private static bool loadFlag = true;
-        public static void Load(SpawnerInfo[] save)//, bool force = false)
+        public static void Load(SpawnerInfo[] save)
         {
-            //if (loadFlag || force)
-            //{
             //seed a deterministic PRNG so we can procedurally randomize some additional things in here
             //without having to store every single detail in our save file
             MTRandom deterministic = new(GenerateSeed(save));
@@ -403,10 +399,8 @@ namespace WarpipsReplayability.Mod
                     RandEnemyBuildSites(deterministic, spawnWaveProfile);
                     AddTokens(deterministic, enemySpawnProfiles, territory);
 
-                    displayThreshold += enemySpawnProfiles.Max(p => p.UnitSpawnData.StartAtDifficulty);
+                    displayThreshold += MaxStartAtDifficulty(enemySpawnProfiles);
                     displayThresholdCount++;
-
-                    //spawnWaveProfile.
                 }
                 else
                 {
@@ -414,14 +408,12 @@ namespace WarpipsReplayability.Mod
                 }
             }
 
-            DifficultyBar_BuildDifficultyBar.DisplayThreshold = (displayThreshold / displayThresholdCount);
+            DifficultyBar_BuildDifficultyBar.DisplayThreshold = (float)Math.Sqrt(displayThreshold / displayThresholdCount) * .9f;
 
             Plugin.Log.LogInfo("Loaded random operations");
-            //}
-            //loadFlag = false;
-
             LogInfo();
         }
+
         private static uint[] GenerateSeed(SpawnerInfo[] save)
         {
             uint[] seed = save.SelectMany(info => new object[] {
@@ -470,47 +462,175 @@ namespace WarpipsReplayability.Mod
                     $"TimeBetweenClusters: {data.TimeBetweenClusters:0.00}, CooldownAfterSpawn: {data.CooldownAfterSpawn:0.00}");
             }
         }
+
         private static void RandAnimationCurve(MTRandom deterministic, EnemySpawnProfile[] enemySpawnProfiles, SpawnWaveProfile spawnWaveProfile)
         {
+            AnimationCurve curve = (AnimationCurve)Operations.difficultyCurve.GetValue(spawnWaveProfile);
             float duration = deterministic.GaussianOEInt(spawnWaveProfile.RoundDuration, .13f, .13f, 4);
             roundDuration.SetValue(spawnWaveProfile, duration);
+            float maxStartAtDifficulty = MaxStartAtDifficulty(enemySpawnProfiles);
+            Plugin.Log.LogInfo($"maxStartAtDifficulty {maxStartAtDifficulty:0.000}");
 
-            AnimationCurve difficultyCurve = (AnimationCurve)Operations.difficultyCurve.GetValue(spawnWaveProfile);
-            float maxStartAtDifficulty = enemySpawnProfiles.Max(p => p.UnitSpawnData.StartAtDifficulty);
-            bool fix = maxStartAtDifficulty > difficultyCurve.keys.Max(k => k.value);
-            int numKeys = difficultyCurve.keys.Length;
-            int changes = deterministic.GaussianOEInt(2.6f + numKeys / 13f, .65f, .39f, fix ? 1 : 0);
+            RandKeys(deterministic, curve, duration, maxStartAtDifficulty);
+            IncreaseMax(deterministic, curve);
+            EasyEarly(deterministic, curve, duration);
+            if (spawnWaveProfile.bombsOnCycle == 0)
+                BombGap(deterministic, curve, duration);
+            EnsureSpawn(deterministic, curve, duration, maxStartAtDifficulty);
+            TaperEnd(deterministic, curve);
+
+            foreach (var k in curve.keys)
+                Plugin.Log.LogInfo($"{k.time:0.000}:{k.value:0.000}");
+            Plugin.Log.LogInfo(curve.Evaluate(1).ToString("0.000"));
+        }
+        private static void RandKeys(MTRandom deterministic, AnimationCurve curve, float duration, float maxStartAtDifficulty)
+        {
+            //randomize some curve.keys  
+            float maxDifficultyCurve = GetMaxKey(curve);
+            int lowerCap = maxStartAtDifficulty > maxDifficultyCurve ? 1 : 0;
+            int changes = deterministic.GaussianOEInt(Math.PI + curve.keys.Length / 13f, .65f, .39f, lowerCap);
+            RandKeys(deterministic, curve, duration, maxStartAtDifficulty, changes);
+        }
+        private static void IncreaseMax(MTRandom deterministic, AnimationCurve curve)
+        {
+            //increase max key to a high value
+            int maxKey = -1;
+            float maxValue = -1f;
+            foreach (int a in deterministic.Iterate(curve.keys.Length))
+            {
+                float value = curve.keys[a].value;
+                if (maxValue < value)
+                {
+                    maxKey = a;
+                    maxValue = value;
+                }
+            }
+            Keyframe max = curve.keys[maxKey];
+            max.value = deterministic.Weighted(.9f + .1f * Mathf.Clamp01(maxValue));
+            Plugin.Log.LogInfo($"max key {maxKey} {max.time:0.000}:{maxValue:0.000} -> {max.value:0.000}");
+            curve.MoveKey(maxKey, max);
+        }
+        private static void EasyEarly(MTRandom deterministic, AnimationCurve curve, float duration)
+        {
+            //typically don't ramp up too high by 1 minute mark
+            float oneMinute = deterministic.GaussianCapped(1f / duration, .13f);
+            for (int a = 1; a < curve.keys.Length && deterministic.Bool(); a++)
+            {
+                Keyframe key = ReduceKey(deterministic, curve, a, curve.keys[a], "early");
+                if (key.time > oneMinute)
+                    break;
+            }
+        }
+        private static void BombGap(MTRandom deterministic, AnimationCurve curve, float duration)
+        {
+            //if bombs present, ensure there is a gap of weakness somewhere 
+            int numKeys = curve.keys.Length;
+            float center = curve.keys[Math.Max(GetIdx(), GetIdx())].time;
+            float span = deterministic.GaussianCapped(2f / duration, .13f);
+            float before = span;
+            float after = deterministic.DoubleHalf(before);
+            before -= after;
+            before = center - before;
+            after = center + after;
+
+            float oneMinute = deterministic.GaussianCapped(1f / duration, .13f);
+            Plugin.Log.LogInfo($"bomb gap {before:0.000}-{after:0.000} ({center:0.000}, {span:0.000}, {oneMinute:0.000})");
+            if (before < oneMinute)
+            {
+                after += oneMinute - before;
+                before = oneMinute;
+                Plugin.Log.LogInfo($"bomb gap oneMinute {before:0.000}-{after:0.000}");
+            }
+            if (after > 1)
+            {
+                before -= after - 1;
+                after = 1;
+                Plugin.Log.LogInfo($"bomb gap 1 {before:0.000}-{after:0.000}");
+            }
+
+            for (int a = 1; a < numKeys; a++)
+            {
+                Keyframe key = curve.keys[a];
+                float time = key.time;
+                if (time > after)
+                    break;
+                if (time > before)
+                    ReduceKey(deterministic, curve, a, key, "bomb");
+            }
+
+            int GetIdx() => 2 + deterministic.Next(numKeys - 2);
+        }
+        private static void EnsureSpawn(MTRandom deterministic, AnimationCurve curve, float duration, float maxStartAtDifficulty)
+        {
+            //apply final fix if necessary so all units can spawn 
+            float maxDifficultyCurve = GetMaxKey(curve);
+            if (maxStartAtDifficulty > maxDifficultyCurve)
+                RandKeys(deterministic, curve, duration, maxStartAtDifficulty, 1);
+        }
+        private static void TaperEnd(MTRandom deterministic, AnimationCurve curve)
+        {
+            //ensure a key at time >= 1 
+            if (curve.keys[curve.keys.Length - 1].time < 1)
+            {
+                Plugin.Log.LogInfo("inserting key > 1");
+                Keyframe newKey = deterministic.SelectValue(curve.keys);
+                newKey.time = 1 + deterministic.Weighted(.1f);
+                newKey.value = 0;
+                curve.AddKey(newKey);
+            }
+        }
+        private static Keyframe ReduceKey(MTRandom deterministic, AnimationCurve curve, int index, Keyframe key, string log)
+        {
+            float value = key.value;
+            key.value = deterministic.Weighted(.5f * Mathf.Clamp01(value));
+            Plugin.Log.LogInfo($"{log} key {index} {key.time:0.000}:{value:0.000} -> {key.value:0.000}");
+            curve.MoveKey(index, key);
+            return key;
+        }
+        private static void RandKeys(MTRandom deterministic, AnimationCurve curve, float duration, float maxStartAtDifficulty, int changes)
+        {
+            bool fix = maxStartAtDifficulty > GetMaxKey(curve);
+
             Plugin.Log.LogInfo($"key changes {changes} ({fix})");
             var keyEnumerator = Enumerable.Empty<int>().GetEnumerator();
             for (int a = 0; a < changes; a++)
             {
+                int numKeys = curve.keys.Length;
                 do
                 {
                     Plugin.Log.LogInfo("MoveNext");
                     if (!keyEnumerator.MoveNext())
                     {
                         Plugin.Log.LogInfo("Iterate");
-                        keyEnumerator = deterministic.Iterate(numKeys).GetEnumerator();
+                        keyEnumerator = deterministic.Iterate(numKeys + 1).GetEnumerator();
                     }
                 }
-                while (deterministic.Next(numKeys) >= keyEnumerator.Current);
+                while (keyEnumerator.Current >= numKeys || keyEnumerator.Current <= deterministic.Next(numKeys + 1));
                 int b = keyEnumerator.Current;
 
-                Keyframe key = difficultyCurve.keys[b];
+                Keyframe key = curve.keys[b];
                 float time = key.time;
                 float value = key.value;
-                if (!fix && value > maxStartAtDifficulty && difficultyCurve.keys.Count(k => k.value > maxStartAtDifficulty) < 2)
+                if (!fix && value > maxStartAtDifficulty && curve.keys.Count(k => k.value > maxStartAtDifficulty) < 2)
                 {
                     //ensure we don't lower the only key above the maxStartAtDifficulty
                     Plugin.Log.LogInfo("triggering fix");
                     fix = true;
                 }
 
+                //chance to delete key entirely
+                if (!fix && deterministic.OEInt(deterministic.Next(numKeys - 3)) > 13)
+                {
+                    Plugin.Log.LogInfo($"RemoveKey {b} {time:0.000}:{value:0.000}");
+                    curve.RemoveKey(b);
+                    continue;
+                }
+
                 //standard deviation for time is in minutes
                 float dev = (.021f + .39f / duration) / time;
                 Plugin.Log.LogInfo($"time deviation: {time * dev * duration * 60:0.0} ({duration:0.0})");
                 time = deterministic.GaussianCapped(time, dev);
-                value = .1f + .8f * Mathf.Clamp01(value);
+                value = Clamp19(value);
                 if (fix)
                     value = maxStartAtDifficulty + deterministic.Weighted(1 - maxStartAtDifficulty, value);
                 else
@@ -523,25 +643,26 @@ namespace WarpipsReplayability.Mod
                 if (deterministic.Bool())
                     fix = false;
 
-                difficultyCurve.RemoveKey(b);
-                difficultyCurve.AddKey(key);
-
-                //TODO: add/remove keys?
+                //chance to duplicate modified key at random time
+                if (deterministic.Next(numKeys) < deterministic.OEInt())
+                {
+                    key.time = deterministic.Weighted(Clamp19(key.time));
+                    Plugin.Log.LogInfo($"AddKey {key.time:0.000}:{key.value:0.000}");
+                }
+                else
+                {
+                    curve.RemoveKey(b);
+                }
+                curve.AddKey(key);
             }
-
-            if (difficultyCurve.keys[difficultyCurve.keys.Length - 1].time < 1)
-            {
-                Plugin.Log.LogInfo("inserting key > 1");
-                Keyframe newKey = deterministic.SelectValue(difficultyCurve.keys);
-                newKey.time = 1 + deterministic.Weighted(.026f);
-                newKey.value = 0;
-                difficultyCurve.AddKey(newKey);
-            }
-
-            foreach (var k in difficultyCurve.keys)
-                Plugin.Log.LogInfo($"{k.time:0.000}:{k.value:0.000}");
-            Plugin.Log.LogInfo(difficultyCurve.Evaluate(1).ToString("0.000"));
         }
+        private static float Clamp19(float value) =>
+            .1f + .8f * Mathf.Clamp01(value);
+        private static float MaxStartAtDifficulty(EnemySpawnProfile[] enemySpawnProfiles) =>
+            enemySpawnProfiles.Max(p => p.UnitSpawnData.StartAtDifficulty);
+        private static float GetMaxKey(AnimationCurve curve) =>
+            curve.keys.Max(k => k.value);
+
         private static void RandEnemyBuildSites(MTRandom deterministic, SpawnWaveProfile spawnWaveProfile)
         {
             //randomize build site display order (end of list may wind up getting cut off in display panel) 
@@ -601,13 +722,30 @@ namespace WarpipsReplayability.Mod
             {
                 DifficultyRange(out float min, out float max);
                 float avg = Plugin.Rand.Range(min, max);
-                float dev = (1f - max + min);
-                dev *= dev * .169f;
-                if (avg > .5f)
-                    dev *= (1 - avg) / avg;
-                float cap = Math.Max(0, 2 * avg - 1);
-                startAtDifficulty = Plugin.Rand.GaussianCapped(avg, dev, cap);
-                Plugin.Log.LogInfo($"{techType} startAtDifficulty: {startAtDifficulty:0.00} ({min}-{max}), Gaussian({avg:0.00},{dev:0.000},{cap:0.00})");
+                //if ((Array.IndexOf(heroTypes, techType) < 0 || min < .5) && Plugin.Rand.Next(26) == 0)
+                //{
+                //    startAtDifficulty = Plugin.Rand.Weighted(avg);
+                //    Plugin.Log.LogInfo($"{techType} startAtDifficulty: {startAtDifficulty:0.00} ({min:0.00}-{max:0.00}), Weighted({avg:0.00})");
+                //}
+                if (Plugin.Rand.Next(21) == 0)
+                {
+                    //rare chance to allow full range of startAtDifficulty values (except for heroTypes which enforce a minimum)
+                    int heroIdx = Array.IndexOf(heroTypes, techType);
+                    float range = heroIdx < 0 ? 1 : (heroIdx + 1) / (heroTypes.Length + 1f);
+                    avg *= range;
+                    startAtDifficulty = (1 - range) + Plugin.Rand.Weighted(range, avg);
+                    Plugin.Log.LogInfo($"{techType} startAtDifficulty: {startAtDifficulty:0.000} ({min:0.00}-{max:0.00}), {1 - range:0.00}+Weighted({range:0.00},{avg:0.00})");
+                }
+                else
+                {
+                    float dev = (1f - max + min);
+                    dev *= dev * .169f;
+                    if (avg > .5f)
+                        dev *= (1 - avg) / avg;
+                    float cap = Math.Max(0, 2 * avg - 1);
+                    startAtDifficulty = Plugin.Rand.GaussianCapped(avg, dev, cap);
+                    Plugin.Log.LogInfo($"{techType} startAtDifficulty: {startAtDifficulty:0.00} ({min:0.00}-{max:0.00}), Gaussian({avg:0.00},{dev:0.000},{cap:0.00})");
+                }
             }
 
             public void DifficultyRange(out float min, out float max)
