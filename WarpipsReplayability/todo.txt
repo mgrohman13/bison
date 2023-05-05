@@ -1,34 +1,20 @@
-pi
 update screenshots
 add marathon mode option?
 	reduce all tech points, reduce worldMapDifficultyMultipler
 test TerritoryInstance.blocked
-difficulty modifier for things ive made constant?
-	starting cash?
-	lives
-	starting tokens
-bug - after multiple cycles in a mission, shows stronger bar on next operation
-	use ignoreCycleDifficulty?
-bombIndicatorPrefabs dont appear immediately after load
-	serialize?
+difficulty modifier for things ive constant
+show bombs on island map difficulty bar
+	bombIndicatorPrefabs dont appear immediately after load
+	serialize? figure out how to load resource...
 
 mess with spawning, true mission randomness
 	other SpawnerData properties
 		cycle stuff
 		cycle difficulty increase?
-	difficulty bar
-		difficultyCurve tangents??
-		CycleDifficultyMultipler logic should use new combination algorithm 
-		show bombs on island map difficulty bar
-		add/remove keys?
+	difficultyCurve tangents??
 	rand bombs?		
 		bombsOnCycle
-	rand enemyBuildSites?
-		limit total to 10? keep some defences being cut off? order in certain way?
-	starting new game without exiting game
-		fixed?
-		test build sites
-		test tokens
+		will need to revisit ManageBombIndicatorPrefabs
 	correlate difficulty with tech pts?
 		increase tech pts bonus more? - can be less choosy about territories now
 	use difficult mode xp tweak? but not spawn increase
@@ -38,11 +24,8 @@ mess with spawning, true mission randomness
 	starting cash??
 	not enough lives?
 		ensure more new lives always reachable?
-	tough missions give more combat coupons?
-		adding too many token rewards?
 	difficultmode?
 	final map missions w/ extra lives harder?
-	randomize difficulty curve on loss?
 
 incl all territies in tech decrease, but cap at 20?
 revisit reward upper limit outside difficult mode
@@ -51,29 +34,24 @@ start missions with 0 points, but more supply?
 rebalance enemy unit XP?
 	rand xpModifierPerUpgrade: 2, xpModifierPerTier: 3, xpModifierOnKill: 10?
 randomize worldMapDifficultyMultipler?
-	make easier difficulties 11, 12 territories (instead of 12, 13)?
-OriginalConnections still has bug.... 
 	
 balancing
-	game too hard!
-		first island harder, later (which?) easier
-		nerf 1.5, 2 mults?
-	post process difficulty curve
-		avoid toughest units in first minute?
-		bombs 
-			ensure end winds down
-		guarantee dip < .1
-		guarantee curve peak > .9
-	order startAtDifficulty
+	order startAtDifficulty?
 		guarnatee toughest unit above threshold - only if certain units?
 		problems 
 			hind < rocket < predator
 			Gruz 0.8 upper
 			T92  0.4 lower
-	after loss, re-randomize difficulty curve?
-		save, load as separate post-apply step
 
-mess with constants
-	# edges reduction
-	war bucks
-	difficultyCurve avg modifications
+before next release:
+
+rand enemyBuildSites
+	limit total to 10? keep some defences being cut off? order in certain way?
+	always show howitzer?
+randomize difficulty curve on loss
+OriginalConnections still has bug.... 
+after loss, re-randomize difficulty curve?
+	save, load as separate post-apply step
+easy early too frequent? too easy?
+	consider map size for easy early?
+dont consider >1 keys for max or startAtDifficulty fix
