@@ -488,7 +488,7 @@ namespace WarpipsReplayability.Mod
             //randomize some curve.keys  
             float maxDifficultyCurve = GetMaxKey(curve);
             int lowerCap = maxStartAtDifficulty > maxDifficultyCurve ? 1 : 0;
-            int changes = deterministic.GaussianOEInt(Math.PI + curve.keys.Length / 13f, .65f, .39f, lowerCap);
+            int changes = deterministic.GaussianOEInt(Math.E + curve.keys.Length / 13f, .65f, .39f, lowerCap);
             RandKeys(deterministic, curve, duration, maxStartAtDifficulty, changes);
         }
         private static void IncreaseMax(MTRandom deterministic, AnimationCurve curve)

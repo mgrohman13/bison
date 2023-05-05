@@ -162,31 +162,33 @@ namespace WarpipsReplayability.Mod
                 Plugin.Log.LogError($"techReward already randomized {techReward}");
 
             //note - if you don't fully complete islands, you should capture 32 territories before the final mission (9*3+5)
-            //with Math.E bonus, on average this means an additional ~87.0 tech points
-            float bonus = (float)Math.E;// (float)(Config.RebalanceTech ? Math.E : 0);
+            //with Math.PI bonus, on average this means an additional ~100.5 tech points
+            float bonus = (float)Math.PI;// (float)(Config.RebalanceTech ? Math.E : 0);
 
             float avg = techReward + bonus, dev = 3.9f / techReward + .052f, oe = 1.69f / techReward + .039f;
+
+            //multiply the average tech points by the relative number of missions you can complete
+            //since this is only applied to non-special territories, you will still end up with more tech points on easier difficulties
+            //but this allows me to give more for General but avoid leaving you swimming in tech points on easier 
+            float mult = MissionManagerAsset.GameDifficultyIndex switch
+            {
+                3 => 8f / 11,
+                1 => 8f / 10,
+                0 => 8f / 9,
+                2 => 8f / 8,
+                _ => throw new Exception($"Map.MissionManagerAsset.GameDifficultyIndex {MissionManagerAsset.GameDifficultyIndex}"),
+            };
 
             //if (Config.RebalanceTech)
             if (territory.specialTag == TerritoryInstance.SpecialTag.None)
             {
-                //multiply the average tech points by the relative number of missions you can complete
-                //since this is only applied to non-special territories, you will still end up with more tech points on easier difficulties
-                float mult = MissionManagerAsset.GameDifficultyIndex switch
-                {
-                    3 => 8f / 11,
-                    1 => 8f / 10,
-                    0 => 8f / 9,
-                    2 => 8f / 8,
-                    _ => throw new Exception($"Map.MissionManagerAsset.GameDifficultyIndex {MissionManagerAsset.GameDifficultyIndex}"),
-                };
                 Plugin.Log.LogDebug($"GameDifficultyIndex: {MissionManagerAsset.GameDifficultyIndex}, mult: {mult}");
                 avg *= mult;
             }
-            else if (MissionManagerAsset.GameDifficultyIndex != 2)
+            else //if (MissionManagerAsset.GameDifficultyIndex != 2)
             {
-                //no bonus for special territories outside of General difficulty
-                avg -= bonus;
+                //special territories only have the bonus reduced, not the full amount
+                avg += bonus * (mult * mult - 1);
             }
 
             if (techReward >= 5)
