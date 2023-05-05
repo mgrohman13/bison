@@ -22,16 +22,19 @@ namespace WarpipsReplayability.Patches
             set;
         }
 
-        public static bool Prefix(Texture2D ___barTexture, Transform ___warningHolder, SpawnWaveProfile waveProfile, ref List<GameObject> ___bombIndicatorPrefabs)
+        public static bool Prefix(Texture2D ___barTexture, Transform ___warningHolder, SpawnWaveProfile waveProfile, ref List<GameObject> ___bombIndicatorPrefabs, ref bool ___ignoreCycleDifficulty)
         {
             bool showBar = true;
             try
             {
                 Plugin.Log.LogDebug("DifficultyBar_BuildDifficultyBar Prefix");
 
-                //copy the HotbarDifficultyIndicatorController bombIndicatorPrefabs to OperationDetailsController
-                //this way you can see bombs on the island map
-                ManageBombIndicatorPrefabs(ref ___bombIndicatorPrefabs);
+                ////copy the HotbarDifficultyIndicatorController bombIndicatorPrefabs to OperationDetailsController
+                ////this way you can see bombs on the island map
+                //ManageBombIndicatorPrefabs(ref ___bombIndicatorPrefabs);
+
+                //if (___bombIndicatorPrefabs == null)
+                ___ignoreCycleDifficulty = true;
 
                 showBar = Operations.ShowEnemies();
                 if (showBar)
@@ -59,28 +62,30 @@ namespace WarpipsReplayability.Patches
             return showBar;
         }
 
-        private static List<GameObject> bombIndicatorPrefabs;
-        private static void ManageBombIndicatorPrefabs(ref List<GameObject> ___bombIndicatorPrefabs)
-        {
-            List<GameObject> bombs = ___bombIndicatorPrefabs;
-            if (bombIndicatorPrefabs == null && bombs != null && bombs.Any() && bombs.All(b => b != null))
-            {
-                Plugin.Log.LogInfo("storing off bombIndicatorPrefabs");
-                Plugin.Log.LogInfo($"{SpawnWaveProfile.BombTimings.Aggregate("", (a, b) => a + " " + b)}");
-                bombIndicatorPrefabs = bombs.ToList();
-            }
-            else if (bombIndicatorPrefabs != null)
-            {
-                Plugin.Log.LogInfo("placing bombIndicatorPrefabs");
-                bombs = bombIndicatorPrefabs.Select(b => GameObject.Instantiate(b)).ToList();
-                foreach (var b in bombs)
-                {
-                    const float scale = -1 / 3f;
-                    b.transform.localScale += new Vector3(scale, scale, scale);
-                }
-                ___bombIndicatorPrefabs = bombs;
-            }
-        }
+        //private static List<GameObject> bombIndicatorPrefabs;
+        //private static void ManageBombIndicatorPrefabs(ref List<GameObject> ___bombIndicatorPrefabs)
+        //{
+        //    List<GameObject> bombs = ___bombIndicatorPrefabs;
+        //    if (bombIndicatorPrefabs == null && bombs != null && bombs.Any() && bombs.All(b => b != null))
+        //    {
+        //        Plugin.Log.LogInfo("storing off bombIndicatorPrefabs");
+        //        Plugin.Log.LogInfo($"{SpawnWaveProfile.BombTimings.Aggregate("", (a, b) => a + " " + b)}");
+        //        bombIndicatorPrefabs = bombs.ToList();
+        //    }
+        //    else if (bombIndicatorPrefabs != null)
+        //    {
+        //        Plugin.Log.LogInfo("placing bombIndicatorPrefabs");
+        //        bombs = bombIndicatorPrefabs.Select(b => GameObject.Instantiate(b)).ToList();
+        //        foreach (var b in bombs)
+        //        {
+        //            const float scale = -1 / 3f;
+        //            //clone transform?? fix every call?
+        //            b.transform.localScale += new Vector3(scale, scale, scale);
+        //            Plugin.Log.LogInfo(b.transform.GetInstanceID());
+        //        }
+        //        ___bombIndicatorPrefabs = bombs;
+        //    }
+        //}
 
         //public static void BuildDifficultyBar(SpawnWaveProfile waveProfile)
         //{
