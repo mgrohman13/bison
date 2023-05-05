@@ -163,31 +163,31 @@ namespace WarpipsReplayability.Mod
 
             //note - if you don't fully complete islands, you should capture 32 territories before the final mission (9*3+5)
             //with Math.E bonus, on average this means an additional ~87.0 tech points
-            float bonus = (float)(Config.RebalanceTech ? Math.E : 0);
+            float bonus = (float)Math.E;// (float)(Config.RebalanceTech ? Math.E : 0);
 
             float avg = techReward + bonus, dev = 3.9f / techReward + .052f, oe = 1.69f / techReward + .039f;
 
-            if (Config.RebalanceTech)
-                if (territory.specialTag == TerritoryInstance.SpecialTag.None)
+            //if (Config.RebalanceTech)
+            if (territory.specialTag == TerritoryInstance.SpecialTag.None)
+            {
+                //multiply the average tech points by the relative number of missions you can complete
+                //since this is only applied to non-special territories, you will still end up with more tech points on easier difficulties
+                float mult = MissionManagerAsset.GameDifficultyIndex switch
                 {
-                    //multiply the average tech points by the relative number of missions you can complete
-                    //since this is only applied to non-special territories, you will still end up with more tech points on easier difficulties
-                    float mult = MissionManagerAsset.GameDifficultyIndex switch
-                    {
-                        3 => 9f / 13,
-                        1 => 9f / 12,
-                        0 => 9f / 10,
-                        2 => 9f / 9,
-                        _ => throw new Exception($"Map.MissionManagerAsset.GameDifficultyIndex {MissionManagerAsset.GameDifficultyIndex}"),
-                    };
-                    Plugin.Log.LogDebug($"GameDifficultyIndex: {MissionManagerAsset.GameDifficultyIndex}, mult: {mult}");
-                    avg *= mult;
-                }
-                else if (MissionManagerAsset.GameDifficultyIndex != 2)
-                {
-                    //no bonus for special territories outside of General difficulty
-                    avg -= bonus;
-                }
+                    3 => 8f / 11,
+                    1 => 8f / 10,
+                    0 => 8f / 9,
+                    2 => 8f / 8,
+                    _ => throw new Exception($"Map.MissionManagerAsset.GameDifficultyIndex {MissionManagerAsset.GameDifficultyIndex}"),
+                };
+                Plugin.Log.LogDebug($"GameDifficultyIndex: {MissionManagerAsset.GameDifficultyIndex}, mult: {mult}");
+                avg *= mult;
+            }
+            else if (MissionManagerAsset.GameDifficultyIndex != 2)
+            {
+                //no bonus for special territories outside of General difficulty
+                avg -= bonus;
+            }
 
             if (techReward >= 5)
                 operation.techReward = Plugin.Rand.GaussianOEInt(avg, dev, oe, 3);
@@ -196,10 +196,10 @@ namespace WarpipsReplayability.Mod
         public static void ReduceTechRewards()
         {
             //when difficulty bar hits max, reduce non-special territory tech rewards
-            if (Config.RebalanceTech)
-                for (int a = 0; a < Territories.Length; a++)
-                    if (Territories[a].specialTag == TerritoryInstance.SpecialTag.None)
-                        Persist.Instance.TechRewards[a] = Plugin.Rand.Round(Persist.Instance.TechRewards[a] / 3f);
+            //if (Config.RebalanceTech)
+            for (int a = 0; a < Territories.Length; a++)
+                if (Territories[a].specialTag == TerritoryInstance.SpecialTag.None)
+                    Persist.Instance.TechRewards[a] = Plugin.Rand.Round(Persist.Instance.TechRewards[a] / 3f);
 
             LoadTechRewards();
             Persist.SaveCurrent();
