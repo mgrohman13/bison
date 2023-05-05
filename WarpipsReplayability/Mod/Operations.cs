@@ -294,6 +294,7 @@ namespace WarpipsReplayability.Mod
 
             //randomize count somewhat 
             while (spawnTechs > 1 && spawnTechs < availableTypes && Plugin.Rand.Bool()
+                    && (spawnTechs < 9 || Plugin.Rand.Bool())
                     && (totalTechs != 10 || Plugin.Rand.Bool())
                     && (special == SpecialTag.None || Plugin.Rand.Bool()))
             {
@@ -677,10 +678,11 @@ namespace WarpipsReplayability.Mod
             SpawnWaveProfile spawnWaveProfile = operation.spawnWaveProfile;
             float difficulty = enemySpawnProfiles.Sum(p => p.UnitSpawnData.StartAtDifficulty);
             Plugin.Log.LogInfo($"{spawnWaveProfile.name} startAtDifficulty total {difficulty:0.00}");
-            while (deterministic.OE(difficulty) > (territory.specialTag == SpecialTag.None ? 5 : 10))
+            while (deterministic.OEInt(difficulty) > (territory.specialTag == SpecialTag.None ? 3 : 5))
             {
                 operation.tokenReward++;
                 Plugin.Log.LogInfo($"adding token {operation.tokenReward}");
+                difficulty -= deterministic.OEFloat();
             }
         }
         private static void LogInfo()
