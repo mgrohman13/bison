@@ -14,14 +14,15 @@ namespace WarpipsReplayability.Patches
             {
                 Plugin.Log.LogDebug("DefaultResourceSetter_SetNewConquestModeResources Postfix");
 
-                if (Config.PlayerLives.HasValue)
-                {
-                    int value = Config.PlayerLives.Value;
-                    ___resourceController.HardSetPlayerLives(value, value);
-                    Plugin.Log.LogInfo($"HardSetPlayerLives to {value}");
-                }
+                int value = 3;
+                int difficulty = Map.MissionManagerAsset.GameDifficultyIndex;
+                if (difficulty == 3 || difficulty == 1)
+                    value++;
 
-                ___resourceController.SetTokens(3);
+                ___resourceController.HardSetPlayerLives(value, value);
+                Plugin.Log.LogInfo($"HardSetPlayerLives to {value}");
+
+                ___resourceController.SetTokens(value);
             }
             catch (Exception e)
             {
