@@ -14,15 +14,15 @@ namespace WarpipsReplayability.Mod
                 string logDesc = cap ? "SpawnCap" : "SpawnCount";
                 LogInfo(logDesc, spawnTech, min, max);
 
-                HashSet<string> techTypes = new() { "PistolPip", "Shotgunner", "Warfighter", };// "UAZ", "Warmule", };     
-                if (Config.DifficultMode)
-                    if (techTypes.Contains(spawnTech.name))
-                    {
-                        float mult = 1.25f;
-                        min = (min + (1 + mult) * max) / 4f;
-                        max *= mult;
-                        LogInfo(logDesc, spawnTech, min, max);
-                    }
+                //HashSet<string> techTypes = new() { "PistolPip", "Shotgunner", "Warfighter", };// "UAZ", "Warmule", };     
+                //if (Config.DifficultMode)
+                //    if (techTypes.Contains(spawnTech.name))
+                //    {
+                //        float mult = 1.25f;
+                //        min = (min + (1 + mult) * max) / 4f;
+                //        max *= mult;
+                //        LogInfo(logDesc, spawnTech, min, max);
+                //    }
 
                 __result = Plugin.Rand.Round(Mathf.Lerp(min, max, t));
                 LogResult(logDesc, spawnTech, __result);

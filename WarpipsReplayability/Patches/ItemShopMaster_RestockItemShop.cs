@@ -17,18 +17,18 @@ namespace WarpipsReplayability.Patches
                 Plugin.Log.LogDebug($"{___saleDiscountValue.Value}");
 
                 //note that if DifficultMode is true, this fix is irrelevant due to the underlying code fix in Reward_SetStackCount
-                if (Config.FixArmsDealer)
-                    foreach (var r in ___itemShopStock)
-                    {
-                        Plugin.Log.LogInfo($"{r.item.name} - {r.stackSize}, cost {r.item.techNode.purchaseCost}");
+                //if (Config.FixArmsDealer)
+                foreach (var r in ___itemShopStock)
+                {
+                    Plugin.Log.LogInfo($"{r.item.name} - {r.stackSize}, cost {r.item.techNode.purchaseCost}");
 
-                        //if (r.stackCount > 1)
-                        //    Plugin.Log.LogInfo($"{r.stackCount}");
-                        //if (r.item.name == "Marine")
-                        //    r.stackCount = 2;
+                    //if (r.stackCount > 1)
+                    //    Plugin.Log.LogInfo($"{r.stackCount}");
+                    //if (r.item.name == "Marine")
+                    //    r.stackCount = 2;
 
-                        r.stackCount = Plugin.Rand.RangeInt(r.stackSize.x, r.stackSize.y);
-                    }
+                    r.stackCount = Plugin.Rand.RangeInt(r.stackSize.x, r.stackSize.y);
+                }
             }
             catch (Exception e)
             {
