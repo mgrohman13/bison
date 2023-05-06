@@ -15,8 +15,8 @@ namespace WarpipsReplayability.Patches
             {
                 Plugin.Log.LogDebug("MissionManagerAsset_FailedMission Prefix");
 
-                __state = ___gameDifficultyIndex.Value;
                 //ensure ConsumeItemsOnHotbar is always called
+                __state = ___gameDifficultyIndex.Value;
                 ___gameDifficultyIndex.Value = 2;
             }
             catch (Exception e)
@@ -24,13 +24,14 @@ namespace WarpipsReplayability.Patches
                 Plugin.Log.LogError(e);
             }
         }
-        public static void Postfix(IntDynamicStat ___gameDifficultyIndex, int __state)
+        public static void Postfix(MissionManagerAsset __instance, IntDynamicStat ___gameDifficultyIndex, int __state)
         {
             try
             {
                 Plugin.Log.LogDebug("MissionManagerAsset_FailedMission Postfix");
 
                 ___gameDifficultyIndex.Value = __state;
+                Operations.FailedMission = Map.Territories[__instance.CurrentWorldMap.lastAttackedTerritory];
             }
             catch (Exception e)
             {

@@ -15,7 +15,7 @@ namespace WarpipsReplayability.Patches
             {
                 Plugin.Log.LogDebug("WorldMapUIController_DrawMap Postfix");
 
-                Operations.UpdateShroud(__instance);
+                Operations.DrawMap(__instance);
 
                 foreach (var t in Map.Territories)
                     Plugin.Log.LogDebug($"{t.index} - {t.centerPos}");

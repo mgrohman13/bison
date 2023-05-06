@@ -2,6 +2,7 @@
 using BepInEx.Logging;
 using HarmonyLib;
 using MattUtil;
+using System.Linq;
 
 namespace WarpipsReplayability.Mod
 {
@@ -23,5 +24,8 @@ namespace WarpipsReplayability.Mod
 
             Log.LogInfo($"Plugin {PluginInfo.PLUGIN_GUID} is loaded!");
         }
+
+        public static string GetSeedString(uint[] seed) =>
+            seed.Select(s => s.ToString("X")).Aggregate(" ", (a, b) => a + b);
     }
 }
