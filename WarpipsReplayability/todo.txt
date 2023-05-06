@@ -46,8 +46,6 @@ balancing
 
 before next release:
 
-randomize operation maps
-	only special territories?
 rand enemyBuildSites
 	limit total to 10? keep some defences being cut off? order in certain way?
 	always show howitzer?

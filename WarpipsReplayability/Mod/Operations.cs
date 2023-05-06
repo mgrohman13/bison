@@ -105,6 +105,8 @@ namespace WarpipsReplayability.Mod
         }
         private static Dictionary<string, SpawnAverages> AggregateSpawnInfo()
         {
+            SpawnAverages.Maps = new();
+
             //aggregate map spawner data 
             Dictionary<string, SpawnAverages> spawnAverages = new();
             foreach (TerritoryInstance territory in Plugin.Rand.Iterate(Map.Territories))
@@ -145,6 +147,8 @@ namespace WarpipsReplayability.Mod
                     }
                     values.territories++;
                 }
+
+                SpawnAverages.Maps.Add(operation.map);
             }
 
             Plugin.Log.LogDebug(Environment.NewLine);
@@ -172,7 +176,8 @@ namespace WarpipsReplayability.Mod
         }
         private static void GenerateSpawnData(Dictionary<string, SpawnAverages> spawnAverages, TerritoryInstance territory, List<SpawnerInfo> saveSpawnInfo)
         {
-            SpawnWaveProfile spawnWaveProfile = territory.operation.spawnWaveProfile;
+            Operation operation = territory.operation;
+            SpawnWaveProfile spawnWaveProfile = operation.spawnWaveProfile;
 
             ////we need to know the highest curve values to ensure we only select units that can actually spawn
             //AnimationCurve curve = (AnimationCurve)Operations.curve.GetValue(spawnWaveProfile);
@@ -278,6 +283,9 @@ namespace WarpipsReplayability.Mod
 
                     saveSpawnInfo.Add(info);
                 }
+
+            if (Plugin.Rand.Bool())
+                operation.map = Plugin.Rand.SelectValue(SpawnAverages.Maps);
 
             Plugin.Log.LogInfo("Generated random spawns");
         }
@@ -845,6 +853,8 @@ namespace WarpipsReplayability.Mod
 
         private class SpawnAverages
         {
+            public static HashSet<MapType> Maps;
+
             public string techType;
             public List<SpawnerInfo> info = new();
             public float number, countMin, countMax, capMin, capMax;
