@@ -43,15 +43,12 @@ balancing
 			Gruz 0.8 upper
 			T92  0.4 lower
 
+
 before next release:
 
+randomize operation maps
+	only special territories?
 rand enemyBuildSites
 	limit total to 10? keep some defences being cut off? order in certain way?
 	always show howitzer?
-randomize difficulty curve on loss
 OriginalConnections still has bug.... 
-after loss, re-randomize difficulty curve?
-	save, load as separate post-apply step
-easy early too frequent? too easy?
-	consider map size for easy early?
-dont consider >1 keys for max or startAtDifficulty fix
