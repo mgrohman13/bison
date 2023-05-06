@@ -169,7 +169,7 @@ namespace WarpipsReplayability.Mod
 
             //multiply the average tech points by the relative number of missions you can complete
             //since this is only applied to non-special territories, you will still end up with more tech points on easier difficulties
-            //but this allows me to give more for General but avoid leaving you swimming in tech points on easier 
+            //but this allows me to give more for General and still avoid leaving you swimming in tech points on easier 
             float mult = MissionManagerAsset.GameDifficultyIndex switch
             {
                 3 => 8f / 11,
@@ -185,10 +185,10 @@ namespace WarpipsReplayability.Mod
                 Plugin.Log.LogDebug($"GameDifficultyIndex: {MissionManagerAsset.GameDifficultyIndex}, mult: {mult}");
                 avg *= mult;
             }
-            else //if (MissionManagerAsset.GameDifficultyIndex != 2)
+            else
             {
                 //special territories only have the bonus reduced, not the full amount
-                avg += bonus * (mult * mult - 1);
+                avg -= bonus * (1 - mult * mult);
             }
 
             if (techReward >= 5)
