@@ -32,7 +32,7 @@ namespace WarpipsReplayability.Patches
                 if (lastLog != log)
                 {
                     lastLog = log;
-                    Plugin.Log.LogInfo(log);
+                    Plugin.Log.LogDebug(log);
                 }
 
                 return false;
