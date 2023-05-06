@@ -22,7 +22,7 @@ namespace WarpipsReplayability.Patches
             set;
         }
 
-        public static bool Prefix(Texture2D ___barTexture, Transform ___warningHolder, SpawnWaveProfile waveProfile, ref List<GameObject> ___bombIndicatorPrefabs, ref bool ___ignoreCycleDifficulty)
+        public static bool Prefix(Texture2D ___barTexture, Transform ___warningHolder, SpawnWaveProfile waveProfile, ref bool ___ignoreCycleDifficulty)//, ref List<GameObject> ___bombIndicatorPrefabs)
         {
             bool showBar = true;
             try
