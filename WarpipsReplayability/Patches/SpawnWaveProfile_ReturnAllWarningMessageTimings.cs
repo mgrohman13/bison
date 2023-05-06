@@ -39,7 +39,7 @@ namespace WarpipsReplayability.Patches
                     uint[] seed = profiles.Select(p => p.UnitSpawnData).SelectMany(d =>
                         new object[] { d.CooldownAfterSpawn, d.SpawnCapCycleMultipler, d.StartAtDifficulty, d.TimeBetweenClusters })
                         .Select(o => (uint)o.GetHashCode()).ToArray();
-                    Plugin.Log.LogInfo("alert timings seed:" + seed.Select(s => s.ToString("X")).Aggregate(" ", (a, b) => a + b));
+                    Plugin.Log.LogInfo("alert timings seed:" + Plugin.GetSeedString(seed));
                     MTRandom temp = new(seed);
 
                     AnimationCurve curve = (AnimationCurve)field_difficultyCurve.GetValue(__instance);
