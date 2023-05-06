@@ -11,6 +11,22 @@ namespace WarpipsReplayability.Patches
     [HarmonyPatch(nameof(TerritoryDetailsUIBuilder.OnNewTerritorySelected))]
     internal class TerritoryDetailsUIBuilder_OnNewTerritorySelected
     {
+        public static void Prefix(TerritoryDetailsUIBuilder __instance)
+        {
+            try
+            {
+                Plugin.Log.LogDebug("TerritoryDetailsUIBuilder_OnNewTerritorySelected Prefix");
+
+                //needed for ItemRewardGridController_RefreshItemDisplay
+                Operations.SelectedTerritory = __instance.InspectedTerritoryInstance;
+
+                Plugin.Log.LogInfo($"select {__instance.InspectedTerritoryInstance.operation.spawnWaveProfile.name} ({__instance.InspectedTerritoryInstance.operation.spawnWaveProfile.GetInstanceID()} {__instance.InspectedTerritoryInstance.operation.map.MapLength})");
+            }
+            catch (Exception e)
+            {
+                Plugin.Log.LogError(e);
+            }
+        }
         public static void Postfix(TerritoryDetailsUIBuilder __instance, ref ReconNodeController[] ___unitIntel, RectTransform ___rootRect)
         {
             try
@@ -31,6 +47,8 @@ namespace WarpipsReplayability.Patches
 
                     Plugin.Log.LogDebug("hiding recon");
                 }
+
+                Operations.SelectedTerritory = null;
             }
             catch (Exception e)
             {
