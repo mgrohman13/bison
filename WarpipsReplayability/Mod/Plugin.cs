@@ -26,6 +26,6 @@ namespace WarpipsReplayability.Mod
         }
 
         public static string GetSeedString(uint[] seed) =>
-            seed.Select(s => s.ToString("X")).Aggregate(" ", (a, b) => a + b);
+            seed.Select(s => s.ToString("X")).Aggregate("", (a, b) => a + b);
     }
 }

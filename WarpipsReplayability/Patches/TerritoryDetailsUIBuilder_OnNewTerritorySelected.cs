@@ -18,9 +18,12 @@ namespace WarpipsReplayability.Patches
                 Plugin.Log.LogDebug("TerritoryDetailsUIBuilder_OnNewTerritorySelected Prefix");
 
                 //needed for ItemRewardGridController_RefreshItemDisplay
-                Operations.SelectedTerritory = __instance.InspectedTerritoryInstance;
+                LevelGeneration.WorldMap.TerritoryInstance territory = __instance.InspectedTerritoryInstance;
+                Operations.SelectedTerritory = territory;
 
-                Plugin.Log.LogInfo($"select {__instance.InspectedTerritoryInstance.operation.spawnWaveProfile.name} ({__instance.InspectedTerritoryInstance.operation.spawnWaveProfile.GetInstanceID()} {__instance.InspectedTerritoryInstance.operation.map.MapLength})");
+                LevelGeneration.WorldMap.Operation operation = territory.operation;
+                SpawnWaveProfile spawnWaveProfile = operation.spawnWaveProfile;
+                Plugin.Log.LogInfo($"select {territory.index} {spawnWaveProfile.name} ({spawnWaveProfile.GetInstanceID()} {operation.map.MapLength})");
             }
             catch (Exception e)
             {
