@@ -50,7 +50,7 @@ namespace WarpipsReplayability.Patches
                     float prevTime = 0;
                     foreach (var k in curve.keys)
                     {
-                        bool cur = (k.value > warningDifficulty);
+                        bool cur = curve.Evaluate(k.time) > warningDifficulty;
                         if (!prev && cur)
                         {
                             float min = prevTime, max = Math.Min(1, k.time), result;
