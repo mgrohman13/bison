@@ -38,7 +38,7 @@ namespace WarpipsReplayability.Mod
                 var graph = ModifyConnections();
                 GenerateConnections(graph);
 
-                SpawnerInfo[] spawnerInfo = Operations.Randomize();
+                OperationInfo[] spawnerInfo = Operations.Randomize();
 
                 Persist.SaveNew(shuffle, spawnerInfo);
             }
@@ -53,7 +53,7 @@ namespace WarpipsReplayability.Mod
             if (!Validate(null, null))
                 Plugin.Log.LogError($"loaded invalid state");
 
-            Operations.Load(Persist.Instance.SpawnerInfo);
+            Operations.Load(Persist.Instance.OperationInfo);
         }
 
         private static void LoadShuffle()

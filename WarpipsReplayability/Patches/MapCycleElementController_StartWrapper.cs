@@ -12,7 +12,7 @@ namespace WarpipsReplayability.Patches
     [HarmonyPatch("StartWrapper")]
     internal class MapCycleElementController_StartWrapper
     {
-        public static bool Prefix(MapCycleElementController __instance, ref int ___mapIndex)
+        public static void Prefix(MapCycleElementController __instance, ref int ___mapIndex)
         {
             try
             {
@@ -21,22 +21,16 @@ namespace WarpipsReplayability.Patches
                 //there is a bug in the base game when you lose an operation
                 //MapCycleElementController mistakenly sets the map of the failed operation to the first map (mapIndex 0)
                 //I utilize this bug to set it to a random map
-                if (Operations.FailedMission != null)
-                {
-                    ___mapIndex = -1;
-                    __instance.RandomMap();
+                ___mapIndex = -1;
+                __instance.RandomMap();
 
-                    //also randomize StartAtDifficulty and difficultyCurve
-                    Operations.RandOnLoss();
-
-                    return true;
-                }
+                //also randomize StartAtDifficulty and difficultyCurve
+                Operations.RandOnLoss();
             }
             catch (Exception e)
             {
                 Plugin.Log.LogError(e);
             }
-            return false;
         }
     }
 }

@@ -31,7 +31,7 @@ namespace WarpipsReplayability.Patches
                 Plugin.Log.LogDebug("MissionManagerAsset_FailedMission Postfix");
 
                 ___gameDifficultyIndex.Value = __state;
-                Operations.FailedMission = Map.Territories[__instance.CurrentWorldMap.lastAttackedTerritory];
+                Operations.FailedMission = __instance.CurrentWorldMap.lastAttackedTerritory;
             }
             catch (Exception e)
             {

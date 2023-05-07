@@ -18,14 +18,14 @@ namespace WarpipsReplayability.Mod
         public List<TerritoryConnection> Connections { get; private set; }
         public bool[] HiddenRewards { get; private set; }
         public int[] TechRewards { get; private set; }
-        public Operations.SpawnerInfo[] SpawnerInfo { get; private set; }
+        public Operations.OperationInfo[] OperationInfo { get; private set; }
 
-        public static void SaveNew(int[] shuffle, Operations.SpawnerInfo[] spawnerInfo)
+        public static void SaveNew(int[] shuffle, Operations.OperationInfo[] operationInfo)
         {
             Instance = new()
             {
                 Shuffle = shuffle,
-                SpawnerInfo = spawnerInfo,
+                OperationInfo = operationInfo,
                 Connections = Map.WorldMapAsset.TerritoryConnections,
                 HiddenRewards = Operations.RollHiddenRewards(),
                 TechRewards = Map.Territories.Select(t => t.operation.techReward).ToArray(),
