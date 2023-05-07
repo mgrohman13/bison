@@ -43,10 +43,14 @@ balancing
 			Gruz 0.8 upper
 			T92  0.4 lower
 
+new map on loss not normally on island?
+
+ReturnAllWarningMessageTimings check cooldown between spawns?
+
 
 before next release:
 
-rand enemyBuildSites
-	limit total to 10? keep some defences being cut off? order in certain way?
-	always show howitzer?
+enemyBuildSites need randomized count prior to CountTechTypes 
+	limit total to 10? keep some defences being cut off? 
+	since saving more info, fix map length persisted limit corner case while at it
 OriginalConnections still has bug.... 
