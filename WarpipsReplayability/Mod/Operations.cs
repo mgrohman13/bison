@@ -92,9 +92,17 @@ namespace WarpipsReplayability.Mod
         public static OperationInfo[] Randomize()
         {
             Dictionary<string, SpawnAverages> spawnAverages = AggregateSpawnInfo();
+            Dictionary<EnemyBuildSite, int> buildSites = AggregateBuildSites(out int numBuildSites, out int distinctBuildSites);
+
+            int numTerritories = Map.Territories.Length;
             List<OperationInfo> saveInfo = new();
             foreach (int territoryIdx in Plugin.Rand.Iterate(Map.Territories.Length))
-                GenerateSpawnData(spawnAverages, saveInfo, territoryIdx);
+            {
+                EnemyBuildSite[] generatedSites = GenerateEnemyBuildSites(buildSites, ref numBuildSites, ref distinctBuildSites, territoryIdx, numTerritories);
+                OperationInfo operationInfo = GenerateSpawnData(spawnAverages, territoryIdx, generatedSites);
+                numTerritories--;
+                saveInfo.Add(operationInfo);
+            }
 
             OperationInfo[] save = saveInfo.OrderBy(info => info.TerritoryIdx).ToArray();
             Load(save);
@@ -176,7 +184,40 @@ namespace WarpipsReplayability.Mod
 
             return spawnAverages;
         }
-        private static void GenerateSpawnData(Dictionary<string, SpawnAverages> spawnAverages, List<OperationInfo> saveInfo, int territoryIdx)
+        private static Dictionary<EnemyBuildSite, int> AggregateBuildSites(out int numBuildSites, out int distinctBuildSites)
+        {
+            //count build sites
+            Dictionary<EnemyBuildSite, int> buildSites = new();
+            numBuildSites = 0;
+            distinctBuildSites = 0;
+            foreach (var territory in Plugin.Rand.Iterate(Map.Territories))
+            {
+                SpawnWaveProfile spawnWaveProfile = territory.operation.spawnWaveProfile;
+                foreach (var enemyBuildSite in Plugin.Rand.Iterate(spawnWaveProfile.enemyBuildSites))
+                {
+                    buildSites.TryGetValue(enemyBuildSite, out int count);
+                    buildSites[enemyBuildSite] = count + 1;
+                    numBuildSites++;
+                }
+                distinctBuildSites += BuildSiteTechs(spawnWaveProfile.enemyBuildSites).Count();
+            }
+
+            float addSites = Map.Territories.Length;
+            float addDistinct = addSites * distinctBuildSites / (float)numBuildSites;
+
+            LogBuildCounts(buildSites, numBuildSites, distinctBuildSites);
+            Plugin.Log.LogInfo($"AggregateBuildSites addSites: {addSites}, addDistinct: {addDistinct:0.00}");
+
+            //randomize, add buffer
+            foreach (var key in Plugin.Rand.Iterate(buildSites.Keys))
+                buildSites[key] = Plugin.Rand.RangeInt(buildSites[key] + 1, buildSites[key] * 2);
+            distinctBuildSites = Plugin.Rand.GaussianCappedInt(distinctBuildSites + addDistinct, .13f, Plugin.Rand.Round(addDistinct));
+            numBuildSites = Plugin.Rand.GaussianCappedInt(numBuildSites + addSites, .13f, distinctBuildSites);
+
+            return buildSites;
+        }
+
+        private static OperationInfo GenerateSpawnData(Dictionary<string, SpawnAverages> spawnAverages, int territoryIdx, EnemyBuildSite[] generatedSites)
         {
             foreach (var s in spawnAverages.Values)
                 s.GenStartAtDifficulty();
@@ -184,7 +225,8 @@ namespace WarpipsReplayability.Mod
             TerritoryInstance territory = Map.Territories[territoryIdx];
             Operation operation = territory.operation;
             SpawnWaveProfile spawnWaveProfile = operation.spawnWaveProfile;
-            CountTechTypes(spawnWaveProfile, territory.specialTag, spawnAverages.Count, out int spawnTechs, out int totalTechs);
+
+            CountTechTypes(spawnAverages.Count, territoryIdx, generatedSites, out int spawnTechs, out int totalTechs);
 
             Plugin.Log.LogInfo($"{operation.map.name} {operation.map.MapLength}");
             if (Plugin.Rand.Bool())
@@ -281,31 +323,30 @@ namespace WarpipsReplayability.Mod
                     spawns.Add(info);
                 }
 
-            saveInfo.Add(new(territoryIdx, operation.map.MapLength, Plugin.Rand.Iterate(spawns).ToArray()));
-
             Plugin.Log.LogInfo($"Generated random operation ({operation.map.name})");
+            return new(territoryIdx, operation.map.MapLength, Plugin.Rand.Iterate(spawns).ToArray(), generatedSites);
         }
-        private static void CountTechTypes(SpawnWaveProfile spawnWaveProfile, SpecialTag special, int availableTypes, out int spawnTechs, out int totalTechs)
+        private static void CountTechTypes(int availableTypes, int territoryIdx, EnemyBuildSite[] generatedSites, out int spawnTechs, out int totalTechs)
         {
+            TerritoryInstance territory = Map.Territories[territoryIdx];
+            SpawnWaveProfile spawnWaveProfile = territory.operation.spawnWaveProfile;
             //keep roughly the same count of tech types
             spawnTechs = GetProfileNames(spawnWaveProfile)
                 .Distinct().Count();
             totalTechs = GetProfileNames(spawnWaveProfile)
-                .Concat(BuildSiteTechs(spawnWaveProfile))
+                .Concat(BuildSiteTechs(generatedSites))
                 .Distinct().Count();
-            //if (totalTechs > 10)
-            //    Plugin.Log.LogInfo(allDistinctTechTypes.Aggregate(" ", (a, b) => a + " " + b).Trim());
 
             bool logFlag = false;
             Plugin.Log.LogInfo($"{spawnWaveProfile.name} count: {spawnTechs} (total: {totalTechs})");
 
+            int mod = Plugin.Rand.Bool() ? -1 : 1;
             //randomize count somewhat 
             while (spawnTechs > 1 && spawnTechs < availableTypes && Plugin.Rand.Bool()
-                    && (spawnTechs < 9 || Plugin.Rand.Bool())
-                    && (totalTechs != 10 || Plugin.Rand.Bool())
-                    && (special == SpecialTag.None || Plugin.Rand.Bool()))
+                && (spawnTechs < 9 || spawnTechs > 10 || Plugin.Rand.Bool())
+                && (totalTechs != 10 || Plugin.Rand.Bool())
+                && (territory.specialTag == SpecialTag.None || Plugin.Rand.Bool()))
             {
-                int mod = Plugin.Rand.Bool() ? -1 : 1;
                 spawnTechs += mod;
                 totalTechs += mod;
                 logFlag = true;
@@ -364,6 +405,106 @@ namespace WarpipsReplayability.Mod
             Dictionary<string, SpawnAverages> Filter(Func<KeyValuePair<string, SpawnAverages>, bool> predicate) =>
                 spawnAverages.Where(predicate).ToDictionary(p => p.Key, p => p.Value);
         }
+        private static EnemyBuildSite[] GenerateEnemyBuildSites(Dictionary<EnemyBuildSite, int> buildSiteCounts, ref int totalSites, ref int totalDistinct, int territoryIdx, int numTerritories)
+        {
+            TerritoryInstance territory = Map.Territories[territoryIdx];
+
+            EnemyBuildSite[] enemyBuildSites = territory.operation.spawnWaveProfile.enemyBuildSites.ToArray();
+            LogBuildCounts(buildSiteCounts, totalSites, totalDistinct);
+            int max = BuildSiteTechs(buildSiteCounts.Keys).Count();
+            int numOldSites = enemyBuildSites.Length;
+            Plugin.Log.LogInfo($"enemyBuildSites ({numOldSites}): " + LogBuildSites(enemyBuildSites));
+
+            int distinctSites = NumSites(BuildSiteTechs(enemyBuildSites).Count(), totalDistinct, territory.specialTag switch
+            {
+                SpecialTag.HighValueReward => Plugin.Rand.RangeInt(0, 1),
+                SpecialTag.EnemyObjective => Plugin.Rand.RangeInt(1, 2),
+                _ => 0
+            });
+            if (distinctSites > max)
+            {
+                Plugin.Log.LogWarning($"distinctSites {distinctSites} > {max}");
+                distinctSites = max;
+            }
+            if (distinctSites == 0 || (numOldSites == 0 && Plugin.Rand.Bool()))
+            {
+                enemyBuildSites = new EnemyBuildSite[0];
+                Plugin.Log.LogInfo($"distinctSites: 0 ({distinctSites})");
+            }
+            else
+            {
+                int cap = territory.specialTag switch
+                {
+                    SpecialTag.HighValueReward => Plugin.Rand.RangeInt(1, 5),
+                    SpecialTag.EnemyObjective => Plugin.Rand.RangeInt(1, 15),
+                    _ => 1
+                };
+                cap = Math.Max(distinctSites, cap);
+                int numSites = NumSites(numOldSites, totalSites, cap);
+                Plugin.Log.LogInfo($"distinctSites: {distinctSites}, numSites: {numSites}");
+
+                HashSet<string> distinct = new();
+                for (int a = 0; a < distinctSites; a++)
+                {
+                    string site;
+                    do
+                        site = BuildSiteTech(Plugin.Rand.SelectValue(buildSiteCounts));
+                    while (distinct.Contains(site));
+                    distinct.Add(site);
+                }
+                Plugin.Log.LogInfo(distinct.Aggregate("distinct:", (a, b) => a + " " + b));
+
+                enemyBuildSites = new EnemyBuildSite[numSites];
+                for (int b = 0; b < numSites; b++)
+                {
+                    EnemyBuildSite site;
+                    do
+                        site = Plugin.Rand.SelectValue(buildSiteCounts);
+                    while (!distinct.Contains(BuildSiteTech(site)));
+                    int count = buildSiteCounts[site] - 1;
+                    if (count < 1)
+                    {
+                        Plugin.Log.LogWarning($"count < 1 ({count})");
+                        count = 1;
+                    }
+                    buildSiteCounts[site] = count;
+                    enemyBuildSites[b] = site;
+                }
+
+                totalSites = Math.Max(0, totalSites - numSites);
+                totalDistinct = Math.Max(0, totalDistinct - distinctSites);
+
+                //end of list may wind up getting cut off in display panel
+                bool c = Plugin.Rand.Bool(), d = Plugin.Rand.Bool();
+                enemyBuildSites = Plugin.Rand.Iterate(enemyBuildSites).OrderBy(b => b.name.Split('_')[0] switch
+                {
+                    "Howitzer" => Plugin.Rand.RangeInt(1, 6),
+                    "MediumTurret" => c ? 4 : 5,
+                    "Landmine" => c ? 4 : 5,
+                    "GuardTower" => d ? 5 : 6,
+                    "BarbedWire" => d ? 5 : 6,
+                    _ => throw new Exception()
+                }).ToArray();
+            }
+
+            Plugin.Log.LogInfo("enemyBuildSites: " + LogBuildSites(enemyBuildSites));
+            return enemyBuildSites;
+
+            int NumSites(int count, int total, int cap)
+            {
+                float avg = total / (float)numTerritories;
+                avg = (count + avg) / 2f;
+                const float dev = .39f;
+                Plugin.Log.LogInfo($"enemyBuildSites Gaussian({avg:0.00},{dev},{cap})");
+                if (avg > cap)
+                    return Plugin.Rand.GaussianCappedInt(avg, dev, cap);
+                Plugin.Log.LogWarning($"enemyBuildSites avg <= cap ({avg:0.00} <= {cap})");
+                return cap;
+            }
+        }
+        private static void LogBuildCounts(Dictionary<EnemyBuildSite, int> buildSiteCounts, int totalSites, int totalDistinct) =>
+            Plugin.Log.LogInfo($"buildSites ({totalDistinct},{totalSites}):" +
+                buildSiteCounts.Select(b => b.Key.name + ":" + b.Value).OrderBy(n => n).Aggregate("", (a, b) => a + " " + b));
 
         public static void RandOnLoss()
         {
@@ -428,36 +569,15 @@ namespace WarpipsReplayability.Mod
 
         public static void Load(OperationInfo[] save)
         {
+            EnemySpawnProfile[][] lookup = Map.Territories.Select(t =>
+                GetProfiles(t.operation.spawnWaveProfile).ToArray()).ToArray();
+            Dictionary<string, EnemyBuildSite> buildSites = Map.Territories.SelectMany(t =>
+                t.operation.spawnWaveProfile.enemyBuildSites).GroupBy(B => B.name).ToDictionary(b => b.Key, b => b.First());
+
             //seed a deterministic PRNG so we can procedurally randomize some additional things in here
             //without having to store every single detail in our save file
             MTRandom deterministic = new(GenerateSeed(save));
-            int numTerritories = Map.Territories.Length;
 
-
-            //count build sites
-            Dictionary<EnemyBuildSite, int> buildSites = new();
-            int numBuildSites = 0, distinctBuildSites = 0;
-            foreach (var territory in deterministic.Iterate(Map.Territories))
-            {
-                SpawnWaveProfile spawnWaveProfile = territory.operation.spawnWaveProfile;
-                foreach (var enemyBuildSite in deterministic.Iterate(spawnWaveProfile.enemyBuildSites))
-                {
-                    buildSites.TryGetValue(enemyBuildSite, out int count);
-                    buildSites[enemyBuildSite] = count + 1;
-                    numBuildSites++;
-                }
-                distinctBuildSites += BuildSiteTechs(spawnWaveProfile).Count();
-            }
-            //randomize, add buffer
-            foreach (var key in deterministic.Iterate(buildSites.Keys))
-                buildSites[key] = deterministic.RangeInt(buildSites[key] + 1, buildSites[key] * 2);
-            float ratio = distinctBuildSites / (float)numBuildSites;
-            distinctBuildSites = deterministic.GaussianCappedInt(distinctBuildSites + numTerritories * ratio, .13f, deterministic.Round(numTerritories * ratio));
-            numBuildSites = deterministic.GaussianCappedInt(numBuildSites + numTerritories, .13f, distinctBuildSites);
-
-
-            EnemySpawnProfile[][] lookup = Map.Territories.Select(t =>
-                GetProfiles(t.operation.spawnWaveProfile).ToArray()).ToArray();
             float displayThreshold = 0, displayThresholdCount = 0;
             foreach (OperationInfo operationInfo in deterministic.Iterate(save))
             {
@@ -471,6 +591,9 @@ namespace WarpipsReplayability.Mod
                 EnemySpawnProfile[] enemySpawnProfiles = new EnemySpawnProfile[numSpawns];
                 spawnWaveProfile.enemySpawnProfiles = enemySpawnProfiles;
                 spawnWaveProfile.enemySpawnProfilesAtDifficulty = new SpawnWaveProfileAtDifficulty[0];
+                Plugin.Log.LogDebug("enemyBuildSites: " + LogBuildSites(spawnWaveProfile.enemyBuildSites));
+                spawnWaveProfile.enemyBuildSites = operationInfo.BuildSites.Select(name => buildSites[name]).ToArray();
+                Plugin.Log.LogInfo("enemyBuildSites: " + LogBuildSites(spawnWaveProfile.enemyBuildSites));
 
                 if (numSpawns > 0)
                 {
@@ -479,18 +602,17 @@ namespace WarpipsReplayability.Mod
                         SpawnerInfo spawnerInfo = operationInfo.Spawns[profileIdx];
                         EnemySpawnProfile copyFromProfile = lookup[spawnerInfo.CopyFromTerritoryIdx][spawnerInfo.CopyFromProfileIdx];
                         enemySpawnProfiles[profileIdx] = spawnerInfo.AssignSpawnData(copyFromProfile);
+                        Plugin.Log.LogDebug($"{copyFromProfile.UnitSpawnData.SpawnTech.name}: {copyFromProfile.UnitSpawnData.StartAtDifficulty:0.000}");
+                        Plugin.Log.LogDebug($"{enemySpawnProfiles[profileIdx].UnitSpawnData.SpawnTech.name}: {enemySpawnProfiles[profileIdx].UnitSpawnData.StartAtDifficulty:0.000}");
                     }
 
                     RandEnemySpawnProfiles(deterministic, enemySpawnProfiles);
                     RandAnimationCurve(deterministic, territory.operation, operationInfo.MapLength);
-                    RandEnemyBuildSites(deterministic, territory, numTerritories, buildSites, ref numBuildSites, ref distinctBuildSites);
                     AddTokens(deterministic, enemySpawnProfiles, territory);
 
                     displayThreshold += MaxStartAtDifficulty(enemySpawnProfiles);
                     displayThresholdCount++;
                 }
-
-                numTerritories--;
 
                 Plugin.Log.LogInfo(spawnWaveProfile.name);
             }
@@ -503,29 +625,31 @@ namespace WarpipsReplayability.Mod
             foreach (OperationInfo operationInfo in save)
                 foreach (int mapLength in operationInfo.failureMapLengths)
                     RandOnLoss(operationInfo.TerritoryIdx, true, mapLength);
-
-            if (numTerritories != 0)
-                Plugin.Log.LogError("numTerritories: " + numTerritories);
         }
         private static uint[] GenerateSeed(OperationInfo[] save)
         {
             //don't include failureMapLengths - they are modified after randomization
             uint[] seed = save
-                .SelectMany(info => info.Spawns
-                    .SelectMany(spawn => new object[] {
-                        spawn.CountMin, spawn.CopyFromProfileIdx, spawn.CapMin, spawn.CopyFromTerritoryIdx,
-                        spawn.DisplayInReconLineup, spawn.CapMax, spawn.Difficulty, spawn.CountMax,
-                    }).Concat(new object[] {
-                        info.Spawns.Length, info.TerritoryIdx, info.MapLength,
-                    }))
-                .Select(obj => (uint)obj.GetHashCode()).ToArray();
+                .SelectMany(info => info.BuildSites.SelectMany(build =>
+                    //C# String.GetHashCode is not guaranteed to be consistent, so just use the raw characters instead
+                    build.ToCharArray().Select(c => (int)c).Append(build.Length)).Cast<object>()
+                .Concat(new object[] {
+                    info.Spawns.Length, info.TerritoryIdx, info.MapLength, info.BuildSites.Length,
+                }).Concat(info.Spawns.SelectMany(spawn => new object[] {
+                    spawn.CountMin, spawn.CopyFromProfileIdx, spawn.CapMin, spawn.CopyFromTerritoryIdx,
+                    spawn.DisplayInReconLineup, spawn.CapMax, spawn.Difficulty, spawn.CountMax,
+                }))).Select(obj => (uint)obj.GetHashCode()).ToArray();
 
             if (seed.Length > MTRandom.MAX_SEED_SIZE)
             {
                 Plugin.Log.LogInfo("seed.Length: " + seed.Length);
+                Plugin.Log.LogDebug(Plugin.GetSeedString(seed));
                 uint[] copy = new uint[MTRandom.MAX_SEED_SIZE];
                 for (uint a = 0; a < seed.Length; a++)
-                    copy[a % MTRandom.MAX_SEED_SIZE] += seed[a] * (1 + a);
+                {
+                    uint b = a % MTRandom.MAX_SEED_SIZE;
+                    copy[b] = 31 * copy[b] + seed[a] + a;
+                }
                 seed = copy;
             }
 
@@ -808,104 +932,6 @@ namespace WarpipsReplayability.Mod
         private static float GetMaxKey(AnimationCurve curve) =>
             curve.keys.Where(k => k.time < 1).Max(k => k.value);
 
-        private static void RandEnemyBuildSites(MTRandom deterministic, TerritoryInstance territory, int numTerritories,
-            Dictionary<EnemyBuildSite, int> buildSites, ref int totalSites, ref int totalDistinct)
-        {
-            SpawnWaveProfile spawnWaveProfile = territory.operation.spawnWaveProfile;
-            Plugin.Log.LogInfo($"buildSites ({totalDistinct},{totalSites}):" +
-                buildSites.Select(b => b.Key.name + ":" + b.Value).OrderBy(n => n).Aggregate("", (a, b) => a + " " + b));
-            int max = BuildSiteTechs(buildSites.Keys).Count();
-            int oldSites = spawnWaveProfile.enemyBuildSites.Length;
-            Plugin.Log.LogInfo($"enemyBuildSites ({oldSites}): " + Log(spawnWaveProfile));
-
-            int distinctSites = NumSites(BuildSiteTechs(spawnWaveProfile).Count(), totalDistinct, territory.specialTag switch
-            {
-                SpecialTag.HighValueReward => deterministic.RangeInt(0, 1),
-                SpecialTag.EnemyObjective => deterministic.RangeInt(1, 2),
-                _ => 0
-            });
-            if (distinctSites > max)
-            {
-                Plugin.Log.LogWarning($"distinctSites {distinctSites} > {max}");
-                distinctSites = max;
-            }
-            if (distinctSites == 0 || (oldSites == 0 && deterministic.Bool()))
-            {
-                spawnWaveProfile.enemyBuildSites = new EnemyBuildSite[0];
-                Plugin.Log.LogInfo($"distinctSites: 0 ({distinctSites})");
-            }
-            else
-            {
-                int cap = territory.specialTag switch
-                {
-                    SpecialTag.HighValueReward => deterministic.RangeInt(1, 5),
-                    SpecialTag.EnemyObjective => deterministic.RangeInt(1, 15),
-                    _ => 1
-                };
-                cap = Math.Max(distinctSites, cap);
-                int numSites = NumSites(oldSites, totalSites, cap);
-                Plugin.Log.LogInfo($"distinctSites: {distinctSites}, numSites: {numSites}");
-
-                HashSet<string> distinct = new();
-                for (int a = 0; a < distinctSites; a++)
-                {
-                    string site;
-                    do
-                        site = BuildSiteTech(deterministic.SelectValue(buildSites));
-                    while (distinct.Contains(site));
-                    distinct.Add(site);
-                }
-                Plugin.Log.LogInfo(distinct.Aggregate("distinct:", (a, b) => a + " " + b));
-
-                EnemyBuildSite[] enemyBuildSites = new EnemyBuildSite[numSites];
-                for (int b = 0; b < numSites; b++)
-                {
-                    EnemyBuildSite site;
-                    do
-                        site = deterministic.SelectValue(buildSites);
-                    while (!distinct.Contains(BuildSiteTech(site)));
-                    int count = buildSites[site] - 1;
-                    if (count < 1)
-                    {
-                        Plugin.Log.LogWarning($"count < 1 ({count})");
-                        count = 1;
-                    }
-                    buildSites[site] = count;
-                    enemyBuildSites[b] = site;
-                }
-
-                totalSites = Math.Max(0, totalSites - numSites);
-                totalDistinct = Math.Max(0, totalDistinct - distinctSites);
-
-                //end of list may wind up getting cut off in display panel
-                bool c = deterministic.Bool(), d = deterministic.Bool();
-                spawnWaveProfile.enemyBuildSites = deterministic.Iterate(enemyBuildSites).OrderBy(b => b.name.Split('_')[0] switch
-                {
-                    "Howitzer" => deterministic.RangeInt(1, 6),
-                    "MediumTurret" => c ? 4 : 5,
-                    "Landmine" => c ? 4 : 5,
-                    "GuardTower" => d ? 5 : 6,
-                    "BarbedWire" => d ? 5 : 6,
-                    _ => throw new Exception()
-                }).ToArray();
-            }
-
-            Plugin.Log.LogInfo("enemyBuildSites: " + Log(spawnWaveProfile));
-
-            int NumSites(int count, int total, int cap)
-            {
-                float avg = total / (float)numTerritories;
-                avg = (count + avg) / 2f;
-                const float dev = .39f;
-                Plugin.Log.LogInfo($"enemyBuildSites Gaussian({avg:0.00},{dev:0.00},{cap})");
-                if (avg > cap)
-                    return deterministic.GaussianCappedInt(avg, dev, cap);
-                Plugin.Log.LogWarning($"enemyBuildSites avg < cap ({avg} < {cap})");
-                return cap;
-            }
-            static string Log(SpawnWaveProfile spawnWaveProfile) =>
-                spawnWaveProfile.enemyBuildSites.Select(b => b.name).Aggregate("", (a, b) => a + " " + b);
-        }
         private static void AddTokens(MTRandom deterministic, EnemySpawnProfile[] enemySpawnProfiles, TerritoryInstance territory)
         {
             Operation operation = territory.operation;
@@ -947,14 +973,14 @@ namespace WarpipsReplayability.Mod
             .Cast<EnemySpawnProfile>().ToList();
         private static AnimationCurve GetDifficultyCurve(SpawnWaveProfile spawnWaveProfile) =>
             (AnimationCurve)difficultyCurve.GetValue(spawnWaveProfile);
-        private static IEnumerable<string> BuildSiteTechs(SpawnWaveProfile spawnWaveProfile) =>
-            BuildSiteTechs(spawnWaveProfile.enemyBuildSites);
         private static IEnumerable<string> BuildSiteTechs(IEnumerable<EnemyBuildSite> sites) =>
             sites.Where(buildSite => buildSite.icon != null)
                 .Select(buildSite => BuildSiteTech(buildSite))
                 .Distinct();
         static string BuildSiteTech(EnemyBuildSite buildSite) =>
             buildSite.name.Split('_')[0];
+        static string LogBuildSites(EnemyBuildSite[] sites) =>
+            sites.Select(b => b.name).Aggregate("", (a, b) => a + " " + b);
 
         private class SpawnAverages
         {
@@ -1039,11 +1065,12 @@ namespace WarpipsReplayability.Mod
         [Serializable]
         public class OperationInfo
         {
-            public OperationInfo(int territoryIdx, int mapLength, SpawnerInfo[] spawns)
+            public OperationInfo(int territoryIdx, int mapLength, SpawnerInfo[] spawns, EnemyBuildSite[] buildSites)
             {
                 this.TerritoryIdx = territoryIdx;
                 this.MapLength = mapLength;
                 this.Spawns = spawns;
+                this.BuildSites = buildSites.Select(b => b.name).ToArray();
             }
 
             //territory index after shuffle
@@ -1052,6 +1079,7 @@ namespace WarpipsReplayability.Mod
             //generation info
             public readonly int MapLength;
             public readonly SpawnerInfo[] Spawns;
+            public readonly String[] BuildSites;
 
             //store off mapLength values later on if you lose operations
             public List<int> failureMapLengths = new();
