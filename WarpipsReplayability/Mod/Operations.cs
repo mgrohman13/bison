@@ -34,9 +34,6 @@ namespace WarpipsReplayability.Mod
         private static readonly FieldInfo difficultyCurve = AccessTools.Field(typeof(SpawnWaveProfile), "difficultyCurve");
         private static readonly FieldInfo roundDuration = AccessTools.Field(typeof(SpawnWaveProfile), "roundDuration");
 
-        //especially impactful tech types, in order of impact
-        private static readonly string[] heroTypes = new string[] { "Hind", "Bubba", "Rocket", "Predator", "Tanya" };
-
         public static bool[] RollHiddenRewards()
         {
             var hiddenRewards = Map.Territories.SelectMany(t =>
@@ -204,7 +201,7 @@ namespace WarpipsReplayability.Mod
                         _ => 1.0f
                     };
 
-                    SpawnAverages values = SelectTechType(spawnAverages, heroTypes, techTypes, mult);
+                    SpawnAverages values = SelectTechType(spawnAverages, techTypes, mult);
 
                     //randomize spawn amounts, based on island-wide averages
                     const float deviation = .13f;
@@ -221,7 +218,8 @@ namespace WarpipsReplayability.Mod
                     //minimum caps are generally quite a bit higher, so bring down the max cap somewhat
                     int capMax = Plugin.Rand.GaussianCappedInt((values.capMax - values.capMin + 2) / 2f * mult + capMin, deviation, capMin);
 
-                    int heroIndex = Array.IndexOf(heroTypes, values.TechType) + 1;
+                    float numHeroes = Plugin.HeroTechs.Length;
+                    int heroIndex = Array.IndexOf(Plugin.HeroTechs, values.TechType) + 1;
                     bool baseAlwaysOne = values.countMax == values.number;
                     if (techTypes.Count > 1)
                     {
@@ -229,7 +227,7 @@ namespace WarpipsReplayability.Mod
                         if (heroIndex > 0 && baseAlwaysOne)
                         {
                             //allow more for higher heroIndex, difficult missions
-                            float highMult = mult * values.number * (1f + heroIndex / (float)heroTypes.Length);
+                            float highMult = mult * values.number * (1f + heroIndex / numHeroes);
                             float lowMult = (float)(Math.Sqrt(highMult) + Plugin.Rand.Range(0, countMin));
                             highMult = Math.Max(highMult + Plugin.Rand.Range(0, countMax), lowMult + 1);
                             //chance to temper down extreme values
@@ -244,7 +242,7 @@ namespace WarpipsReplayability.Mod
                             Plugin.Log.LogInfo($"reducing {values.TechType}, was {countMin}-{countMax} ({capMin}-{capMax})");
                             //invert heroIndex 
                             if (heroIndex > 0)
-                                heroIndex = Plugin.Rand.Round(1f + 2f * (heroTypes.Length - heroIndex) / (heroTypes.Length - 1f));
+                                heroIndex = Plugin.Rand.Round(1f + 2f * (numHeroes - heroIndex) / (numHeroes - 1f));
                             //increasing chance to reduce each
                             countMin = Math.Max(countMin - Plugin.Rand.RangeInt(0, ++heroIndex), 0);
                             countMax = Math.Max(countMax - Plugin.Rand.RangeInt(0, ++heroIndex), Math.Max(1, countMin));
@@ -262,8 +260,7 @@ namespace WarpipsReplayability.Mod
 
                     bool displayInReconLineup = true;
                     //chance to hide certain techs when total is over 10, so that more build sites will show up
-                    if (totalTechs > 10 && Plugin.Rand.Bool()
-                            && new HashSet<string>() { "PistolPip", "Shotgunner", "Warfighter", "UAZ", "Warmule", "DuneBuggy" }.Contains(values.TechType))
+                    if (totalTechs > 10 && Plugin.Rand.Bool() && Plugin.WeakTechs.Contains(values.TechType))
                     {
                         Plugin.Log.LogInfo($"hiding from recon lineup: {values.TechType} ({totalTechs})");
                         displayInReconLineup = false;
@@ -313,14 +310,12 @@ namespace WarpipsReplayability.Mod
             static IEnumerable<string> GetProfileNames(SpawnWaveProfile spawnWaveProfile) =>
                 GetProfiles(spawnWaveProfile).Select(enemySpawnProfile => enemySpawnProfile.ReturnTechType().name);
         }
-        private static SpawnAverages SelectTechType(Dictionary<string, SpawnAverages> spawnAverages, string[] heroTypes, HashSet<string> techTypes, float mult)
+        private static SpawnAverages SelectTechType(Dictionary<string, SpawnAverages> spawnAverages, HashSet<string> techTypes, float mult)
         {
             Dictionary<string, SpawnAverages> temp;
             if (!techTypes.Any())
             {
-                //ensure we pick at least one primary attack unit
-                string[] forceTech = new string[] { "PistolPip", "Warfighter", "Shotgunner", "UAZ", "Warmule", "DuneBuggy", "Gruz", "T92" };
-                spawnAverages = Filter(p => forceTech.Contains(p.Key));
+                spawnAverages = Filter(p => Plugin.PrimaryTechs.Contains(p.Key));
 
                 //ensure we pick at least one unit that spawns at low difficulty
                 do
@@ -347,7 +342,7 @@ namespace WarpipsReplayability.Mod
                 if (alwaysAllow == techType)
                     chance++;
                 //certain tech types more likely to appear in special missions
-                if (heroTypes.Contains(techType))
+                if (Plugin.HeroTechs.Contains(techType))
                     chance = Plugin.Rand.Round((chance + mult - 1) * mult);
                 Plugin.Log.LogInfo($"{techType}: {chance}");
                 return chance;
@@ -984,8 +979,8 @@ namespace WarpipsReplayability.Mod
                 if (rand.Next(21) == 0)
                 {
                     //rare chance to allow full range of startAtDifficulty values (except for heroTypes which enforce a minimum)
-                    int heroIdx = Array.IndexOf(heroTypes, techType);
-                    float range = heroIdx < 0 ? 1 : (heroIdx + 1) / (heroTypes.Length + 1f);
+                    int heroIdx = Array.IndexOf(Plugin.HeroTechs, techType);
+                    float range = heroIdx < 0 ? 1 : (heroIdx + 1) / (Plugin.HeroTechs.Length + 1f);
                     avg *= range;
                     startAtDifficulty = (1 - range) + rand.Weighted(range, avg);
                     Plugin.Log.LogInfo($"{techType} startAtDifficulty: {startAtDifficulty:0.000} ({min:0.00}-{max:0.00}), {1 - range:0.00}+Weighted({range:0.00},{avg:0.00})");

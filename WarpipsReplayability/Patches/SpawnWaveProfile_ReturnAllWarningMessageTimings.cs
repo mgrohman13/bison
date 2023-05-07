@@ -16,14 +16,6 @@ namespace WarpipsReplayability.Patches
     {
         private static readonly FieldInfo field_difficultyCurve = AccessTools.Field(typeof(SpawnWaveProfile), "difficultyCurve");
 
-        //display an alert for the lowest-spawning unit in the first listed group that has a spawn
-        private static readonly HashSet<string>[] groups = new HashSet<string>[] {
-            new string[] { "Hind", "Rocket", }.ToHashSet(),
-            new string[] { "Bubba", "Predator", "T92", }.ToHashSet(),
-            new string[] { "Tanya", "DuneBuggy", "Gruz", }.ToHashSet(),
-            new string[] { "GasPip", "Sharpshooter", "RPGSoldier", }.ToHashSet(),
-        };
-
         public static bool Prefix(SpawnWaveProfile __instance, ref List<float> __result)
         {
             try
@@ -33,6 +25,7 @@ namespace WarpipsReplayability.Patches
                 __result = new();
                 IEnumerable<EnemySpawnProfile> profiles = __instance.enemySpawnProfiles.Cast<EnemySpawnProfile>();
 
+                //display difficulty bar alerts for the lowest-spawning unit in the first group from Plugin.DifficultTechs that has a spawn
                 float? startAtDifficulty = GetStartAtDifficulty(profiles);
                 if (startAtDifficulty.HasValue)
                 {
@@ -85,7 +78,7 @@ namespace WarpipsReplayability.Patches
         }
         private static float? GetStartAtDifficulty(IEnumerable<EnemySpawnProfile> profiles)
         {
-            foreach (var group in groups)
+            foreach (var group in Plugin.DifficultTechs)
             {
                 var spawns = profiles.Where(p => group.Contains(p.ReturnTechType().name));
                 if (spawns.Any())

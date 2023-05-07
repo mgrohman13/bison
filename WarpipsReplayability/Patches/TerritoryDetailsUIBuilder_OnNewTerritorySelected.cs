@@ -23,7 +23,8 @@ namespace WarpipsReplayability.Patches
 
                 LevelGeneration.WorldMap.Operation operation = territory.operation;
                 SpawnWaveProfile spawnWaveProfile = operation.spawnWaveProfile;
-                Plugin.Log.LogInfo($"select {territory.index} {spawnWaveProfile.name} ({spawnWaveProfile.GetInstanceID()} {operation.map.MapLength})");
+                Plugin.Log.LogInfo($"select {territory.index} {spawnWaveProfile.name}" +
+                    $" ({spawnWaveProfile.GetInstanceID()} {operation.map.name} {operation.map.MapLength})");
             }
             catch (Exception e)
             {
