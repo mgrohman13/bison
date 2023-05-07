@@ -198,7 +198,7 @@ namespace WarpipsReplayability.Mod
                     {
                         SpecialTag.EnemyObjective => (float)Math.Sqrt(3),
                         SpecialTag.HighValueReward => (float)Math.Sqrt(2),
-                        _ => 1.0f,
+                        _ => 1.0f
                     };
 
                     SpawnAverages values = SelectTechType(spawnAverages, heroTypes, techTypes, mult);
@@ -892,7 +892,7 @@ namespace WarpipsReplayability.Mod
                     "Landmine" => c ? 4 : 5,
                     "GuardTower" => d ? 5 : 6,
                     "BarbedWire" => d ? 5 : 6,
-                    _ => 9
+                    _ => throw new Exception()
                 }).ToArray();
             }
 

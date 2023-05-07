@@ -22,7 +22,7 @@ namespace WarpipsReplayability.Patches
                     1 => 0.095f, //*10=.95
                     0 => 0.105f, //* 9=.945
                     2 => 0.115f, //* 8=.92
-                    _ => throw new Exception($"Map.MissionManagerAsset.GameDifficultyIndex {Map.MissionManagerAsset.GameDifficultyIndex}"),
+                    _ => throw new Exception($"Map.MissionManagerAsset.GameDifficultyIndex {Map.MissionManagerAsset.GameDifficultyIndex}")
                 };
                 if (__instance.WorldMapIndex == 3)
                 {

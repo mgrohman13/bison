@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using static WarpipsReplayability.Mod.Operations;
+using TerritoryConnection = LevelGeneration.WorldMap.WorldMapAsset.TerritoryConnection;
 
 namespace WarpipsReplayability.Mod
 {
@@ -20,12 +21,12 @@ namespace WarpipsReplayability.Mod
         public static TerritoryInstance[] Territories { get; set; }
         public static bool DoShuffle { get; set; }
 
-        public static List<WorldMapAsset.TerritoryConnection> OriginalConnections { get; private set; }
+        private static List<TerritoryConnection> originalConnections;
+        public static List<TerritoryConnection> OriginalConnections => CloneConnections(originalConnections);
 
         public static void Randomize()
         {
-            //DoShuffle = false;
-            //Persist.SaveNew(Enumerable.Range(0, Territories.Length).ToArray());
+            SetOriginalConnections();
 
             if (DoShuffle)
             {
@@ -46,6 +47,7 @@ namespace WarpipsReplayability.Mod
         public static void Load()
         {
             SetOriginalConnections();
+
             Persist.Load();
             LoadShuffle();
             if (!Validate(null, null))
@@ -176,20 +178,15 @@ namespace WarpipsReplayability.Mod
                 1 => 8f / 10,
                 0 => 8f / 9,
                 2 => 8f / 8,
-                _ => throw new Exception($"Map.MissionManagerAsset.GameDifficultyIndex {MissionManagerAsset.GameDifficultyIndex}"),
+                _ => throw new Exception($"Map.MissionManagerAsset.GameDifficultyIndex {MissionManagerAsset.GameDifficultyIndex}")
             };
+            Plugin.Log.LogDebug($"GameDifficultyIndex: {MissionManagerAsset.GameDifficultyIndex}, mult: {mult}");
 
-            //if (Config.RebalanceTech)
+            //standard territories have the full amount reduced, special territories only the bonus 
             if (territory.specialTag == TerritoryInstance.SpecialTag.None)
-            {
-                Plugin.Log.LogDebug($"GameDifficultyIndex: {MissionManagerAsset.GameDifficultyIndex}, mult: {mult}");
                 avg *= mult;
-            }
             else
-            {
-                //special territories only have the bonus reduced, not the full amount
                 avg -= bonus * (1 - mult * mult);
-            }
 
             if (techReward >= 5)
                 operation.techReward = Plugin.Rand.GaussianOEInt(avg, dev, oe, 3);
@@ -212,36 +209,34 @@ namespace WarpipsReplayability.Mod
         private static GraphInfo ModifyConnections()
         {
             GraphInfo graph = GetEdges(Territories);
-            int count = WorldMapAsset.TerritoryConnections.Count;
+            int numTerritories = Territories.Length;
 
             int numEdges = CountEdges(graph.Edges);
             //sever roughly half the extra edges, still ensuring a fully connected graph 
-            float avg = (numEdges + count - 3f) / 2f;
-            //int min = Math.Max((int)Math.Ceiling(2 * avg - numEdges), count - 1);
-            //Plugin.Log.LogInfo($"GaussianCappedInt {avg}, .065, {min}"); 
+            float avg = (numEdges + numTerritories - 3f) / 2f;
 
-            if (avg < count - 1)
+            if (avg < numTerritories - 1)
             {
-                Plugin.Log.LogError($"OriginalConnections did not restore properly ({numEdges} {avg} {count - 1})");
+                Plugin.Log.LogError($"OriginalConnections did not restore properly ({numEdges} {avg} {numTerritories - 1})");
                 return graph;
             }
 
-            int target = Plugin.Rand.GaussianCappedInt(avg, .065f, count - 1);
-            //target = numEdges;
+            Plugin.Log.LogInfo($"ModifyConnections Gaussian({avg},.065,{numTerritories - 1})");
+            int target = Plugin.Rand.GaussianCappedInt(avg, .065f, numTerritories - 1);
             Plugin.Log.LogInfo($"{numEdges} edges, target {target} (avg {avg:0.0})");
 
             int attempts = 0, maxAttempts = 6 * numEdges * (numEdges - target);
             while (numEdges > target && attempts < maxAttempts)
             {
-                HashSet<int>[] critical = FindCritical(graph.Edges, count);
-                //Plugin.Log.LogInfo($"critical = {CountEdges(critical)}");
+                HashSet<int>[] critical = FindCritical(graph.Edges, numTerritories);
+                Plugin.Log.LogDebug($"critical = {CountEdges(critical)}");
                 if (CountEdges(critical) == numEdges)
                     break;
 
                 int a, b;
                 do
                 {
-                    a = Plugin.Rand.SelectValue(Enumerable.Range(0, count), c => graph.Edges[c].Count * graph.Edges[c].Count);
+                    a = Plugin.Rand.SelectValue(Enumerable.Range(0, numTerritories), c => graph.Edges[c].Count * graph.Edges[c].Count);
                     b = Plugin.Rand.SelectValue(graph.Edges[a]);
                 } while (critical[a].Contains(b));
 
@@ -249,7 +244,7 @@ namespace WarpipsReplayability.Mod
                 graph.Edges[b].Remove(a);
                 if (Validate(null, graph))
                 {
-                    //Plugin.Log.LogInfo($"Remove {a} - {b}");
+                    Plugin.Log.LogDebug($"Remove {a} - {b}");
                     numEdges--;
                 }
                 else
@@ -259,7 +254,11 @@ namespace WarpipsReplayability.Mod
                 }
                 attempts++;
             }
-            Plugin.Log.LogInfo($"Edge removal attempts {attempts} (max {maxAttempts})");
+            string log = $"Edge removal attempts {attempts} (max {maxAttempts})";
+            if (attempts < maxAttempts)
+                Plugin.Log.LogInfo(log);
+            else
+                Plugin.Log.LogWarning(log);
 
             return graph;
 
@@ -296,10 +295,14 @@ namespace WarpipsReplayability.Mod
 
         private static bool Validate(int[] shuffle, GraphInfo graph)
         {
-            // todo: vary with difficulty
-            const int numMissions = 9;
-            //Plugin.Log.LogInfo($"GameRandom.Territories {GameRandom.Territories}");
-            //Plugin.Log.LogInfo($"graph {graph}");
+            int numMissions = MissionManagerAsset.GameDifficultyIndex switch
+            {
+                3 => 12,
+                1 => 11,
+                0 => 10,
+                2 => 9,
+                _ => throw new Exception()
+            };
 
             var territories = Territories.ToArray();
             if (shuffle != null)
@@ -309,60 +312,44 @@ namespace WarpipsReplayability.Mod
             }
             graph ??= GetEdges(territories);
 
-            //Plugin.Log.LogInfo($"graph.Start {graph.Start}");
-            //Plugin.Log.LogInfo($"graph.End {graph.End}");
-            //Plugin.Log.LogInfo($"graph.Rewards {graph.Rewards}");
-
             //path to end must allow completion without seeing super soldiers
             List<TerritoryInstance> path = TBSUtil.PathFind(Plugin.Rand, graph.Start, graph.End, GetNeighbors, GetDistance);
-            //Plugin.Log.LogInfo($"path {path}");
             int pathLength = path.Count - 1;
-            //Plugin.Log.LogInfo($"pathLength {pathLength}");
             if (pathLength > numMissions)
             {
-                Plugin.Log.LogInfo($"({CountEdges(graph.Edges)}) pathLength {pathLength}, invalid");
+                Plugin.Log.LogInfo($"({CountEdges(graph.Edges)}) pathLength {pathLength} > {numMissions}, invalid");
                 return false;
             }
 
-            //Plugin.Log.LogInfo($"here");
-
-            //reachable territories counting end but not start
+            //ensure you can reach entire island
             HashSet<TerritoryInstance> reachable = new();
-            DFS(graph.Start);
-            //Plugin.Log.LogInfo($"reachable.Count {reachable.Count}");
-
+            DFS(graph.Start, t => t != graph.End);
             if (reachable.Count != territories.Length - 1)
             {
-                Plugin.Log.LogInfo($"({CountEdges(graph.Edges)}) reachable.Count {reachable.Count}, invalid");
+                Plugin.Log.LogInfo($"({CountEdges(graph.Edges)}) reachable.Count {reachable.Count} != {territories.Length - 1}, invalid");
                 return false;
             }
 
-            ////must be able to reach enough territories to max out difficulty bar
-            //if (reachable.Count < Math.Min(territories.Length - 1, numMissions))
-            //{
-            //    Plugin.Log.LogInfo($"({CountEdges(graph.Edges)}) reachable.Count {reachable.Count}, invalid");
-            //    return false;
-            //}
-
-            ////Plugin.Log.LogInfo($"here2");
-
-            ////all speical rewards should be reachable 
-            //if (graph.Rewards.Any(r => !reachable.Contains(r)))
-            //{
-            //    Plugin.Log.LogInfo($"({CountEdges(graph.Edges)}) end is blocking reward path, invalid");
-            //    return false;
-            //}
+            //ensure HighReward territories don't block off too much
+            reachable.Clear();
+            DFS(graph.Start, t => t.specialTag == TerritoryInstance.SpecialTag.None);
+            if (reachable.Count < numMissions)
+            {
+                Plugin.Log.LogInfo($"({CountEdges(graph.Edges)}) reachable.Count {reachable.Count} < {numMissions}, invalid");
+                return false;
+            }
 
             return true;
 
-            void DFS(TerritoryInstance parent)
+            //reachable territories counting end but not start
+            void DFS(TerritoryInstance parent, Predicate<TerritoryInstance> CanPass)
             {
                 foreach (var child in GetNeighbors(parent).Select(t => t.Item1))
                     if (child != graph.Start && !reachable.Contains(child))
                     {
                         reachable.Add(child);
-                        if (child != graph.End)
-                            DFS(child);
+                        if (CanPass(child))
+                            DFS(child, CanPass);
                     }
             }
             IEnumerable<Tuple<TerritoryInstance, int>> GetNeighbors(TerritoryInstance t) =>
@@ -373,20 +360,19 @@ namespace WarpipsReplayability.Mod
 
         private static void GenerateConnections(GraphInfo graph)
         {
-            SetOriginalConnections();
-
-            int count = WorldMapAsset.TerritoryConnections.Count;
-            WorldMapAsset.TerritoryConnections.Clear();
+            List<TerritoryConnection> connections = WorldMapAsset.TerritoryConnections;
+            int count = connections.Count;
+            connections.Clear();
             for (int c = 0; c < count; c++)
             {
-                WorldMapAsset.TerritoryConnection connection = new()
+                TerritoryConnection connection = new()
                 {
                     //maintain 1-based indexing 
                     connection = graph.Edges[c].Select(d => d + 1).ToList()
                 };
-                WorldMapAsset.TerritoryConnections.Add(connection);
+                connections.Add(connection);
 
-                //Plugin.Log.LogInfo($"{c} -> ({connection.connection.Aggregate("", (x, y) => x + ", " + y)})");
+                Plugin.Log.LogDebug($"GenerateConnections {c} -> ({connection.connection.Aggregate("", (x, y) => x + "," + y)})");
             }
 
             Plugin.Log.LogInfo($"Generated {CountEdges(graph.Edges)} connections");
@@ -394,20 +380,23 @@ namespace WarpipsReplayability.Mod
 
         private static void SetOriginalConnections()
         {
-            if (OriginalConnections == null)
+            //we need to store off the original connections so we can restore them when starting a new game
+            if (originalConnections == null)
             {
-                OriginalConnections = WorldMapAsset.TerritoryConnections
-                    .Select(c => new WorldMapAsset.TerritoryConnection()
-                    {
-                        connection = c.connection.ToList()
-                    }).ToList();
-                Plugin.Log.LogInfo($"OriginalConnections {OriginalConnections.Sum(c => c.connection.Count)}");
+                originalConnections = CloneConnections(WorldMapAsset.TerritoryConnections);
+                Plugin.Log.LogInfo($"SetOriginalConnections {originalConnections.Sum(c => c.connection.Count) / 2}");
             }
         }
+        private static List<TerritoryConnection> CloneConnections(List<TerritoryConnection> connections) =>
+            connections?.Select(c => new TerritoryConnection()
+            {
+                connection = c.connection.ToList()
+            }).ToList();
 
         private static GraphInfo GetEdges(TerritoryInstance[] territories)
         {
-            int count = WorldMapAsset.TerritoryConnections.Count;
+            var connections = WorldMapAsset.TerritoryConnections;
+            int count = connections.Count;
             GraphInfo graph = new() { Edges = InitEdgeArray(count) };
 
             for (int a = 0; a < count; a++)
@@ -420,7 +409,7 @@ namespace WarpipsReplayability.Mod
                 else if (territory.specialTag == TerritoryInstance.SpecialTag.HighValueReward)
                     graph.Rewards.Add(territory);
 
-                foreach (int connection in WorldMapAsset.TerritoryConnections[a].connection)
+                foreach (int connection in connections[a].connection)
                 {
                     //TerritoryConnections are inexplicably 1-based
                     int b = connection - 1;
@@ -441,7 +430,6 @@ namespace WarpipsReplayability.Mod
                 }
             }
 
-            //Plugin.Log.LogInfo("Cleaned up connections");
             return graph;
         }
         private static HashSet<int>[] InitEdgeArray(int count)
