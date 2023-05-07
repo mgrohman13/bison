@@ -53,6 +53,3 @@ before next release:
 enemyBuildSites need randomized count prior to CountTechTypes 
 	limit total to 10? keep some defences being cut off? 
 	since saving more info, fix map length persisted limit corner case while at it
-
-SpawnAverages.Maps honor probability
-	instead of 50% chance of keeping?

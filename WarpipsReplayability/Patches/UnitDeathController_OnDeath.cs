@@ -80,8 +80,7 @@ namespace WarpipsReplayability.Patches
                 expMap.Add(name, exp);
                 Plugin.Log.LogInfo(expMap
                     .Select(p => $"{p.Key}:{p.Value}")
-                    .Aggregate("xpBaseOnKill:",
-                        (a, b) => a + Environment.NewLine + b));
+                    .Aggregate("xpBaseOnKill:", (a, b) => a + Environment.NewLine + b));
             }
             return name;
         }

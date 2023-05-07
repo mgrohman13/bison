@@ -146,8 +146,13 @@ namespace WarpipsReplayability.Mod
                 }
 
                 if (profiles.Count > 0)
-                    SpawnAverages.Maps.Add(operation.map);
+                {
+                    SpawnAverages.Maps.TryGetValue(operation.map, out int count);
+                    SpawnAverages.Maps[operation.map] = count + 1;
+                }
             }
+
+            Plugin.Log.LogInfo(SpawnAverages.Maps.Select(p => p.Key.name + ":" + p.Value).Aggregate("maps ", (a, b) => a + " " + b));
 
             Plugin.Log.LogDebug(Environment.NewLine);
             foreach (var pair in Plugin.Rand.Iterate(spawnAverages))
@@ -183,8 +188,10 @@ namespace WarpipsReplayability.Mod
 
             Plugin.Log.LogInfo($"{operation.map.name} {operation.map.MapLength}");
             if (Plugin.Rand.Bool())
+            {
                 operation.map = Plugin.Rand.SelectValue(SpawnAverages.Maps);
-            Plugin.Log.LogInfo($"{operation.map.name} {operation.map.MapLength}");
+                Plugin.Log.LogInfo($"{operation.map.name} {operation.map.MapLength}");
+            }
 
             //keep techTypes distinct
             HashSet<string> techTypes = new();
@@ -392,7 +399,7 @@ namespace WarpipsReplayability.Mod
                 info.failureMapLengths.Add(mapLength);
 
                 Plugin.Log.LogInfo($"RandOnLoss saving failureMapLengths ({operation.map.name}): " +
-                    info.failureMapLengths.Aggregate(Environment.NewLine, (a, b) => a + Environment.NewLine + b));
+                    info.failureMapLengths.Aggregate("", (a, b) => a + Environment.NewLine + b));
                 Persist.SaveCurrent();
             }
 
@@ -805,7 +812,7 @@ namespace WarpipsReplayability.Mod
             Dictionary<EnemyBuildSite, int> buildSites, ref int totalSites, ref int totalDistinct)
         {
             SpawnWaveProfile spawnWaveProfile = territory.operation.spawnWaveProfile;
-            Plugin.Log.LogInfo($"buildSites ({totalDistinct},{totalSites}): " +
+            Plugin.Log.LogInfo($"buildSites ({totalDistinct},{totalSites}):" +
                 buildSites.Select(b => b.Key.name + ":" + b.Value).OrderBy(n => n).Aggregate("", (a, b) => a + " " + b));
             int max = BuildSiteTechs(buildSites.Keys).Count();
             int oldSites = spawnWaveProfile.enemyBuildSites.Length;
@@ -848,7 +855,7 @@ namespace WarpipsReplayability.Mod
                     while (distinct.Contains(site));
                     distinct.Add(site);
                 }
-                Plugin.Log.LogInfo(distinct.Aggregate("distinct: ", (a, b) => a + " " + b));
+                Plugin.Log.LogInfo(distinct.Aggregate("distinct:", (a, b) => a + " " + b));
 
                 EnemyBuildSite[] enemyBuildSites = new EnemyBuildSite[numSites];
                 for (int b = 0; b < numSites; b++)
@@ -897,7 +904,7 @@ namespace WarpipsReplayability.Mod
                 return cap;
             }
             static string Log(SpawnWaveProfile spawnWaveProfile) =>
-                spawnWaveProfile.enemyBuildSites.Select(b => b.name).Aggregate("", (a, b) => a + " " + b).Trim();
+                spawnWaveProfile.enemyBuildSites.Select(b => b.name).Aggregate("", (a, b) => a + " " + b);
         }
         private static void AddTokens(MTRandom deterministic, EnemySpawnProfile[] enemySpawnProfiles, TerritoryInstance territory)
         {
@@ -951,7 +958,7 @@ namespace WarpipsReplayability.Mod
 
         private class SpawnAverages
         {
-            public static HashSet<MapType> Maps;
+            public static Dictionary<MapType, int> Maps;
 
             public SpawnAverages(string techType)
             {

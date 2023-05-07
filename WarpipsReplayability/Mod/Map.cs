@@ -372,7 +372,7 @@ namespace WarpipsReplayability.Mod
                 };
                 connections.Add(connection);
 
-                Plugin.Log.LogDebug($"GenerateConnections {c} -> ({connection.connection.Aggregate("", (x, y) => x + "," + y)})");
+                Plugin.Log.LogDebug($"GenerateConnections {c} -> ({connection.connection.Aggregate("", (x, y) => x + "," + y)},)");
             }
 
             Plugin.Log.LogInfo($"Generated {CountEdges(graph.Edges)} connections");
