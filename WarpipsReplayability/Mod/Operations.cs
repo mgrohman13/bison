@@ -96,10 +96,14 @@ namespace WarpipsReplayability.Mod
 
             int numTerritories = Map.Territories.Length;
             List<OperationInfo> saveInfo = new();
-            foreach (int territoryIdx in Plugin.Rand.Iterate(Map.Territories.Length))
+            foreach (var territory in Plugin.Rand.Iterate(Map.Territories))
             {
-                EnemyBuildSite[] generatedSites = GenerateEnemyBuildSites(buildSites, ref numBuildSites, ref distinctBuildSites, territoryIdx, numTerritories);
-                OperationInfo operationInfo = GenerateSpawnData(spawnAverages, territoryIdx, generatedSites);
+                if (territory.index != Array.IndexOf(Map.Territories, territory))
+                    Plugin.Log.LogError($"Territory out of order {territory.index} {Array.IndexOf(Map.Territories, territory)}");
+
+                Plugin.Log.LogInfo($"{territory.operation.spawnWaveProfile.name}");
+                EnemyBuildSite[] generatedSites = GenerateEnemyBuildSites(buildSites, ref numBuildSites, ref distinctBuildSites, territory, numTerritories);
+                OperationInfo operationInfo = GenerateSpawnData(spawnAverages, territory, generatedSites);
                 numTerritories--;
                 saveInfo.Add(operationInfo);
             }
@@ -217,16 +221,15 @@ namespace WarpipsReplayability.Mod
             return buildSites;
         }
 
-        private static OperationInfo GenerateSpawnData(Dictionary<string, SpawnAverages> spawnAverages, int territoryIdx, EnemyBuildSite[] generatedSites)
+        private static OperationInfo GenerateSpawnData(Dictionary<string, SpawnAverages> spawnAverages, TerritoryInstance territory, EnemyBuildSite[] generatedSites)
         {
             foreach (var s in spawnAverages.Values)
                 s.GenStartAtDifficulty();
 
-            TerritoryInstance territory = Map.Territories[territoryIdx];
             Operation operation = territory.operation;
             SpawnWaveProfile spawnWaveProfile = operation.spawnWaveProfile;
 
-            CountTechTypes(spawnAverages.Count, territoryIdx, generatedSites, out int spawnTechs, out int totalTechs);
+            CountTechTypes(spawnAverages.Count, territory, generatedSites, out int spawnTechs, out int totalTechs);
 
             Plugin.Log.LogInfo($"{operation.map.name} {operation.map.MapLength}");
             if (Plugin.Rand.Bool())
@@ -319,16 +322,15 @@ namespace WarpipsReplayability.Mod
                     OriginalProfile copyFrom = Plugin.Rand.SelectValue(values.Profiles);
                     SpawnerInfo info = new(copyFrom, countMin, countMax, capMin, capMax, values.StartAtDifficulty, displayInReconLineup);
 
-                    Plugin.Log.LogInfo($"{spawnWaveProfile.name} {values.TechType}: {info.CountMin}-{info.CountMax} ({info.CapMin}-{info.CapMax}), {info.Difficulty:0.00}");
+                    Plugin.Log.LogInfo($"{values.TechType}: {info.CountMin}-{info.CountMax} ({info.CapMin}-{info.CapMax}), {info.Difficulty:0.00}");
                     spawns.Add(info);
                 }
 
-            Plugin.Log.LogInfo($"Generated random operation ({operation.map.name})");
-            return new(territoryIdx, operation.map.MapLength, Plugin.Rand.Iterate(spawns).ToArray(), generatedSites);
+            Plugin.Log.LogInfo($"{spawnWaveProfile.name} Generated random operation ({operation.map.name})");
+            return new(territory.index, operation.map.MapLength, Plugin.Rand.Iterate(spawns).ToArray(), generatedSites);
         }
-        private static void CountTechTypes(int availableTypes, int territoryIdx, EnemyBuildSite[] generatedSites, out int spawnTechs, out int totalTechs)
+        private static void CountTechTypes(int availableTypes, TerritoryInstance territory, EnemyBuildSite[] generatedSites, out int spawnTechs, out int totalTechs)
         {
-            TerritoryInstance territory = Map.Territories[territoryIdx];
             SpawnWaveProfile spawnWaveProfile = territory.operation.spawnWaveProfile;
             //keep roughly the same count of tech types
             spawnTechs = GetProfileNames(spawnWaveProfile)
@@ -338,7 +340,7 @@ namespace WarpipsReplayability.Mod
                 .Distinct().Count();
 
             bool logFlag = false;
-            Plugin.Log.LogInfo($"{spawnWaveProfile.name} count: {spawnTechs} (total: {totalTechs})");
+            Plugin.Log.LogInfo($"count: {spawnTechs} (total: {totalTechs})");
 
             int mod = Plugin.Rand.Bool() ? -1 : 1;
             //randomize count somewhat 
@@ -353,7 +355,7 @@ namespace WarpipsReplayability.Mod
             }
 
             if (logFlag)
-                Plugin.Log.LogInfo($"{spawnWaveProfile.name} count: {spawnTechs} (total: {totalTechs})");
+                Plugin.Log.LogInfo($"count: {spawnTechs} (total: {totalTechs})");
 
             static IEnumerable<string> GetProfileNames(SpawnWaveProfile spawnWaveProfile) =>
                 GetProfiles(spawnWaveProfile).Select(enemySpawnProfile => enemySpawnProfile.ReturnTechType().name);
@@ -405,15 +407,14 @@ namespace WarpipsReplayability.Mod
             Dictionary<string, SpawnAverages> Filter(Func<KeyValuePair<string, SpawnAverages>, bool> predicate) =>
                 spawnAverages.Where(predicate).ToDictionary(p => p.Key, p => p.Value);
         }
-        private static EnemyBuildSite[] GenerateEnemyBuildSites(Dictionary<EnemyBuildSite, int> buildSiteCounts, ref int totalSites, ref int totalDistinct, int territoryIdx, int numTerritories)
+        private static EnemyBuildSite[] GenerateEnemyBuildSites(Dictionary<EnemyBuildSite, int> buildSiteCounts, ref int totalSites, ref int totalDistinct, TerritoryInstance territory, int numTerritories)
         {
-            TerritoryInstance territory = Map.Territories[territoryIdx];
-
-            EnemyBuildSite[] enemyBuildSites = territory.operation.spawnWaveProfile.enemyBuildSites.ToArray();
+            SpawnWaveProfile spawnWaveProfile = territory.operation.spawnWaveProfile;
+            EnemyBuildSite[] enemyBuildSites = spawnWaveProfile.enemyBuildSites.ToArray();
             LogBuildCounts(buildSiteCounts, totalSites, totalDistinct);
             int max = BuildSiteTechs(buildSiteCounts.Keys).Count();
             int numOldSites = enemyBuildSites.Length;
-            Plugin.Log.LogInfo($"enemyBuildSites ({numOldSites}): " + LogBuildSites(enemyBuildSites));
+            Plugin.Log.LogInfo($"enemyBuildSites ({numOldSites}):" + LogBuildSites(enemyBuildSites));
 
             int distinctSites = NumSites(BuildSiteTechs(enemyBuildSites).Count(), totalDistinct, territory.specialTag switch
             {
@@ -426,7 +427,8 @@ namespace WarpipsReplayability.Mod
                 Plugin.Log.LogWarning($"distinctSites {distinctSites} > {max}");
                 distinctSites = max;
             }
-            if (distinctSites == 0 || (numOldSites == 0 && Plugin.Rand.Bool()))
+
+            if (spawnWaveProfile.enemySpawnProfiles.Length == 0 || distinctSites == 0 || (numOldSites == 0 && Plugin.Rand.Bool()))
             {
                 enemyBuildSites = new EnemyBuildSite[0];
                 Plugin.Log.LogInfo($"distinctSites: 0 ({distinctSites})");
@@ -487,7 +489,7 @@ namespace WarpipsReplayability.Mod
                 }).ToArray();
             }
 
-            Plugin.Log.LogInfo("enemyBuildSites: " + LogBuildSites(enemyBuildSites));
+            Plugin.Log.LogInfo("enemyBuildSites:" + LogBuildSites(enemyBuildSites));
             return enemyBuildSites;
 
             int NumSites(int count, int total, int cap)
@@ -503,7 +505,7 @@ namespace WarpipsReplayability.Mod
             }
         }
         private static void LogBuildCounts(Dictionary<EnemyBuildSite, int> buildSiteCounts, int totalSites, int totalDistinct) =>
-            Plugin.Log.LogInfo($"buildSites ({totalDistinct},{totalSites}):" +
+            Plugin.Log.LogInfo($"buildSite counts ({totalDistinct},{totalSites}):" +
                 buildSiteCounts.Select(b => b.Key.name + ":" + b.Value).OrderBy(n => n).Aggregate("", (a, b) => a + " " + b));
 
         public static void RandOnLoss()
@@ -545,9 +547,10 @@ namespace WarpipsReplayability.Mod
             }
 
             //new seed based on previous values
-            uint[] seed = GetDifficultyCurve(spawnWaveProfile).keys
-                .SelectMany(k => new float[] { k.time, k.value })
-                .Append(mapLength)
+            Keyframe[] keys = GetDifficultyCurve(spawnWaveProfile).keys;
+            uint[] seed = keys
+                .SelectMany(k => (new float[] { k.value, k.time, }))
+                .Concat(new float[] { spawnWaveProfile.RoundDuration, keys.Length, mapLength, enemySpawnProfiles.Count(), })
                 .Concat(enemySpawnProfiles.Select(p => p.UnitSpawnData.StartAtDifficulty))
                 .Select(f => (uint)f.GetHashCode())
                 .ToArray();
@@ -591,9 +594,9 @@ namespace WarpipsReplayability.Mod
                 EnemySpawnProfile[] enemySpawnProfiles = new EnemySpawnProfile[numSpawns];
                 spawnWaveProfile.enemySpawnProfiles = enemySpawnProfiles;
                 spawnWaveProfile.enemySpawnProfilesAtDifficulty = new SpawnWaveProfileAtDifficulty[0];
-                Plugin.Log.LogDebug("enemyBuildSites: " + LogBuildSites(spawnWaveProfile.enemyBuildSites));
+                Plugin.Log.LogDebug("enemyBuildSites:" + LogBuildSites(spawnWaveProfile.enemyBuildSites));
                 spawnWaveProfile.enemyBuildSites = operationInfo.BuildSites.Select(name => buildSites[name]).ToArray();
-                Plugin.Log.LogInfo("enemyBuildSites: " + LogBuildSites(spawnWaveProfile.enemyBuildSites));
+                Plugin.Log.LogInfo("enemyBuildSites:" + LogBuildSites(spawnWaveProfile.enemyBuildSites));
 
                 if (numSpawns > 0)
                 {
@@ -653,7 +656,7 @@ namespace WarpipsReplayability.Mod
                 seed = copy;
             }
 
-            Plugin.Log.LogInfo("Operations.Load seed:" + Plugin.GetSeedString(seed));
+            Plugin.Log.LogInfo("Operations.Load seed: " + Plugin.GetSeedString(seed));
             return seed;
         }
 
@@ -700,10 +703,10 @@ namespace WarpipsReplayability.Mod
 
             //mapLength ranges from 70-320
             //this results in 30.6-79.1 seconds considered early 
-            float earlyTime = (float)(Math.Sqrt(mapLength - 26) / 13.0);
-            earlyTime = deterministic.GaussianCapped(earlyTime / duration, .13f);
+            float lengthTime = (float)(Math.Sqrt(mapLength - 26) / 13.0 / duration);
+            float earlyTime = deterministic.GaussianCapped(lengthTime, .13f);
 
-            Plugin.Log.LogInfo($"maxStartAtDifficulty {maxStartAtDifficulty:0.000}, duration: {duration}, mapLength: {mapLength}, earlyTime: {earlyTime}");
+            Plugin.Log.LogInfo($"maxStartAtDifficulty {maxStartAtDifficulty:0.000}, duration: {duration}, mapLength: {mapLength}, earlyTime: {earlyTime:0.000}");
 
             RandKeys(deterministic, curve, duration, maxStartAtDifficulty);
             IncreaseMax(deterministic, curve);
@@ -717,7 +720,7 @@ namespace WarpipsReplayability.Mod
                 int a = 1 + deterministic.Next(curve.keys.Length - 1);
                 ReduceKey(deterministic, curve, a, curve.keys[a], "random easy");
             }
-            CheckEarly(deterministic, curve, duration, earlyTime);
+            CheckEarly(deterministic, curve, duration, earlyTime, lengthTime);
             EnsureSpawn(deterministic, curve, duration, maxStartAtDifficulty);
             TaperEnd(deterministic, curve);
 
@@ -758,11 +761,17 @@ namespace WarpipsReplayability.Mod
             //typically don't ramp up too high by 1 minute mark
             for (int a = 1; a < curve.keys.Length && deterministic.Bool(); a++)
             {
-                Keyframe key = ReduceKey(deterministic, curve, a, curve.keys[a], "early");
+                Keyframe key = curve.keys[a];
+                if (key.time > earlyTime && deterministic.OE((key.time - earlyTime) / earlyTime) > .26f)
+                {
+                    Plugin.Log.LogInfo($"EasyEarly shortcutting ({key.time:0.000},{earlyTime:0.000})");
+                    break;
+                }
+                ReduceKey(deterministic, curve, a, key, "early");
                 if (key.time > earlyTime)
                 {
                     earlyTime = key.time + deterministic.OE(.001f);
-                    Plugin.Log.LogInfo($"earlyTime: {earlyTime}");
+                    Plugin.Log.LogInfo($"earlyTime: {earlyTime:0.000}");
                     break;
                 }
             }
@@ -805,11 +814,11 @@ namespace WarpipsReplayability.Mod
 
             int GetIdx() => 2 + deterministic.Next(numKeys - 2);
         }
-        private static void CheckEarly(MTRandom deterministic, AnimationCurve curve, float duration, float earlyTime)
+        private static void CheckEarly(MTRandom deterministic, AnimationCurve curve, float duration, float earlyTime, float lengthTime)
         {
             //ensure difficulty ramps up to at least around .2 early on
             int numKeys = curve.keys.Length;
-            float cutoff = deterministic.GaussianCapped(earlyTime + 1f / duration, .13f, earlyTime);
+            float cutoff = deterministic.GaussianCapped(earlyTime + deterministic.Range(0, lengthTime), .065f, earlyTime);
             float max = curve.Evaluate(cutoff);
             for (int a = 1; a < numKeys; a++)
             {
@@ -1026,7 +1035,7 @@ namespace WarpipsReplayability.Mod
                         dev *= (1 - avg) / avg;
                     float cap = Math.Max(0, 2 * avg - 1);
                     startAtDifficulty = rand.GaussianCapped(avg, dev, cap);
-                    Plugin.Log.LogInfo($"{techType} startAtDifficulty: {startAtDifficulty:0.00} ({min:0.00}-{max:0.00}), Gaussian({avg:0.00},{dev:0.000},{cap:0.00})");
+                    Plugin.Log.LogInfo($"{techType} startAtDifficulty: {startAtDifficulty:0.000} ({min:0.00}-{max:0.00}), Gaussian({avg:0.00},{dev:0.000},{cap:0.00})");
                 }
                 return startAtDifficulty;
             }
