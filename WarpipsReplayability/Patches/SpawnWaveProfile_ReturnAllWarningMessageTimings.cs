@@ -32,7 +32,7 @@ namespace WarpipsReplayability.Patches
                     uint[] seed = profiles.Select(p => p.UnitSpawnData).SelectMany(d =>
                         new object[] { d.CooldownAfterSpawn, d.SpawnCapCycleMultipler, d.StartAtDifficulty, d.TimeBetweenClusters })
                         .Select(o => (uint)o.GetHashCode()).ToArray();
-                    Plugin.Log.LogInfo("alert timings seed:" + Plugin.GetSeedString(seed));
+                    Plugin.Log.LogInfo("alert timings seed: " + Plugin.GetSeedString(seed));
                     MTRandom temp = new(seed);
 
                     AnimationCurve curve = (AnimationCurve)field_difficultyCurve.GetValue(__instance);
@@ -41,12 +41,16 @@ namespace WarpipsReplayability.Patches
 
                     bool prev = false;
                     float prevTime = 0;
-                    foreach (var k in curve.keys)
+                    foreach (var key in curve.keys)
                     {
-                        bool cur = curve.Evaluate(k.time) > warningDifficulty;
-                        if (!prev && cur)
+                        bool cur = curve.Evaluate(key.time) > warningDifficulty;
+                        if (key.time > 1 && curve.Evaluate(1) < warningDifficulty)
                         {
-                            float min = prevTime, max = Math.Min(1, k.time), result;
+                            Plugin.Log.LogInfo($"skipping alert at 1 {prevTime:0.000}-{key.time:0.000} (1= {curve.Evaluate(1):0.000})");
+                        }
+                        else if (!prev && cur)
+                        {
+                            float min = prevTime, max = Math.Min(1, key.time), result;
                             do
                             {
                                 result = Mathf.Lerp(min, max, temp.FloatHalf());
@@ -60,11 +64,11 @@ namespace WarpipsReplayability.Patches
                             } while (max > min);
                             if (max <= min)
                                 Plugin.Log.LogWarning($"setting alert to {result}");
-                            Plugin.Log.LogInfo($"alert {prevTime:0.000}-{k.time:0.000}: {result:0.000}");
+                            Plugin.Log.LogInfo($"alert {prevTime:0.000}-{key.time:0.000}: {result:0.000}");
                             __result.Add(result);
                         }
                         prev = cur;
-                        prevTime = k.time;
+                        prevTime = key.time;
                     }
                 }
 
