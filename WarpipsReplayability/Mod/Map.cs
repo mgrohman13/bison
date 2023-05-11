@@ -5,6 +5,7 @@ using MattUtil;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using static WarpipsReplayability.Mod.Operations;
 using TerritoryConnection = LevelGeneration.WorldMap.WorldMapAsset.TerritoryConnection;
 
@@ -23,6 +24,9 @@ namespace WarpipsReplayability.Mod
 
         private static List<TerritoryConnection> originalConnections;
         public static List<TerritoryConnection> OriginalConnections => CloneConnections(originalConnections);
+
+        private static readonly FieldInfo _tokenReward = AccessTools.Field(typeof(OperationRewardProfile), "tokenReward");
+        private static readonly FieldInfo _techReward = AccessTools.Field(typeof(OperationRewardProfile), "techReward");
 
         public static void Randomize()
         {
@@ -100,8 +104,8 @@ namespace WarpipsReplayability.Mod
                     spawnWaveProfile = operation.spawnWaveProfile,
                 };
                 OperationRewardProfile reward = data.operationRewardProfile;
-                AccessTools.Field(typeof(OperationRewardProfile), "techReward").SetValue(reward, operation.techReward);
-                AccessTools.Field(typeof(OperationRewardProfile), "tokenReward").SetValue(reward, operation.tokenReward);
+                _techReward.SetValue(reward, operation.techReward);
+                _tokenReward.SetValue(reward, operation.tokenReward);
                 return data;
             };
         }
@@ -163,34 +167,39 @@ namespace WarpipsReplayability.Mod
             if (techReward % 5 != 0)
                 Plugin.Log.LogError($"techReward already randomized {techReward}");
 
-            //note - if you don't fully complete islands, you should capture 32 territories before the final mission (9*3+5)
-            //with Math.PI bonus, on average this means an additional ~100.5 tech points
-            float bonus = (float)Math.PI;// (float)(Config.RebalanceTech ? Math.E : 0);
+            //if you don't fully complete islands, you should capture 32 territories before the final mission (9*3+5)
+            //with Math.PI bonus, on average this means an additional ~100.5 tech points (on General)
+            float bonus = (float)Math.PI;// (float)(Config.RebalanceTech ? Math.PI : 0);
 
-            float avg = techReward + bonus, dev = 3.9f / techReward + .052f, oe = 1.69f / techReward + .039f;
+            float avg = techReward + bonus, dev = 3.9f / techReward + .052f, oe = 2.1f / techReward + .021f;
 
             //multiply the average tech points by the relative number of missions you can complete
             //since this is only applied to non-special territories, you will still end up with more tech points on easier difficulties
             //but this allows me to give more for General and still avoid leaving you swimming in tech points on easier 
-            float mult = MissionManagerAsset.GameDifficultyIndex switch
+            //on the other hand, if you complete islands, you will end up with more tech points on harder difficulties
+            //this is fair because you will have to spend more units and may not turn a profit from unit rewards
+            int gameDifficultyIndex = MissionManagerAsset.GameDifficultyIndex;
+            float mult = gameDifficultyIndex switch
             {
                 3 => 8f / 11,
                 1 => 8f / 10,
                 0 => 8f / 9,
                 2 => 8f / 8,
-                _ => throw new Exception($"Map.MissionManagerAsset.GameDifficultyIndex {MissionManagerAsset.GameDifficultyIndex}")
+                _ => throw new Exception($"Map.MissionManagerAsset.GameDifficultyIndex {gameDifficultyIndex}")
             };
-            Plugin.Log.LogDebug($"GameDifficultyIndex: {MissionManagerAsset.GameDifficultyIndex}, mult: {mult}");
+            Plugin.Log.LogDebug($"GameDifficultyIndex: {gameDifficultyIndex}, mult: {mult}");
 
             //standard territories have the full amount reduced, special territories only the bonus 
             if (territory.specialTag == TerritoryInstance.SpecialTag.None)
                 avg *= mult;
             else
-                avg -= bonus * (1 - mult * mult);
+                avg -= (float)(bonus * (1.0 - Math.Pow(mult, 6.5)));
 
             if (techReward >= 5)
+            {
                 operation.techReward = Plugin.Rand.GaussianOEInt(avg, dev, oe, 3);
-            Plugin.Log.LogInfo($"techReward {techReward} -> {operation.techReward} ({avg * (1 - oe):0.00}, {dev * avg * (1 - oe):0.00}, {oe * avg:0.00})");
+                Plugin.Log.LogInfo($"techReward {techReward} -> {operation.techReward} ({avg * (1 - oe):0.00}, {dev * avg * (1 - oe):0.00}, {oe * avg:0.00})");
+            }
         }
         public static void ReduceTechRewards()
         {
@@ -198,7 +207,11 @@ namespace WarpipsReplayability.Mod
             //if (Config.RebalanceTech)
             for (int a = 0; a < Territories.Length; a++)
                 if (Territories[a].specialTag == TerritoryInstance.SpecialTag.None)
-                    Persist.Instance.TechRewards[a] = Plugin.Rand.Round(Persist.Instance.TechRewards[a] / 3f);
+                {
+                    int value = Plugin.Rand.Round(Persist.Instance.TechRewards[a] / 3f);
+                    Plugin.Log.LogInfo($"techReward {Persist.Instance.TechRewards[a]} -> {value}");
+                    Persist.Instance.TechRewards[a] = value;
+                }
 
             LoadTechRewards();
             Persist.SaveCurrent();
@@ -295,15 +308,7 @@ namespace WarpipsReplayability.Mod
 
         private static bool Validate(int[] shuffle, GraphInfo graph)
         {
-            int numMissions = MissionManagerAsset.GameDifficultyIndex switch
-            {
-                3 => 12,
-                1 => 11,
-                0 => 10,
-                2 => 9,
-                _ => throw new Exception()
-            };
-
+            //need to copy array because we might shuffle it
             var territories = Territories.ToArray();
             if (shuffle != null)
             {
@@ -312,8 +317,19 @@ namespace WarpipsReplayability.Mod
             }
             graph ??= GetEdges(territories);
 
+            int maxMissions = territories.Length - 1;
+            int numMissions = MissionManagerAsset.GameDifficultyIndex switch
+            {
+                3 => 12,
+                1 => 11,
+                0 => 10,
+                2 => 9,
+                _ => throw new Exception()
+            };
+            numMissions = Math.Min(numMissions, maxMissions);
+
             //path to end must allow completion without seeing super soldiers
-            List<TerritoryInstance> path = TBSUtil.PathFind(Plugin.Rand, graph.Start, graph.End, GetNeighbors, GetDistance);
+            List<TerritoryInstance> path = TBSUtil.PathFind(Plugin.Rand, graph.Start, graph.End, GetNeighbors, (a, b) => 1);
             int pathLength = path.Count - 1;
             if (pathLength > numMissions)
             {
@@ -324,9 +340,9 @@ namespace WarpipsReplayability.Mod
             //ensure you can reach entire island
             HashSet<TerritoryInstance> reachable = new();
             DFS(graph.Start, t => t != graph.End);
-            if (reachable.Count != territories.Length - 1)
+            if (reachable.Count != maxMissions)
             {
-                Plugin.Log.LogInfo($"({CountEdges(graph.Edges)}) reachable.Count {reachable.Count} != {territories.Length - 1}, invalid");
+                Plugin.Log.LogInfo($"({CountEdges(graph.Edges)}) reachable.Count {reachable.Count} != {maxMissions}, invalid");
                 return false;
             }
 
@@ -354,7 +370,7 @@ namespace WarpipsReplayability.Mod
             }
             IEnumerable<Tuple<TerritoryInstance, int>> GetNeighbors(TerritoryInstance t) =>
                 graph.Edges[Idx(t)].Select(e => new Tuple<TerritoryInstance, int>(territories[e], 1));
-            static int GetDistance(TerritoryInstance a, TerritoryInstance b) => 1;
+            //can't use t.index because territories will be out of order at this point
             int Idx(TerritoryInstance t) => Array.IndexOf(territories, t);
         }
 
