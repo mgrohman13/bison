@@ -42,8 +42,9 @@ namespace WarpipsReplayability.Patches
 
                 ////if (mult != 1f)
                 ////{
-                //float exp = __state * mult;
-                //___statController.UnitData.xpBaseOnKill = Plugin.Rand.GaussianCapped(exp, .1f / exp, .1f);
+                const float mult = 10f;
+                float exp = __state * mult;
+                ___statController.UnitData.xpBaseOnKill = Plugin.Rand.GaussianCappedInt(exp, 1 / exp, 1) / mult;
                 ////___statController.UnitData.xpBaseOnKill = Plugin.Rand.GaussianOE(exp, .13f / (float)Math.Sqrt(exp), .052f / exp, .05f);
                 ////}
                 ////}
@@ -54,11 +55,11 @@ namespace WarpipsReplayability.Patches
             }
         }
 
-        //public static void Postfix(UnitStatController ___statController, float __state)
-        //{
-        //    Plugin.Log.LogDebug("UnitDeathController_OnDeath Postfix");
-        //    ___statController.UnitData.xpBaseOnKill = __state;
-        //}
+        public static void Postfix(UnitStatController ___statController, float __state)
+        {
+            Plugin.Log.LogDebug("UnitDeathController_OnDeath Postfix");
+            ___statController.UnitData.xpBaseOnKill = __state;
+        }
 
         //private static readonly FieldInfo unitBuffsField = AccessTools.Field(AccessTools.TypeByName(
         //    "UpgradeController+BuffSource"), "unitBuffs");
