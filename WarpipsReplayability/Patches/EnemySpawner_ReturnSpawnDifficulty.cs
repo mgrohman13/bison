@@ -28,11 +28,11 @@ namespace WarpipsReplayability.Patches
                 //otherwise some multipliers become completely irrelevant when others are high
                 __result = 1 - (wave * world * cycle);
 
-                string log = $"difficulty: {__result:0.00} ({1 - wave:0.00} x {1 - world:0.00} x {1 - cycle:0.00})";
+                string log = wave.ToString("0.0");
                 if (lastLog != log)
                 {
                     lastLog = log;
-                    Plugin.Log.LogDebug(log);
+                    Plugin.Log.LogInfo($"difficulty: {__result:0.00} ({1 - wave:0.00} x {1 - world:0.00} x {1 - cycle:0.00})");
                 }
 
                 return false;

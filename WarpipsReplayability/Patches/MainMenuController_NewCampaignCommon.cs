@@ -3,6 +3,7 @@ using HarmonyLib;
 using LevelGeneration.WorldMap;
 using System;
 using System.Linq;
+using System.Reflection;
 using WarpipsReplayability.Mod;
 
 namespace WarpipsReplayability.Patches
@@ -11,6 +12,8 @@ namespace WarpipsReplayability.Patches
     [HarmonyPatch("NewCampaignCommon")]
     internal class MainMenuController_NewCampaignCommon
     {
+        private static readonly FieldInfo _territoryConnections = AccessTools.Field(typeof(WorldMapAsset), "territoryConnections");
+
         public static void Prefix()
         {
             try
@@ -20,7 +23,7 @@ namespace WarpipsReplayability.Patches
                 var originalConnections = Map.OriginalConnections;
                 if (Map.WorldMapAsset != null && originalConnections != null)
                 {
-                    AccessTools.Field(typeof(WorldMapAsset), "territoryConnections").SetValue(Map.WorldMapAsset, originalConnections);
+                    _territoryConnections.SetValue(Map.WorldMapAsset, originalConnections);
                     Plugin.Log.LogInfo("restored connections " + originalConnections.Sum(c => c.connection.Count) / 2);
                 }
 

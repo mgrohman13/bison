@@ -1,8 +1,7 @@
 ﻿using HarmonyLib;
 using LevelGeneration;
 using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Reflection;
 using UnityEngine;
 using WarpipsReplayability.Mod;
 
@@ -21,6 +20,8 @@ namespace WarpipsReplayability.Patches
             get;
             set;
         }
+
+        private static readonly FieldInfo _displayThreshold = AccessTools.Field(typeof(SpawnWaveProfile), "displayThreshold");
 
         public static bool Prefix(Texture2D ___barTexture, Transform ___warningHolder, SpawnWaveProfile waveProfile, ref bool ___ignoreCycleDifficulty)//, ref List<GameObject> ___bombIndicatorPrefabs)
         {
@@ -42,7 +43,7 @@ namespace WarpipsReplayability.Patches
                     //BuildDifficultyBar(waveProfile); 
                     Plugin.Log.LogInfo($"displayThreshold: {waveProfile.DisplayThreshold} -> {DisplayThreshold}");
                     //normalize the display threshold so the relative difficulty of different missions is more apparent 
-                    AccessTools.Field(typeof(SpawnWaveProfile), "displayThreshold").SetValue(waveProfile, DisplayThreshold);
+                    _displayThreshold.SetValue(waveProfile, DisplayThreshold);
                 }
                 else
                 {

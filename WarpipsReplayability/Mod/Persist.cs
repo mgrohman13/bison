@@ -4,6 +4,7 @@ using MattUtil;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using static LevelGeneration.WorldMap.WorldMapAsset;
 
 namespace WarpipsReplayability.Mod
@@ -19,6 +20,8 @@ namespace WarpipsReplayability.Mod
         public bool[] HiddenRewards { get; private set; }
         public int[] TechRewards { get; private set; }
         public Operations.OperationInfo[] OperationInfo { get; private set; }
+
+        private static readonly FieldInfo _territoryConnections = AccessTools.Field(typeof(WorldMapAsset), "territoryConnections");
 
         public static void SaveNew(int[] shuffle, Operations.OperationInfo[] operationInfo)
         {
@@ -40,7 +43,7 @@ namespace WarpipsReplayability.Mod
         public static void Load()
         {
             Instance = TBSUtil.LoadGame<Persist>(saveFile);
-            AccessTools.Field(typeof(WorldMapAsset), "territoryConnections").SetValue(Map.WorldMapAsset, Instance.Connections);
+            _territoryConnections.SetValue(Map.WorldMapAsset, Instance.Connections);
             Plugin.Log.LogInfo($"loaded mod data");
         }
     }
