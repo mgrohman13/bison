@@ -14,7 +14,7 @@ namespace WarpipsReplayability.Patches
     [HarmonyPatch(nameof(SpawnWaveProfile.ReturnAllWarningMessageTimings))]
     internal class SpawnWaveProfile_ReturnAllWarningMessageTimings
     {
-        private static readonly FieldInfo field_difficultyCurve = AccessTools.Field(typeof(SpawnWaveProfile), "difficultyCurve");
+        private static readonly FieldInfo _difficultyCurve = AccessTools.Field(typeof(SpawnWaveProfile), "difficultyCurve");
 
         public static bool Prefix(SpawnWaveProfile __instance, ref List<float> __result)
         {
@@ -29,43 +29,42 @@ namespace WarpipsReplayability.Patches
                 float? startAtDifficulty = GetStartAtDifficulty(profiles);
                 if (startAtDifficulty.HasValue)
                 {
-                    uint[] seed = profiles.Select(p => p.UnitSpawnData).SelectMany(d =>
-                        new object[] { d.CooldownAfterSpawn, d.SpawnCapCycleMultipler, d.StartAtDifficulty, d.TimeBetweenClusters })
-                        .Select(o => (uint)o.GetHashCode()).ToArray();
-                    Plugin.Log.LogInfo("alert timings seed: " + Plugin.GetSeedString(seed));
-                    MTRandom temp = new(seed);
+                    AnimationCurve curve = (AnimationCurve)_difficultyCurve.GetValue(__instance);
+                    MTRandom deterministic = new(GenerateSeed(__instance, profiles, curve));
 
-                    AnimationCurve curve = (AnimationCurve)field_difficultyCurve.GetValue(__instance);
                     float warningDifficulty = startAtDifficulty.Value;
-                    float displayThreshold = GetDisplayThreshold(temp, warningDifficulty);
+                    float displayThreshold = GetDisplayThreshold(deterministic, warningDifficulty);
 
                     bool prev = false;
                     float prevTime = 0;
                     foreach (var key in curve.keys)
                     {
                         bool cur = curve.Evaluate(key.time) > warningDifficulty;
-                        if (key.time > 1 && curve.Evaluate(1) < warningDifficulty)
+                        if (!prev && cur)
                         {
-                            Plugin.Log.LogInfo($"skipping alert at 1 {prevTime:0.000}-{key.time:0.000} (1= {curve.Evaluate(1):0.000})");
-                        }
-                        else if (!prev && cur)
-                        {
-                            float min = prevTime, max = Math.Min(1, key.time), result;
-                            do
+                            if (key.time > 1 && curve.Evaluate(1) < warningDifficulty)
                             {
-                                result = Mathf.Lerp(min, max, temp.FloatHalf());
-                                float eval = curve.Evaluate(result);
-                                if (eval > warningDifficulty)
-                                    max = result;
-                                else if (eval < displayThreshold)
-                                    min = result;
-                                else
-                                    break;
-                            } while (max > min);
-                            if (max <= min)
-                                Plugin.Log.LogWarning($"setting alert to {result}");
-                            Plugin.Log.LogInfo($"alert {prevTime:0.000}-{key.time:0.000}: {result:0.000}");
-                            __result.Add(result);
+                                Plugin.Log.LogInfo($"skipping alert at 1 {prevTime:0.000}-{key.time:0.000} (1= {curve.Evaluate(1):0.000})");
+                            }
+                            else
+                            {
+                                float min = prevTime, max = Math.Min(1, key.time), result;
+                                do
+                                {
+                                    result = Mathf.Lerp(min, max, deterministic.FloatHalf());
+                                    float eval = curve.Evaluate(result);
+                                    if (eval > warningDifficulty)
+                                        max = result;
+                                    else if (eval < displayThreshold)
+                                        min = result;
+                                    else
+                                        break;
+                                } while (max > min);
+                                if (max <= min)
+                                    Plugin.Log.LogWarning($"setting alert to {result}");
+                                Plugin.Log.LogInfo($"alert {prevTime:0.000}-{key.time:0.000}: {result:0.000}");
+                                __result.Add(result);
+                            }
                         }
                         prev = cur;
                         prevTime = key.time;
@@ -80,6 +79,7 @@ namespace WarpipsReplayability.Patches
                 return true;
             }
         }
+
         private static float? GetStartAtDifficulty(IEnumerable<EnemySpawnProfile> profiles)
         {
             foreach (var group in Plugin.DifficultTechs)
@@ -94,8 +94,27 @@ namespace WarpipsReplayability.Patches
         {
             float displayThreshold = DifficultyBar_BuildDifficultyBar.DisplayThreshold;
             if (warningDifficulty < displayThreshold)
-                displayThreshold = temp.GaussianCapped(warningDifficulty * .75f, .13f, warningDifficulty * .5f);
+            {
+                float rand = temp.GaussianCapped(warningDifficulty * .75f, .13f, warningDifficulty * .5f);
+                Plugin.Log.LogInfo($"difficulty < displayThreshold ({warningDifficulty} < {displayThreshold}): set to {rand}");
+                displayThreshold = rand;
+            }
             return displayThreshold;
+        }
+
+        private static uint[] GenerateSeed(SpawnWaveProfile __instance, IEnumerable<EnemySpawnProfile> profiles, AnimationCurve curve)
+        {
+            float t = Operations.Clamp19(Mathf.Lerp(DifficultyBar_BuildDifficultyBar.DisplayThreshold, curve.Evaluate(__instance.DisplayThreshold) % 1, Operations.Clamp19(__instance.DisplayThreshold)));
+            uint[] seed = profiles.Select(p => p.UnitSpawnData).SelectMany(d =>
+                    new object[] { d.CooldownAfterSpawn, d.SpawnCount(t), d.StartAtDifficulty, d.SpawnCap(t), d.TimeBetweenClusters, d.SpawnDelay(t), })
+                .Concat(
+                    new object[] { __instance.enemyBuildSites.Length, profiles.Count(), curve.keys.Length, __instance.RoundDuration, })
+                .Concat(profiles.Select(p => (object)p.displayInReconLineup))
+                .Concat(curve.keys.SelectMany(k =>
+                    new object[] { k.inTangent, k.inWeight, k.outTangent, k.outWeight, k.time, k.value, k.weightedMode, }))
+                .Select(o => (uint)o.GetHashCode()).ToArray();
+            Plugin.Log.LogInfo("alert timings seed: " + Plugin.GetSeedString(seed));
+            return seed;
         }
     }
 }
