@@ -17,7 +17,6 @@ namespace WarpipsReplayability.Patches
             {
                 Plugin.Log.LogDebug("TerritoryDetailsUIBuilder_OnNewTerritorySelected Prefix");
 
-                //needed for ItemRewardGridController_RefreshItemDisplay
                 LevelGeneration.WorldMap.TerritoryInstance territory = __instance.InspectedTerritoryInstance;
                 Operations.SelectedTerritory = territory;
 
@@ -33,13 +32,13 @@ namespace WarpipsReplayability.Patches
                 Plugin.Log.LogError(e);
             }
         }
-        public static void Postfix(TerritoryDetailsUIBuilder __instance, ref ReconNodeController[] ___unitIntel, RectTransform ___rootRect)
+        public static void Postfix(ref ReconNodeController[] ___unitIntel, RectTransform ___rootRect)
         {
             try
             {
                 Plugin.Log.LogDebug("TerritoryDetailsUIBuilder_OnNewTerritorySelected Postfix");
 
-                if (!Operations.ShowEnemies(__instance.InspectedTerritoryInstance))
+                if (!Operations.ShowEnemies())
                 {
                     bool visible = true;
                     foreach (var recon in ___unitIntel)

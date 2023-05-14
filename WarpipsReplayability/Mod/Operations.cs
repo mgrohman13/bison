@@ -56,38 +56,37 @@ namespace WarpipsReplayability.Mod
             int rewardIndex = 0;
             foreach (TerritoryInstance territory in Map.Territories)
             {
-                bool hideEnemies = HideEnemies(territory);
-                bool hideRewards = HideRewards(territory) || territory.specialTag == TerritoryInstance.SpecialTag.HighValueReward;
-
                 Operation operation = territory.operation;
+                bool hideEnemies = HideEnemies(territory);
+                //high value rewards are always hidden
+                bool hideRewards = IsShrouded(territory) || territory.specialTag == SpecialTag.HighValueReward;
+
                 //revealEnemyIcons needs to be high enough to reveal all icons
-                //the field is only used for integer comparison so it doesn't matter if it's arbitrarily large
-                int revealEnemyIcons = hideEnemies ? 0 : 99;
-                operation.revealEnemyIcons = revealEnemyIcons;
+                //the field is only used for integer comparison so it doesn't matter if it's arbitrarily large 
+                operation.revealEnemyIcons = hideEnemies ? 0 : 99;
 
                 foreach (Reward reward in operation.itemRewards)
                 {
+                    //some random rewards are always hidden, extra life rewards are always visible
                     reward.isMysteryItem = (Persist.Instance.HiddenRewards[rewardIndex] || hideRewards) && !reward.item.extraLife;
                     rewardIndex++;
                 }
             }
         }
 
-        public static bool ShowRewards() =>
-            ShowInfo(SelectedTerritory, HideRewards);
+        public static bool ShowRewardCount() =>
+            ShowInfo(SelectedTerritory, HideRewardCount);
         public static bool ShowEnemies() =>
-            ShowEnemies(SelectedTerritory);
-        public static bool ShowEnemies(TerritoryInstance territory) =>
-            ShowInfo(territory, HideEnemies);
+            ShowInfo(SelectedTerritory, HideEnemies);
         private static bool ShowInfo(TerritoryInstance territory, Func<TerritoryInstance, bool> Hide) =>
             WorldMapUIController == null || territory == null || !Hide(territory);
 
         private static bool IsShrouded(TerritoryInstance territory) =>
             !WorldMapUIController.IsTerritoryAttackable(territory.index);
         private static bool HideEnemies(TerritoryInstance territory) =>
-            IsShrouded(territory) && territory.specialTag != TerritoryInstance.SpecialTag.EnemyObjective;
-        private static bool HideRewards(TerritoryInstance territory) =>
-            IsShrouded(territory);
+            IsShrouded(territory) && territory.specialTag != SpecialTag.EnemyObjective;
+        private static bool HideRewardCount(TerritoryInstance territory) =>
+            IsShrouded(territory) && territory.specialTag != SpecialTag.None;
 
         public static OperationInfo[] Randomize()
         {

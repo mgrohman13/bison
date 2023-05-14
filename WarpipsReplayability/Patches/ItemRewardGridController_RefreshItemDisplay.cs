@@ -1,7 +1,6 @@
 ﻿using GameUI;
 using HarmonyLib;
 using LevelGeneration;
-using LevelGeneration.WorldMap;
 using System;
 using System.Collections.Generic;
 using WarpipsReplayability.Mod;
@@ -12,15 +11,16 @@ namespace WarpipsReplayability.Patches
     [HarmonyPatch(nameof(ItemRewardGridController.RefreshItemDisplay))]
     internal class ItemRewardGridController_RefreshItemDisplay
     {
-        public static void Postfix(ItemRewardController[] ___itemRewards, Operation inspectedOperation)
+        public static void Postfix(ItemRewardController[] ___itemRewards)
         {
             try
             {
                 Plugin.Log.LogDebug("ItemRewardGridController_RefreshItemDisplay Postfix");
 
-                if (!Operations.ShowRewards())
+                if (!Operations.ShowRewardCount())
                 {
-                    List<Reward> itemRewards = inspectedOperation.itemRewards;
+                    //hide the total number of rewards
+                    List<Reward> itemRewards = Operations.SelectedTerritory.operation.itemRewards;
                     for (int a = 0; a < ___itemRewards.Length; a++)
                         if (a >= itemRewards.Count || !itemRewards[a].item.extraLife)
                         {
@@ -28,7 +28,7 @@ namespace WarpipsReplayability.Patches
                             controller.gameObject.SetActive(true);
                             controller.SetImageToMysteryItem();
                         }
-                    Plugin.Log.LogDebug("hiding rewards");
+                    Plugin.Log.LogDebug($"hiding rewards {___itemRewards.Length} {itemRewards.Count}");
                 }
             }
             catch (Exception e)
