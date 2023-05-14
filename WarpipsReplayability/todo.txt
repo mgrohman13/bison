@@ -2,7 +2,7 @@ update screenshots
 add marathon mode option?
 	reduce all tech points, reduce worldMapDifficultyMultipler
 test TerritoryInstance.blocked
-difficulty modifier for things ive constant
+difficulty modifier for things ive made constant
 show bombs on island map difficulty bar
 	bombIndicatorPrefabs dont appear immediately after load
 	serialize? figure out how to load resource...
@@ -16,11 +16,6 @@ mess with spawning, true mission randomness
 		bombsOnCycle
 		will need to revisit ManageBombIndicatorPrefabs
 	correlate difficulty with tech pts?
-		increase tech pts bonus more? - can be less choosy about territories now
-	use difficult mode xp tweak? but not spawn increase
-		maybe a little less extreme?
-		if not, consider weaklings dirung balance
-		nerf pistol pip only?
 	starting cash??
 	not enough lives?
 		ensure more new lives always reachable?
@@ -31,9 +26,6 @@ incl all territies in tech decrease, but cap at 20?
 revisit reward upper limit outside difficult mode
 start missions with 0 points, but more supply?
 	starting cash?
-rebalance enemy unit XP?
-	rand xpModifierPerUpgrade: 2, xpModifierPerTier: 3, xpModifierOnKill: 10?
-randomize worldMapDifficultyMultipler?
 	
 balancing
 	order startAtDifficulty?
@@ -46,3 +38,23 @@ balancing
 new map on loss not normally on island?
 
 ReturnAllWarningMessageTimings check cooldown between spawns?
+
+bug when tactition gets hit by gas pip while calling down airstrike
+building placement availability bugs on maps
+
+apply something similar to bomb gap to final missions?
+
+map lengths not really accurate...
+
+reroll shop?
+
+rebalance air?
+	much less damage, less health
+	longer before refuel
+	if return give cash back
+	more units target(puma, rpg, bubba)
+			
+big oil?? no better over time than small?
+
+pulsing Q/E
+	reduce fuel gain by asymptotic amt since last use?
