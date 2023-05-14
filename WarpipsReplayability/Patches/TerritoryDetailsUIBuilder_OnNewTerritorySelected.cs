@@ -25,6 +25,8 @@ namespace WarpipsReplayability.Patches
                 SpawnWaveProfile spawnWaveProfile = operation.spawnWaveProfile;
                 Plugin.Log.LogInfo($"select {territory.index} {spawnWaveProfile.name}" +
                     $" ({spawnWaveProfile.GetInstanceID()} {operation.map.name} {operation.map.MapLength})");
+
+                ResourceController_AddUnitKillBonus.LoggedInfo.Clear();
             }
             catch (Exception e)
             {

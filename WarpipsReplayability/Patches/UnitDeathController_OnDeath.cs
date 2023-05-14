@@ -1,7 +1,10 @@
 ﻿using HarmonyLib;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using UnityEngine;
 using WarpipsReplayability.Mod;
 
 namespace WarpipsReplayability.Patches
@@ -10,44 +13,49 @@ namespace WarpipsReplayability.Patches
     [HarmonyPatch("OnDeath")]
     internal class UnitDeathController_OnDeath
     {
+        private static readonly FieldInfo _unitBuffs = AccessTools.Field(AccessTools.TypeByName("UpgradeController+BuffSource"), "unitBuffs");
+        private static readonly FieldInfo _buffs = AccessTools.Field(typeof(UnitUpgradeController), "buffs");
+
         public static void Prefix(UnitStatController ___statController, ref float __state)
         {
             try
             {
                 Plugin.Log.LogDebug("UnitDeathController_OnDeath Prefix");
+
                 __state = ___statController.UnitData.xpBaseOnKill;
-
-                //___statController.UnitData.
-
                 string name = ___statController.UnitData.name;
-                LogExp(name, __state);
 
-                ////if (Config.DifficultMode)
-                ////{
-                ////    const float superEnemyMult = 5f;
-                //Dictionary<string, float> mappings = new() {
-                //    { "PistolPip", 1 / 2f },
-                //    //{ "PistolPip", 1 / 3f },
-                //    //{ "Warfighter", 2 / 3f },
-                //    //{ "Shotgunner", 2 / 3f },
-                //};
+                //balance tweaks
+                Dictionary<string, float> offsets = new() {
+                    { "Hind",           +1/2f }, //4
+                    { "Bubba",          -1/1f }, //5
+                    { "Howitzer",       +2/3f }, //3
+                    { "Predator",       +1/2f }, //3
+                    { "Tanya",          -7/4f }, //5
+                  //{ "T92",                  }, //3
+                  //{ "MediumTurret",         }, //3
+                    { "GRUZ",           +1/2f }, //2
+                    { "GuardTower",     -2/3f }, //3
+                  //{ "DuneBuggy",            }, //2
+                  //{ "GasPip",               }, //2
+                    { "RPGSoldier",     +3/4f }, //1
+                    { "Warmule",        -1/3f }, //2
+                    { "Sharpshooter",   +1/2f }, //1
+                    { "UAZ",            -2/3f }, //2
+                  //{ "Shotgunner",           }, //1
+                  //{ "Warfighter",           }, //1
+                    { "PistolPip",      -1/3f }, //1
+                };
 
-                //if (!mappings.TryGetValue(name, out float mult))
-                //    mult = 1f;
-                ////if (IsSuperEnemy(___statController.gameObject))
-                ////{
-                ////    mult *= superEnemyMult;
-                ////    Plugin.Log.LogDebug("SuperEnemy detected");
-                ////}
+                float exp = __state;
+                if (offsets.TryGetValue(name, out float offset))
+                    exp += offset;
+                bool super = IsSuperEnemy(___statController.gameObject);
+                if (super)
+                    exp += 1 / 5f;
 
-                ////if (mult != 1f)
-                ////{
-                const float mult = 10f;
-                float exp = __state * mult;
-                ___statController.UnitData.xpBaseOnKill = Plugin.Rand.GaussianCappedInt(exp, 1 / exp, 1) / mult;
-                ////___statController.UnitData.xpBaseOnKill = Plugin.Rand.GaussianOE(exp, .13f / (float)Math.Sqrt(exp), .052f / exp, .05f);
-                ////}
-                ////}
+                LogExp(name, exp, super);
+                ___statController.UnitData.xpBaseOnKill = exp;
             }
             catch (Exception e)
             {
@@ -61,26 +69,48 @@ namespace WarpipsReplayability.Patches
             ___statController.UnitData.xpBaseOnKill = __state;
         }
 
-        //private static readonly FieldInfo unitBuffsField = AccessTools.Field(AccessTools.TypeByName(
-        //    "UpgradeController+BuffSource"), "unitBuffs");
-        //private static readonly FieldInfo buffsField = AccessTools.Field(typeof(UnitUpgradeController), "buffs");
-        //private static bool IsSuperEnemy(GameObject gameObject)
-        //{
-        //    return gameObject.GetComponentsInChildren<UnitUpgradeController>()
-        //        .SelectMany(unitUpgradeController =>
-        //            ((IDictionary)buffsField.GetValue(unitUpgradeController)).Values.Cast<object>())
-        //        .SelectMany(buffSource => (List<UnitBuff>)unitBuffsField.GetValue(buffSource))
-        //        .Any(unitBuff => unitBuff.name == "SuperEnemy_Speed");
-        //}
+        private static bool IsSuperEnemy(GameObject gameObject)
+        {
+            return gameObject.GetComponentsInChildren<UnitUpgradeController>()
+                .SelectMany(unitUpgradeController =>
+                    ((IDictionary)_buffs.GetValue(unitUpgradeController)).Values.Cast<object>())
+                .SelectMany(buffSource => (List<UnitBuff>)_unitBuffs.GetValue(buffSource))
+                .Any(IsSpeed);
+            static bool IsSpeed(UnitBuff unitBuff)
+            {
+                bool speed = unitBuff.name == "SuperEnemy_Speed";
+                LogBuffs(unitBuff, speed);
+                return speed;
+            };
+        }
 
+        private static string LastLog, LastLog2;
+        private static void LogBuffs(UnitBuff unitBuff, bool speed)
+        {
+            string log = unitBuff.name;
+            if (LastLog2 != log)
+            {
+                LastLog2 = log;
+                Plugin.Log.LogInfo(log);
+            }
+            if (speed && unitBuff.limitedToTypes.Any())
+            {
+                log = unitBuff.limitedToTypes.Select(t => t.name).Aggregate("super types:", (a, b) => a + " " + b);
+                if (LastLog != log)
+                {
+                    LastLog = log;
+                    Plugin.Log.LogInfo(log);
+                }
+            }
+        }
         private static readonly Dictionary<string, float> expMap = new();
-        private static string LogExp(string name, float exp)
+        private static string LogExp(string name, float exp, bool super)
         {
             if (!expMap.ContainsKey(name))
             {
                 expMap.Add(name, exp);
-                Plugin.Log.LogInfo(expMap
-                    .Select(p => $"{p.Key}:{p.Value}")
+                Plugin.Log.LogInfo(expMap.OrderBy(p => p.Value).ThenBy(p => p.Key)
+                    .Select(p => $"{p.Key}:{p.Value:0.00}" + (super ? " (super)" : ""))
                     .Aggregate("xpBaseOnKill:", (a, b) => a + Environment.NewLine + b));
             }
             return name;
