@@ -30,7 +30,7 @@ namespace WarpipsReplayability.Patches
                 if (startAtDifficulty.HasValue)
                 {
                     AnimationCurve curve = (AnimationCurve)_difficultyCurve.GetValue(__instance);
-                    MTRandom deterministic = new(GenerateSeed(__instance, profiles, curve));
+                    MTRandom deterministic = new(GenerateSeed(curve));
 
                     float warningDifficulty = startAtDifficulty.Value;
                     float displayThreshold = GetDisplayThreshold(deterministic, warningDifficulty);
@@ -102,16 +102,11 @@ namespace WarpipsReplayability.Patches
             return displayThreshold;
         }
 
-        private static uint[] GenerateSeed(SpawnWaveProfile __instance, IEnumerable<EnemySpawnProfile> profiles, AnimationCurve curve)
+        private static uint[] GenerateSeed(AnimationCurve curve)
         {
-            float t = Operations.Clamp19(Mathf.Lerp(DifficultyBar_BuildDifficultyBar.DisplayThreshold, curve.Evaluate(__instance.DisplayThreshold) % 1, Operations.Clamp19(__instance.DisplayThreshold)));
-            uint[] seed = profiles.Select(p => p.UnitSpawnData).SelectMany(d =>
-                    new object[] { d.CooldownAfterSpawn, d.SpawnCount(t), d.StartAtDifficulty, d.SpawnCap(t), d.TimeBetweenClusters, d.SpawnDelay(t), })
-                .Concat(
-                    new object[] { __instance.enemyBuildSites.Length, profiles.Count(), curve.keys.Length, __instance.RoundDuration, })
-                .Concat(profiles.Select(p => (object)p.displayInReconLineup))
-                .Concat(curve.keys.SelectMany(k =>
-                    new object[] { k.inTangent, k.inWeight, k.outTangent, k.outWeight, k.time, k.value, k.weightedMode, }))
+            //generate a simple seed based on the curve
+            uint[] seed = curve.keys.SelectMany(k =>
+                    new float[] { k.value, k.time, })
                 .Select(o => (uint)o.GetHashCode()).ToArray();
             Plugin.Log.LogInfo("alert timings seed: " + Plugin.GetSeedString(seed));
             return seed;
