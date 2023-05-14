@@ -551,7 +551,7 @@ namespace WarpipsReplayability.Mod
             }
 
             //new seed based on previous values
-            MTRandom deterministic = new(GenerateSeed(spawnWaveProfile, enemySpawnProfiles, mapLength));
+            MTRandom deterministic = new(GenerateSeed(operation, mapLength));
 
             foreach (EnemySpawnProfile enemySpawnProfile in deterministic.Iterate(enemySpawnProfiles))
             {
@@ -983,7 +983,7 @@ namespace WarpipsReplayability.Mod
 
         private static uint[] GenerateSeed(OperationInfo[] save)
         {
-            //don't include failureMapLengths - they are modified after randomization
+            //generate a very robust seed based on everything we have saved
             uint[] seed = save.SelectMany(info => info.BuildSites.SelectMany(build =>
                     //C# String.GetHashCode is not guaranteed to be consistent, so just use the raw characters instead
                     build.ToCharArray().Select(c => (int)c).Append(build.Length)).Cast<object>()
@@ -993,7 +993,9 @@ namespace WarpipsReplayability.Mod
                     new object[] { spawn.CountMin, spawn.CopyFromProfileIdx, spawn.CapMin, spawn.CopyFromTerritoryIdx,
                         spawn.DisplayInReconLineup, spawn.CapMax, spawn.Difficulty, spawn.CountMax, })))
                 .Select(obj => (uint)obj.GetHashCode()).ToArray();
+            //don't include failureMapLengths - they are modified after randomization
 
+            //using individual characters in BuildSites blows up the seed length, so combine with a simple algorithm
             if (seed.Length > MTRandom.MAX_SEED_SIZE)
             {
                 Plugin.Log.LogInfo("seed.Length: " + seed.Length);
@@ -1010,14 +1012,36 @@ namespace WarpipsReplayability.Mod
             Plugin.Log.LogInfo("Operations.Load seed: " + Plugin.GetSeedString(seed));
             return seed;
         }
-        private static uint[] GenerateSeed(SpawnWaveProfile spawnWaveProfile, IEnumerable<EnemySpawnProfile> enemySpawnProfiles, int mapLength)
+        private static uint[] GenerateSeed(Operation operation, int mapLength)
         {
-            Keyframe[] keys = GetDifficultyCurve(spawnWaveProfile).keys;
-            uint[] seed = keys
-                .SelectMany(k => (new float[] { k.time, k.outTangent, k.outWeight, k.inTangent, k.inWeight, k.value, }))
-                .Concat(new float[] { spawnWaveProfile.RoundDuration, keys.Length, mapLength, enemySpawnProfiles.Count(), })
-                .Concat(enemySpawnProfiles.Select(p => p.UnitSpawnData.StartAtDifficulty))
-                .Select(f => (uint)f.GetHashCode()).ToArray();
+            SpawnWaveProfile profile = operation.spawnWaveProfile;
+            var profiles = profile.enemySpawnProfiles.Cast<EnemySpawnProfile>();
+            AnimationCurve curve = GetDifficultyCurve(profile);
+
+            ////simple float cycle we will use to sample spawn data
+            //float a = DifficultyBar_BuildDifficultyBar.DisplayThreshold;
+            //float b = curve.Evaluate(a);
+            //float c = Clamp19(Mathf.Lerp(b, curve.Evaluate((a + b) % 1), Clamp19(curve.Evaluate(b))));
+            //Plugin.Log.LogInfo($"{a} {b} {c}");
+            //float d()
+            //{
+            //    a = (a + (b += c)) % 1;
+            //    Plugin.Log.LogInfo(a);
+            //    return a;
+            //};
+
+            //generate a robust seed based on this individual operation details
+            uint[] seed = curve.keys.SelectMany(k =>
+                    new object[] { k.inTangent, k.inWeight, k.outTangent, k.outWeight, k.time, k.value, k.weightedMode, })
+                .Concat(profiles.Select(p => (object)p.displayInReconLineup))
+                .Concat(
+                    new object[] { profile.enemyBuildSites.Length, profiles.Count(), profile.RoundDuration, profile.HasWarningMessages,
+                        curve.keys.Length, profile.hideFlags, profile.superEnemyBuffOnCycle, profile.bombsOnCycle, mapLength, })
+                .Concat(profiles.Select(p => p.UnitSpawnData).SelectMany(s =>
+                    new object[] { s.SpawnCap(1), s.CooldownAfterSpawn, s.TimeBetweenClusters, s.SpawnDelay(1),
+                        s.SpawnCount(0), s.SpawnCount(1), s.SpawnDelay(0), s.StartAtDifficulty, s.SpawnCap(0), }))
+                .Select((object o) => (uint)o.GetHashCode()).ToArray();
+
             Plugin.Log.LogInfo($"RandOnLoss seed " + Plugin.GetSeedString(seed));
             return seed;
         }
