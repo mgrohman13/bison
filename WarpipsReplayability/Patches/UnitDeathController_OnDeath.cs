@@ -91,7 +91,7 @@ namespace WarpipsReplayability.Patches
             if (LastLog2 != log)
             {
                 LastLog2 = log;
-                Plugin.Log.LogInfo(log);
+                Plugin.Log.LogDebug(log);
             }
             if (speed && unitBuff.limitedToTypes.Any())
             {

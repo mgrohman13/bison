@@ -18,7 +18,7 @@ namespace WarpipsReplayability.Patches
 
                 if (__instance.name == "SuperEnemyBuff" && ___excludeOnDifficultyIndex.Count > 0)
                 {
-                    Plugin.Log.LogInfo(___excludeOnDifficultyIndex.Select(d => d.ToString()).Aggregate("", (a, b) => a + " " + b));
+                    Plugin.Log.LogWarning("Allowing SuperEnemyBuff: " + ___excludeOnDifficultyIndex.Select(d => d.ToString()).Aggregate("", (a, b) => a + " " + b));
                     ___excludeOnDifficultyIndex.Clear();
                 }
             }

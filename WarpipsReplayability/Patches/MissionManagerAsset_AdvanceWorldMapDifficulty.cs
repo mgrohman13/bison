@@ -10,7 +10,7 @@ namespace WarpipsReplayability.Patches
     [HarmonyPatch("AdvanceWorldMapDifficulty")]
     internal class MissionManagerAsset_AdvanceWorldMapDifficulty
     {
-        public static bool Prefix(MissionManagerAsset __instance, FloatDynamicStat ___worldMapDifficultyMultipler)
+        public static bool Prefix(FloatDynamicStat ___worldMapDifficultyMultipler)
         {
             try
             {
