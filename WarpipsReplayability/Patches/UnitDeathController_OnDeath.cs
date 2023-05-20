@@ -16,7 +16,7 @@ namespace WarpipsReplayability.Patches
         private static readonly FieldInfo _unitBuffs = AccessTools.Field(AccessTools.TypeByName("UpgradeController+BuffSource"), "unitBuffs");
         private static readonly FieldInfo _buffs = AccessTools.Field(typeof(UnitUpgradeController), "buffs");
 
-        public static void Prefix(UnitStatController ___statController, ref float __state)
+        public static void Prefix(UnitStatController ___statController, UnitTeamController ___unitTeamController, ref float __state)
         {
             try
             {
@@ -52,9 +52,11 @@ namespace WarpipsReplayability.Patches
                     exp += offset;
                 bool super = IsSuperEnemy(___statController.gameObject);
                 if (super)
-                    exp += 1 / 5f;
+                    exp += 1 / 6f;
 
-                LogExp(name, exp, super);
+                if (___unitTeamController.UnitTeam == UnitTeam.Team2)
+                    LogExp(name, exp, super);
+
                 ___statController.UnitData.xpBaseOnKill = exp;
             }
             catch (Exception e)
@@ -106,14 +108,17 @@ namespace WarpipsReplayability.Patches
         private static readonly Dictionary<string, float> expMap = new();
         private static string LogExp(string name, float exp, bool super)
         {
-            if (!expMap.ContainsKey(name))
+            string key = name;
+            if (super)
+                key += " (super)";
+            if (!expMap.ContainsKey(key))
             {
-                expMap.Add(name, exp);
+                expMap.Add(key, exp);
                 Plugin.Log.LogInfo(expMap.OrderBy(p => p.Value).ThenBy(p => p.Key)
-                    .Select(p => $"{p.Key}:{p.Value:0.00}" + (super ? " (super)" : ""))
+                    .Select(p => $"{p.Key}:{p.Value:0.00}")
                     .Aggregate("xpBaseOnKill:", (a, b) => a + Environment.NewLine + b));
             }
-            return name;
+            return key;
         }
     }
 }
