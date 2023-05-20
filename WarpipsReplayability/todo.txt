@@ -22,7 +22,7 @@ mess with spawning, true mission randomness
 	difficultmode?
 	final map missions w/ extra lives harder?
 
-incl all territies in tech decrease, but cap at 20?
+tech decrease certain pct for each mission past max?
 revisit reward upper limit outside difficult mode
 start missions with 0 points, but more supply?
 	starting cash?
@@ -41,12 +41,18 @@ ReturnAllWarningMessageTimings check cooldown between spawns?
 
 bug when tactition gets hit by gas pip while calling down airstrike
 building placement availability bugs on maps
+tank defense mode target bug?
+emergency cash button always available?
+	change timouts?
+	
+bonus max life tokens display
 
 apply something similar to bomb gap to final missions?
 
 map lengths not really accurate...
 
 reroll shop?
+things shop never sells?
 
 rebalance air?
 	much less damage, less health
@@ -58,3 +64,6 @@ big oil?? no better over time than small?
 
 pulsing Q/E
 	reduce fuel gain by asymptotic amt since last use?
+
+inspect item cooldowns?
+partial unit rank?

@@ -45,13 +45,14 @@ namespace WarpipsReplayability.Patches
                     //use a tempered down exponent compared to what we apply to experience
                     double exponent = Math.Sqrt(ResourceController_AddXpPoints.xpExponent);// (1 + ResourceController_AddXpPoints.xpExponent) / 2.0;
                     float avg = (float)Math.Pow(baseXpValue * ResourceController_AddXpPoints.xpMult, exponent);
+                    avg *= mult;
 
-                    float inc = Plugin.Rand.Gaussian(avg * mult, .13f);
+                    float inc = Plugin.Rand.Gaussian(avg, .13f);
                     ___behaviorModeFuel.Value = Mathf.Clamp01(__state + inc);
                     if (!LoggedInfo.Contains(avg))
                     {
                         LoggedInfo.Add(avg);
-                        Plugin.Log.LogInfo($"behaviorModeFuel: {___behaviorModeFuel.Value:0.0000} (+{inc:0.0000})");
+                        Plugin.Log.LogInfo($"behaviorModeFuel: {___behaviorModeFuel.Value:0.0000} +{inc:0.0000} ({avg:0.0000})");
                     }
                 }
             }

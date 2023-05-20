@@ -13,7 +13,8 @@ namespace WarpipsReplayability.Patches
     [HarmonyPatch(nameof(ResourceController.AddXpPoints))]
     internal class ResourceController_AddXpPoints
     {
-        private static float xpModifierPerUpgrade, xpModifierPerTier, xpModifierOnKill;
+        private static int xpModifierPerUpgrade, xpModifierPerTier;
+        private static float xpModifierOnKill;
         private static bool runPrefix = true;
 
         private static readonly HashSet<string> LoggedInfo = new();
@@ -41,11 +42,11 @@ namespace WarpipsReplayability.Patches
 
                 if (runPrefix)
                 {
-                    float upgrades = 0;
+                    int upgrades = 0;
                     if (___playerTechTree != null)
                         upgrades = ___xpAddons.Where(___playerTechTree.ReturnIsTechUnlocked).Count();
                     upgrades *= xpModifierPerUpgrade;
-                    float tier = ___techTier.value * xpModifierPerTier;
+                    int tier = ___techTier.value * xpModifierPerTier;
 
                     ////game algorithm
                     //addValue = Plugin.Rand.Round((addValue * ___xpModifierOnKill.Value) + upgrades + tier);
@@ -56,8 +57,8 @@ namespace WarpipsReplayability.Patches
                     value *= xpModifierOnKill + upgrades + tier;
 
                     float dev = (float)(.39 / Math.Sqrt(value));
-                    Log(value, upgrades, tier, dev);
                     int xp = Plugin.Rand.GaussianCappedInt(value, dev, 1);
+                    Log(xp, value, dev, upgrades, tier);
 
                     //there is a bug in AddXpPoints if you try to add more experience than needed for a single level
                     //you will be under-charged for subsequent levels after the first
@@ -103,13 +104,13 @@ namespace WarpipsReplayability.Patches
             _gameStat_float.SetValue(___xpModifierOnKill, 1);
         }
 
-        private static void Log(float addValue, float upgrades, float tier, float dev)
+        private static void Log(int xp, float value, float dev, int upgrades, int tier)
         {
-            string info = $"experience {addValue:0.00} (deviation {addValue * dev:0.00}, upgrades {upgrades}, tier {tier})";
+            string info = $"({value:0.00},{value * dev:0.00}), upgrades {upgrades}, tier {tier})";
             if (!LoggedInfo.Contains(info))
             {
                 LoggedInfo.Add(info);
-                Plugin.Log.LogInfo(info);
+                Plugin.Log.LogInfo($"experience {xp} {info}");
             }
         }
     }
