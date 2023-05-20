@@ -48,20 +48,30 @@ namespace WarpipsReplayability.Patches
                             }
                             else
                             {
-                                float min = prevTime, max = Math.Min(1, key.time), result;
+                                bool loop = true;
+                                float min = prevTime, max = Math.Min(1, key.time), result, mid;
                                 do
                                 {
-                                    result = Mathf.Lerp(min, max, deterministic.FloatHalf());
+                                    result = deterministic.Range(min, max);
                                     float eval = curve.Evaluate(result);
+                                    Plugin.Log.LogDebug($"{min} {max} {result} {eval}");
                                     if (eval > warningDifficulty)
                                         max = result;
                                     else if (eval < displayThreshold)
                                         min = result;
                                     else
                                         break;
-                                } while (max > min);
-                                if (max <= min)
-                                    Plugin.Log.LogWarning($"setting alert to {result}");
+
+                                    mid = (min + max) / 2f;
+                                    loop = (mid > min && mid < max);
+                                    Plugin.Log.LogDebug($"{mid} {loop}");
+                                } while (loop);
+                                if (!loop)
+                                {
+                                    result = deterministic.Bool() ? min : max;
+                                    Plugin.Log.LogWarning($"setting alert to {result}, {min} ({curve.Evaluate(min)}) - {max} ({curve.Evaluate(max)})");
+                                }
+
                                 Plugin.Log.LogInfo($"alert {prevTime:0.000}-{key.time:0.000}: {result:0.000}");
                                 __result.Add(result);
                             }
@@ -90,12 +100,12 @@ namespace WarpipsReplayability.Patches
             }
             return null;
         }
-        private static float GetDisplayThreshold(MTRandom temp, float warningDifficulty)
+        private static float GetDisplayThreshold(MTRandom deterministic, float warningDifficulty)
         {
             float displayThreshold = DifficultyBar_BuildDifficultyBar.DisplayThreshold;
             if (warningDifficulty < displayThreshold)
             {
-                float rand = temp.GaussianCapped(warningDifficulty * .75f, .13f, warningDifficulty * .5f);
+                float rand = deterministic.GaussianCapped(warningDifficulty * .75f, .13f, warningDifficulty * .5f);
                 Plugin.Log.LogInfo($"difficulty < displayThreshold ({warningDifficulty} < {displayThreshold}): set to {rand}");
                 displayThreshold = rand;
             }
