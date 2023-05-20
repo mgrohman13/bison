@@ -176,8 +176,6 @@ namespace WarpipsReplayability.Mod
             //multiply the average tech points by the relative number of missions you can complete
             //since this is only applied to non-special territories, you will still end up with more tech points on easier difficulties
             //but this allows me to give more for General and still avoid leaving you swimming in tech points on easier 
-            //on the other hand, if you complete islands, you will end up with more tech points on harder difficulties
-            //this is fair because you will have to spend more units and may not turn a profit from unit rewards
             int gameDifficultyIndex = MissionManagerAsset.GameDifficultyIndex;
             float mult = gameDifficultyIndex switch
             {
@@ -203,15 +201,17 @@ namespace WarpipsReplayability.Mod
         }
         public static void ReduceTechRewards()
         {
-            //when difficulty bar hits max, reduce non-special territory tech rewards
+            //when difficulty bar hits max, reduce tech rewards
+
             //if (Config.RebalanceTech)
             for (int a = 0; a < Territories.Length; a++)
-                if (Territories[a].specialTag == TerritoryInstance.SpecialTag.None)
-                {
-                    int value = Plugin.Rand.Round(Persist.Instance.TechRewards[a] / 3f);
-                    Plugin.Log.LogInfo($"techReward {Persist.Instance.TechRewards[a]} -> {value}");
-                    Persist.Instance.TechRewards[a] = value;
-                }
+            //if (Territories[a].specialTag == TerritoryInstance.SpecialTag.None)
+            {
+                int value = Persist.Instance.TechRewards[a];
+                int reduce = Math.Min(25, Plugin.Rand.Round(value * .75f));
+                Plugin.Log.LogInfo($"techReward {value} -> {value - reduce}");
+                Persist.Instance.TechRewards[a] = value - reduce;
+            }
 
             LoadTechRewards();
             Persist.SaveCurrent();
@@ -333,7 +333,7 @@ namespace WarpipsReplayability.Mod
             int pathLength = path.Count - 1;
             if (pathLength > numMissions)
             {
-                Plugin.Log.LogInfo($"({CountEdges(graph.Edges)}) pathLength {pathLength} > {numMissions}, invalid");
+                Plugin.Log.LogWarning($"({CountEdges(graph.Edges)}) pathLength {pathLength} > {numMissions}, invalid");
                 return false;
             }
 
@@ -342,7 +342,7 @@ namespace WarpipsReplayability.Mod
             DFS(graph.Start, t => t != graph.End);
             if (reachable.Count != maxMissions)
             {
-                Plugin.Log.LogInfo($"({CountEdges(graph.Edges)}) reachable.Count {reachable.Count} != {maxMissions}, invalid");
+                Plugin.Log.LogWarning($"({CountEdges(graph.Edges)}) reachable.Count {reachable.Count} != {maxMissions}, invalid");
                 return false;
             }
 
@@ -351,7 +351,7 @@ namespace WarpipsReplayability.Mod
             DFS(graph.Start, t => t.specialTag == TerritoryInstance.SpecialTag.None);
             if (reachable.Count < numMissions)
             {
-                Plugin.Log.LogInfo($"({CountEdges(graph.Edges)}) reachable.Count {reachable.Count} < {numMissions}, invalid");
+                Plugin.Log.LogWarning($"({CountEdges(graph.Edges)}) reachable.Count {reachable.Count} < {numMissions}, invalid");
                 return false;
             }
 
