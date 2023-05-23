@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using MattUtil;
 
@@ -187,6 +189,7 @@ namespace NCWMap
                 case 0:
                     foreach (Tile tile in Map)
                         tile.Water = (Random.Next(3) == 0);
+                    Random.SelectValue(Map.Cast<Tile>()).Water = true;
                     Log("InitWater: " + EnumMap().Count(t => t.Water));
                     break;
                 case 1:
@@ -205,14 +208,13 @@ namespace NCWMap
                     CreateCitySpots();
                     break;
                 case 6:
-                    for (int a = 0; a < 2; ++a)
-                        for (int x = 0; x < 3; ++x)
-                            for (int y = 0; y < 3; ++y)
-                                CreateResource(() => GetSectorTile(x, y));
+                    for (int a = 0; a < 2; a++)
+                        foreach (var point in Random.Iterate(3, 3))
+                            CreateResource(() => GetSectorTile(point.X, point.Y));
                     break;
                 case 7:
-                    for (int b = 0; b < 6; ++b)
-                        CreateResource(() => GetRandomTile());
+                    for (int b = 0; b < 6; b++)
+                        CreateResource(GetRandomTile);
                     break;
                 case 8:
                     CreatePlayers();
@@ -236,28 +238,20 @@ namespace NCWMap
             {
                 turn++;
 
+                //select random tile and check if coastal
                 Tile t1 = GetRandomTile();
                 List<Tile> n1 = t1.GetNeighbors().Where(n => n.Water != t1.Water).ToList();
                 if (n1.Any())
                 {
-                    Tile t2 = null;
-                    List<Tile> n2 = null;
-                    foreach (Tile start in RandMap())
-                    {
-                        Tile tile = GetCoastal(new HashSet<Tile>(), start, !t1.Water, 3);
-                        if (tile != null)
-                        {
-                            t2 = tile;
-                            n2 = tile.GetNeighbors().Where(n => n.Water != tile.Water).ToList();
-                            break;
-                        }
-                    }
-                    if (t2 == null || !n2.Any())
-                        throw new Exception();
+                    //select a random coastal tile of opposite terrain
+                    Tile t2 = RandMap().Select(t => GetCoastal(t, !t1.Water)).Where(t => t != null).First();
+                    List<Tile> n2 = t2.GetNeighbors().Where(n => n.Water != t2.Water).ToList();
 
+                    //attempt to swap a neighbor of each
                     foreach (Point point in Random.Iterate(n1.Count, n2.Count))
                         if (TrySwap(n1[point.X], n2[point.Y]))
                         {
+                            //repeat on success
                             turn--;
                             Log("DoMore: " + turn);
                             break;
@@ -266,27 +260,28 @@ namespace NCWMap
             }
         }
 
-        private static Tile GetCoastal(HashSet<Tile> visited, Tile tile, bool targetWater, int depth)
+        private static Tile GetCoastal(Tile start, bool targetWater)
         {
-            if (visited.Contains(tile))
-                return null;
-            visited.Add(tile);
-            if (--depth < 0)
-                return null;
-            foreach (Tile a in Random.Iterate(tile.GetNeighbors()))
+            HashSet<Tile> next = new() { start }, visited = new() { start };
+            //bounce up to 2 hexes away to find a coastal tile
+            for (int depth = 2; depth >= 0; depth--)
             {
-                if (a.Water != tile.Water)
-                {
-                    if (a.Water == targetWater)
-                        return a;
-                    return tile;
-                }
-            }
-            foreach (Tile a in Random.Iterate(tile.GetNeighbors()))
-            {
-                Tile b = GetCoastal(visited, a, targetWater, depth);
-                if (b != null)
-                    return b;
+                var current = Random.Iterate(next);
+                next.Clear();
+                foreach (Tile tile in current)
+                    foreach (Tile neighbor in Random.Iterate(tile.GetNeighbors()))
+                        if (!visited.Contains(neighbor))
+                        {
+                            if (tile.Water != neighbor.Water)
+                            {
+                                //return the tile with the target terrain 
+                                if (tile.Water == targetWater)
+                                    return tile;
+                                return neighbor;
+                            }
+                            next.Add(neighbor);
+                            visited.Add(neighbor);
+                        }
             }
             return null;
         }
@@ -309,44 +304,9 @@ namespace NCWMap
 
         public static void CreateMap()
         {
-            //InitMap();
-            ////CreateResources();
-            //foreach (Tile t1 in Map.Cast<Tile>())
-            //    if (t1.Inf == null || t1.Inf.Length == 2)
-            //    {
-            //        AddPick(t1, 0, 0.5);
-            //        var others = Map.Cast<Tile>().Where(t2 =>
-            //                ( t2.Inf == null || t2.Inf.Length == 2 ) && Tile.GetDistance(t1, t2) >= 7).ToList();
-            //        double mult = 0.5 / others.Count;
-            //        foreach (Tile t2 in others)
-            //            AddPick(t2, 0, mult);
-            //    }
-            //foreach (Tile tile in Map.Cast<Tile>())
-            //    if (tile.Inf.Length == 2)
-            //        tile.Inf[0] = double.Parse(tile.Inf[0]).ToString("0.000");
-
             Players = null;
             InitMap();
             step = 0;
-
-            //CreateTerrain();
-            //CreateCitySpots();
-            //CreateResources();
-            //CreatePlayers();
-        }
-        //private static void AddPick(Tile tile, int idx, double amt)
-        //{
-        //    if (tile.Inf == null)
-        //        tile.Inf = new[] { "0", "" };
-        //    tile.Inf[idx] = ( double.Parse(tile.Inf[idx]) + amt ).ToString();
-        //}
-
-        private static void CreateTerrain()
-        {
-            InitMap();
-            int countWater = InitWater();
-            FillWater(countWater);
-            DoMore();
         }
         private static void InitMap()
         {
@@ -355,18 +315,7 @@ namespace NCWMap
                 for (int y = 0; y < 18; ++y)
                     Map[x, y] = new Tile(x, y);
         }
-        private static int InitWater()
-        {
-            //all tiles have a chance of initially being water
-            foreach (Tile tile in Map)
-                tile.Water = (Random.Next(3) == 0);
 
-            //select the largest block of contiuous land as the mainland
-            KeepLargest(false);
-
-            //select the largest lake
-            return KeepLargest(true);
-        }
         private static int KeepLargest(bool water)
         {
             //find the largest block
@@ -444,60 +393,64 @@ namespace NCWMap
                     t => t.GetNeighbors().Where(n => n.Water == water).Select(n => Tuple.Create(n, 1)), Tile.GetDistance));
         }
 
-        private static void CreateResources()
-        {
-            //each map sector gets 2 resources
-            for (int a = 0; a < 2; ++a)
-                for (int x = 0; x < 3; ++x)
-                    for (int y = 0; y < 3; ++y)
-                        CreateResource(() => GetSectorTile(x, y));
-
-            //6 more randomly throughout map
-            for (int b = 0; b < 6; ++b)
-                CreateResource(() => GetRandomTile());
-        }
-        private static void CreateResource(Func<Tile> getTile)
+        private static void CreateResource(Func<Tile> GetTile)
         {
             Tile tile = null;
-            int type = 0, amt = 0;
             do
             {
-                if (tile != null && tile.Inf != null)
-                    Log("CreateResource select: " + tile.Inf[0] + " (" + tile.X + "," + tile.Y + ")");
-                tile = getTile();
+                if (tile != null)
+                    Log("CreateResource reselect: " + tile.Inf[0] + TileLoc());
+                tile = GetTile();
             }
-            while (tile.Inf != null && !int.TryParse(tile.Inf[1], out type));
+            while (tile.Inf != null && !HasType(tile));
 
-            bool isNew = (tile.Inf == null);
-            Tile neighbor = null;
-            if (isNew)
+            int amt = 0;
+            if (TryGetType(tile, out int type))
             {
-                List<Tile> neighbors = tile.GetNeighbors().ToList();
-                int n = Random.Next(6);
-                neighbor = n < neighbors.Count ? neighbors[n] : null;
-                if (neighbor == null || neighbor.Inf == null || !int.TryParse(neighbor.Inf[1], out type))
-                {
-                    neighbor = null;
-                    type = Random.RangeInt(1, 3);
-                }
+                amt = int.Parse(tile.Inf[2]) * 6 + int.Parse(tile.Inf[3]);
+                Log("CreateResource add: " + (amt / 6).ToString() + "." + (amt % 6).ToString());
             }
             else
             {
-                amt = int.Parse(tile.Inf[2]) * 6 + int.Parse(tile.Inf[3]);
+                //replicate in-game chance of picking up matching type
+                var neighbors = tile.GetNeighbors();
+                Tile neighbor = null;
+                bool flag = Random.Bool();
+                if (flag)
+                {
+                    //half the type, select a type from one of the neighboring resources (if any)
+                    neighbors = neighbors.Where(HasType);
+                    if (neighbors.Any())
+                        neighbor = Random.SelectValue(neighbors);
+                }
+                else
+                {
+                    //otherwise, match a random neighbor if it has a resource
+                    int n = Random.Next(6);
+                    var array = neighbors.ToArray();
+                    neighbor = n < array.Length ? array[n] : null;
+                }
+                //if no neighbor was selected or it has no resource, pick a random type
+                if (TryGetType(neighbor, out type))
+                    Log("CreateResource neighbor: " + flag + " - " + neighbor.Inf[0] + neighbor.Inf[1] + Loc(neighbor));
+                else
+                    type = Random.RangeInt(1, 3);
             }
 
-            if (!isNew)
-                Log("CreateResource add: " + amt + " (" + tile.X + "," + tile.Y + ")");
-
             amt += GetResourceAmt();
-
             tile.Inf = new string[] { "T", type.ToString(), (amt / 6).ToString(), (amt % 6).ToString() };
 
-            if (!isNew)
-                Log("CreateResource final: " + tile.Inf[2] + "." + tile.Inf[3]);
+            Log("CreateResource final: " + tile.Inf[2] + "." + tile.Inf[3] + TileLoc());
 
-            if (neighbor != null)
-                Log("CreateResource neighbor: " + tile.Inf[0] + tile.Inf[1] + " (" + tile.X + "," + tile.Y + ")");
+            static bool HasType(Tile tile) => TryGetType(tile, out _);
+            static bool TryGetType(Tile tile, out int value)
+            {
+                value = 0;
+                return tile != null && tile.Inf != null && int.TryParse(tile.Inf[1], out value);
+            };
+
+            string TileLoc() => Loc(tile);
+            static string Loc(Tile tile) => $" ({tile.X},{tile.Y})";
         }
         private static int GetResourceAmt()
         {
@@ -524,17 +477,11 @@ namespace NCWMap
         }
         private static Dictionary<string, Tile> PlayerStartTiles(string[] players)
         {
-            Dictionary<string, Tile> result = new Dictionary<string, Tile>();
+            Dictionary<string, Tile> result = new();
 
             foreach (string player in Random.Iterate(players))
             {
-                Tile tile = null;
-                foreach (Tile t1 in RandMap())
-                    if (t1.Inf == null && !result.Values.Any(t2 => Tile.GetDistance(t1, t2) < 7))
-                    {
-                        tile = t1;
-                        break;
-                    }
+                Tile tile = RandMap().Where(t1 => t1.Inf == null && !result.Values.Any(t2 => Tile.GetDistance(t1, t2) < 7)).FirstOrDefault();
                 if (tile == null)
                 {
                     Log("PlayerStartTiles RE-TRY");
@@ -574,7 +521,7 @@ namespace NCWMap
                 int idx = startIdx;
                 foreach (Player player in order)
                 {
-                    if (GetPlayerExtra(player)[idx] == 0)
+                    if (!player.GetPlayerExtra(idx))
                     {
                         subtract = false;
                         break;
@@ -585,7 +532,7 @@ namespace NCWMap
                 }
                 if (subtract)
                 {
-                    Log("SubtractPlayerExtra " + order[0] + " " + startIdx);
+                    Log("SubtractPlayerExtra " + order[0].Name + " " + startIdx);
                     idx = startIdx;
                     foreach (Player player in order)
                     {
@@ -596,24 +543,6 @@ namespace NCWMap
                     }
                 }
             }
-        }
-
-        private static Dictionary<int, int> GetPlayerExtra(Player player)
-        {
-            var extra = new Dictionary<int, int>();
-            for (int a = 0; a < 3; a++)
-            {
-                int e = player.Resources[a, 0] % (2 * (a + 1));
-                if (a == 0 && e == 0 && player.Resources[a, 0] > 0 && Random.Next(6) == 0)
-                    e = 1;
-                if (e > 0 && player.Resources[a, 0] == 1 && player.Resources[a, 1] == 0)
-                {
-                    Log("GetPlayerExtra prevent: " + player.Name);
-                    e = 0;
-                }
-                extra.Add(a, e);
-            }
-            return extra;
         }
 
         private static void CreateCitySpots()

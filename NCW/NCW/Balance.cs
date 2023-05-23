@@ -18,7 +18,7 @@ namespace NCWMap
 
         private void button1_Click(object sender, EventArgs e)
         {
-            Bal.getOutput(this.textBox1.Text);
+            Bal.GetOutput(this.textBox1.Text);
         }
     }
 }

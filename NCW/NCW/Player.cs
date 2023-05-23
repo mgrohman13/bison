@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NCWMap.Properties;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,6 +13,7 @@ namespace NCWMap
         public readonly string Name;
         public string Unit;
         public readonly int[,] Resources;
+        public readonly int relic;
 
         public Player(string name, Tile tile, int order, int add)
         {
@@ -24,6 +26,7 @@ namespace NCWMap
             BalanceOrder(order, add);
             for (int a = 0; a < 3; ++a)
                 AddOne(a);
+            relic = AddRelic();
         }
 
         private int SelectUnit(Tile tile)
@@ -63,7 +66,7 @@ namespace NCWMap
             }
             else
             {
-                if (Program.Random.Next(3) < 1)
+                if (Program.Random.Next(3) == 0)
                 {
                     Program.Log("T2: 4");
                     AddResource(1, 0, 4, ref resources);
@@ -85,12 +88,34 @@ namespace NCWMap
 
         private int BalanceOrder(int order, int add)
         {
-            //turn order balancing
-            order *= 1;
-            order += add;
-            while (order >= 1)
+            //turn order balancing 
+            order += add;// + Program.Random.Next(2);
+            while (order > 0)
                 AddResource(Program.Random.Next(3), 1, 1, ref order);
             return order;
+        }
+
+        private int AddRelic()
+        {
+            int relic = 6;
+            var types = Program.Random.Iterate(3);
+            if (Program.Random.Bool() && types.All(GetPlayerExtra))
+            {
+                int inc = Program.Random.RangeInt(0, 3);
+
+                relic += inc;
+                //cost 4 resources per relic
+                inc = 18 - inc * 4;
+
+                foreach (int a in types)
+                    Resources[a, 0]--;
+                while (inc > 0)
+                {
+                    Program.Log("AddRelic: " + inc);
+                    AddResource(Program.Random.Next(3), 1, Program.Random.RangeInt(1, inc), ref inc);
+                }
+            }
+            return relic;
         }
 
         private static int GetTierCost(int tier)
@@ -111,6 +136,16 @@ namespace NCWMap
                 Resources[tier, 0] += Resources[tier, 1] / 6;
                 Resources[tier, 1] %= 6;
             }
+        }
+
+        public bool GetPlayerExtra(int a)
+        {
+            int e = this.Resources[a, 0] % (2 * (a + 1));
+            if (a == 0 && e == 0 && this.Resources[a, 0] > 0 && Program.Random.Next(6) == 0)
+                e = 1;
+            if (e > 0 && this.Resources[a, 0] == 1 && this.Resources[a, 1] == 0)
+                e = 0;
+            return e > 0;
         }
     }
 }

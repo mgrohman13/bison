@@ -11,7 +11,7 @@ namespace NCWMap
 {
     public partial class NewMap : Form
     {
-        private const float bottomSpace = 52f;
+        private const float bottomSpace = 65f;
         private const float padding = 6f;
 
         public NewMap()
@@ -26,19 +26,18 @@ namespace NCWMap
         {
             try
             {
-                float xs, ys;
-                GetScale(out xs, out ys);
+                GetScale(out float xs, out float ys);
 
                 if (xs > 1 && ys > 1)
                 {
                     int idx = 0;
                     RectangleF[] rects = new RectangleF[18 * 18];
 
-                    using (Font font = new Font("arial", ys / 2.6f))
+                    using (Font font = new("arial", ys / 2.6f))
                         for (int x = 0; x < 18; ++x)
                             for (int y = 0; y < 18; ++y)
                             {
-                                RectangleF r = new RectangleF(padding + x * xs + (y % 2 == 0 ? xs / 2f : 0), padding + y * ys, xs, ys);
+                                RectangleF r = new(padding + x * xs + (y % 2 == 0 ? xs / 2f : 0), padding + y * ys, xs, ys);
                                 rects[idx++] = r;
                                 if (Program.Map[x, y].Water)
                                     e.Graphics.DrawLine(Pens.Black, r.X, r.Y + ys / 2f, r.X + xs, r.Y + ys / 2f);
@@ -89,7 +88,7 @@ namespace NCWMap
                 if (ClientSize.Height > bottomSpace)
                 {
                     if (Program.Players != null)
-                        using (Font font = new Font("arial", 8f))
+                        using (Font font = new("arial", 8f))
                         {
                             float xInc = ClientSize.Width / (float)Program.Players.Length;
                             float yInc = 10f;
@@ -102,6 +101,7 @@ namespace NCWMap
 
                                 DrawString(e, font, xInf, ref yInf, xInc, yInc, player.Name);
                                 DrawString(e, font, xInf, ref yInf, xInc, yInc, player.Unit);
+                                DrawString(e, font, xInf, ref yInf, xInc, yInc, player.relic.ToString());
                                 DrawString(e, font, xInf, ref yInf, xInc, yInc, player, 0);
                                 DrawString(e, font, xInf, ref yInf, xInc, yInc, player, 1);
                                 DrawString(e, font, xInf, ref yInf, xInc, yInc, player, 2);
@@ -136,9 +136,7 @@ namespace NCWMap
 
         private void NewMap_Resize(object sender, EventArgs e)
         {
-            float xs, ys;
-            GetScale(out xs, out ys);
-
+            GetScale(out _, out float ys);
             ClientSize = new Size((int)Math.Round(ys * 18.5f + padding * 2f), ClientSize.Height);
         }
 
