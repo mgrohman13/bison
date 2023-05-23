@@ -20,9 +20,8 @@ namespace WarpipsReplayability.Patches
                     value++;
 
                 ___resourceController.HardSetPlayerLives(value, value);
-                Plugin.Log.LogInfo($"HardSetPlayerLives to {value}");
-
                 ___resourceController.SetTokens(value);
+                Plugin.Log.LogInfo($"HardSetPlayerLives to {value}");
             }
             catch (Exception e)
             {
