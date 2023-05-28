@@ -12,7 +12,7 @@ namespace WarpipsReplayability.Mod
             if (Map.MissionManagerAsset != null && Map.MissionManagerAsset.CurrentWorldMap.lastAttackedTerritory > -1)
             {
                 string logDesc = cap ? "SpawnCap" : "SpawnCount";
-                LogInfo(logDesc, spawnTech, min, max);
+                LogInfo(logDesc, spawnTech, min, max, t);
 
                 //HashSet<string> techTypes = new() { "PistolPip", "Shotgunner", "Warfighter", };// "UAZ", "Warmule", };     
                 //if (Config.DifficultMode)
@@ -37,7 +37,7 @@ namespace WarpipsReplayability.Mod
 
         private static string Mission = string.Empty;
         private static readonly HashSet<string> LoggedInfo = new();
-        private static void LogInfo(string logDesc, InvokeableType spawnTech, float min, float max)
+        private static void LogInfo(string logDesc, InvokeableType spawnTech, float min, float max, float t)
         {
             string mission = Map.MissionManagerAsset.CurrentOperation.spawnWaveProfile.name;
             if (Mission != mission)
@@ -50,7 +50,7 @@ namespace WarpipsReplayability.Mod
             if (!LoggedInfo.Contains(info))
             {
                 LoggedInfo.Add(info);
-                Plugin.Log.LogInfo(info);
+                Plugin.Log.LogInfo(info + $" {t:0.000}");
             }
         }
         private static readonly Dictionary<string, string> PreviousLog = new();

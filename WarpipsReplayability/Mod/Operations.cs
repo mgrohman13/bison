@@ -145,7 +145,7 @@ namespace WarpipsReplayability.Mod
                         int capMin = (int)_spawnCapMin.GetValue(data);
                         int capMax = (int)_spawnCapMax.GetValue(data);
 
-                        Plugin.Log.LogDebug($"{profile.ReturnTechType().name} ({profile.GetInstanceID()}): {countMin}-{countMax} ({capMin}-{capMax})");
+                        Plugin.Log.LogDebug($"{profile.ReturnTechType().name}: {countMin}-{countMax} ({capMin}-{capMax})");
 
                         values.countMin += countMin;
                         values.countMax += countMax;
@@ -966,7 +966,7 @@ namespace WarpipsReplayability.Mod
                 {
                     SpawnerData data = profile.UnitSpawnData;
 
-                    Plugin.Log.LogInfo($"{spawnWaveProfile.name} {data.SpawnTech.name} ({profile.GetInstanceID()}): {data.SpawnCount(0)}-{data.SpawnCount(1)} ({data.SpawnCap(0)}-{data.SpawnCap(1)}), {data.StartAtDifficulty:0.00}");
+                    Plugin.Log.LogInfo($"{spawnWaveProfile.name} {data.SpawnTech.name}: {data.SpawnCount(0)}-{data.SpawnCount(1)} ({data.SpawnCap(0)}-{data.SpawnCap(1)}), {data.StartAtDifficulty:0.00}");
 
                     foreach (var c in data.SpawnConditions)
                         Plugin.Log.LogError("SpawnCondition: " + c);
