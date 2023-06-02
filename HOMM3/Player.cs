@@ -43,8 +43,7 @@ namespace HOMM3
 
         public void AddZone(Zone zone)
         {
-            if (home == null)
-                home = zone;
+            home ??= zone;
             zones.Add(zone);
         }
         public static void SetPair(Player p1, Player p2)
@@ -186,23 +185,33 @@ namespace HOMM3
                 if (p2 != null)
                     placeZones = placeZones.Concat(p2.zones.Where(z => z != p2.home));
 
+                double weight = p1.AIstrong ? strongWeight : 1;
+                static bool IsAI(Player p1) => !p1.Human && (p1.paired == null || !p1.paired.Human);
                 int totalWoodOre, totalResource, totalGold;
-                if (p1.Human || (p2 != null && p2.Human))
+                if (!IsAI(p1))
                 {
                     totalWoodOre = pWoodOre;
                     totalResource = pResource;
                     totalGold = pGold;
                 }
-                else
+                else if (place.Any(IsAI))
                 {
-                    double weight = p1.AIstrong ? strongWeight : 1;
                     totalWoodOre = Program.rand.Round(aiWoodOre * weight / numAIs);
                     totalResource = Program.rand.Round(aiResource * weight / numAIs);
                     totalGold = Program.rand.Round(aiGold * weight / numAIs);
-                    numAIs -= weight;
+                }
+                else
+                {
+                    totalWoodOre = aiWoodOre;
+                    totalResource = aiResource;
+                    totalGold = aiGold;
+                }
+                if (IsAI(p1))
+                {
                     aiWoodOre -= totalWoodOre;
                     aiResource -= totalResource;
                     aiGold -= totalGold;
+                    numAIs -= weight;
                 }
 
                 //place most in non-home zones
