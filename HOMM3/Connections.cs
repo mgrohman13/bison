@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace HOMM3
 {
@@ -53,7 +51,7 @@ namespace HOMM3
         {
             return Program.rand.GaussianOE(Program.rand.Range(26000, 52000), .091, .169);
         }
-        public static List<Connections> InitConnections(Player[] players, double size, double numZones)
+        public static List<Connections> InitConnections(Player[] players, double _, double numZones)
         {
             double playerCount = players.Length;
             List<Connections> connections = new();
@@ -339,9 +337,9 @@ namespace HOMM3
                         //keep the minimum and maximum strength connections, and a small chance to keep each additional one
                         var min = others.Where(c => c.strength == others.Min(c => c.strength));
                         keep.Add(Program.rand.SelectValue(min));
-                        if (connections.Count > 2)
+                        if (others.Count() > 2)
                         {
-                            double chance = 1 / (connections.Count - 1.3);
+                            double chance = 1 / (others.Count() - 1.3);
                             Log.Out("chance: {0}", chance);
                             foreach (Connections connection in others)
                                 if (Program.rand.Bool(chance))
