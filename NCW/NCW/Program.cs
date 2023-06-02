@@ -1,10 +1,8 @@
-﻿using System;
+﻿using MattUtil;
+using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Windows.Forms;
-using MattUtil;
 
 namespace NCWMap
 {
@@ -220,7 +218,15 @@ namespace NCWMap
                     CreatePlayers();
                     break;
                 case 9:
+                    foreach (Player player in Random.Iterate(Players))
+                        player.DoMore();
+                    break;
+                case 10:
                     SubtractPlayerExtra();
+                    break;
+                case 11:
+                    foreach (Player player in Random.Iterate(Players))
+                        player.Outpost();
                     break;
                 default:
                     return true;
@@ -472,7 +478,7 @@ namespace NCWMap
 
         private static void CreatePlayers()
         {
-            Dictionary<string, Tile> tiles = PlayerStartTiles(new[] { "BLE", "BLK", "GRN", "PNK", "RED", "YLW" });
+            Dictionary<string, Tile> tiles = PlayerStartTiles(new string[] { "BLE E", "BLK K", "GRN G", "PNK P", "RED R", "YLW Y" });
             PlayerResources(tiles);
         }
         private static Dictionary<string, Tile> PlayerStartTiles(string[] players)
@@ -492,7 +498,7 @@ namespace NCWMap
             }
 
             foreach (var pair in result)
-                pair.Value.Inf = new[] { pair.Key, null };
+                pair.Value.Inf = new[] { pair.Key.Split(' ')[0], null };
             return result;
         }
         private static void PlayerResources(Dictionary<string, Tile> players)

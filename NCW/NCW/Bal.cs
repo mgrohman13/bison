@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
 namespace NCWMap
@@ -167,7 +166,9 @@ namespace NCWMap
                             if (u1.CantAttack(u2) || u2.CantAttack(u1))
                             {
                                 mult = 1 / airDiv + 1 / attkDiv + 1 / alDiv;
-                                value = Math.Pow(value, 1 / airDiv / mult) * Math.Pow(Log(GetTTK(u1, u2, ttk)), 1 / attkDiv / mult) * Math.Pow(v2, 1 / alDiv / mult);
+                                double v = GetTTK(u1, u2, ttk);
+                                Console.WriteLine($"{u1.name} -> {u2.name} {v} ({costMult / GetTTK(u1, u2, 1)})");
+                                value = Math.Pow(value, 1 / airDiv / mult) * Math.Pow(Log(v), 1 / attkDiv / mult) * Math.Pow(v2, 1 / alDiv / mult);
                             }
                         }
                         else
@@ -188,7 +189,9 @@ namespace NCWMap
         {
             if (u2.CantAttack(u1))
                 return 1 / GetTTK(u2, u1, div);
-            return (u1.hits * 6) / (u2.move * u2.GetUnitRow(u1)[4]) / div * u2.cost / (double)u1.cost;
+            //TODO: not considering regen for TTK?
+            double regen = 0;// u1.GetRegen();
+            return (u1.hits * 6) / (u2.move * u2.GetUnitRow(u1)[4] - regen) / div * u2.cost / (double)u1.cost;
         }
         private static double Log(double v)
         {
@@ -532,7 +535,7 @@ namespace NCWMap
                 return retVal;
             }
 
-            private double GetRegen()
+            public double GetRegen()
             {
                 if (this.special != null)
                 {

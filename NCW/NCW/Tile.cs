@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using MattUtil;
 
 namespace NCWMap
 {
@@ -21,8 +19,8 @@ namespace NCWMap
 
         public IEnumerable<Tile> GetNeighbors()
         {
-            for (int xAdd = -1 ; xAdd <= 1 ; ++xAdd)
-                for (int yAdd = -1 ; yAdd <= 1 ; ++yAdd)
+            for (int xAdd = -1; xAdd <= 1; ++xAdd)
+                for (int yAdd = -1; yAdd <= 1; ++yAdd)
                 {
                     int x = X + xAdd;
                     int y = Y + yAdd;
@@ -41,9 +39,16 @@ namespace NCWMap
             //determine if the odd y distance will save an extra x move or not
             if (xDist < 1)
                 xDist = 0;
-            else if (( yDist % 2 != 0 ) && ( ( y2 % 2 == 0 ) == ( x2 < x1 ) ))
+            else if ((yDist % 2 != 0) && ((y2 % 2 == 0) == (x2 < x1)))
                 --xDist;
             return yDist + xDist;
+        }
+
+        internal void Outpost(Player player)
+        {
+            if (Inf != null)
+                throw new Exception();
+            Inf = new string[] { $"F {player.Name.Split(' ')[1]}", null };
         }
     }
 }

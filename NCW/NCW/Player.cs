@@ -1,8 +1,6 @@
-﻿using NCWMap.Properties;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace NCWMap
 {
@@ -11,22 +9,48 @@ namespace NCWMap
         private static readonly string[] units = new string[] { "1Z", "1H", "1E", "1C", "2A", "2T", "2H", "2D", "3D", "3W", "3E", "3B" };
 
         public readonly string Name;
-        public string Unit;
+        public readonly Tile Tile;
+        public string Unit { get; private set; }
         public readonly int[,] Resources;
-        public readonly int relic;
+        public readonly int Order, Add;
+        public int Relic { get; private set; }
 
         public Player(string name, Tile tile, int order, int add)
         {
             this.Name = name;
+            this.Tile = tile;
             this.Unit = null;
             this.Resources = new int[3, 2];
+            this.Order = order;
+            this.Add = add;
 
             int tier = SelectUnit(tile);
             DistResources(GetTierCost(tier));
-            BalanceOrder(order, add);
+        }
+        public void DoMore()
+        {
+            BalanceOrder(Order, Add);
             for (int a = 0; a < 3; ++a)
                 AddOne(a);
-            relic = AddRelic();
+            Relic = AddRelic();
+        }
+        public bool GetPlayerExtra(int a)
+        {
+            int e = this.Resources[a, 0] % (2 * (a + 1));
+            if (a == 0 && e == 0 && this.Resources[a, 0] > 0 && Program.Random.Next(6) == 0)
+                e = 1;
+            if (e > 0 && this.Resources[a, 0] == 1 && this.Resources[a, 1] == 0)
+                e = 0;
+            return e > 0;
+        }
+        public void Outpost()
+        {
+            HashSet<Tile> neighbors = Tile.GetNeighbors().ToHashSet();
+            HashSet<Tile> twoAway = neighbors.SelectMany(t => t.GetNeighbors()).ToHashSet();
+            neighbors.Add(Tile);
+            twoAway.ExceptWith(neighbors);
+
+            Program.Random.SelectValue(twoAway.Where(t => t.Inf == null)).Outpost(this);
         }
 
         private int SelectUnit(Tile tile)
@@ -136,16 +160,6 @@ namespace NCWMap
                 Resources[tier, 0] += Resources[tier, 1] / 6;
                 Resources[tier, 1] %= 6;
             }
-        }
-
-        public bool GetPlayerExtra(int a)
-        {
-            int e = this.Resources[a, 0] % (2 * (a + 1));
-            if (a == 0 && e == 0 && this.Resources[a, 0] > 0 && Program.Random.Next(6) == 0)
-                e = 1;
-            if (e > 0 && this.Resources[a, 0] == 1 && this.Resources[a, 1] == 0)
-                e = 0;
-            return e > 0;
         }
     }
 }

@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 
 namespace NCWMap
@@ -99,9 +94,9 @@ namespace NCWMap
                                 float yInf = ClientSize.Height - bottomSpace;
                                 Player player = Program.Players[a];
 
-                                DrawString(e, font, xInf, ref yInf, xInc, yInc, player.Name);
+                                DrawString(e, font, xInf, ref yInf, xInc, yInc, player.Name.Split(' ')[0]);
                                 DrawString(e, font, xInf, ref yInf, xInc, yInc, player.Unit);
-                                DrawString(e, font, xInf, ref yInf, xInc, yInc, player.relic.ToString());
+                                DrawString(e, font, xInf, ref yInf, xInc, yInc, player.Relic.ToString());
                                 DrawString(e, font, xInf, ref yInf, xInc, yInc, player, 0);
                                 DrawString(e, font, xInf, ref yInf, xInc, yInc, player, 1);
                                 DrawString(e, font, xInf, ref yInf, xInc, yInc, player, 2);
