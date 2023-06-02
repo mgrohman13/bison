@@ -1,7 +1,8 @@
+new portal generation seed - avoid string hash
+
 unused atack when when die to retalliation
 
 gameplay
-	relic chests worth more per turn?
 	wiz pts 52?  or other numbers mults of 5?
 	upgrade units
 		factory
