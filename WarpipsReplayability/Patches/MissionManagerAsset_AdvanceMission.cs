@@ -14,11 +14,12 @@ namespace WarpipsReplayability.Patches
         {
             try
             {
-                Plugin.Log.LogDebug("MissionManagerAsset_AdvanceMission Prefix");
+                Plugin.Log.LogInfo("MissionManagerAsset_AdvanceMission Prefix");
 
                 WorldMapSession currentWorldMap = __instance.CurrentWorldMap;
                 TerritoryInstance lastAttackedTerritory = currentWorldMap.territories[currentWorldMap.lastAttackedTerritory];
                 __state = lastAttackedTerritory.specialTag == TerritoryInstance.SpecialTag.EnemyObjective;
+                Plugin.Log.LogInfo($"lastAttackedTerritory {lastAttackedTerritory.operation.spawnWaveProfile.name}");
                 if (__state)
                 {
                     Map.DoShuffle = true;
@@ -36,13 +37,14 @@ namespace WarpipsReplayability.Patches
             }
         }
 
-        public static void Postfix(FloatDynamicStat ___worldMapDifficultyMultipler, ref bool __state)
+        public static void Postfix(MissionManagerAsset __instance, ref FloatDynamicStat ___worldMapDifficultyMultipler, ref bool __state)
         {
             try
             {
-                Plugin.Log.LogDebug("MissionManagerAsset_AdvanceMission Postfix");
+                Plugin.Log.LogInfo("MissionManagerAsset_AdvanceMission Postfix");
 
-                int worldMapIndex = Map.MissionManagerAsset.WorldMapIndex;
+                int worldMapIndex = __instance.WorldMapIndex;
+                Plugin.Log.LogInfo($"state {__state}  worldMapIndex {worldMapIndex}  worldMapDifficultyMultipler {___worldMapDifficultyMultipler.Value}");
                 if (__state && worldMapIndex == 3)
                 {
                     ___worldMapDifficultyMultipler.Value = Plugin.Rand.GaussianCapped(.5f, .065f, .35f);

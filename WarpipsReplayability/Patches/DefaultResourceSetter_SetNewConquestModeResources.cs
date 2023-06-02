@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using LevelGeneration;
 using System;
 using WarpipsReplayability.Mod;
 
@@ -8,14 +9,14 @@ namespace WarpipsReplayability.Patches
     [HarmonyPatch(nameof(DefaultResourceSetter.SetNewConquestModeResources))]
     internal class DefaultResourceSetter_SetNewConquestModeResources
     {
-        public static void Postfix(ResourceController ___resourceController)
+        public static void Postfix(MissionManagerAsset ___missionManagerAsset, ResourceController ___resourceController)
         {
             try
             {
                 Plugin.Log.LogDebug("DefaultResourceSetter_SetNewConquestModeResources Postfix");
 
                 int value = 3;
-                int difficulty = Map.MissionManagerAsset.GameDifficultyIndex;
+                int difficulty = ___missionManagerAsset.GameDifficultyIndex;
                 if (difficulty == 3 || difficulty == 1)
                     value++;
 

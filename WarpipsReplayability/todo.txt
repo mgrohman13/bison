@@ -61,9 +61,21 @@ rebalance air?
 	more units target(puma, rpg, bubba)
 			
 big oil?? no better over time than small?
+landmine spot on bridge on large bridge map
 
 pulsing Q/E
 	reduce fuel gain by asymptotic amt since last use?
 
 inspect item cooldowns?
 partial unit rank?
+
+log UnitBuff limitedToTypes
+
+inc worldMapDifficultyMultipler >1 ?
+
+BUG - sale index changes on save and restart app
+
+sound bug?
+
+end island start with world map diff >0?
+	test
