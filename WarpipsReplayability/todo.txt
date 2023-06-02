@@ -1,8 +1,6 @@
-update screenshots
 add marathon mode option?
 	reduce all tech points, reduce worldMapDifficultyMultipler
 test TerritoryInstance.blocked
-difficulty modifier for things ive made constant
 show bombs on island map difficulty bar
 	bombIndicatorPrefabs dont appear immediately after load
 	serialize? figure out how to load resource...
@@ -12,13 +10,11 @@ mess with spawning, true mission randomness
 		cycle stuff
 		cycle difficulty increase?
 	difficultyCurve tangents??
+	apply something similar to bomb gap to final missions?
 	rand bombs?		
 		bombsOnCycle
 		will need to revisit ManageBombIndicatorPrefabs
 	correlate difficulty with tech pts?
-	starting cash??
-	not enough lives?
-		ensure more new lives always reachable?
 	difficultmode?
 	final map missions w/ extra lives harder?
 
@@ -35,47 +31,27 @@ balancing
 			Gruz 0.8 upper
 			T92  0.4 lower
 
-new map on loss not normally on island?
 
-ReturnAllWarningMessageTimings check cooldown between spawns?
+map lengths not really accurate...
 
 bug when tactition gets hit by gas pip while calling down airstrike
 building placement availability bugs on maps
 tank defense mode target bug?
-emergency cash button always available?
-	change timouts?
-	
-bonus max life tokens display
+landmine spot on bridge on large bridge map
+sound bug?
+inspect item cooldowns?
 
-apply something similar to bomb gap to final missions?
-
-map lengths not really accurate...
-
-reroll shop?
-things shop never sells?
-
+partial unit rank?
 rebalance air?
 	much less damage, less health
 	longer before refuel
 	if return give cash back
 	more units target(puma, rpg, bubba)
-			
 big oil?? no better over time than small?
-landmine spot on bridge on large bridge map
-
 pulsing Q/E
 	reduce fuel gain by asymptotic amt since last use?
-
-inspect item cooldowns?
-partial unit rank?
-
-log UnitBuff limitedToTypes
-
 inc worldMapDifficultyMultipler >1 ?
-
-BUG - sale index changes on save and restart app
-
-sound bug?
-
-end island start with world map diff >0?
-	test
+emergency cash button always available?
+	change timouts?
+reroll shop?
+things shop never sells?

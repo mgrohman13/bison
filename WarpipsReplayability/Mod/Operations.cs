@@ -427,7 +427,7 @@ namespace WarpipsReplayability.Mod
             });
             if (distinctSites > max)
             {
-                Plugin.Log.LogWarning($"distinctSites {distinctSites} > {max}");
+                Plugin.Log.LogInfo($"distinctSites {distinctSites} > {max}");
                 distinctSites = max;
             }
 
@@ -469,7 +469,7 @@ namespace WarpipsReplayability.Mod
                     int count = buildSiteCounts[site] - 1;
                     if (count < 1)
                     {
-                        Plugin.Log.LogWarning($"count < 1 ({count})");
+                        Plugin.Log.LogInfo($"count < 1 ({count})");
                         count = 1;
                     }
                     buildSiteCounts[site] = count;
@@ -503,7 +503,7 @@ namespace WarpipsReplayability.Mod
                 Plugin.Log.LogInfo($"enemyBuildSites Gaussian({avg:0.00},{dev},{oe:0.00},{cap})");
                 if (avg > cap)
                     return Plugin.Rand.GaussianOEInt(avg, dev, oe / avg, cap);
-                Plugin.Log.LogWarning($"enemyBuildSites avg <= cap ({avg:0.00} <= {cap})");
+                Plugin.Log.LogInfo($"enemyBuildSites avg <= cap ({avg:0.00} <= {cap})");
                 return cap;
             }
         }

@@ -101,7 +101,7 @@ namespace WarpipsReplayability.Patches
                 if (LastLog != log)
                 {
                     LastLog = log;
-                    Plugin.Log.LogInfo(log);
+                    Plugin.Log.LogWarning(log);
                 }
             }
         }
