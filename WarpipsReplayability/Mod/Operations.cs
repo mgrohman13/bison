@@ -662,8 +662,13 @@ namespace WarpipsReplayability.Mod
             SpawnWaveProfile spawnWaveProfile = operation.spawnWaveProfile;
             AnimationCurve curve = GetDifficultyCurve(spawnWaveProfile);
 
-            float duration = deterministic.GaussianOEInt(spawnWaveProfile.RoundDuration, .13f, .13f, 4);
+            float duration = spawnWaveProfile.RoundDuration;
+            const int min = 4;
+            float avg = min / duration * 2.5f - 1f;
+            duration = deterministic.GaussianOEInt(avg, .169f, .13f, min);
+            Plugin.Log.LogInfo($"RoundDuration {spawnWaveProfile.RoundDuration} -> {duration} ({avg:0.0})");
             _roundDuration.SetValue(spawnWaveProfile, duration);
+
             float maxStartAtDifficulty = MaxStartAtDifficulty(spawnWaveProfile.enemySpawnProfiles);
 
             //mapLength ranges from 70-320
