@@ -1,5 +1,6 @@
 ﻿using GameUI;
 using HarmonyLib;
+using LevelGeneration;
 using LevelGeneration.WorldMap;
 using System;
 using System.Linq;
@@ -28,6 +29,21 @@ namespace WarpipsReplayability.Patches
                 }
 
                 Map.DoShuffle = true;
+            }
+            catch (Exception e)
+            {
+                Plugin.Log.LogError(e);
+            }
+        }
+
+        public static void Postfix()
+        {
+            try
+            {
+                Plugin.Log.LogDebug("MainMenuController_NewCampaignCommon Postfix");
+
+                //save SaleIndex
+                Persist.SaveCurrent();
             }
             catch (Exception e)
             {

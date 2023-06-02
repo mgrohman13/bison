@@ -1,5 +1,4 @@
 ﻿using HarmonyLib;
-using LevelGeneration;
 using System;
 using WarpipsReplayability.Mod;
 
@@ -9,16 +8,15 @@ namespace WarpipsReplayability.Patches
     [HarmonyPatch(nameof(ItemShopMaster.RestockItemShop))]
     internal class ItemShopMaster_RestockItemShop
     {
-        public static void Postfix(Reward[] ___itemShopStock, FloatReadonlyStat ___saleDiscountValue)
+        public static void Postfix(ItemShopMaster __instance)
         {
             try
             {
                 Plugin.Log.LogDebug("ItemShopMaster_RestockItemShop Postfix");
-                Plugin.Log.LogDebug($"{___saleDiscountValue.Value}");
 
                 //note that if DifficultMode is true, this fix is irrelevant due to the underlying code fix in Reward_SetStackCount
                 //if (Config.FixArmsDealer)
-                foreach (var r in ___itemShopStock)
+                foreach (var r in __instance.ItemShopStock)
                 {
                     Plugin.Log.LogInfo($"{r.item.name} - {r.stackSize}, cost {r.item.techNode.purchaseCost}");
 
@@ -29,6 +27,10 @@ namespace WarpipsReplayability.Patches
 
                     r.stackCount = Plugin.Rand.RangeInt(r.stackSize.x, r.stackSize.y);
                 }
+                 
+                int saleIndex = __instance.SaleIndex;
+                Plugin.Log.LogInfo("Set SaleIndex " + saleIndex);
+                Persist.Instance.SaleIndex = saleIndex; 
             }
             catch (Exception e)
             {

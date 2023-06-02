@@ -20,6 +20,7 @@ namespace WarpipsReplayability.Mod
         public bool[] HiddenRewards { get; private set; }
         public int[] TechRewards { get; private set; }
         public Operations.OperationInfo[] OperationInfo { get; private set; }
+        public int SaleIndex { get; set; } = -1;
 
         private static readonly FieldInfo _territoryConnections = AccessTools.Field(typeof(WorldMapAsset), "territoryConnections");
 
@@ -38,6 +39,7 @@ namespace WarpipsReplayability.Mod
         }
         public static void SaveCurrent()
         {
+            Plugin.Log.LogInfo("Save Persist");
             TBSUtil.SaveGame(Instance, saveFile);
         }
         public static void Load()
