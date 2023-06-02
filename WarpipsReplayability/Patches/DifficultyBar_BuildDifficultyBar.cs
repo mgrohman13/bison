@@ -1,5 +1,6 @@
 ﻿using HarmonyLib;
 using LevelGeneration;
+using MattUtil;
 using System;
 using System.Reflection;
 using UnityEngine;
@@ -23,7 +24,7 @@ namespace WarpipsReplayability.Patches
 
         private static readonly FieldInfo _displayThreshold = AccessTools.Field(typeof(SpawnWaveProfile), "displayThreshold");
 
-        public static bool Prefix(Texture2D ___barTexture, Transform ___warningHolder, SpawnWaveProfile waveProfile, ref bool ___ignoreCycleDifficulty)//, ref List<GameObject> ___bombIndicatorPrefabs)
+        public static bool Prefix(SpawnWaveProfile waveProfile, Texture2D ___barTexture, Transform ___warningHolder, ref bool ___ignoreCycleDifficulty)//, ref List<GameObject> ___bombIndicatorPrefabs)
         {
             bool showBar = true;
             try
@@ -60,6 +61,30 @@ namespace WarpipsReplayability.Patches
                 Plugin.Log.LogError(e);
             }
             return showBar;
+        }
+
+        public static void Postfix(SpawnWaveProfile waveProfile, Texture2D ___barTexture)
+        {
+            try
+            {
+                Plugin.Log.LogDebug("DifficultyBar_BuildDifficultyBar Postfix");
+
+                if (Operations.ShowEnemies())
+                {
+                    MTRandom deterministic = new(SpawnWaveProfile_ReturnAllWarningMessageTimings.GenerateSeed(waveProfile));
+                    float mult = ___barTexture.width / waveProfile.RoundDuration;
+                    for (int a = 1; a < (int)Math.Round(waveProfile.RoundDuration); a++)
+                    {
+                        int b = deterministic.Round(a * mult);
+                        ___barTexture.SetPixel(b, 0, Color.white);
+                    }
+                    ___barTexture.Apply();
+                }
+            }
+            catch (Exception e)
+            {
+                Plugin.Log.LogError(e);
+            }
         }
 
         //private static List<GameObject> bombIndicatorPrefabs;

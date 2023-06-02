@@ -112,13 +112,15 @@ namespace WarpipsReplayability.Patches
             return displayThreshold;
         }
 
+        public static uint[] GenerateSeed(SpawnWaveProfile waveProfile) =>
+            GenerateSeed((AnimationCurve)_difficultyCurve.GetValue(waveProfile));
         private static uint[] GenerateSeed(AnimationCurve curve)
         {
             //generate a simple seed based on the curve
             uint[] seed = curve.keys.SelectMany(k =>
                     new float[] { k.value, k.time, })
                 .Select(o => (uint)o.GetHashCode()).ToArray();
-            Plugin.Log.LogInfo("alert timings seed: " + Plugin.GetSeedString(seed));
+            Plugin.Log.LogInfo("AnimationCurve seed: " + Plugin.GetSeedString(seed));
             return seed;
         }
     }
