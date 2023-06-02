@@ -215,7 +215,7 @@ namespace CityWar
         //        double totalCost = totCost[idx];
         //        double element = GetPortalElementCost(elemCost[idx] / (elemCost[idx] + popCost[idx]), totalCost);
         //        double mag = totalCost - element;
-        //        while (magicAvg.Any(avg => Math.Abs(avg - mag) < rand.Gaussian(52, .13)))
+        //        while (magicAvg.Any(avg => Math.Abs(avg - mag) < rand.Gaussian(52, .26)))
         //            mag += rand.Gaussian(13);
         //        magicAvg[idx] = mag;
         //        elemMult[idx] = element / mag;
