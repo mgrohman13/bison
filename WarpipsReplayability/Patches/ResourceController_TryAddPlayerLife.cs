@@ -8,6 +8,8 @@ namespace WarpipsReplayability.Patches
     [HarmonyPatch(nameof(ResourceController.TryAddPlayerLife))]
     internal class ResourceController_TryAddPlayerLife
     {
+        public const int BonusMaxLifeTokens = 2;
+
         public static void Prefix(ResourceController __instance, ref int __state)
         {
             try
@@ -29,9 +31,8 @@ namespace WarpipsReplayability.Patches
 
                 if (__state == __instance.PlayerLives.value)
                 {
-                    int tokens = 2;
-                    __instance.AddTokens(tokens);
-                    Plugin.Log.LogInfo($"Bonus max life tokens: {tokens}");
+                    __instance.AddTokens(BonusMaxLifeTokens);
+                    Plugin.Log.LogInfo($"BonusMaxLifeTokens: {BonusMaxLifeTokens}");
                 }
             }
             catch (Exception e)

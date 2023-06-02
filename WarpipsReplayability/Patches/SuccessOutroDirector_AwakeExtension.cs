@@ -1,5 +1,7 @@
-﻿using HarmonyLib;
+﻿using GameUI;
+using HarmonyLib;
 using System;
+using System.Linq;
 using System.Reflection;
 using WarpipsReplayability.Mod;
 
@@ -11,6 +13,7 @@ namespace WarpipsReplayability.Patches
     {
         private static readonly FieldInfo _difficultyStats = AccessTools.Field(typeof(FloatDifficultyModifiedValue), "difficultyStats");
         private static readonly FieldInfo _difficultyModifierIndex = AccessTools.Field(typeof(FloatDifficultyModifiedValue), "difficultyModifierIndex");
+        private static readonly FieldInfo _itemRewards = AccessTools.Field(typeof(ItemRewardGridController), "itemRewards");
 
         public static float WorldMapDifficultyMultiplerTick { get; private set; }
 
@@ -56,6 +59,34 @@ namespace WarpipsReplayability.Patches
                 difficultyStats[difficulty].constantValue = inc;
 
                 WorldMapDifficultyMultiplerTick = inc;
+            }
+            catch (Exception e)
+            {
+                Plugin.Log.LogError(e);
+            }
+        }
+
+        public static void Postfix(ResourceController ___resourceController, ItemRewardGridController ___itemRewardDisplay,
+            ref int ___currentTokenCount, ref int ___rewardTokenCount)
+        {
+            try
+            {
+                Plugin.Log.LogDebug("SuccessOutroDirector_AwakeExtension Postfix");
+
+                //show the additional BonusMaxLifeTokens in the outro
+                int playerLives = ___resourceController.PlayerLives.value;
+                int playerLivesMax = ___resourceController.PlayerLivesMax.value;
+                Plugin.Log.LogDebug($"currentTokenCount: {___currentTokenCount}  rewardTokenCount: {___rewardTokenCount}" +
+                    $"  PlayerLives: {playerLives}  PlayerLivesMax: {playerLivesMax}");
+                if (playerLives == playerLivesMax)
+                {
+                    ItemRewardController[] controllers = (ItemRewardController[])_itemRewards.GetValue(___itemRewardDisplay);
+                    if (controllers.Select(c => c?.TechReward?.name).Any(techType => techType == "ExtraLife"))
+                    {
+                        ___rewardTokenCount += ResourceController_TryAddPlayerLife.BonusMaxLifeTokens;
+                        Plugin.Log.LogInfo("rewardTokenCount: " + ___rewardTokenCount);
+                    }
+                }
             }
             catch (Exception e)
             {
