@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -25,7 +26,9 @@ namespace HOMM3
                     return "[" + enumerable.Select(FormatDigits).Aggregate((b, c) => b.ToString() + "," + c.ToString()) + "]";
                 return a;
             }).Select(FormatDigits).ToArray();
-            logs.Add(string.Format(format, args));
+            string log = string.Format(format, args);
+            Debug.WriteLine(log);
+            logs.Add(log);
         }
         public static void Write(string file)
         {

@@ -1231,6 +1231,7 @@ namespace HOMM3
                 if (moneyOnly)
                     Monsters_join_only_for_money = "x";
 
+                //ensure AIs starting with 2 towns in separate zones have matching type
                 if (player.AIstrong && !player.AIprimary)
                     Town_Hint = "s" + player.Paired.Home.Id;
 
@@ -1253,9 +1254,6 @@ namespace HOMM3
                 Log.Out("Options ranges ({1}): {0}", ranges.ToList(), disposition);
 
                 double result;
-
-                //we have confused the compiler such that these statements are necessary to remove compiler messages
-                result = double.NaN; result.ToString();
 
                 if (disposition > min && disposition < max && Program.rand.Bool(.91))
                 {
@@ -1291,10 +1289,10 @@ namespace HOMM3
                     Monsters_disposition_standard = 4;
                 else
                 {
-                    if (result < 0 || result > 10 || (result != (int)result && result != 5.5))
+                    if (result <= 0 || result >= 10 || result != (int)result)// && result != 5.5))
                         throw new Exception();
                     Monsters_disposition_standard = 5;
-                    Monsters_disposition_custom = Program.rand.Round(result);
+                    Monsters_disposition_custom = (int)result;// Program.rand.Round(result);
                     if (!useRange)
                         Log.Out("useRange ({1}): {0}", useRange, Monsters_disposition_custom);
                 }

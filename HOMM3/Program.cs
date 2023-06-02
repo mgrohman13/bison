@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.IO;
+using System.Linq;
 
 namespace HOMM3
 {
@@ -23,6 +21,8 @@ namespace HOMM3
         static void Main()
         {
             rand.StartTick();
+
+            //Console.WriteLine(rand.Gaussian());
 
             name = "Matt " + rand.RangeInt(1000, 9999);
             pairPlayer = rand.Bool();// rand.Bool(Math.Pow((Program.NumPlayers - 1.69) / 7.8, .65));
