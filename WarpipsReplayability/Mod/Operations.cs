@@ -253,13 +253,13 @@ namespace WarpipsReplayability.Mod
                     int countMin = Plugin.Rand.GaussianCappedInt((values.countMin) * mult, deviation, values.countMin > 1 ? 1 : 0);
                     int countMax = Plugin.Rand.GaussianCappedInt((values.countMax - values.countMin + 1) * mult + countMin, deviation, Math.Max(1, countMin));
                     //this will make the game harder if we decide it's too easy
-                    //if (territory.specialTag == SpecialTag.None && Plugin.Rand.Bool())
-                    //{
-                    //    //chance to widen range
-                    //    countMax += countMin;
-                    //    countMin = 0;
-                    //}
-                    int capMin = Plugin.Rand.GaussianCappedInt((values.capMin) * mult + countMax, deviation, countMax);
+                    if (territory.specialTag == SpecialTag.None && Plugin.Rand.Bool())
+                    {
+                        //chance to widen range
+                        countMax += countMin;
+                        countMin = 0;
+                    }
+                    int capMin = Plugin.Rand.GaussianCappedInt((values.capMin) * mult + countMax, deviation, Math.Max(1, countMin));
                     //minimum caps are generally quite a bit higher, so bring down the max cap somewhat
                     int capMax = Plugin.Rand.GaussianCappedInt((values.capMax - values.capMin + 2) / 2f * mult + capMin, deviation, capMin);
 
@@ -664,7 +664,7 @@ namespace WarpipsReplayability.Mod
 
             float duration = spawnWaveProfile.RoundDuration;
             const int min = 4;
-            float avg = min / duration * 2.5f - 1f;
+            float avg = duration + min / duration * 2.5f - 1f;
             duration = deterministic.GaussianOEInt(avg, .169f, .13f, min);
             Plugin.Log.LogInfo($"RoundDuration {spawnWaveProfile.RoundDuration} -> {duration} ({avg:0.0})");
             _roundDuration.SetValue(spawnWaveProfile, duration);
