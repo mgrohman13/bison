@@ -16,6 +16,28 @@ namespace WarpipsReplayability.Patches
         private static readonly FieldInfo _unitBuffs = AccessTools.Field(AccessTools.TypeByName("UpgradeController+BuffSource"), "unitBuffs");
         private static readonly FieldInfo _buffs = AccessTools.Field(typeof(UnitUpgradeController), "buffs");
 
+        //XP balance tweaks
+        private static readonly Dictionary<string, float> Offsets = new() {
+            { "Hind",         +1/2f },// 4
+            { "Bubba",        -1/1f },// 5
+            { "Howitzer",     +2/3f },// 3
+            { "Predator",     +1/2f },// 3
+            { "Tanya",        -7/4f },// 5
+          //{ "T92",                },// 3
+          //{ "MediumTurret",       },// 3
+            { "GRUZ",         +1/2f },// 2
+            { "GuardTower",   -2/3f },// 3
+          //{ "DuneBuggy",          },// 2
+          //{ "GasPip",             },// 2
+            { "RPGSoldier",   +3/4f },// 1
+            { "Warmule",      -1/3f },// 2
+            { "Sharpshooter", +1/2f },// 1
+            { "UAZ",          -2/3f },// 2
+          //{ "Shotgunner",         },// 1
+          //{ "Warfighter",         },// 1
+            { "PistolPip",    -1/3f },// 1
+        };
+
         public static void Prefix(UnitStatController ___statController, UnitTeamController ___unitTeamController, ref float __state)
         {
             try
@@ -25,30 +47,8 @@ namespace WarpipsReplayability.Patches
                 __state = ___statController.UnitData.xpBaseOnKill;
                 string name = ___statController.UnitData.name;
 
-                //balance tweaks
-                Dictionary<string, float> offsets = new() {
-                    { "Hind",           +1/2f }, //4
-                    { "Bubba",          -1/1f }, //5
-                    { "Howitzer",       +2/3f }, //3
-                    { "Predator",       +1/2f }, //3
-                    { "Tanya",          -7/4f }, //5
-                  //{ "T92",                  }, //3
-                  //{ "MediumTurret",         }, //3
-                    { "GRUZ",           +1/2f }, //2
-                    { "GuardTower",     -2/3f }, //3
-                  //{ "DuneBuggy",            }, //2
-                  //{ "GasPip",               }, //2
-                    { "RPGSoldier",     +3/4f }, //1
-                    { "Warmule",        -1/3f }, //2
-                    { "Sharpshooter",   +1/2f }, //1
-                    { "UAZ",            -2/3f }, //2
-                  //{ "Shotgunner",           }, //1
-                  //{ "Warfighter",           }, //1
-                    { "PistolPip",      -1/3f }, //1
-                };
-
                 float exp = __state;
-                if (offsets.TryGetValue(name, out float offset))
+                if (Offsets.TryGetValue(name, out float offset))
                     exp += offset;
                 bool super = IsSuperEnemy(___statController.gameObject);
                 if (super)

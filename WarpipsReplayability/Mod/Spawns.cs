@@ -42,17 +42,20 @@ namespace WarpipsReplayability.Mod
             if (Map.MissionManagerAsset != null)
             {
                 string mission = Map.MissionManagerAsset.CurrentOperation.spawnWaveProfile.name;
-                if (Mission != mission)
+                if (mission != "MainMenu")
                 {
-                    Mission = mission;
-                    Plugin.Log.LogDebug(mission);
-                }
+                    if (Mission != mission)
+                    {
+                        Mission = mission;
+                        Plugin.Log.LogDebug(mission);
+                    }
 
-                string info = $"{mission} {spawnTech.name} {logDesc}: {min}-{max}";
-                if (!LoggedInfo.Contains(info))
-                {
-                    LoggedInfo.Add(info);
-                    Plugin.Log.LogInfo(info + $" {t:0.000}");
+                    string info = $"{mission} {spawnTech.name} {logDesc}: {min}-{max}";
+                    if (!LoggedInfo.Contains(info))
+                    {
+                        LoggedInfo.Add(info);
+                        Plugin.Log.LogInfo(info + $" {t:0.000}");
+                    }
                 }
             }
         }

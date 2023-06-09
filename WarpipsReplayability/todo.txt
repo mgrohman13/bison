@@ -55,3 +55,8 @@ emergency cash button always available?
 	change timouts?
 reroll shop?
 things shop never sells?
+
+
+hide more info in shroud?
+increase SpawnCapCycleMultipler based on caps?
+RandOnLoss change spawn counts?

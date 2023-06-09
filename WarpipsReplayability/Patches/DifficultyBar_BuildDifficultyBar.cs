@@ -12,15 +12,7 @@ namespace WarpipsReplayability.Patches
     [HarmonyPatch(nameof(DifficultyBar.BuildDifficultyBar))]
     internal class DifficultyBar_BuildDifficultyBar
     {
-        static DifficultyBar_BuildDifficultyBar()
-        {
-            DisplayThreshold = float.NaN;
-        }
-        public static float DisplayThreshold
-        {
-            get;
-            set;
-        }
+        public static float DisplayThreshold { get; set; } = float.NaN;
 
         private static readonly FieldInfo _displayThreshold = AccessTools.Field(typeof(SpawnWaveProfile), "displayThreshold");
 
