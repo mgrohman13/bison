@@ -177,6 +177,8 @@ namespace WarpipsReplayability.Mod
                 values.capMin /= div;
                 values.capMax /= div;
                 values.number /= div;
+                if (values.capMin == 0)
+                    values.capMin = 1;
 
                 Plugin.Log.LogInfo($"{pair.Key} ({values.territories}, {values.Profiles.Count}): {values.countMin:0.00}-{values.countMax:0.00} ({values.capMin:0.00}-{values.capMax:0.00}), {values.number:0.00}");
 
@@ -250,18 +252,34 @@ namespace WarpipsReplayability.Mod
 
                     //randomize spawn amounts, based on island-wide averages
                     const float deviation = .13f;
-                    int countMin = Plugin.Rand.GaussianCappedInt((values.countMin) * mult, deviation, values.countMin > 1 ? 1 : 0);
+                    int countMin = Plugin.Rand.GaussianCappedInt((values.countMin) * mult, deviation, values.countMin > 1 && Plugin.Rand.Bool() ? 1 : 0);
                     int countMax = Plugin.Rand.GaussianCappedInt((values.countMax - values.countMin + 1) * mult + countMin, deviation, Math.Max(1, countMin));
-                    //this will make the game harder if we decide it's too easy
-                    if (territory.specialTag == SpecialTag.None && Plugin.Rand.Bool())
+                    Expand(ref countMin, ref countMax, 0, territory.specialTag switch
                     {
-                        //chance to widen range
-                        countMax += countMin;
-                        countMin = 0;
+                        SpecialTag.EnemyObjective => 8,
+                        SpecialTag.HighValueReward => 5,
+                        _ => 3
+                    });
+                    int capMin = Plugin.Rand.GaussianCappedInt((values.capMin + 1) / 2f * mult + (countMin + countMax) / 4f, deviation, 1);
+                    int capMax = Math.Max(countMax, capMin);
+                    capMax = Plugin.Rand.GaussianOEInt((values.capMax - values.capMin + 1) * mult + capMax, deviation, deviation, capMax);
+                    Expand(ref capMin, ref capMax, 1, territory.specialTag switch
+                    {
+                        SpecialTag.EnemyObjective => 3,
+                        SpecialTag.HighValueReward => 4,
+                        _ => 2
+                    });
+
+                    //chance to widen range
+                    static void Expand(ref int min, ref int max, int minMin, int chance)
+                    {
+                        int xfer = Plugin.Rand.RangeInt(0, min - minMin);
+                        if (xfer > 0 && Plugin.Rand.Next(chance) == 0)
+                        {
+                            min -= xfer;
+                            max += xfer;
+                        }
                     }
-                    int capMin = Plugin.Rand.GaussianCappedInt((values.capMin) * mult + countMax, deviation, Math.Max(1, countMin));
-                    //minimum caps are generally quite a bit higher, so bring down the max cap somewhat
-                    int capMax = Plugin.Rand.GaussianCappedInt((values.capMax - values.capMin + 2) / 2f * mult + capMin, deviation, capMin);
 
                     float numHeroes = Plugin.HeroTechs.Length;
                     int heroIndex = Array.IndexOf(Plugin.HeroTechs, values.TechType) + 1;
@@ -291,16 +309,15 @@ namespace WarpipsReplayability.Mod
                             //increasing chance to reduce each
                             countMin = Math.Max(countMin - Plugin.Rand.RangeInt(0, ++heroIndex), 0);
                             countMax = Math.Max(countMax - Plugin.Rand.RangeInt(0, ++heroIndex), Math.Max(1, countMin));
-                            capMin = Math.Max(capMin - Plugin.Rand.RangeInt(0, ++heroIndex), Math.Max(1, countMax));
-                            capMax = Math.Max(capMax - Plugin.Rand.RangeInt(0, ++heroIndex), Math.Max(1, capMin));
+                            capMin = Math.Max(capMin - Plugin.Rand.RangeInt(0, heroIndex), 1);
+                            capMax = Math.Max(capMax - Plugin.Rand.RangeInt(0, ++heroIndex), Math.Max(countMax, capMin));
                         }
                     }
                     else
                     {
                         Plugin.Log.LogInfo($"ensuring range for first unit {values.TechType} ({heroIndex},{baseAlwaysOne})");
-                        countMax += 1;
-                        capMin += 1;
-                        capMax += 2;
+                        countMax++;
+                        capMax++;
                     }
 
                     bool displayInReconLineup = true;
