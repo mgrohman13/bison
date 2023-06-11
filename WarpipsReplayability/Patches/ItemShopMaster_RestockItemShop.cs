@@ -27,10 +27,11 @@ namespace WarpipsReplayability.Patches
 
                     r.stackCount = Plugin.Rand.RangeInt(r.stackSize.x, r.stackSize.y);
                 }
-                 
+
                 int saleIndex = __instance.SaleIndex;
                 Plugin.Log.LogInfo("Set SaleIndex " + saleIndex);
-                Persist.Instance.SaleIndex = saleIndex; 
+                if (Persist.Instance != null)
+                    Persist.Instance.SaleIndex = saleIndex;
             }
             catch (Exception e)
             {
