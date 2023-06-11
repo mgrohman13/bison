@@ -248,6 +248,7 @@ namespace WarpipsReplayability.Mod
                         _ => 1.0f
                     };
 
+                    bool primary = !techTypes.Any();
                     SpawnAverages values = SelectTechType(spawnAverages, techTypes, mult);
 
                     //randomize spawn amounts, based on island-wide averages
@@ -269,7 +270,6 @@ namespace WarpipsReplayability.Mod
                         SpecialTag.HighValueReward => 4,
                         _ => 2
                     });
-
                     //chance to widen range
                     static void Expand(ref int min, ref int max, int minMin, int chance)
                     {
@@ -281,8 +281,17 @@ namespace WarpipsReplayability.Mod
                         }
                     }
 
-                    PostProcess(values, techTypes.Count == 1, mult, ref countMin, ref countMax, ref capMin, ref capMax);
+                    PostProcess(values, primary, mult, ref countMin, ref countMax, ref capMin, ref capMax);
 
+                    float startAtDifficulty = values.StartAtDifficulty;
+                    //primary units have a chance to spawn at lower startAtDifficulty
+                    while (primary)
+                    {
+                        values.GenStartAtDifficulty();
+                        startAtDifficulty = Math.Min(startAtDifficulty, values.StartAtDifficulty);
+                        if (Plugin.Rand.Bool())
+                            break;
+                    }
                     bool displayInReconLineup = true;
                     //chance to hide certain techs when total is over 10, so that more build sites will show up
                     if ((totalTechs - hiddenTechs) > 10 && Plugin.Rand.Bool() && Plugin.WeakTechs.Contains(values.TechType))
@@ -292,8 +301,8 @@ namespace WarpipsReplayability.Mod
                         hiddenTechs++;
                     }
 
-                    OriginalProfile copyFrom = Plugin.Rand.SelectValue(values.Profiles);
-                    SpawnerInfo info = new(copyFrom, countMin, countMax, capMin, capMax, values.StartAtDifficulty, displayInReconLineup);
+                    SpawnerInfo info = new(Plugin.Rand.SelectValue(values.Profiles),
+                        countMin, countMax, capMin, capMax, startAtDifficulty, displayInReconLineup);
 
                     Plugin.Log.LogInfo($"{values.TechType}: {info.CountMin}-{info.CountMax} ({info.CapMin}-{info.CapMax}), {info.Difficulty:0.00}");
                     spawns.Add(info);
@@ -423,7 +432,6 @@ namespace WarpipsReplayability.Mod
                         capMax++;
                 }
                 bool Modify() => (Plugin.Rand.Bool() && (!baseAlwaysOne || Plugin.Rand.Bool()));
-                //TODO: reduce start at difficulty?
             }
             else
             {
