@@ -315,16 +315,21 @@ namespace WarpipsReplayability.Mod
                     }
                     else
                     {
-                        bool cap = (heroIndex == 0 && Plugin.Rand.Bool()) || (!baseAlwaysOne && Plugin.Rand.Bool());
+                        Plugin.LogAtLevel($"ensuring range for first unit {values.TechType} ({heroIndex},{baseAlwaysOne}): {countMin}-{countMax} ({capMin}-{capMax})", heroIndex > 0);
                         countMax++;
                         capMax++;
-                        if (cap)
+                        if (Plugin.Rand.Bool() && (!baseAlwaysOne || Plugin.Rand.Bool()))
+                        {
+                            countMin++;
+                            countMax++;
+                            capMax++;
+                        }
+                        else if (Plugin.Rand.Bool())
                         {
                             capMin++;
                             capMax++;
                         }
-                        Plugin.Log.LogInfo($"ensuring range for first unit {values.TechType} ({cap}: {heroIndex},{baseAlwaysOne})");
-
+                        //TODO: reduce start at difficulty?
                     }
 
                     bool displayInReconLineup = true;
