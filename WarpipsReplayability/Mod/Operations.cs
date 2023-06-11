@@ -281,56 +281,7 @@ namespace WarpipsReplayability.Mod
                         }
                     }
 
-                    float numHeroes = Plugin.HeroTechs.Length;
-                    int heroIndex = Array.IndexOf(Plugin.HeroTechs, values.TechType) + 1;
-                    bool baseAlwaysOne = values.countMax == values.number;
-                    if (techTypes.Count > 1)
-                    {
-                        //because we add a little bit at each step above the averages, we need to be careful not to overdo it with certain tech types                    
-                        if (heroIndex > 0 && baseAlwaysOne)
-                        {
-                            //allow more for higher heroIndex, difficult missions
-                            float highMult = mult * values.number * (1f + heroIndex / numHeroes);
-                            float lowMult = (float)(Math.Sqrt(highMult) + Plugin.Rand.Range(0, countMin));
-                            highMult = Math.Max(highMult + Plugin.Rand.Range(0, countMax), lowMult + 1);
-                            //chance to temper down extreme values
-                            int min = Math.Min(Plugin.Rand.Round(Plugin.Rand.Range(0, lowMult)), countMin);
-                            int max = Math.Min(Plugin.Rand.Round(Plugin.Rand.Range(min, highMult)), countMax);
-                            Plugin.Log.LogInfo($"reducing {values.TechType} to number: {min}-{max} ({values.number:0.00},{lowMult:0.00},{mult:0.00}), was {countMin}-{countMax}");
-                            countMin = min;
-                            countMax = max;
-                        }
-                        if (heroIndex > 0 || baseAlwaysOne)
-                        {
-                            Plugin.Log.LogInfo($"reducing {values.TechType}, was {countMin}-{countMax} ({capMin}-{capMax})");
-                            //invert heroIndex 
-                            if (heroIndex > 0)
-                                heroIndex = Plugin.Rand.Round(1f + 2f * (numHeroes - heroIndex) / (numHeroes - 1f));
-                            //increasing chance to reduce each
-                            countMin = Math.Max(countMin - Plugin.Rand.RangeInt(0, ++heroIndex), 0);
-                            countMax = Math.Max(countMax - Plugin.Rand.RangeInt(0, ++heroIndex), Math.Max(1, countMin));
-                            capMin = Math.Max(capMin - Plugin.Rand.RangeInt(0, heroIndex), 1);
-                            capMax = Math.Max(capMax - Plugin.Rand.RangeInt(0, ++heroIndex), Math.Max(countMax, capMin));
-                        }
-                    }
-                    else
-                    {
-                        Plugin.LogAtLevel($"ensuring range for first unit {values.TechType} ({heroIndex},{baseAlwaysOne}): {countMin}-{countMax} ({capMin}-{capMax})", heroIndex > 0);
-                        countMax++;
-                        capMax++;
-                        if (Plugin.Rand.Bool() && (!baseAlwaysOne || Plugin.Rand.Bool()))
-                        {
-                            countMin++;
-                            countMax++;
-                            capMax++;
-                        }
-                        else if (Plugin.Rand.Bool())
-                        {
-                            capMin++;
-                            capMax++;
-                        }
-                        //TODO: reduce start at difficulty?
-                    }
+                    PostProcess(values, techTypes.Count == 1, mult, ref countMin, ref countMax, ref capMin, ref capMax);
 
                     bool displayInReconLineup = true;
                     //chance to hide certain techs when total is over 10, so that more build sites will show up
@@ -361,6 +312,7 @@ namespace WarpipsReplayability.Mod
             Plugin.Log.LogInfo(spawnWaveProfile.name);
             return new(territory.index, map.MapLength, Plugin.Rand.Iterate(spawns).ToArray(), generatedSites);
         }
+
         private static void CountTechTypes(int availableTypes, TerritoryInstance territory, EnemyBuildSite[] generatedSites, out int spawnTechs, out int totalTechs)
         {
             SpawnWaveProfile spawnWaveProfile = territory.operation.spawnWaveProfile;
@@ -445,6 +397,66 @@ namespace WarpipsReplayability.Mod
             Dictionary<string, SpawnAverages> Filter(Func<KeyValuePair<string, SpawnAverages>, bool> predicate) =>
                 spawnAverages.Where(predicate).ToDictionary(p => p.Key, p => p.Value);
         }
+        private static void PostProcess(SpawnAverages values, bool primary, float mult, ref int countMin, ref int countMax, ref int capMin, ref int capMax)
+        {
+            string techType = values.TechType;
+            float number = values.number;
+            int heroIndex = Array.IndexOf(Plugin.HeroTechs, techType) + 1;
+            bool baseAlwaysOne = values.countMax == number;
+
+            if (primary)
+            {
+                Plugin.LogAtLevel($"ensuring range for first unit {techType} ({heroIndex},{baseAlwaysOne}): {countMin}-{countMax} ({capMin}-{capMax})", heroIndex > 0);
+                countMax++;
+                capMax++;
+                if (Modify())
+                {
+                    countMin++;
+                    countMax++;
+                    capMax++;
+                }
+                //not using Modify so baseAlwaysOne is a little more likely to inc capMin
+                else if (Plugin.Rand.Bool())
+                {
+                    capMin++;
+                    if (Modify())
+                        capMax++;
+                }
+                bool Modify() => (Plugin.Rand.Bool() && (!baseAlwaysOne || Plugin.Rand.Bool()));
+                //TODO: reduce start at difficulty?
+            }
+            else
+            {
+                float numHeroes = Plugin.HeroTechs.Length;
+                //because we add a little bit at each step above the averages, we need to be careful not to overdo it with certain tech types                    
+                if (heroIndex > 0 && baseAlwaysOne)
+                {
+                    //allow more for higher heroIndex, difficult missions
+                    float highMult = mult * number * (1f + heroIndex / numHeroes);
+                    float lowMult = (float)(Math.Sqrt(highMult) + Plugin.Rand.Range(0, countMin));
+                    highMult = Math.Max(highMult + Plugin.Rand.Range(0, countMax), lowMult + 1);
+                    //chance to temper down extreme values
+                    int min = Math.Min(Plugin.Rand.Round(Plugin.Rand.Range(0, lowMult)), countMin);
+                    int max = Math.Min(Plugin.Rand.Round(Plugin.Rand.Range(min, highMult)), countMax);
+                    Plugin.Log.LogInfo($"reducing {techType} to number: {min}-{max} ({number:0.00},{lowMult:0.00},{mult:0.00}), was {countMin}-{countMax}");
+                    countMin = min;
+                    countMax = max;
+                }
+                if (heroIndex > 0 || baseAlwaysOne)
+                {
+                    Plugin.Log.LogInfo($"reducing {techType}, was {countMin}-{countMax} ({capMin}-{capMax})");
+                    //invert heroIndex 
+                    if (heroIndex > 0)
+                        heroIndex = Plugin.Rand.Round(1f + 2f * (numHeroes - heroIndex) / (numHeroes - 1f));
+                    //increasing chance to reduce each
+                    countMin = Math.Max(countMin - Plugin.Rand.RangeInt(0, ++heroIndex), 0);
+                    countMax = Math.Max(countMax - Plugin.Rand.RangeInt(0, ++heroIndex), Math.Max(1, countMin));
+                    capMin = Math.Max(capMin - Plugin.Rand.RangeInt(0, heroIndex), 1);
+                    capMax = Math.Max(capMax - Plugin.Rand.RangeInt(0, ++heroIndex), Math.Max(countMax, capMin));
+                }
+            }
+        }
+
         private static EnemyBuildSite[] GenerateEnemyBuildSites(Dictionary<EnemyBuildSite, int> buildSiteCounts, ref int totalSites, ref int totalDistinct, TerritoryInstance territory, int numTerritories)
         {
             SpawnWaveProfile spawnWaveProfile = territory.operation.spawnWaveProfile;
