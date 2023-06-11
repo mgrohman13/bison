@@ -113,8 +113,7 @@ namespace WarpipsReplayability.Patches
             int upgrades = 0;
             if (playerTechTree != null)
                 upgrades = xpAddons.Where(playerTechTree.ReturnIsTechUnlocked).Count();
-            upgrades *= xpModifierPerUpgrade;
-            return upgrades;
+            return upgrades * xpModifierPerUpgrade;
         }
         private static int GetTier(IntResource techTier)
         {
