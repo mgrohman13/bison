@@ -315,9 +315,16 @@ namespace WarpipsReplayability.Mod
                     }
                     else
                     {
-                        Plugin.Log.LogInfo($"ensuring range for first unit {values.TechType} ({heroIndex},{baseAlwaysOne})");
+                        bool cap = (heroIndex == 0 && Plugin.Rand.Bool()) || (!baseAlwaysOne && Plugin.Rand.Bool());
                         countMax++;
                         capMax++;
+                        if (cap)
+                        {
+                            capMin++;
+                            capMax++;
+                        }
+                        Plugin.Log.LogInfo($"ensuring range for first unit {values.TechType} ({cap}: {heroIndex},{baseAlwaysOne})");
+
                     }
 
                     bool displayInReconLineup = true;
@@ -353,29 +360,35 @@ namespace WarpipsReplayability.Mod
         {
             SpawnWaveProfile spawnWaveProfile = territory.operation.spawnWaveProfile;
             //keep roughly the same count of tech types
-            spawnTechs = GetProfileNames(spawnWaveProfile)
-                .Distinct().Count();
-            totalTechs = GetProfileNames(spawnWaveProfile)
-                .Concat(BuildSiteTechs(generatedSites))
-                .Distinct().Count();
+            spawnTechs = GetProfileNames(spawnWaveProfile).Distinct().Count();
+            totalTechs = spawnTechs + BuildSiteTechs(generatedSites).Distinct().Count();
 
-            bool logFlag = false;
-            Plugin.Log.LogInfo($"count: {spawnTechs} (total: {totalTechs})");
-
-            int mod = Plugin.Rand.Bool() ? -1 : 1;
-            //randomize count somewhat 
-            while (spawnTechs > 1 && spawnTechs < availableTypes && Plugin.Rand.Bool()
-                && (spawnTechs < 9 || spawnTechs > 10 || Plugin.Rand.Bool())
-                && (totalTechs != 10 || Plugin.Rand.Bool())
-                && (territory.specialTag == SpecialTag.None || Plugin.Rand.Bool()))
+            if (totalTechs > 0)
             {
-                spawnTechs += mod;
-                totalTechs += mod;
-                logFlag = true;
-            }
+                int origSpawn = spawnTechs, origTot = totalTechs;
+                Log(spawnTechs, totalTechs);
 
-            if (logFlag)
-                Plugin.Log.LogInfo($"count: {spawnTechs} (total: {totalTechs})");
+                //randomize unit count 
+                int mod = Plugin.Rand.Bool() ? -1 : 1;
+                while ((spawnTechs + mod >= 1 && spawnTechs + mod <= availableTypes)
+                    && (Check(spawnTechs) && Check(totalTechs))
+                    && (territory.specialTag == SpecialTag.None || Plugin.Rand.Bool())
+                    && (Plugin.Rand.Bool()))
+                {
+                    spawnTechs += mod;
+                    totalTechs += mod;
+                }
+                static bool Check(int techs) => (techs < 9 || techs > 10 || Plugin.Rand.Bool() || (techs == 9 && Plugin.Rand.Bool()));
+
+                if (origSpawn != spawnTechs || origTot != totalTechs)
+                    Log(spawnTechs, totalTechs);
+                void Log(int spawnTechs, int totalTechs) => Plugin.LogAtLevel($"count: {spawnTechs} (total: {totalTechs})",
+                    spawnTechs < 1 || spawnTechs > availableTypes || totalTechs < 1 || totalTechs > availableTypes);
+            }
+            else
+            {
+                Plugin.Log.LogWarning(spawnWaveProfile.name);
+            }
 
             static IEnumerable<string> GetProfileNames(SpawnWaveProfile spawnWaveProfile) =>
                 GetProfiles(spawnWaveProfile).Select(enemySpawnProfile => enemySpawnProfile.ReturnTechType().name);
