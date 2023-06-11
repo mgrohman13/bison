@@ -2,6 +2,7 @@
 using BepInEx.Logging;
 using HarmonyLib;
 using MattUtil;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -41,9 +42,15 @@ namespace WarpipsReplayability.Mod
             harmony.PatchAll();
 
             Log.LogInfo($"Plugin {PluginInfo.PLUGIN_GUID} is loaded!");
+
+            Log.LogInfo(MTRandom.GAUSSIAN_FLOAT_MAX);
+            Log.LogInfo(MTRandom.GetOEFlaotMax());
         }
 
         public static string GetSeedString(uint[] seed) =>
             seed.Select(s => s.ToString("X").Trim('0')).Aggregate("", (a, b) => a + b);
+
+        public static void LogAtLevel(string data, bool warning) =>
+            ((Action<object>)(warning ? Log.LogWarning : Log.LogInfo))(data);
     }
 }
