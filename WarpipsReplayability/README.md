@@ -2,7 +2,7 @@
 This mod increases replayability of Conquest Mode by randomly generating operations and world map territories. It also modifies and rebalances a number of other things and may continue to be added to in the future. I fell in love with Warpips instantly and found myself wishing it had the replayability of a game like FTL, so decided to take steps in that direction.
 
 --- HOW TO RUN IT ---  
-Warpips does not natively support modding, so this was written as a BepInEx plugin. For quick plug-and-play, download the "WarpipsReplayability_with_BepInEx" file from Nexus Mods (nexusmods.com). To enable, copy the 4 contents of the zip file into your Warpips install directory (at the same level as Warpips.exe - for Steam this is likely "C:/Program Files (x86)/Steam/steamapps/common/Warpips/"). To disable, move the "BepInEx" folder back out. Note that other game modes such as Endless Mode are not supported, and it is advisable to remove the mod if playing them.
+Warpips does not natively support modding, so this was written as a BepInEx plugin. For quick plug-and-play, download the "WarpipsReplayability_with_BepInEx" file from [Nexus Mods](https://www.nexusmods.com/warpips/mods/1?tab=files). To enable, copy the 4 contents of the zip file into your Warpips install directory (at the same level as Warpips.exe - for Steam this is likely "C:/Program Files (x86)/Steam/steamapps/common/Warpips/"). To disable, move the "BepInEx" folder back out. Note that other game modes such as Endless Mode are not supported, and it is advisable to remove the mod if playing them.
 
 --- FEATURES ---  
 1) Conquest World Maps are shuffled. The island layouts and graphics are the same, but you will start and end in different locations and the operations in each territory will be randomized. Additionally, not all adjacent territories are connected, so you will be forced to conquer in different directions each time.
@@ -19,5 +19,5 @@ Warpips does not natively support modding, so this was written as a BepInEx plug
 The campaign is overall more difficult than it used to be at each corresponding difficulty level. You may want to start out on an easier difficulty than you are used to playing on to get a feel for it. You were warned! For troubleshooting, there is a log file at /BepInEx/LogOutput.log you can check and send me if you see any errors. If you run into anything weird or unexpected while playing, describe what you were doing and send me the log file. Additional future updates are planned, so feel free to suggest any changes you would like to see and stay tuned for more releases!
 
 --- SOURCE CODE ---  
-Source code for this mod can be found here: [bison/WarpipsReplayability at master · mgrohman13/bison (github.com)](https://github.com/mgrohman13/bison/tree/master/WarpipsReplayability)  
-Source, readme, and license for BepInEx: [BepInEx/BepInEx: Unity / XNA game patcher and plugin framework (github.com)](https://github.com/BepInEx/BepInEx)
+Source code for this mod can be found here: [bison/WarpipsReplayability at master · mgrohman13/bison](https://github.com/mgrohman13/bison/tree/master/WarpipsReplayability)  
+Source, readme, and license for BepInEx: [BepInEx/BepInEx: Unity / XNA game patcher and plugin framework](https://github.com/BepInEx/BepInEx)
