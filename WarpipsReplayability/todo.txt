@@ -56,7 +56,17 @@ emergency cash button always available?
 reroll shop?
 things shop never sells?
 
+dropbox bug
 
 hide more info in shroud?
 increase SpawnCapCycleMultipler based on caps?
 RandOnLoss change spawn counts?
+
+log time with difficulty?
+
+correlate duration with keys?
+
+altf4?
+
+can see short maps in fog
+
