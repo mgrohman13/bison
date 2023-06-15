@@ -540,9 +540,9 @@ namespace WarpipsReplayability.Mod
                 {
                     "Howitzer" => Plugin.Rand.RangeInt(1, 6),
                     "MediumTurret" => c ? 4 : 5,
-                    "Landmine" => c ? 4 : 5,
+                    "Landmine" => !c ? 4 : 5,
                     "GuardTower" => d ? 5 : 6,
-                    "BarbedWire" => d ? 5 : 6,
+                    "BarbedWire" => !d ? 5 : 6,
                     _ => throw new Exception()
                 }).ToArray();
             }
