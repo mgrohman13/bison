@@ -12,28 +12,31 @@ namespace WarpipsReplayability.Mod
     [Serializable]
     internal class Persist
     {
-        public static Persist Instance;
         private const string saveFile = "BepInEx/plugins/WarpipsReplayability.dat";
+        private static readonly FieldInfo _territoryConnections = AccessTools.Field(typeof(WorldMapAsset), "territoryConnections");
 
-        public int[] Shuffle { get; private set; }
-        public List<TerritoryConnection> Connections { get; private set; }
-        public bool[] HiddenRewards { get; private set; }
-        public int[] TechRewards { get; private set; }
-        public Operations.OperationInfo[] OperationInfo { get; private set; }
+        public static Persist Instance { get; private set; }
+
+        public readonly int[] Shuffle;
+        public readonly List<TerritoryConnection> Connections;
+        public readonly bool[] HiddenRewards;
+        public readonly int[] TechRewards;
+        public readonly Operations.OperationInfo[] OperationInfo;
+
         public int SaleIndex { get; set; } = -1;
 
-        private static readonly FieldInfo _territoryConnections = AccessTools.Field(typeof(WorldMapAsset), "territoryConnections");
+        private Persist(int[] shuffle, Operations.OperationInfo[] operationInfo)
+        {
+            Shuffle = shuffle;
+            OperationInfo = operationInfo;
+            Connections = Map.WorldMapAsset.TerritoryConnections;
+            HiddenRewards = Operations.RollHiddenRewards();
+            TechRewards = Map.Territories.Select(t => t.operation.techReward).ToArray();
+        }
 
         public static void SaveNew(int[] shuffle, Operations.OperationInfo[] operationInfo)
         {
-            Instance = new()
-            {
-                Shuffle = shuffle,
-                OperationInfo = operationInfo,
-                Connections = Map.WorldMapAsset.TerritoryConnections,
-                HiddenRewards = Operations.RollHiddenRewards(),
-                TechRewards = Map.Territories.Select(t => t.operation.techReward).ToArray(),
-            };
+            Instance = new(shuffle, operationInfo);
             SaveCurrent();
             Plugin.Log.LogInfo($"saved mod data");
         }
