@@ -6,11 +6,6 @@ show bombs on island map difficulty bar
 	serialize? figure out how to load resource...
 
 mess with spawning, true mission randomness
-	other SpawnerData properties
-		cycle stuff
-		cycle difficulty increase?
-	difficultyCurve tangents??
-	apply something similar to bomb gap to final missions?
 	rand bombs?		
 		bombsOnCycle
 		will need to revisit ManageBombIndicatorPrefabs
@@ -35,10 +30,12 @@ balancing
 map lengths not really accurate...
 
 bug when tactition gets hit by gas pip while calling down airstrike
+bugged enemy vehuicles?
 building placement availability bugs on maps
 tank defense mode target bug?
 landmine spot on bridge on large bridge map
 sound bug?
+
 inspect item cooldowns?
 
 partial unit rank?
@@ -48,15 +45,35 @@ rebalance air?
 	if return give cash back
 	more units target(puma, rpg, bubba)
 big oil?? no better over time than small?
-pulsing Q/E
-	reduce fuel gain by asymptotic amt since last use?
 inc worldMapDifficultyMultipler >1 ?
-emergency cash button always available?
-	change timouts?
 reroll shop?
 things shop never sells?
+undo buy?
 
+new game rand SaleIndex?
+	works? but how?
+
+forever inc difficulty?
+
+The destruction from the explosions staying on the terrain is great but it would be even better to see everything else that got destroyed stay on the map as well.
+ 
+
+next release:
 
 hide more info in shroud?
-increase SpawnCapCycleMultipler based on caps?
+shroud only show tech pts?
+	always show 1 reward (if life, life + 1?, always 8?)
+randomize unit island averages like we build sites?
+rand arms dealer prices
 RandOnLoss change spawn counts?
+increase SpawnCapCycleMultipler based on caps?
+	cycle difficulty increase?
+difficultyCurve tangents??
+apply something similar to bomb gap to final missions?
+
+
+pulsing Q/E
+	reduce fuel gain by asymptotic amt since last use?
+emergency cash button always available?
+	change timouts?
+	
