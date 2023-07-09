@@ -50,8 +50,10 @@ reroll shop?
 things shop never sells?
 undo buy?
 
-new game rand SaleIndex?
-	works? but how?
+dropbox bug
+log time with difficulty?
+correlate duration with keys?
+altf4?
 
 forever inc difficulty?
 
@@ -60,6 +62,7 @@ The destruction from the explosions staying on the terrain is great but it would
 
 next release:
 
+can see short maps in fog
 hide more info in shroud?
 shroud only show tech pts?
 	always show 1 reward (if life, life + 1?, always 8?)
@@ -67,13 +70,4 @@ randomize unit island averages like we build sites?
 rand arms dealer prices
 RandOnLoss change spawn counts?
 increase SpawnCapCycleMultipler based on caps?
-	cycle difficulty increase?
-difficultyCurve tangents??
-apply something similar to bomb gap to final missions?
 
-
-pulsing Q/E
-	reduce fuel gain by asymptotic amt since last use?
-emergency cash button always available?
-	change timouts?
-	

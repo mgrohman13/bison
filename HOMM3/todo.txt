@@ -1,3 +1,5 @@
+chance to remove movement adventure spells?
+
 organize logging to group/show logging class better 
 object per zone settings
 correlate zone value and size
