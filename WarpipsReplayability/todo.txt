@@ -30,7 +30,7 @@ balancing
 map lengths not really accurate...
 
 bug when tactition gets hit by gas pip while calling down airstrike
-bugged enemy vehuicles?
+bugged enemy vehicles?
 building placement availability bugs on maps
 tank defense mode target bug?
 landmine spot on bridge on large bridge map
@@ -50,6 +50,9 @@ reroll shop?
 things shop never sells?
 undo buy?
 
+new game rand SaleIndex?
+	works? but how?
+	
 dropbox bug
 log time with difficulty?
 correlate duration with keys?
@@ -59,6 +62,8 @@ forever inc difficulty?
 
 The destruction from the explosions staying on the terrain is great but it would be even better to see everything else that got destroyed stay on the map as well.
  
+difficultyCurve tangents??	
+
 
 next release:
 
@@ -70,4 +75,13 @@ randomize unit island averages like we build sites?
 rand arms dealer prices
 RandOnLoss change spawn counts?
 increase SpawnCapCycleMultipler based on caps?
+	cycle difficulty increase?
+	rand all cycle stuff
+		other SpawnerData properties
+		cycle difficulty increase?
+apply something similar to bomb gap to final missions?
 
+pulsing Q/E
+	reduce fuel gain by asymptotic amt since last use?
+emergency cash button always available?
+	change timouts?
