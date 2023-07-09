@@ -65,10 +65,18 @@ namespace WarpipsReplayability.Patches
                 {
                     MTRandom deterministic = new(SpawnWaveProfile_ReturnAllWarningMessageTimings.GenerateSeed(waveProfile));
                     float mult = ___barTexture.width / waveProfile.RoundDuration;
-                    for (int a = 1; a < (int)Math.Round(waveProfile.RoundDuration); a++)
+                    for (int a = 1; a < deterministic.Round(waveProfile.RoundDuration); a++)
                     {
-                        int b = deterministic.Round(a * mult);
+                        float target = a * mult;
+                        int b = deterministic.Round(target);
+                        int c = b;
+                        if (b > target || (b == target && deterministic.Bool()))
+                            c--;
+                        else
+                            c++;
+
                         ___barTexture.SetPixel(b, 0, Color.white);
+                        ___barTexture.SetPixel(c, 0, Color.white);
                     }
                     ___barTexture.Apply();
                 }
