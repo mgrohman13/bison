@@ -4,3 +4,5 @@ DesignTimeBuild
 /WarpipsReplayability/WarpipsReplayability_plugin
 /WarpipsReplayability/WarpipsReplayability_with_BepInEx
 *.vsidx
+read.lock
+/SpaceRunner/pics/pics.dat
