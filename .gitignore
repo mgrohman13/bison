@@ -3,3 +3,4 @@ bin
 DesignTimeBuild
 /WarpipsReplayability/WarpipsReplayability_plugin
 /WarpipsReplayability/WarpipsReplayability_with_BepInEx
+*.vsidx
