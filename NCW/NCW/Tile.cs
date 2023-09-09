@@ -48,7 +48,7 @@ namespace NCWMap
         {
             if (Inf != null)
                 throw new Exception();
-            Inf = new string[] { $"F {player.Name.Split(' ')[1]}", null };
+            Inf = new string[] { $"O {player.Name.Split(' ')[1]}", null };
         }
     }
 }

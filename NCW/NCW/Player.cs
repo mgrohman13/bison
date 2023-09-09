@@ -10,6 +10,7 @@ namespace NCWMap
 
         public readonly string Name;
         public readonly Tile Tile;
+        public Tile Outer { get; private set; }
         public string Unit { get; private set; }
         public readonly int[,] Resources;
         public readonly int Order, Add;
@@ -45,12 +46,41 @@ namespace NCWMap
         }
         public void Outpost()
         {
-            HashSet<Tile> neighbors = Tile.GetNeighbors().ToHashSet();
-            HashSet<Tile> twoAway = neighbors.SelectMany(t => t.GetNeighbors()).ToHashSet();
-            neighbors.Add(Tile);
-            twoAway.ExceptWith(neighbors);
+            IEnumerable<Tile> tiles = WalkTwo(new Tile[] { Tile });
+            static HashSet<Tile> WalkTwo(IEnumerable<Tile> e)
+            {
+                HashSet<Tile> tiles = e.ToHashSet();
+                void SelectMany() => tiles.UnionWith(tiles.SelectMany(t => t.GetNeighbors()).ToArray());
+                SelectMany();
+                SelectMany();
+                return tiles;
+            }
 
-            Program.Random.SelectValue(twoAway.Where(t => t.Inf == null)).Outpost(this);
+            //50% chance to be either 1-2 tiles away or 3-4 tiles away 
+            bool distant = Program.Random.Bool();
+            if (distant)
+            {
+                //cannot contest another palyer's territory
+                var enemy = Program.Players.Where(p => p != this).SelectMany(p =>
+                {
+                    var m = Enumerable.Empty<KeyValuePair<Tile, int>>();
+                    m = m.Append(new(p.Tile, 4));
+                    if (p.Outer != null)
+                        m = m.Append(new(p.Outer, 2));
+                    return m;
+                }).ToArray();
+
+                HashSet<Tile> outerTiles = WalkTwo(tiles);
+                outerTiles.ExceptWith(tiles);
+                tiles = outerTiles.Where(t => enemy.All(e => Tile.GetDistance(t, e.Key) > e.Value));
+            }
+
+            tiles = tiles.Where(t => t.Inf == null);
+            Tile outpost = Program.Random.SelectValue(tiles);
+            outpost.Outpost(this);
+            this.Outer = outpost;
+
+            Program.Log($"{this.Name} outpost, distant: {distant} ({tiles.Count()})");
         }
 
         private int SelectUnit(Tile tile)
