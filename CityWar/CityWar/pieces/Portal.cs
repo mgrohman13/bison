@@ -264,6 +264,7 @@ namespace CityWar
         //}
         //private static MTRandom PortalRand(Game game)
         //{
+        // TODO: string hash code
         //    //We want to be able to use some "randomness" in portal cost calculations,
         //    // but it needs to be deterministic for the same set of units
         //    //So, create a deterministic seed based on all of the elemental units' costs

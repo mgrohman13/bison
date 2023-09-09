@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>CityWarWinApp</RootNamespace>
     <AssemblyName>CityWarWinApp</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <UpgradeBackupLocation>
@@ -79,6 +79,12 @@
     </Compile>
     <Compile Include="Log.Designer.cs">
       <DependentUpon>Log.cs</DependentUpon>
+    </Compile>
+    <Compile Include="NewBattle.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="NewBattle.Designer.cs">
+      <DependentUpon>NewBattle.cs</DependentUpon>
     </Compile>
     <Compile Include="PiecesPanel.cs">
       <SubType>Component</SubType>
@@ -213,6 +219,7 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <None Include="app.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

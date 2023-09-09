@@ -1,11 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.31129.286
+# Visual Studio Version 17
+VisualStudioVersion = 17.3.32819.101
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CityWar", "CityWar\CityWar.csproj", "{996853C3-E035-4858-8DC2-4CA7A9DBA7D1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Balance", "Balance\Balance.csproj", "{431E8284-6DD8-4374-879B-1D4A4D9D851C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitBalance", "Balance\UnitBalance.csproj", "{431E8284-6DD8-4374-879B-1D4A4D9D851C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CityWarWinApp", "CityWarWinApp\CityWarWinApp.csproj", "{DE30F4C7-8D78-4865-B8C1-62DCC1E49858}"
 EndProject
