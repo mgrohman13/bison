@@ -31,9 +31,11 @@ namespace WarpipsReplayability.Patches
             {
                 Plugin.Log.LogDebug("OperationDetailsController_RebuildDetails Postfix");
 
-                if (!Operations.ShowEnemies())
+                if (!Operations.ShowEnemies() && Operations.MapType != null)
                 {
                     ___mapLength.text = string.Empty;
+                    ___mapIcon.sprite = Operations.MapType.MapOverview;
+                    ___mapIcon.SetNativeSize();
                     ___mapIcon.sprite = null;
                     ___roundDuration.text = string.Empty;
 

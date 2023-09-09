@@ -18,6 +18,7 @@ namespace WarpipsReplayability.Mod
     {
         public static WorldMapUIController WorldMapUIController { get; private set; }
         public static TerritoryInstance SelectedTerritory { get; set; }
+        public static MapType MapType { get; set; }
 
         //used to track when we need to re-randomize a failed mission
         public static int? FailedMission { get; set; }
@@ -71,6 +72,9 @@ namespace WarpipsReplayability.Mod
                     reward.isMysteryItem = (Persist.Instance.HiddenRewards[rewardIndex] || hideRewards) && !reward.item.extraLife;
                     rewardIndex++;
                 }
+
+                if (!hideEnemies)
+                    MapType = operation.map;
             }
         }
 
@@ -86,7 +90,7 @@ namespace WarpipsReplayability.Mod
         private static bool HideEnemies(TerritoryInstance territory) =>
             IsShrouded(territory) && territory.specialTag != SpecialTag.EnemyObjective;
         private static bool HideRewardCount(TerritoryInstance territory) =>
-            IsShrouded(territory) && territory.specialTag != SpecialTag.None;
+            IsShrouded(territory);
 
         public static OperationInfo[] Randomize()
         {

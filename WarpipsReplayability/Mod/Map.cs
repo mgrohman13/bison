@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Security.Cryptography;
 using static WarpipsReplayability.Mod.Operations;
 using TerritoryConnection = LevelGeneration.WorldMap.WorldMapAsset.TerritoryConnection;
 
@@ -171,7 +172,7 @@ namespace WarpipsReplayability.Mod
             //with Math.PI bonus, on average this means an additional ~100.5 tech points (on General)
             float bonus = (float)Math.PI;// (float)(Config.RebalanceTech ? Math.PI : 0);
 
-            float avg = techReward + bonus, dev = 3.9f / techReward + .052f, oe = 2.1f / techReward + .021f;
+            float avg = techReward + bonus;
 
             //multiply the average tech points by the relative number of missions you can complete
             //since this is only applied to non-special territories, you will still end up with more tech points on easier difficulties
@@ -195,6 +196,8 @@ namespace WarpipsReplayability.Mod
 
             if (techReward >= 5)
             {
+                float dev = 3.9f / techReward + .052f, oe = 2.1f / techReward + .021f;
+                //float dev = 3.9f / avg + .052f, oe = 2.1f / avg + .021f;
                 operation.techReward = Plugin.Rand.GaussianOEInt(avg, dev, oe, 3);
                 Plugin.Log.LogInfo($"techReward {techReward} -> {operation.techReward} ({avg * (1 - oe):0.00}, {dev * avg * (1 - oe):0.00}, {oe * avg:0.00})");
             }

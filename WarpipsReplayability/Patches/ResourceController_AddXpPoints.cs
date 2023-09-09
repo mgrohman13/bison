@@ -22,7 +22,7 @@ namespace WarpipsReplayability.Patches
         private static readonly FieldInfo _gameStat_int = AccessTools.Field(typeof(IntReadonlyStat), "gameStat");
         private static readonly FieldInfo _gameStat_float = AccessTools.Field(typeof(FloatReadonlyStat), "gameStat");
 
-        public const double xpMult = 5.0 / 6.0;
+        public const double xpMult = 5 / 6.0;
         public const double xpExponent = 2.5;
 
         public static bool Prefix(ResourceController __instance, TechTreeInstance ___playerTechTree, List<TechType> ___xpAddons, IntResource ___techTier,
