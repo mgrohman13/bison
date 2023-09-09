@@ -8,7 +8,7 @@ using System.Net;
 
 namespace WebTest
 {
-    class Program
+    class Pizzas
     {
         static void Main(string[] args)
         {
