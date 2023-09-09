@@ -6,9 +6,12 @@ using System.Data;
 using System.Data.SqlTypes;
 using System.Drawing;
 using System.Linq;
+using System.Reflection;
+using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.ToolTip;
 
 namespace testwin
 {
@@ -35,14 +38,15 @@ namespace testwin
         //public const double PlanetQualityOE = 65;
         //public const double AverageQuality = ( PlanetQualityMin + PlanetQualityMax ) / 2.0 + PlanetQualityOE;
 
-        int flag;
-        int mx = -1, my = -1;
-        uint seed1 = Program.rand.NextUInt();
-        //float[] results;
+        private readonly String[] labels;
+        private uint initSeed;
+        private uint flag;
+        private readonly Dictionary<int, double>[] graphs;
 
-        readonly Dictionary<int, double> incUnit, turnTotals, incSupply;
+        private readonly Dictionary<PointF, KeyValuePair<int, double>> current = new();
+        private PointF? mouse = null;
 
-        public Form1(Dictionary<int, double> incUnit, Dictionary<int, double> turnTotals, Dictionary<int, double> incSupply)
+        public Form1(String[] labels, Dictionary<int, double>[] graphs)
         {
             InitializeComponent();
 
@@ -57,69 +61,124 @@ namespace testwin
             //trackBar1.Value = rand.Next(256);
             //flag = rand.Next(96);
 
-            //reset();
+            //this.incUnit = incUnit;
+            //this.turnTotals = turnTotals;
+            this.labels = labels;
+            this.graphs = graphs;
 
-            this.incUnit = incUnit;
-            this.turnTotals = turnTotals;
-            this.incSupply = incSupply;
+            flag = Program.Random.NextUInt();
+            Reset();
+        }
+
+
+        private void Form1_MouseMove(object sender, MouseEventArgs e)
+        {
+            PointF? closest = current.Keys.OrderBy(p =>
+            {
+                float dx = p.X - e.X;
+                float dy = p.Y - e.Y;
+                dx *= dx;
+                dy *= dy;
+                return dx + dy;
+            }).FirstOrDefault();
+
+            if (mouse != closest)
+            {
+                mouse = closest;
+                this.Invalidate();
+            }
+        }
+        private void Form1_MouseEnter(object sender, EventArgs e)
+        {
+        }
+        private void Form1_MouseLeave(object sender, EventArgs e)
+        {
+            mouse = null;
+            this.Invalidate();
+        }
+        private void Form1_Resize(object sender, EventArgs e)
+        {
+            //int width = rand.Round(ClientSize.Width / 6f);
+            //if (trackBar1.Value > width)
+            //    trackBar1.Value = width;
+            //trackBar1.Maximum = width;
+
+            mouse = null;
+            Reset();
+        }
+        private void TrackBar1_ValueChanged(object sender, EventArgs e)
+        {
+            //this.Invalidate();
         }
         private void Form1_MouseClick(object sender, EventArgs e)
         {
-            Reset();
-            this.Invalidate();
-        }
-
-        void Reset()
-        {
             ++flag;
-            //float avg = 0;
-            ////bool b = rand.Bool();
-            //results = new float[tot];
-            //for (int a = 0 ; a < tot ; ++a)
+            Reset();
+        }
+
+        private void Reset()
+        {
+            //this.Invoke(() =>
             //{
-            //    //float dmg = rand.GaussianOE(amt, AlienDamageRandomness, AlienDamageOEPct);
-            //    float dmg = (float)( rand.OE(PlanetQualityOE) + rand.Range(PlanetQualityMin, PlanetQualityMax) );
-            //    //float dmg;
-            //    //if (b)
-            //    //dmg = rand.Weighted(rand.Weighted(rand.DoubleHalf(1))) * AlienShipLife;
-            //    //dmg = rand.Weighted(AlienShipLife, MoraleMax);
-            //    //else
-            //    //    dmg = rand.DoubleHalf(rand.DoubleHalf(AlienShipLife));
-            //    //dmg = rand.OEFloat();
-            //    //avg += dmg;
-            //    results[a] = dmg;
-            //}
-            ////MessageBox.Show(b + "" + ( avg / tot ));
-        }
-
-        protected override void OnPaint(PaintEventArgs e)
-        {
-            try
+            //    lock (this)
+            //    {
+            initSeed = Program.Random.NextUInt();
+            if (GetGraph() != null)
             {
-                base.OnPaint(e);
+                this.Text = this.labels[flag % labels.Length];
 
-                //draw1(e.Graphics);
-                //draw2(e.Graphics);
-                //draw3(e.Graphics); 
-                Draw4(e.Graphics, (flag % 3) switch
+                CalcDims(out _, out float height, out _, out _, out float xMult, out float yMult);
+
+                if (xMult != 0)
                 {
-                    0 => incSupply,
-                    1 => incUnit,
-                    2 => turnTotals,
-                    _ => throw new Exception(),
-                });
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-            }
-        }
+                    current.Clear();
+                    foreach (KeyValuePair<int, double> kvp in GetGraph().OrderBy(p => p.Key))
+                        current.Add(new(kvp.Key * xMult, height - (float)(kvp.Value * yMult)), kvp);
 
-        private void Draw4(Graphics g, Dictionary<int, double> d)
+                    this.Invalidate();
+                }
+
+                //float avg = 0;
+                ////bool b = rand.Bool();
+                //results = new float[tot];
+                //for (int a = 0 ; a < tot ; ++a)
+                //{
+                //    //float dmg = rand.GaussianOE(amt, AlienDamageRandomness, AlienDamageOEPct);
+                //    float dmg = (float)( rand.OE(PlanetQualityOE) + rand.Range(PlanetQualityMin, PlanetQualityMax) );
+                //    //float dmg;
+                //    //if (b)
+                //    //dmg = rand.Weighted(rand.Weighted(rand.DoubleHalf(1))) * AlienShipLife;
+                //    //dmg = rand.Weighted(AlienShipLife, MoraleMax);
+                //    //else
+                //    //    dmg = rand.DoubleHalf(rand.DoubleHalf(AlienShipLife));
+                //    //dmg = rand.OEFloat();
+                //    //avg += dmg;
+                //    results[a] = dmg;
+                //}
+                ////MessageBox.Show(b + "" + ( avg / tot ));
+            }
+            //    }
+            //});
+        }
+        private Dictionary<int, double> GetGraph()
         {
-            uint[] seed = d
-                .SelectMany(p => new object[] { p.Key, p.Value })
-                .Concat(new object[] { seed1, ClientSize.Width, ClientSize.Height })
+            if (graphs == null)
+                return null;
+            return graphs[flag % graphs.Length];
+        }
+        private void CalcDims(out float width, out float height, out float xMax, out float yMax, out float xMult, out float yMult)
+        {
+            width = ClientSize.Width;
+            height = ClientSize.Height;
+            xMax = GetGraph().Keys.Max();
+            yMax = (float)(GetGraph().Values.Max());
+            xMult = width / xMax;
+            yMult = height / yMax;
+        }
+        private uint[] GetSeed()
+        {
+            uint[] seed = new object[] { ClientSize.Height, ClientSize.Width, initSeed, }.Concat(
+                    GetGraph().SelectMany(p => new object[] { p.Key, p.Value, }))
                 .Select(o => (uint)o.GetHashCode()).ToArray();
             if (seed.Length > MTRandom.MAX_SEED_SIZE)
             {
@@ -131,21 +190,44 @@ namespace testwin
                 }
                 seed = copy;
             }
-            MTRandom deterministic = new(seed);
+            return seed;
+        }
 
-            float w = ClientSize.Width;
-            float h = ClientSize.Height;
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            try
+            {
+                base.OnPaint(e);
 
-            float xMax = d.Keys.Max();
-            float yMax = (float)(d.Values.Max());
-            float xMult = w / xMax;
-            float yMult = h / yMax;
-
+                //draw1(e.Graphics);
+                //draw2(e.Graphics);
+                //draw3(e.Graphics); 
+                Draw(e.Graphics);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+        }
+        private void Draw(Graphics g)
+        {
+            DrawGrid(g);
+            DrawGraph(g);
+            DrawMouseHighlight(g);
+        }
+        private void DrawGrid(Graphics g)
+        {
             using Font f = new(FontFamily.GenericSansSerif, 13f);
-            int xLines = deterministic.Round(w / 130f);
-            int yLines = deterministic.Round(h / 130f);
-            Ticks(true, xLines, w, h, xMax, xMult);
-            Ticks(false, yLines, h, w, yMax, yMult);
+            MTRandom deterministic = new(GetSeed());
+            CalcDims(out float width, out float height, out float xMax, out float yMax, out float xMult, out float yMult);
+
+            const float padding = 3f, line1 = 21f, line2 = 26f, avgLineSpace = 130f;
+
+            int xLines = deterministic.Round(width / avgLineSpace);
+            int yLines = deterministic.Round(height / avgLineSpace);
+            Ticks(true, xLines, width, height, xMax, xMult);
+            Ticks(false, yLines, height, width, yMax, yMult);
+
             void Ticks(bool isX, int count, float size, float other, float max, float mult)
             {
                 foreach (var v in Enumerable.Range(0, count + 1)
@@ -153,52 +235,70 @@ namespace testwin
                     .Distinct())
                 {
                     float x = v * mult;
-                    float y = isX ? other - 26 : 0;
+                    float y = isX ? other - line2 : 0;
                     if (!isX)
                     {
                         (x, y) = (y, x);
                         y = size - y;
                     }
-                    g.DrawLine(Pens.Black, new PointF(x, y), new(x + (isX ? 0 : other), y + (isX ? 26 : 0)));
+                    g.DrawLine(Pens.Black, new PointF(x, y), new(x + (isX ? 0 : other), y + (isX ? line2 : 0)));
                     if (v != 0)
                     {
                         if (!isX)
                             (x, y) = (y, x);
-                        x += 3;
+                        x += padding;
                         if (x >= size)
-                            x = size - g.MeasureString(v.ToString(), f).Width - 3;
-                        y = isX ? other - 21 : 3;
+                            x = size - g.MeasureString(v.ToString(), f).Width - padding;
+                        y = isX ? other - line1 : padding;
                         if (!isX)
                             (x, y) = (y, x);
-                        g.DrawString(v.ToString(), f, Brushes.Black, new PointF(x, y));
+                        g.DrawString(v.ToString(), f, Brushes.Black, new PointF(x, y)); ;
                     }
                 }
             }
-
-            List<PointF> points = new();
-            foreach (KeyValuePair<int, double> kvp in d.OrderBy(p => p.Key))
-                points.Add(new(kvp.Key * xMult, h - (float)(kvp.Value * yMult)));
-            g.DrawLines(Pens.Blue, points.ToArray());
-
-            PointF closest = points.OrderBy(p =>
-            {
-                float dx = p.X - mx;
-                float dy = p.Y - my;
-                dx *= dx;
-                dy *= dy;
-                return dx + dy;
-            }).First();
-            g.DrawEllipse(Pens.Red, closest.X - 4, closest.Y - 4, 8, 8);
-            int key = (int)Math.Round(closest.X / xMult);
-            if (d.TryGetValue(key, out double value))
-                this.Text = $"({key},{(float)value})";
         }
-
-        private void Form1_MouseMove(object sender, MouseEventArgs e)
+        private void DrawGraph(Graphics g)
         {
-            mx = e.X;
-            my = e.Y;
-            Invalidate();
+            if (current != null && current.Count > 1)
+                g.DrawLines(Pens.Blue, current.Keys.ToArray());
+        }
+        private void DrawMouseHighlight(Graphics g)
+        {
+            string text = this.labels[flag % labels.Length];
+            if (mouse.HasValue)
+            {
+                using Font small = new(FontFamily.GenericSansSerif, 9.1f, FontStyle.Bold);
+                CalcDims(out float width, out float height, out float _, out float _, out float xMult, out float _);
+
+                const float circle = 3f;
+
+                PointF closest = mouse.Value;
+                g.DrawEllipse(Pens.DarkBlue, closest.X - circle, closest.Y - circle, 2 * circle, 2 * circle);
+
+                int key = (int)Math.Round(closest.X / xMult);
+                if (GetGraph().TryGetValue(key, out double value))
+                {
+                    string coord = $"({key} : {(float)value})";
+                    SizeF size = g.MeasureString(coord, small);
+                    RectangleF area = new(closest, size);
+                    area.X -= size.Width + circle;
+                    area.Y -= area.Height / 2f;
+                    if (area.Y < 0)
+                        area.Y = 0;
+                    if (area.Right > width)
+                        area.X -= area.Right - width;
+                    if (area.X < 0)
+                    {
+                        area.X = 0;
+                        area.Y += area.Height / 2f;
+                    }
+                    if (area.Bottom > height)
+                        area.Y -= area.Bottom - height;
+                    g.DrawString(coord, small, Brushes.Red, area.Location);
+                    text = $"{text} {coord}";
+                }
+            }
+            this.Text = text;
         }
 
         //void draw1(Graphics g)
@@ -345,18 +445,5 @@ namespace testwin
         //        gr.DrawImage(i, 0, 0);
         //    }
         //}
-
-        private void Form1_Resize(object sender, EventArgs e)
-        {
-            //int width = rand.Round(ClientSize.Width / 6f);
-            //if (trackBar1.Value > width)
-            //    trackBar1.Value = width;
-            //trackBar1.Maximum = width;
-            this.Invalidate();
-        }
-        private void TrackBar1_ValueChanged(object sender, EventArgs e)
-        {
-            this.Invalidate();
-        }
     }
 }
