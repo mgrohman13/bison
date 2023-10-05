@@ -10,23 +10,23 @@ namespace testwin
         {
             const int tests = 99999999;
 
-            const int triggers = 6, bonuses = 5, maxes = 10, dice = 3;
+            const int triggers = 6, bonuses = 5;
+            const int maxes = 5;
+            const int dice = 2;
 
             Dictionary<int, long>[,] rolls = new Dictionary<int, long>[bonuses + 1, triggers];
 
             double[] avgBonuses = new double[bonuses + 1], countBonuses = new double[bonuses + 1];
-            double[,] avgMaxes = new double[bonuses + 1, maxes - 1], countMaxes = new double[bonuses + 1, maxes - 1];
+            double[,,] avgMaxes = new double[bonuses + 1, maxes - 1, dice], countMaxes = new double[bonuses + 1, maxes - 1, dice];
             double[,] avgDice = new double[bonuses + 1, dice - 1], countDice = new double[bonuses + 1, dice - 1];
+
 
             List<Combat> simulations = new();
             for (int bonus = 0; bonus <= bonuses; bonus++)
                 for (int trigger = 1; trigger <= triggers; trigger++)
                 {
                     rolls[bonus, trigger - 1] = new();
-                    simulations.Add(new Combat(1, trigger, bonus));
-                    simulations.Add(new Combat(1, trigger, bonus));
-                    simulations.Add(new Combat(1, trigger, bonus));
-                    for (int die = 2; die <= dice; die++)
+                    for (int die = 1; die <= dice; die++)
                         simulations.Add(new Combat(die, trigger, bonus));
                 }
 
@@ -55,21 +55,20 @@ namespace testwin
                     {
                         if (b <= bonuses && c < triggers)
                             AddCount(rolls[b, c], r1);
-
-                        int max = r1;
-                        for (int d = 1; d < maxes; d++)
-                        {
-                            int r2 = sim.Run();
-                            max = Math.Max(max, r2);
-                            avgMaxes[b, d - 1] += max;
-                            countMaxes[b, d - 1]++;
-                        }
-
                         if (b < avgBonuses.Length)
                         {
                             avgBonuses[b] += r1;
                             countBonuses[b]++;
                         }
+                    }
+
+                    int max = r1;
+                    for (int d = 1; d < maxes; d++)
+                    {
+                        int r2 = sim.Run();
+                        max = Math.Max(max, r2);
+                        avgMaxes[b, d - 1, sim.dice - 1] += max;
+                        countMaxes[b, d - 1, sim.dice - 1]++;
                     }
                 }
             }
@@ -91,11 +90,14 @@ namespace testwin
             for (int a = 0; a < avgBonuses.Length; a++)
                 Console.WriteLine($"+{a}: {(float)(avgBonuses[a] / countBonuses[a])}");
             Console.WriteLine();
-            for (int b = 0; b <= bonuses; b++)
+            for (int d = 1; d <= dice; d++)
             {
-                for (int c = 1; c < maxes; c++)
-                    Console.WriteLine($"+{b} (max of {c + 1:00}): {(float)(avgMaxes[b, c - 1] / countMaxes[b, c - 1])}");
-                Console.WriteLine();
+                for (int b = 0; b <= bonuses; b++)
+                {
+                    for (int c = 1; c < maxes; c++)
+                        Console.WriteLine($"+{b} ({d} dice) (max of {c + 1:00}): {(float)(avgMaxes[b, c - 1, d - 1] / countMaxes[b, c - 1, d - 1])}");
+                    Console.WriteLine();
+                }
             }
             for (int d = 2; d <= dice; d++)
             {
