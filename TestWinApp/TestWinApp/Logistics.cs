@@ -8,7 +8,7 @@ namespace testwin
     {
         internal static Dictionary<int, double>[] RunCombat(out String[] labels)
         {
-            const int tests = 99999999;
+            const int tests = 999999;
 
             const int triggers = 6, bonuses = 5;
             const int maxes = 5;
@@ -25,7 +25,7 @@ namespace testwin
             for (int bonus = 0; bonus <= bonuses; bonus++)
                 for (int trigger = 1; trigger <= triggers; trigger++)
                 {
-                    rolls[bonus, trigger - 1] = new();
+                    rolls[bonus, 0] = new(); //trigger - 1] = new();
                     for (int die = 1; die <= dice; die++)
                         simulations.Add(new Combat(die, trigger, bonus));
                 }
@@ -54,7 +54,7 @@ namespace testwin
                     else
                     {
                         if (b <= bonuses && c < triggers)
-                            AddCount(rolls[b, c], r1);
+                            AddCount(rolls[b, 0], r1);// c],  r1);
                         if (b < avgBonuses.Length)
                         {
                             avgBonuses[b] += r1;
@@ -74,18 +74,18 @@ namespace testwin
             }
             Console.WriteLine();
 
-            labels = new String[(bonuses + 1) * triggers];
-            Dictionary<int, double>[] dicts = new Dictionary<int, double>[(bonuses + 1) * triggers];
+            labels = new String[(bonuses + 1)];// * triggers];
+            Dictionary<int, double>[] dicts = new Dictionary<int, double>[(bonuses + 1)];// * triggers];
             int idx = 0;
             for (int bonus = 0; bonus <= bonuses; bonus++)
-                for (int trigger = 1; trigger <= triggers; trigger++)
-                {
-                    labels[idx] = $"+{bonus} ({trigger})";
-                    Dictionary<int, long> dict = rolls[bonus, trigger - 1];
-                    double total = dict.Values.Sum() / 100;
-                    dicts[idx] = dict.ToDictionary(p => p.Key, p => p.Value / (double)total);
-                    idx++;
-                }
+            //for (int trigger = 1; trigger <= triggers; trigger++)
+            {
+                labels[idx] = $"+{bonus}";// ({trigger})";
+                Dictionary<int, long> dict = rolls[bonus, 0];// trigger - 1];
+                double total = dict.Values.Sum() / 100;
+                dicts[idx] = dict.ToDictionary(p => p.Key, p => p.Value / (double)total);
+                idx++;
+            }
 
             for (int a = 0; a < avgBonuses.Length; a++)
                 Console.WriteLine($"+{a}: {(float)(avgBonuses[a] / countBonuses[a])}");
