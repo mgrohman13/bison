@@ -1,3 +1,5 @@
+maps without defensive structure spots
+
 add marathon mode option?
 	reduce all tech points, reduce worldMapDifficultyMultipler
 test TerritoryInstance.blocked

@@ -4,7 +4,7 @@
 	<TargetFramework>net481</TargetFramework>
 	<AssemblyName>WarpipsReplayability</AssemblyName>
     <Description>Warpips Replayability Mod</Description>
-    <Version>2.0.3</Version>
+    <Version>2.0.2</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
