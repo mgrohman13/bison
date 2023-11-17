@@ -111,7 +111,7 @@ namespace WarpipsReplayability.Patches
         private static int GetUpgrades(TechTreeInstance playerTechTree, List<TechType> xpAddons)
         {
             int upgrades = 0;
-            if (playerTechTree != null)
+            if (playerTechTree is not null)
                 upgrades = xpAddons.Where(playerTechTree.ReturnIsTechUnlocked).Count();
             return upgrades * xpModifierPerUpgrade;
         }

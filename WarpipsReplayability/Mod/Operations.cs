@@ -83,7 +83,7 @@ namespace WarpipsReplayability.Mod
         public static bool ShowEnemies() =>
             ShowInfo(SelectedTerritory, HideEnemies);
         private static bool ShowInfo(TerritoryInstance territory, Func<TerritoryInstance, bool> Hide) =>
-            WorldMapUIController == null || territory == null || !Hide(territory);
+            WorldMapUIController is null || territory is null || !Hide(territory);
 
         private static bool IsShrouded(TerritoryInstance territory) =>
             !WorldMapUIController.IsTerritoryAttackable(territory.index);
@@ -1115,8 +1115,8 @@ namespace WarpipsReplayability.Mod
         private static AnimationCurve GetDifficultyCurve(SpawnWaveProfile spawnWaveProfile) =>
             (AnimationCurve)_difficultyCurve.GetValue(spawnWaveProfile);
         private static IEnumerable<string> BuildSiteTechs(IEnumerable<EnemyBuildSite> sites) =>
-            sites.Where(buildSite => buildSite.icon != null)
-                .Select(buildSite => BuildSiteTech(buildSite))
+            sites.Where(buildSite => buildSite.icon is not null)
+                .Select(BuildSiteTech)
                 .Distinct();
         static string BuildSiteTech(EnemyBuildSite buildSite) =>
             buildSite.name.Split('_')[0];

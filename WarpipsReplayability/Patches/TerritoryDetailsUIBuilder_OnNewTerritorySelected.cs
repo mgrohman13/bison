@@ -48,12 +48,27 @@ namespace WarpipsReplayability.Patches
                             recon.SetToMysteryIcon();
                         visible = false;
                     }
-                    ___rootRect.ForceUpdateRectTransforms();
 
                     Plugin.Log.LogDebug("hiding recon");
                 }
 
                 Operations.SelectedTerritory = null;
+            }
+            catch (Exception e)
+            {
+                Plugin.Log.LogError(e);
+            }
+            finally
+            {
+                ForceUpdateRectTransforms(___rootRect);
+            }
+        }
+
+        private static void ForceUpdateRectTransforms(RectTransform ___rootRect)
+        {
+            try
+            {
+                ___rootRect.ForceUpdateRectTransforms();
             }
             catch (Exception e)
             {
