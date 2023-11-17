@@ -2,7 +2,6 @@
 using HarmonyLib;
 using LevelGeneration.WorldMap;
 using System;
-using System.Linq;
 using System.Reflection;
 using WarpipsReplayability.Mod;
 
@@ -19,13 +18,6 @@ namespace WarpipsReplayability.Patches
             try
             {
                 Plugin.Log.LogDebug("MainMenuController_NewCampaignCommon Prefix");
-
-                var originalConnections = Map.OriginalConnections;
-                if (Map.WorldMapAsset != null && originalConnections != null)
-                {
-                    _territoryConnections.SetValue(Map.WorldMapAsset, originalConnections);
-                    Plugin.Log.LogInfo("restored connections " + originalConnections.Sum(c => c.connection.Count) / 2);
-                }
 
                 Map.DoShuffle = true;
             }

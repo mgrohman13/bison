@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Security.Cryptography;
 using static WarpipsReplayability.Mod.Operations;
 using TerritoryConnection = LevelGeneration.WorldMap.WorldMapAsset.TerritoryConnection;
 
@@ -23,15 +22,13 @@ namespace WarpipsReplayability.Mod
         public static TerritoryInstance[] Territories { get; set; }
         public static bool DoShuffle { get; set; }
 
-        private static List<TerritoryConnection> originalConnections;
-        public static List<TerritoryConnection> OriginalConnections => CloneConnections(originalConnections);
-
         private static readonly FieldInfo _tokenReward = AccessTools.Field(typeof(OperationRewardProfile), "tokenReward");
         private static readonly FieldInfo _techReward = AccessTools.Field(typeof(OperationRewardProfile), "techReward");
+        private static readonly FieldInfo _territoryConnections = AccessTools.Field(typeof(WorldMapAsset), "territoryConnections");
 
         public static void Randomize()
         {
-            SetOriginalConnections();
+            SetOriginalConnections(DoShuffle);
 
             if (DoShuffle)
             {
@@ -51,14 +48,25 @@ namespace WarpipsReplayability.Mod
 
         public static void Load()
         {
-            SetOriginalConnections();
+            try
+            {
+                SetOriginalConnections(false);
 
-            Persist.Load();
-            LoadShuffle();
-            if (!Validate(null, null))
-                Plugin.Log.LogError($"loaded invalid state");
+                Persist.Load();
+                LoadShuffle();
+                if (!Validate(null, null))
+                    Plugin.Log.LogError($"loaded invalid state");
 
-            Operations.Load(Persist.Instance.OperationInfo);
+                Operations.Load(Persist.Instance.OperationInfo);
+            }
+            catch (Exception e)
+            {
+                Plugin.Log.LogError("Error loading Persist, shuffling instead");
+                Plugin.Log.LogError(e);
+
+                DoShuffle = true;
+                Randomize();
+            }
         }
 
         private static void LoadShuffle()
@@ -92,7 +100,7 @@ namespace WarpipsReplayability.Mod
             LoadTechRewards();
 
             Plugin.Log.LogInfo("Restored shuffle for save");
-            LogShuffle();
+            LogShuffle(Territories);
 
             static TerritoryData NewTerritoryData(Operation operation)
             {
@@ -132,14 +140,13 @@ namespace WarpipsReplayability.Mod
                 int b = shuffle[a];
                 TerritoryInstance territory = territories[a];
                 Territories[b] = territory;
-                //territory.operation = operations[a];
                 territory.index = b;
 
                 InitTechRewards(territory);
             }
 
             Plugin.Log.LogInfo("Shuffled territories");
-            LogShuffle();
+            LogShuffle(Territories);
 
             return shuffle;
         }
@@ -151,11 +158,12 @@ namespace WarpipsReplayability.Mod
                 territories[b] = Territories[a];
             }
         }
-        private static void LogShuffle()
+        private static void LogShuffle(TerritoryInstance[] territories)
         {
-            Operation[] operations = Territories.Select(t => t.operation).ToArray();
+            Operation[] operations = territories.Select(t => t.operation).ToArray();
             //Plugin.Log.LogInfo(operations.Select(o => o.spawnWaveProfile.name).Aggregate((a, b) => a + "," + b));
-            Plugin.Log.LogInfo(operations.Select(o => o.spawnWaveProfile.GetInstanceID().ToString()).Aggregate((a, b) => a + "," + b));
+            Plugin.LogAtLevel(operations.Select(o => o.spawnWaveProfile.GetInstanceID().ToString()).Aggregate((a, b) => a + "," + b),
+                territories.Count() != territories.Distinct().Count());
         }
 
         private static void InitTechRewards(TerritoryInstance territory)
@@ -237,7 +245,7 @@ namespace WarpipsReplayability.Mod
                 return graph;
             }
 
-            Plugin.Log.LogInfo($"ModifyConnections Gaussian({avg},.065,{numTerritories - 1})");
+            Plugin.Log.LogDebug($"ModifyConnections Gaussian({avg},.065,{numTerritories - 1})");
             int target = Plugin.Rand.GaussianCappedInt(avg, .065f, numTerritories - 1);
             Plugin.Log.LogInfo($"{numEdges} edges, target {target} (avg {avg:0.0})");
 
@@ -260,7 +268,7 @@ namespace WarpipsReplayability.Mod
                 graph.Edges[b].Remove(a);
                 if (Validate(null, graph))
                 {
-                    Plugin.Log.LogDebug($"Remove {a} - {b}");
+                    Plugin.Log.LogInfo($"Remove {a} <-> {b}");
                     numEdges--;
                 }
                 else
@@ -271,10 +279,7 @@ namespace WarpipsReplayability.Mod
                 attempts++;
             }
             string log = $"Edge removal attempts {attempts} (max {maxAttempts})";
-            if (attempts < maxAttempts)
-                Plugin.Log.LogInfo(log);
-            else
-                Plugin.Log.LogWarning(log);
+            Plugin.LogAtLevel(log, attempts >= maxAttempts);
 
             return graph;
 
@@ -289,7 +294,7 @@ namespace WarpipsReplayability.Mod
             {
                 levels[node] = level;
                 int minLevel = level;
-                if (edges[node] != null)
+                if (edges[node] is not null)
                     foreach (int edge in edges[node])
                         if (edge != parent)
                         {
@@ -313,8 +318,9 @@ namespace WarpipsReplayability.Mod
         {
             //need to copy array because we might shuffle it
             var territories = Territories.ToArray();
-            if (shuffle != null)
+            if (shuffle is not null)
             {
+                Plugin.Log.LogInfo("Validate shuffle: " + shuffle.Select(o => o.ToString()).Aggregate((a, b) => a + "," + b));
                 ApplyShuffle(territories, shuffle);
                 graph = null;
             }
@@ -334,9 +340,9 @@ namespace WarpipsReplayability.Mod
             //path to end must allow completion without seeing super soldiers
             List<TerritoryInstance> path = TBSUtil.PathFind(Plugin.Rand, graph.Start, graph.End, GetNeighbors, (a, b) => 1);
             int pathLength = path.Count - 1;
-            if (pathLength > numMissions)
+            if (pathLength > numMissions || pathLength < Plugin.Rand.GaussianInt(numMissions / 2.1, .13))
             {
-                Plugin.Log.LogWarning($"({CountEdges(graph.Edges)}) pathLength {pathLength} > {numMissions}, invalid");
+                Plugin.Log.LogWarning($"({CountEdges(graph.Edges)}) pathLength {pathLength} ({numMissions}), invalid");
                 return false;
             }
 
@@ -391,21 +397,57 @@ namespace WarpipsReplayability.Mod
                 };
                 connections.Add(connection);
 
-                Plugin.Log.LogDebug($"GenerateConnections {c} -> ({connection.connection.Aggregate("", (x, y) => x + "," + y)},)");
+                Plugin.Log.LogDebug($"GenerateConnections {c} -> ({connection.connection.Select(o => o.ToString()).Aggregate((x, y) => x + "," + y)},)");
             }
 
             Plugin.Log.LogInfo($"Generated {CountEdges(graph.Edges)} connections");
         }
 
-        private static void SetOriginalConnections()
+        private static void SetOriginalConnections(bool doShuffle)
         {
-            //we need to store off the original connections so we can restore them when starting a new game
-            if (originalConnections == null)
+            if (MissionManagerAsset is not null && WorldMapAsset is not null && Territories is not null)
             {
-                originalConnections = CloneConnections(WorldMapAsset.TerritoryConnections);
-                Plugin.Log.LogInfo($"SetOriginalConnections {originalConnections.Sum(c => c.connection.Count) / 2}");
+                var original = CloneConnections(Persist.Instance.OriginalConnections[MissionManagerAsset.WorldMapIndex]);
+                if (original is not null && original.Count != Territories.Length)
+                {
+                    Plugin.Log.LogError($"Invalid original connections ({original.Count}, {Territories.Length})");
+                    original = null;
+                }
+
+                if (doShuffle)
+                    if (original is not null)
+                    {
+                        //restore the original connections so we can re-sever some
+                        _territoryConnections.SetValue(WorldMapAsset, original);
+                        Plugin.Log.LogInfo("restored connections " + original.Sum(c => c.connection.Count) / 2);
+                    }
+                    else
+                    {
+                        Plugin.Log.LogWarning($"no original connections ({WorldMapAsset}, {original})");
+                    }
+
+                if (original is null)
+                {
+                    var current = CloneConnections(WorldMapAsset.TerritoryConnections);
+                    if (current.Count == Territories.Length)
+                    {
+                        //we need to store off the original connections so we can restore them when starting a new randomized island
+                        Persist.Instance.OriginalConnections[MissionManagerAsset.WorldMapIndex] = current;
+                        Plugin.Log.LogInfo($"SetOriginalConnections {current.Sum(c => c.connection.Count) / 2}");
+                        Persist.SaveCurrent();
+                    }
+                    else
+                    {
+                        Plugin.Log.LogError($"Invalid current connections ({current.Count}, {Territories.Length})");
+                    }
+                }
+            }
+            else
+            {
+                Plugin.Log.LogInfo($"Skipping SetOriginalConnections ({MissionManagerAsset}, {WorldMapAsset}, {Territories})");
             }
         }
+
         private static List<TerritoryConnection> CloneConnections(List<TerritoryConnection> connections) =>
             connections?.Select(c => new TerritoryConnection()
             {
@@ -417,6 +459,12 @@ namespace WarpipsReplayability.Mod
             var connections = WorldMapAsset.TerritoryConnections;
             int count = connections.Count;
             GraphInfo graph = new() { Edges = InitEdgeArray(count) };
+
+            if (count != territories.Length)
+            {
+                Plugin.Log.LogError($"Invalid connections ({count}, {territories.Length})");
+                LogShuffle(territories);
+            }
 
             for (int a = 0; a < count; a++)
             {
@@ -447,6 +495,12 @@ namespace WarpipsReplayability.Mod
                     graph.Edges[a].Add(b);
                     graph.Edges[b].Add(a);
                 }
+            }
+
+            if (graph.Start is null || graph.End is null)
+            {
+                Plugin.Log.LogError($"Invalid shuffle ({Array.IndexOf(territories, graph.Start)}, {Array.IndexOf(territories, graph.End)})");
+                LogShuffle(territories);
             }
 
             return graph;

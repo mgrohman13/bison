@@ -17,14 +17,24 @@ namespace WarpipsReplayability.Mod
 
         public static Persist Instance { get; private set; }
 
+        static Persist()
+        {
+            Instance = new();
+        }
+
         public readonly int[] Shuffle;
         public readonly List<TerritoryConnection> Connections;
         public readonly bool[] HiddenRewards;
         public readonly int[] TechRewards;
         public readonly Operations.OperationInfo[] OperationInfo;
 
+        public readonly List<TerritoryConnection>[] OriginalConnections = new List<TerritoryConnection>[4];
+
         public int SaleIndex { get; set; } = -1;
 
+        private Persist()
+        {
+        }
         private Persist(int[] shuffle, Operations.OperationInfo[] operationInfo)
         {
             Shuffle = shuffle;
@@ -32,13 +42,16 @@ namespace WarpipsReplayability.Mod
             Connections = Map.WorldMapAsset.TerritoryConnections;
             HiddenRewards = Operations.RollHiddenRewards();
             TechRewards = Map.Territories.Select(t => t.operation.techReward).ToArray();
+
+            //OriginalConnections are never modified, so always maintain the same list
+            OriginalConnections = Instance.OriginalConnections;
         }
 
         public static void SaveNew(int[] shuffle, Operations.OperationInfo[] operationInfo)
         {
             Instance = new(shuffle, operationInfo);
             SaveCurrent();
-            Plugin.Log.LogInfo($"saved mod data");
+            Plugin.Log.LogInfo($"Persist saved new mod data");
         }
         public static void SaveCurrent()
         {
@@ -47,9 +60,9 @@ namespace WarpipsReplayability.Mod
         }
         public static void Load()
         {
+            Plugin.Log.LogInfo($"Load Persist");
             Instance = TBSUtil.LoadGame<Persist>(saveFile);
             _territoryConnections.SetValue(Map.WorldMapAsset, Instance.Connections);
-            Plugin.Log.LogInfo($"loaded mod data");
         }
     }
 }
