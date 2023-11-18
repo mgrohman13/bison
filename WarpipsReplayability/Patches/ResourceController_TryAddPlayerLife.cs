@@ -32,7 +32,7 @@ namespace WarpipsReplayability.Patches
                 if (__state == __instance.PlayerLives.value)
                 {
                     __instance.AddTokens(BonusMaxLifeTokens);
-                    Plugin.Log.LogInfo($"BonusMaxLifeTokens: {BonusMaxLifeTokens}");
+                    Plugin.Log.LogWarning($"BonusMaxLifeTokens: {BonusMaxLifeTokens}");
                 }
             }
             catch (Exception e)

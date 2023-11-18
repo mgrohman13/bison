@@ -43,8 +43,8 @@ namespace WarpipsReplayability.Mod
 
             Log.LogInfo($"Plugin {PluginInfo.PLUGIN_GUID} is loaded!");
 
-            Log.LogInfo(MTRandom.GAUSSIAN_FLOAT_MAX);
-            Log.LogInfo(MTRandom.GetOEFlaotMax());
+            Log.LogDebug(MTRandom.GAUSSIAN_FLOAT_MAX);
+            Log.LogDebug(MTRandom.GetOEFlaotMax());
         }
 
         public static string GetSeedString(uint[] seed) =>

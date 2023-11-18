@@ -13,7 +13,7 @@ namespace WarpipsReplayability.Patches
         {
             try
             {
-                Plugin.Log.LogInfo("MapCycleElementController_StartWrapper Prefix");
+                Plugin.Log.LogDebug("MapCycleElementController_StartWrapper Prefix");
 
                 //there is a bug in the base game when you lose an operation
                 //MapCycleElementController mistakenly sets the map of the failed operation to the first map (mapIndex 0)

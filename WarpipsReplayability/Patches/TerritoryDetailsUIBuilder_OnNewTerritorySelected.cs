@@ -56,7 +56,7 @@ namespace WarpipsReplayability.Patches
             }
             catch (Exception e)
             {
-                Plugin.Log.LogError(e);
+                Plugin.Log.LogWarning(e);
             }
             finally
             {
@@ -72,7 +72,7 @@ namespace WarpipsReplayability.Patches
             }
             catch (Exception e)
             {
-                Plugin.Log.LogError(e);
+                Plugin.Log.LogWarning(e);
             }
         }
     }

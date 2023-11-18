@@ -84,7 +84,7 @@ namespace WarpipsReplayability.Patches
                     if (controllers.Select(c => c?.TechReward?.name).Any(techType => techType == "ExtraLife"))
                     {
                         ___rewardTokenCount += ResourceController_TryAddPlayerLife.BonusMaxLifeTokens;
-                        Plugin.Log.LogInfo("rewardTokenCount: " + ___rewardTokenCount);
+                        Plugin.Log.LogWarning("rewardTokenCount: " + ___rewardTokenCount);
                     }
                 }
             }

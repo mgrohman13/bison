@@ -44,7 +44,7 @@ namespace WarpipsReplayability.Patches
                         {
                             if (key.time > 1 && curve.Evaluate(1) < warningDifficulty)
                             {
-                                Plugin.Log.LogInfo($"skipping alert at 1 {prevTime:0.000}-{key.time:0.000} (1= {curve.Evaluate(1):0.000})");
+                                Plugin.Log.LogDebug($"skipping alert at 1 {prevTime:0.000}-{key.time:0.000} (1= {curve.Evaluate(1):0.000})");
                             }
                             else
                             {
@@ -72,7 +72,7 @@ namespace WarpipsReplayability.Patches
                                     Plugin.Log.LogWarning($"setting alert to {result}, {min} ({curve.Evaluate(min)}) - {max} ({curve.Evaluate(max)})");
                                 }
 
-                                Plugin.Log.LogInfo($"alert {prevTime:0.000}-{key.time:0.000}: {result:0.000}");
+                                Plugin.Log.LogDebug($"alert {prevTime:0.000}-{key.time:0.000}: {result:0.000}");
                                 __result.Add(result);
                             }
                         }
@@ -106,7 +106,7 @@ namespace WarpipsReplayability.Patches
             if (warningDifficulty < displayThreshold)
             {
                 float rand = deterministic.GaussianCapped(warningDifficulty * .75f, .13f, warningDifficulty * .5f);
-                Plugin.Log.LogInfo($"difficulty < displayThreshold ({warningDifficulty} < {displayThreshold}): set to {rand}");
+                Plugin.Log.LogWarning($"difficulty < displayThreshold ({warningDifficulty} < {displayThreshold}): set to {rand}");
                 displayThreshold = rand;
             }
             return displayThreshold;
@@ -120,7 +120,7 @@ namespace WarpipsReplayability.Patches
             uint[] seed = curve.keys.SelectMany(k =>
                     new float[] { k.value, k.time, })
                 .Select(o => (uint)o.GetHashCode()).ToArray();
-            Plugin.Log.LogInfo("AnimationCurve seed: " + Plugin.GetSeedString(seed));
+            Plugin.Log.LogDebug("AnimationCurve seed: " + Plugin.GetSeedString(seed));
             return seed;
         }
     }

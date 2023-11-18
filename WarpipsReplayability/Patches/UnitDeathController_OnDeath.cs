@@ -101,7 +101,7 @@ namespace WarpipsReplayability.Patches
                 if (LastLog != log)
                 {
                     LastLog = log;
-                    Plugin.Log.LogWarning(log);
+                    Plugin.Log.LogDebug(log);
                 }
             }
         }
@@ -114,7 +114,7 @@ namespace WarpipsReplayability.Patches
             if (!expMap.ContainsKey(key))
             {
                 expMap.Add(key, exp);
-                Plugin.Log.LogWarning(expMap.OrderBy(p => p.Value).ThenBy(p => p.Key)
+                Plugin.Log.LogInfo(expMap.OrderBy(p => p.Value).ThenBy(p => p.Key)
                     .Select(p => $"{p.Key}:{p.Value:0.00}")
                     .Aggregate("xpBaseOnKill:", (a, b) => a + Environment.NewLine + b));
             }
