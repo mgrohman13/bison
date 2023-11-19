@@ -33,7 +33,7 @@ namespace WarpipsReplayability.Patches
             {
                 Plugin.Log.LogDebug("TerritoryRewardPanelController_OnNewTerritorySelected Postfix");
 
-                if (!Operations.ShowEnemies())
+                if (!Operations.ShowRewardCount())
                 {
                     ___tokenText.text = string.Empty;
                     ___techText.text = string.Empty;
