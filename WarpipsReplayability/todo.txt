@@ -1,4 +1,8 @@
+ "enemy HERO approcahing" text
+shuffle validate error
 maps without defensive structure spots
+
+MTRandom helper method to generate seeds from arbitrary objects
 
 add marathon mode option?
 	reduce all tech points, reduce worldMapDifficultyMultipler
