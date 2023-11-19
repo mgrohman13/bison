@@ -104,7 +104,7 @@ namespace WarpipsReplayability.Mod
                 if (territory.index != Array.IndexOf(Map.Territories, territory))
                     Plugin.Log.LogError($"Territory out of order {territory.index} {Array.IndexOf(Map.Territories, territory)}");
 
-                Plugin.Log.LogInfo($"{territory.operation.spawnWaveProfile.name}");
+                Plugin.Log.LogInfo($"Randomize {territory.operation.spawnWaveProfile.name}");
                 EnemyBuildSite[] generatedSites = GenerateEnemyBuildSites(buildSites, ref numBuildSites, ref distinctBuildSites, territory, numTerritories);
                 OperationInfo operationInfo = GenerateSpawnData(spawnAverages, territory, generatedSites);
                 numTerritories--;
@@ -122,50 +122,51 @@ namespace WarpipsReplayability.Mod
             //aggregate map spawner data 
             Dictionary<string, SpawnAverages> spawnAverages = new();
             foreach (TerritoryInstance territory in Plugin.Rand.Iterate(Map.Territories))
-            {
-                Plugin.Log.LogDebug(Environment.NewLine);
-
-                Operation operation = territory.operation;
-                SpawnWaveProfile spawnWaveProfile = operation.spawnWaveProfile;
-                Plugin.Log.LogDebug($"{spawnWaveProfile.name}:");
-                //frequently have more than one spawner for the same tech type, group and sum their counts together
-                List<EnemySpawnProfile> profiles = GetProfiles(spawnWaveProfile);
-                foreach (var group in Plugin.Rand.Iterate(profiles
-                        .GroupBy(enemySpawnProfile => enemySpawnProfile.UnitSpawnData.SpawnTech.name)))
+                if (territory.owner != UnitTeam.Team1)
                 {
-                    string name = group.Key;
-                    if (!spawnAverages.TryGetValue(name, out SpawnAverages values))
-                        spawnAverages.Add(name, values = new(name));
+                    Plugin.Log.LogDebug(Environment.NewLine);
 
-                    foreach (EnemySpawnProfile profile in Plugin.Rand.Iterate(group))
+                    Operation operation = territory.operation;
+                    SpawnWaveProfile spawnWaveProfile = operation.spawnWaveProfile;
+                    Plugin.Log.LogDebug($"{spawnWaveProfile.name}:");
+                    //frequently have more than one spawner for the same tech type, group and sum their counts together
+                    List<EnemySpawnProfile> profiles = GetProfiles(spawnWaveProfile);
+                    foreach (var group in Plugin.Rand.Iterate(profiles
+                            .GroupBy(enemySpawnProfile => enemySpawnProfile.UnitSpawnData.SpawnTech.name)))
                     {
-                        values.Profiles.Add(new(territory.index, profiles.IndexOf(profile), profile));
-                        SpawnerData data = profile.UnitSpawnData;
-                        if (data.SpawnTech is CalldownType)
-                            Plugin.Log.LogDebug($"CalldownType: {data.SpawnTech.name}");
+                        string name = group.Key;
+                        if (!spawnAverages.TryGetValue(name, out SpawnAverages values))
+                            spawnAverages.Add(name, values = new(name));
 
-                        int countMin = (int)_spawnCountMin.GetValue(data);
-                        int countMax = (int)_spawnCountMax.GetValue(data);
-                        int capMin = (int)_spawnCapMin.GetValue(data);
-                        int capMax = (int)_spawnCapMax.GetValue(data);
+                        foreach (EnemySpawnProfile profile in Plugin.Rand.Iterate(group))
+                        {
+                            values.Profiles.Add(new(territory.index, profiles.IndexOf(profile), profile));
+                            SpawnerData data = profile.UnitSpawnData;
+                            if (data.SpawnTech is CalldownType)
+                                Plugin.Log.LogDebug($"CalldownType: {data.SpawnTech.name}");
 
-                        Plugin.Log.LogDebug($"{profile.ReturnTechType().name}: {countMin}-{countMax} ({capMin}-{capMax})");
+                            int countMin = (int)_spawnCountMin.GetValue(data);
+                            int countMax = (int)_spawnCountMax.GetValue(data);
+                            int capMin = (int)_spawnCapMin.GetValue(data);
+                            int capMax = (int)_spawnCapMax.GetValue(data);
 
-                        values.countMin += countMin;
-                        values.countMax += countMax;
-                        values.capMin += capMin;
-                        values.capMax += capMax;
-                        values.number++;
+                            Plugin.Log.LogDebug($"{profile.ReturnTechType().name}: {countMin}-{countMax} ({capMin}-{capMax})");
+
+                            values.countMin += countMin;
+                            values.countMax += countMax;
+                            values.capMin += capMin;
+                            values.capMax += capMax;
+                            values.number++;
+                        }
+                        values.territories++;
                     }
-                    values.territories++;
-                }
 
-                if (profiles.Count > 0)
-                {
-                    SpawnAverages.Maps.TryGetValue(operation.map, out int count);
-                    SpawnAverages.Maps[operation.map] = count + 1;
+                    if (profiles.Count > 0)
+                    {
+                        SpawnAverages.Maps.TryGetValue(operation.map, out int count);
+                        SpawnAverages.Maps[operation.map] = count + 1;
+                    }
                 }
-            }
 
             Plugin.Log.LogInfo(SpawnAverages.Maps.Select(p => p.Key.name + ":" + p.Value).Aggregate("maps ", (a, b) => a + " " + b));
 
@@ -300,7 +301,7 @@ namespace WarpipsReplayability.Mod
                     //chance to hide certain techs when total is over 10, so that more build sites will show up
                     if ((totalTechs - hiddenTechs) > 10 && Plugin.Rand.Bool() && Plugin.WeakTechs.Contains(values.TechType))
                     {
-                        Plugin.Log.LogInfo($"hiding from recon lineup: {values.TechType} ({totalTechs},{hiddenTechs})");
+                        Plugin.Log.LogWarning($"hiding from recon lineup: {values.TechType} ({totalTechs},{hiddenTechs})");
                         displayInReconLineup = false;
                         hiddenTechs++;
                     }
@@ -330,7 +331,7 @@ namespace WarpipsReplayability.Mod
         {
             SpawnWaveProfile spawnWaveProfile = territory.operation.spawnWaveProfile;
             //keep roughly the same count of tech types
-            spawnTechs = GetProfileNames(spawnWaveProfile).Distinct().Count();
+            spawnTechs = GetSpawnTechs(spawnWaveProfile).Distinct().Count();
             totalTechs = spawnTechs + BuildSiteTechs(generatedSites).Distinct().Count();
 
             if (totalTechs > 0)
@@ -357,12 +358,11 @@ namespace WarpipsReplayability.Mod
             }
             else
             {
-                Plugin.Log.LogWarning(spawnWaveProfile.name);
+                Plugin.Log.LogInfo("no techs: " + spawnWaveProfile.name);
             }
-
-            static IEnumerable<string> GetProfileNames(SpawnWaveProfile spawnWaveProfile) =>
-                GetProfiles(spawnWaveProfile).Select(enemySpawnProfile => enemySpawnProfile.ReturnTechType().name);
         }
+        public static IEnumerable<string> GetSpawnTechs(SpawnWaveProfile spawnWaveProfile) =>
+            GetProfiles(spawnWaveProfile).Select(enemySpawnProfile => enemySpawnProfile?.ReturnTechType()?.name).Where(o => o is not null);
         private static SpawnAverages SelectTechType(Dictionary<string, SpawnAverages> spawnAverages, HashSet<string> techTypes, float mult)
         {
             Dictionary<string, SpawnAverages> temp;
@@ -397,7 +397,7 @@ namespace WarpipsReplayability.Mod
                 //certain tech types more likely to appear in special missions
                 if (Plugin.HeroTechs.Contains(techType))
                     chance = Plugin.Rand.Round((chance + mult - 1) * mult);
-                Plugin.Log.LogInfo($"{techType}: {chance}");
+                Plugin.Log.LogDebug($"{techType}: {chance}");
                 return chance;
             });
             techTypes.Add(values.TechType);
@@ -642,7 +642,7 @@ namespace WarpipsReplayability.Mod
                 SpawnWaveProfile spawnWaveProfile = UnityEngine.Object.Instantiate(territory.operation.spawnWaveProfile);
                 territory.operation.spawnWaveProfile = spawnWaveProfile;
 
-                Plugin.Log.LogInfo(spawnWaveProfile.name);
+                Plugin.Log.LogInfo("start " + spawnWaveProfile.name);
 
                 int numSpawns = operationInfo.Spawns.Length;
                 EnemySpawnProfile[] enemySpawnProfiles = new EnemySpawnProfile[numSpawns];
@@ -671,7 +671,7 @@ namespace WarpipsReplayability.Mod
                     displayThresholdCount++;
                 }
 
-                Plugin.Log.LogInfo(spawnWaveProfile.name);
+                Plugin.Log.LogInfo("end " + spawnWaveProfile.name);
             }
             DifficultyBar_BuildDifficultyBar.DisplayThreshold = (float)Math.Sqrt(displayThreshold / displayThresholdCount) * .9f;
 
@@ -702,9 +702,6 @@ namespace WarpipsReplayability.Mod
                     (delayMin, delayMax) = (delayMax, delayMin);
                 timeBetween = deterministic.GaussianCapped(timeBetween, deviation);
                 cooldown = deterministic.GaussianCapped(cooldown, deviation);
-
-                Plugin.Log.LogInfo($"{p.ReturnTechType().name} SpawnDelay: {data.SpawnDelay(1):0.0}-{data.SpawnDelay(0):0.0}, " +
-                    $"TimeBetweenClusters: {data.TimeBetweenClusters:0.00}, CooldownAfterSpawn: {data.CooldownAfterSpawn:0.00}");
 
                 _spawnDelayMin.SetValue(data, delayMin);
                 _spawnDelayMax.SetValue(data, delayMax);
@@ -1111,6 +1108,7 @@ namespace WarpipsReplayability.Mod
 
         private static List<EnemySpawnProfile> GetProfiles(SpawnWaveProfile spawnWaveProfile) =>
             spawnWaveProfile.ReturnSpawnProfilesPerDifficulty(Map.MissionManagerAsset.GameDifficultyIndex)
+            .Where(o => o is not null)
             .Cast<EnemySpawnProfile>().ToList();
         private static AnimationCurve GetDifficultyCurve(SpawnWaveProfile spawnWaveProfile) =>
             (AnimationCurve)_difficultyCurve.GetValue(spawnWaveProfile);
@@ -1157,7 +1155,7 @@ namespace WarpipsReplayability.Mod
                     float range = heroIdx < 0 ? 1 : (heroIdx + 1) / (Plugin.HeroTechs.Length + 1f);
                     avg *= range;
                     startAtDifficulty = (1 - range) + rand.Weighted(range, avg);
-                    Plugin.Log.LogInfo($"{techType} startAtDifficulty: {startAtDifficulty:0.000} ({min:0.00}-{max:0.00}), {1 - range:0.00}+Weighted({range:0.00},{avg:0.00})");
+                    Plugin.Log.LogInfo($"rare {techType} startAtDifficulty option: {startAtDifficulty:0.000} ({min:0.00}-{max:0.00}), {1 - range:0.00}+Weighted({range:0.00},{avg:0.00})");
                 }
                 else
                 {
@@ -1167,7 +1165,7 @@ namespace WarpipsReplayability.Mod
                         dev *= (1 - avg) / avg;
                     float cap = Math.Max(0, 2 * avg - 1);
                     startAtDifficulty = rand.GaussianCapped(avg, dev, cap);
-                    Plugin.Log.LogInfo($"{techType} startAtDifficulty: {startAtDifficulty:0.000} ({min:0.00}-{max:0.00}), Gaussian({avg:0.00},{dev:0.000},{cap:0.00})");
+                    Plugin.Log.LogDebug($"{techType} startAtDifficulty: {startAtDifficulty:0.000} ({min:0.00}-{max:0.00}), Gaussian({avg:0.00},{dev:0.000},{cap:0.00})");
                 }
                 return startAtDifficulty;
             }

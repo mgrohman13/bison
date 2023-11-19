@@ -54,8 +54,8 @@ namespace WarpipsReplayability.Mod
 
                 Persist.Load();
                 LoadShuffle();
-                if (!Validate(null, null))
-                    Plugin.Log.LogError($"loaded invalid state");
+                if (!Validate(doRand: false))
+                    throw new Exception($"loaded invalid state");
 
                 Operations.Load(Persist.Instance.OperationInfo);
             }
@@ -131,7 +131,7 @@ namespace WarpipsReplayability.Mod
             int[] shuffle;
             do
                 shuffle = Plugin.Rand.Iterate(Territories.Length).ToArray();
-            while (!Validate(shuffle, null));
+            while (!Validate(shuffle));
 
             var territories = Territories.ToArray();
             //var operations = territories.Select(t => t.operation).ToArray();
@@ -174,7 +174,10 @@ namespace WarpipsReplayability.Mod
 
             int techReward = operation.techReward;
             if (techReward % 5 != 0)
+            {
                 Plugin.Log.LogError($"techReward already randomized {techReward}");
+                return;
+            }
 
             //if you don't fully complete islands, you should capture 32 territories before the final mission (9*3+5)
             //with Math.PI bonus, on average this means an additional ~100.5 tech points (on General)
@@ -255,7 +258,10 @@ namespace WarpipsReplayability.Mod
                 HashSet<int>[] critical = FindCritical(graph.Edges, numTerritories);
                 Plugin.Log.LogDebug($"critical = {CountEdges(critical)}");
                 if (CountEdges(critical) == numEdges)
+                {
+                    Plugin.Log.LogWarning($"all remaining edges are critical connections ({CountEdges(critical)},{numEdges})");
                     break;
+                }
 
                 int a, b;
                 do
@@ -266,7 +272,7 @@ namespace WarpipsReplayability.Mod
 
                 graph.Edges[a].Remove(b);
                 graph.Edges[b].Remove(a);
-                if (Validate(null, graph))
+                if (Validate(graph: graph))
                 {
                     Plugin.Log.LogInfo($"Remove {a} <-> {b}");
                     numEdges--;
@@ -314,7 +320,7 @@ namespace WarpipsReplayability.Mod
             }
         }
 
-        private static bool Validate(int[] shuffle, GraphInfo graph)
+        private static bool Validate(int[] shuffle = null, GraphInfo graph = null, bool doRand = true)
         {
             //need to copy array because we might shuffle it
             var territories = Territories.ToArray();
@@ -340,7 +346,7 @@ namespace WarpipsReplayability.Mod
             //path to end must allow completion without seeing super soldiers
             List<TerritoryInstance> path = TBSUtil.PathFind(Plugin.Rand, graph.Start, graph.End, GetNeighbors, (a, b) => 1);
             int pathLength = path.Count - 1;
-            if (pathLength > numMissions || pathLength < Plugin.Rand.GaussianInt(numMissions / 2.1, .13))
+            if (pathLength > numMissions || (doRand && pathLength < Plugin.Rand.GaussianInt(numMissions / 2.1, .13)))
             {
                 Plugin.Log.LogWarning($"({CountEdges(graph.Edges)}) pathLength {pathLength} ({numMissions}), invalid");
                 return false;
@@ -364,6 +370,24 @@ namespace WarpipsReplayability.Mod
                 return false;
             }
 
+            // --- ensure this is the last validation step we run --- 
+            //validation that only applies if a save file is from an old version or corrupted
+            //(or a bug prevents load) and we reshuffle an existing game
+            foreach (TerritoryInstance territory in territories)
+                if (territory.specialTag == TerritoryInstance.SpecialTag.EnemyObjective)
+                    SetTeam(territory, UnitTeam.Team2);
+                else if (territory.specialTag == TerritoryInstance.SpecialTag.PlayerBase || !HasEnemies(territory))
+                    SetTeam(territory, UnitTeam.Team1);
+            reachable.Clear();
+            DFS(graph.Start, t => t.owner == UnitTeam.Team1);
+            reachable.Add(graph.Start);
+            foreach (TerritoryInstance territory in territories)
+                if (territory.owner == UnitTeam.Team1 && !reachable.Contains(territory))
+                {
+                    Plugin.Log.LogWarning($"non-contiguous Team1 territories, invalid");
+                    return false;
+                }
+
             return true;
 
             //reachable territories counting end but not start
@@ -378,9 +402,24 @@ namespace WarpipsReplayability.Mod
                     }
             }
             IEnumerable<Tuple<TerritoryInstance, int>> GetNeighbors(TerritoryInstance t) =>
-                graph.Edges[Idx(t)].Select(e => new Tuple<TerritoryInstance, int>(territories[e], 1));
+              graph.Edges[Idx(t)].Select(e => new Tuple<TerritoryInstance, int>(territories[e], 1));
             //can't use t.index because territories will be out of order at this point
             int Idx(TerritoryInstance t) => Array.IndexOf(territories, t);
+            static bool HasEnemies(TerritoryInstance territory)
+            {
+                SpawnWaveProfile spawnWaveProfile = territory?.operation?.spawnWaveProfile;
+                return (spawnWaveProfile is not null && Operations.GetSpawnTechs(spawnWaveProfile).Any());
+            }
+            void SetTeam(TerritoryInstance territory, UnitTeam team)
+            {
+                if (territory.owner != team)
+                {
+                    territory.owner = team;
+                    SpawnWaveProfile spawnWaveProfile = territory.operation.spawnWaveProfile;
+                    Plugin.Log.LogWarning($"setting {Idx(territory)} to {team} " +
+                        $"({spawnWaveProfile.name} - {territory.index},{spawnWaveProfile.GetInstanceID()})");
+                }
+            }
         }
 
         private static void GenerateConnections(GraphInfo graph)
@@ -434,7 +473,8 @@ namespace WarpipsReplayability.Mod
                         //we need to store off the original connections so we can restore them when starting a new randomized island
                         Persist.Instance.OriginalConnections[MissionManagerAsset.WorldMapIndex] = current;
                         Plugin.Log.LogInfo($"SetOriginalConnections {current.Sum(c => c.connection.Count) / 2}");
-                        Persist.SaveCurrent();
+                        if (doShuffle)
+                            Persist.SaveCurrent();
                     }
                     else
                     {
