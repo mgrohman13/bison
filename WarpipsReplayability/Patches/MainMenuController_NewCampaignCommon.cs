@@ -11,8 +11,6 @@ namespace WarpipsReplayability.Patches
     [HarmonyPatch("NewCampaignCommon")]
     internal class MainMenuController_NewCampaignCommon
     {
-        private static readonly FieldInfo _territoryConnections = AccessTools.Field(typeof(WorldMapAsset), "territoryConnections");
-
         public static void Prefix()
         {
             try
