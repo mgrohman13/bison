@@ -1028,9 +1028,9 @@ namespace WarpipsReplayability.Mod
                 {
                     SpawnerData data = profile.UnitSpawnData;
 
-                    Spawns.DoLog = false;
                     try
                     {
+                        Spawns.DoLog = false;
                         Plugin.Log.LogInfo($"{spawnWaveProfile.name} {data.SpawnTech.name}: {data.SpawnCount(0)}-{data.SpawnCount(1)} ({data.SpawnCap(0)}-{data.SpawnCap(1)}), {data.StartAtDifficulty:0.00}");
                     }
                     finally
@@ -1100,9 +1100,9 @@ namespace WarpipsReplayability.Mod
             //};
 
             uint[] seed;
-            Spawns.DoLog = false;
             try
             {
+                Spawns.DoLog = false;
                 //generate a robust seed based on this individual operation details
                 seed = curve.keys.SelectMany(k =>
                         new object[] { k.inTangent, k.inWeight, k.outTangent, k.outWeight, k.time, k.value, k.weightedMode, })

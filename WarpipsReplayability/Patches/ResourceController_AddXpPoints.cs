@@ -43,9 +43,9 @@ namespace WarpipsReplayability.Patches
                 if (runPrefix)
                 {
                     //let recursive ResourceController.AddXpPoints calls run the base game code
-                    runPrefix = false;
                     try
                     {
+                        runPrefix = false;
                         int upgrades = GetUpgrades(___playerTechTree, ___xpAddons);
                         int tier = GetTier(___techTier);
                         __result = AddXpPoints(__instance, upgrades, tier, addValue);
