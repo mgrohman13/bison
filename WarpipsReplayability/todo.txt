@@ -91,3 +91,5 @@ pulsing Q/E
 	reduce fuel gain by asymptotic amt since last use?
 emergency cash button always available?
 	change timouts?
+
+allow the dead to remain on the battlefield longer/permanently?
