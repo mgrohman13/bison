@@ -5,6 +5,7 @@ using LevelGeneration.WorldMap;
 using MattUtil;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
@@ -1027,7 +1028,15 @@ namespace WarpipsReplayability.Mod
                 {
                     SpawnerData data = profile.UnitSpawnData;
 
-                    Plugin.Log.LogInfo($"{spawnWaveProfile.name} {data.SpawnTech.name}: {data.SpawnCount(0)}-{data.SpawnCount(1)} ({data.SpawnCap(0)}-{data.SpawnCap(1)}), {data.StartAtDifficulty:0.00}");
+                    Spawns.DoLog = false;
+                    try
+                    {
+                        Plugin.Log.LogInfo($"{spawnWaveProfile.name} {data.SpawnTech.name}: {data.SpawnCount(0)}-{data.SpawnCount(1)} ({data.SpawnCap(0)}-{data.SpawnCap(1)}), {data.StartAtDifficulty:0.00}");
+                    }
+                    finally
+                    {
+                        Spawns.DoLog = true;
+                    }
 
                     foreach (var c in data.SpawnConditions)
                         Plugin.Log.LogError("SpawnCondition: " + c);
@@ -1090,17 +1099,26 @@ namespace WarpipsReplayability.Mod
             //    return a;
             //};
 
-            //generate a robust seed based on this individual operation details
-            uint[] seed = curve.keys.SelectMany(k =>
-                    new object[] { k.inTangent, k.inWeight, k.outTangent, k.outWeight, k.time, k.value, k.weightedMode, })
-                .Concat(profiles.Select(p => (object)p.displayInReconLineup))
-                .Concat(
-                    new object[] { profile.enemyBuildSites.Length, profiles.Count(), profile.RoundDuration, profile.HasWarningMessages,
-                        curve.keys.Length, profile.hideFlags, profile.superEnemyBuffOnCycle, profile.bombsOnCycle, mapLength, })
-                .Concat(profiles.Select(p => p.UnitSpawnData).SelectMany(s =>
-                    new object[] { s.SpawnCap(1), s.CooldownAfterSpawn, s.TimeBetweenClusters, s.SpawnDelay(1),
-                        s.SpawnCount(0), s.SpawnCount(1), s.SpawnDelay(0), s.StartAtDifficulty, s.SpawnCap(0), }))
-                .Select((object o) => (uint)o.GetHashCode()).ToArray();
+            uint[] seed;
+            Spawns.DoLog = false;
+            try
+            {
+                //generate a robust seed based on this individual operation details
+                seed = curve.keys.SelectMany(k =>
+                        new object[] { k.inTangent, k.inWeight, k.outTangent, k.outWeight, k.time, k.value, k.weightedMode, })
+                    .Concat(profiles.Select(p => (object)p.displayInReconLineup))
+                    .Concat(
+                        new object[] { profile.enemyBuildSites.Length, profiles.Count(), profile.RoundDuration, profile.HasWarningMessages,
+                            curve.keys.Length, profile.hideFlags, profile.superEnemyBuffOnCycle, profile.bombsOnCycle, mapLength, })
+                    .Concat(profiles.Select(p => p.UnitSpawnData).SelectMany(s =>
+                        new object[] { s.SpawnCap(1), s.CooldownAfterSpawn, s.TimeBetweenClusters, s.SpawnDelay(1),
+                            s.SpawnCount(0), s.SpawnCount(1), s.SpawnDelay(0), s.StartAtDifficulty, s.SpawnCap(0), }))
+                    .Select((object o) => (uint)o.GetHashCode()).ToArray();
+            }
+            finally
+            {
+                Spawns.DoLog = true;
+            }
 
             Plugin.Log.LogInfo($"RandOnLoss seed " + Plugin.GetSeedString(seed));
             return seed;
