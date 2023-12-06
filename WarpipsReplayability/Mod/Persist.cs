@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 using static LevelGeneration.WorldMap.WorldMapAsset;
 
 namespace WarpipsReplayability.Mod
@@ -23,10 +24,11 @@ namespace WarpipsReplayability.Mod
         }
 
         public readonly int[] Shuffle;
+        public readonly Operations.OperationInfo[] OperationInfo;
         public readonly List<TerritoryConnection> Connections;
         public readonly bool[] HiddenRewards;
         public readonly int[] TechRewards;
-        public readonly Operations.OperationInfo[] OperationInfo;
+        public readonly float FloatHalf = Plugin.Rand.FloatHalf();
 
         public readonly List<TerritoryConnection>[] OriginalConnections = new List<TerritoryConnection>[4];
 
@@ -39,6 +41,7 @@ namespace WarpipsReplayability.Mod
         {
             Shuffle = shuffle;
             OperationInfo = operationInfo;
+
             Connections = Map.WorldMapAsset.TerritoryConnections;
             HiddenRewards = Operations.RollHiddenRewards();
             TechRewards = Map.Territories.Select(t => t.operation.techReward).ToArray();

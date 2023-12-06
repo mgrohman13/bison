@@ -718,10 +718,14 @@ namespace WarpipsReplayability.Mod
             SpawnWaveProfile spawnWaveProfile = operation.spawnWaveProfile;
             AnimationCurve curve = GetDifficultyCurve(spawnWaveProfile);
 
-            float duration = spawnWaveProfile.RoundDuration;
+            const float dev = .169f, oe = .13f;
             const int min = 4;
+            float duration = spawnWaveProfile.RoundDuration;
             float avg = duration + min / duration * 2.5f - 1f;
-            duration = deterministic.GaussianOEInt(avg, .169f, .13f, min);
+            if (deterministic.Bool(Persist.Instance.FloatHalf))
+                duration = deterministic.GaussianOE(avg, dev, oe, min);
+            else
+                duration = deterministic.GaussianOEInt(avg, dev, oe, min);
             Plugin.Log.LogInfo($"RoundDuration {spawnWaveProfile.RoundDuration} -> {duration} ({avg:0.0})");
             _roundDuration.SetValue(spawnWaveProfile, duration);
 
@@ -1051,59 +1055,32 @@ namespace WarpipsReplayability.Mod
 
         private static uint[] GenerateSeed(OperationInfo[] save)
         {
+            //TODO: add any skipped strings?
             //generate a very robust seed based on everything we have saved
-            uint[] seed = save.SelectMany(info => info.BuildSites.SelectMany(build =>
-                    //C# String.GetHashCode is not guaranteed to be consistent, so just use the raw characters instead
-                    build.ToCharArray().Select(c => (int)c).Append(build.Length)).Cast<object>()
+            uint[] seed = MTRandom.GenerateSeed(save.SelectMany(info => info.BuildSites
                 .Concat(
                     new object[] { info.Spawns.Length, info.TerritoryIdx, info.MapLength, info.BuildSites.Length, })
                 .Concat(info.Spawns.SelectMany(spawn =>
                     new object[] { spawn.CountMin, spawn.CopyFromProfileIdx, spawn.CapMin, spawn.CopyFromTerritoryIdx,
-                        spawn.DisplayInReconLineup, spawn.CapMax, spawn.Difficulty, spawn.CountMax, })))
-                .Select(obj => (uint)obj.GetHashCode()).ToArray();
-            //don't include failureMapLengths - they are modified after randomization
-
-            //using individual characters in BuildSites blows up the seed length, so combine with a simple algorithm
-            if (seed.Length > MTRandom.MAX_SEED_SIZE)
-            {
-                Plugin.Log.LogInfo("seed.Length: " + seed.Length);
-                Plugin.Log.LogDebug(Plugin.GetSeedString(seed));
-                uint[] copy = new uint[MTRandom.MAX_SEED_SIZE];
-                for (uint a = 0; a < seed.Length; a++)
-                {
-                    uint b = a % MTRandom.MAX_SEED_SIZE;
-                    copy[b] = 31 * copy[b] + seed[a] + a;
-                }
-                seed = copy;
-            }
+                        spawn.DisplayInReconLineup, spawn.CapMax, spawn.Difficulty, spawn.CountMax, }))));
+            //don't include failureMapLengths - they are modified after randomization 
 
             Plugin.Log.LogInfo("Operations.Load seed: " + Plugin.GetSeedString(seed));
             return seed;
         }
         private static uint[] GenerateSeed(Operation operation, int mapLength)
         {
+            //TODO: add any skipped strings?
             SpawnWaveProfile profile = operation.spawnWaveProfile;
             var profiles = profile.enemySpawnProfiles.Cast<EnemySpawnProfile>();
             AnimationCurve curve = GetDifficultyCurve(profile);
-
-            ////simple float cycle we will use to sample spawn data
-            //float a = DifficultyBar_BuildDifficultyBar.DisplayThreshold;
-            //float b = curve.Evaluate(a);
-            //float c = Clamp19(Mathf.Lerp(b, curve.Evaluate((a + b) % 1), Clamp19(curve.Evaluate(b))));
-            //Plugin.Log.LogInfo($"{a} {b} {c}");
-            //float d()
-            //{
-            //    a = (a + (b += c)) % 1;
-            //    Plugin.Log.LogInfo(a);
-            //    return a;
-            //};
 
             uint[] seed;
             try
             {
                 Spawns.DoLog = false;
                 //generate a robust seed based on this individual operation details
-                seed = curve.keys.SelectMany(k =>
+                seed = MTRandom.GenerateSeed(curve.keys.SelectMany(k =>
                         new object[] { k.inTangent, k.inWeight, k.outTangent, k.outWeight, k.time, k.value, k.weightedMode, })
                     .Concat(profiles.Select(p => (object)p.displayInReconLineup))
                     .Concat(
@@ -1111,8 +1088,7 @@ namespace WarpipsReplayability.Mod
                             curve.keys.Length, profile.hideFlags, profile.superEnemyBuffOnCycle, profile.bombsOnCycle, mapLength, })
                     .Concat(profiles.Select(p => p.UnitSpawnData).SelectMany(s =>
                         new object[] { s.SpawnCap(1), s.CooldownAfterSpawn, s.TimeBetweenClusters, s.SpawnDelay(1),
-                            s.SpawnCount(0), s.SpawnCount(1), s.SpawnDelay(0), s.StartAtDifficulty, s.SpawnCap(0), }))
-                    .Select((object o) => (uint)o.GetHashCode()).ToArray();
+                            s.SpawnCount(0), s.SpawnCount(1), s.SpawnDelay(0), s.StartAtDifficulty, s.SpawnCap(0), })));
             }
             finally
             {

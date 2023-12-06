@@ -116,11 +116,11 @@ namespace WarpipsReplayability.Patches
             GenerateSeed((AnimationCurve)_difficultyCurve.GetValue(waveProfile));
         private static uint[] GenerateSeed(AnimationCurve curve)
         {
+            //TODO: strings?
             //generate a simple seed based on the curve
-            uint[] seed = curve.keys.SelectMany(k =>
-                    new float[] { k.value, k.time, })
-                .Select(o => (uint)o.GetHashCode()).ToArray();
-            Plugin.Log.LogDebug("AnimationCurve seed: " + Plugin.GetSeedString(seed));
+            uint[] seed = MTRandom.GenerateSeed(curve.keys.SelectMany(k =>
+                    new object[] { k.value, k.time, }));
+            Plugin.Log.LogInfo("AnimationCurve seed: " + Plugin.GetSeedString(seed));
             return seed;
         }
     }

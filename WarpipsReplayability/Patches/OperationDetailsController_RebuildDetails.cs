@@ -1,5 +1,7 @@
 ﻿using GameUI;
 using HarmonyLib;
+using LevelGeneration;
+using MattUtil;
 using System;
 using TMPro;
 using UnityEngine.UI;
@@ -40,6 +42,21 @@ namespace WarpipsReplayability.Patches
                     ___roundDuration.text = string.Empty;
 
                     Plugin.Log.LogDebug("hiding operation details");
+                }
+                else
+                {
+                    SpawnWaveProfile waveProfile = Operations.SelectedTerritory.operation.spawnWaveProfile;
+                    float duration = waveProfile.RoundDuration;
+                    float seconds = duration % 1;
+                    //if (seconds > 0)
+                    //{
+                    MTRandom deterministic = new(SpawnWaveProfile_ReturnAllWarningMessageTimings.GenerateSeed(waveProfile));
+
+                    string text = ___roundDuration.text;
+                    string search = duration.ToString();
+                    string replace = $"{(int)Math.Floor(duration)}:{deterministic.Round(seconds * 60).ToString().PadLeft(2, '0')}";
+                    ___roundDuration.text = text.Substring(0, text.IndexOf(search)) + replace;
+                    //}
                 }
 
                 Operations.SelectedTerritory = null;

@@ -48,7 +48,9 @@ namespace WarpipsReplayability.Mod
         }
 
         public static string GetSeedString(uint[] seed) =>
-            seed.Select(s => s.ToString("X").Trim('0')).Aggregate("", (a, b) => a + b);
+            seed.Select(s => s.ToString("X")
+                    .Trim('0').PadLeft(1, '0')
+                ).Aggregate("", (a, b) => a + b);
 
         public static void LogAtLevel(string data, bool warning) =>
             ((Action<object>)(warning ? Log.LogWarning : Log.LogInfo))(data);
