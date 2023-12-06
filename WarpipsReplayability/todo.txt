@@ -1,3 +1,8 @@
+ticks for difficulty bar?
+	non-integer durations
+		still show ticks in integer divisons?
+		show text as integer?
+
  "enemy HERO approcahing" text
 shuffle validate error
 maps without defensive structure spots
