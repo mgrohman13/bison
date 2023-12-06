@@ -55,37 +55,37 @@ namespace WarpipsReplayability.Patches
             return showBar;
         }
 
-        //public static void Postfix(SpawnWaveProfile waveProfile, Texture2D ___barTexture)
-        //{
-        //    try
-        //    {
-        //        Plugin.Log.LogDebug("DifficultyBar_BuildDifficultyBar Postfix");
+        public static void Postfix(SpawnWaveProfile waveProfile, Texture2D ___barTexture)//, List<GameObject> ___bombIndicatorPrefabs)
+        {
+            try
+            {
+                Plugin.Log.LogDebug("DifficultyBar_BuildDifficultyBar Postfix");
 
-        //        if (Operations.ShowEnemies())
-        //        {
-        //            MTRandom deterministic = new(SpawnWaveProfile_ReturnAllWarningMessageTimings.GenerateSeed(waveProfile));
-        //            float mult = ___barTexture.width / waveProfile.RoundDuration;
-        //            for (int a = 1; a < deterministic.Round(waveProfile.RoundDuration); a++)
-        //            {
-        //                float target = a * mult;
-        //                int b = deterministic.Round(target);
-        //                int c = b;
-        //                if (b > target || (b == target && deterministic.Bool()))
-        //                    c--;
-        //                else
-        //                    c++;
+                if (Operations.ShowEnemies())// && ___bombIndicatorPrefabs != null)
+                {
+                    MTRandom deterministic = new(SpawnWaveProfile_ReturnAllWarningMessageTimings.GenerateSeed(waveProfile));
+                    float mult = ___barTexture.width / waveProfile.RoundDuration;
+                    for (int a = 1; a < (int)Math.Ceiling(waveProfile.RoundDuration); a++)
+                    {
+                        float target = a * mult;
+                        int b = deterministic.Round(target);
+                        int c = b;
+                        if (b > target || (b == target && deterministic.Bool()))
+                            c--;
+                        else
+                            c++;
 
-        //                ___barTexture.SetPixel(b, 0, Color.white);
-        //                ___barTexture.SetPixel(c, 0, Color.white);
-        //            }
-        //            ___barTexture.Apply();
-        //        }
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        Plugin.Log.LogError(e);
-        //    }
-        //}
+                        ___barTexture.SetPixel(b, 0, Color.white);
+                        ___barTexture.SetPixel(c, 0, Color.white);
+                    }
+                    ___barTexture.Apply();
+                }
+            }
+            catch (Exception e)
+            {
+                Plugin.Log.LogError(e);
+            }
+        }
 
         //private static List<GameObject> bombIndicatorPrefabs;
         //private static void ManageBombIndicatorPrefabs(ref List<GameObject> ___bombIndicatorPrefabs)
