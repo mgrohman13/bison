@@ -285,8 +285,7 @@ namespace CityWar
                 {
                     AddUnitTile(attack.Owner, attack.Owner.Tile);
 
-                    List<Piece> removePieces = new();
-                    removePieces.Add(attack.Owner);
+                    List<Piece> removePieces = new() { attack.Owner, };
                     foreach (Piece p in attack.Owner.Tile.GetAllPieces())
                         if (p is Wizard)
                             removePieces.Add(p);
@@ -644,8 +643,7 @@ namespace CityWar
                         if (carriers.Any())
                         {
                             AirHeal.TryGetValue(curPiece, out List<Piece> existing);
-                            if (existing == null)
-                                existing = new List<Piece>();
+                            existing ??= new List<Piece>();
                             if (!carriers.Any(c =>
                                     c.MaxMove == 0 || existing.Contains(c)))
                             {
@@ -1324,8 +1322,7 @@ namespace CityWar
         private void ResetTiles()
         {
             foreach (Tile t in map)
-                if (t != null)
-                    t.Reset();
+                t?.Reset();
         }
 
         private void ChangeMap()
