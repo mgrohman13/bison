@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
 using System.Diagnostics;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace MattUtil
 {
@@ -158,7 +159,7 @@ namespace MattUtil
 
         //optional ticker thread to independently permutate the algorithms
         private Thread thread = null;
-        private static Stopwatch watch;
+        private static readonly Stopwatch watch;
 
         //stuff for storing the initial seed
         private uint[] seedVals = null;
@@ -341,6 +342,68 @@ namespace MattUtil
 
         #region Seeding Algorithm
 
+        public static uint[] GenerateSeed(IEnumerable<object> seedData)
+        {
+            byte[] bytes = seedData
+                //?
+                //.SelectMany(obj => obj is IEnumerable<object> arr ? arr : new object[] { obj })
+                .SelectMany(obj => obj is string str ? str.ToCharArray().Cast<object>() : new object[] { obj })
+                .SelectMany(GetBytes)
+                .ToArray();
+            uint[] seed = new uint[(bytes.Length + 3) / 4];
+            for (int a = 0; a < bytes.Length; a++)
+                seed[a / 4] ^= (uint)bytes[a] << ((a % 4) * 8);
+            if (seed.Length > MTRandom.MAX_SEED_SIZE)
+            {
+                uint[] copy = new uint[MTRandom.MAX_SEED_SIZE];
+                for (uint b = 0; b < seed.Length; b++)
+                {
+                    uint c = b % MTRandom.MAX_SEED_SIZE;
+                    ulong d = 31ul * copy[c] + seed[b] + b;
+                    copy[c] = (uint)(d >> 32) + (uint)d;
+                }
+                seed = copy;
+            }
+            return seed;
+
+            static byte[] GetBytes(object obj)
+            {
+                if (obj is null)
+                    //?
+                    //return new byte[] { 188, 74, 110 };
+                    throw new ArgumentNullException();
+
+                Type type = obj.GetType();
+                if (type.IsEnum)
+                {
+                    type = type.GetEnumUnderlyingType();
+                    obj = Convert.ChangeType(obj, type);
+                }
+
+                if (!type.IsValueType)
+                    throw new ArgumentException($"{obj?.GetType()} must be a value type; {obj}");
+
+                int size = Marshal.SizeOf(obj);
+                //?
+                if (size > 8)
+                    throw new ArgumentException($"{obj?.GetType()} must be less than or equal to 8 bytes; {obj}");
+
+                byte[] arr = new byte[size];
+                IntPtr ptr = IntPtr.Zero;
+                try
+                {
+                    ptr = Marshal.AllocHGlobal(size);
+                    Marshal.StructureToPtr(obj, ptr, true);
+                    Marshal.Copy(ptr, arr, 0, size);
+                }
+                finally
+                {
+                    Marshal.FreeHGlobal(ptr);
+                }
+                return arr;
+            }
+        }
+
         public static uint[] GenerateSeed(ushort seedSize)
         {
             //we get the first time seed before doing anything else for 2 reasons:
@@ -441,7 +504,7 @@ namespace MattUtil
                 gaussianFloat = float.NaN;
 
                 //seed KISS and re-use same seed values within MT
-                uint a = 0, b = (seedSize & 1);
+                uint a = 0, b = (seedSize + 1) % 2; //"b" offset avoids using the same seed value twice in m[0] when seedSize == 2 || 4
                 lcgn = SeedKISS(LCGN_SEED, b++, seed, ref a);
                 mwc2 = SeedKISS(MWC2_SEED, b++, seed, ref a);
                 mwc1 = SeedKISS(MWC1_SEED, b++, seed, ref a);
@@ -450,24 +513,30 @@ namespace MattUtil
                 //initialize MT with a constant PRNG
                 SeedMT(SEED_FACTOR_1, INIT_SEED);
                 //use all seed values in combination with the results of another (different) PRNG pass
-                SeedMT(SEED_FACTOR_2, (5 - seedSize) << 1, seed, ref a);
+                SeedMT(SEED_FACTOR_2, seedSize, seed, ref a);
                 //run a third and final pass to ensure all seed values are represented in all MT state values
                 SeedMT(SEED_FACTOR_3, m[LENGTH - 1]);
 
-                //ensure all seed values are represented in KISS as well
-                a = (a << 1) + LENGTH - 3;
+                a += MAX_SEED_SIZE;
                 b = m[LENGTH - 1];
+
+                //ensure non-zero MT
+                // technically as long as any "m" is non-zero the generator works
+                // but you want to avoid bit-sparsity in general for LFSR-type generators
+                // so we go ahead and ensure all "m" are non-zero
+                for (uint c = 0; c < LENGTH; ++c)
+                    m[c] = EnsureNonZero(m[c], seed, ref a);
+
+                //ensure all seed values are represented in KISS as well
                 lfsr = b = SeedAlg(lfsr, b, SEED_FACTOR_2, ++a);
                 lcgn = b = SeedAlg(lcgn, b, SEED_FACTOR_2, ++a);
                 mwc2 = b = SeedAlg(mwc2, b, SEED_FACTOR_2, ++a);
                 mwc1 = b = SeedAlg(mwc1, b, SEED_FACTOR_2, ++a);
 
-                //ensure non-zero MT, LFSR, and MWCs (LCG can be zero)
-                for (b = 0; b < LENGTH; ++b)
-                    m[b] = EnsureNonZero(m[b], ++a);
-                lfsr = EnsureNonZero(lfsr, ++a);
-                mwc1 = EnsureNonZero(mwc1, ++a);
-                mwc2 = EnsureNonZero(mwc2, ++a);
+                //ensure non-zero LFSR, and MWCs (LCG can be zero)
+                lfsr = EnsureNonZero(lfsr, seed, ref a);
+                mwc1 = EnsureNonZero(mwc1, seed, ref a);
+                mwc2 = EnsureNonZero(mwc2, seed, ref a);
 
                 NextUInt();
             }
@@ -476,7 +545,7 @@ namespace MattUtil
         {
             unchecked
             {
-                return (m[b] = GetSeed(seed, ref a)) + initSeed;
+                return (m[b] = GetSeed(seed, ref a) - 1) + initSeed;
             }
         }
         private void SeedMT(uint seedFactor, uint initSeed)
@@ -488,14 +557,14 @@ namespace MattUtil
         {
             unchecked
             {
-                m[0] += initSeed;
+                m[0] = SeedAlg(m[0], initSeed, seedFactor, a);
                 if (seed != null)
                     m[0] += GetSeed(seed, ref a);
                 for (uint b = 1; b < LENGTH; ++b)
                 {
-                    m[b] = SeedAlg(m[b], m[b - 1], seedFactor, b);
+                    m[b] = SeedAlg(m[b], m[b - 1], seedFactor, 4 + b);
                     if (seed != null)
-                        m[b] += GetSeed(seed, ref a) + ((4 + b - a) << 1);
+                        m[b] += GetSeed(seed, ref a) + ((4 + b - a) << 1); //additional salt increases when "a" wraps around
                 }
             }
         }
@@ -506,10 +575,13 @@ namespace MattUtil
                 return ((((prev >> 30) ^ prev) * seedFactor) ^ cur) + add;
             }
         }
-        private uint EnsureNonZero(uint value, uint seed)
+        private uint EnsureNonZero(uint value, uint[] seed, ref uint a)
         {
-            if (value == 0)
-                value = ShiftVal(SHIFT_FACTOR, seed);
+            while (value == 0)
+            {
+                a += 631; //lowest prime that is > MAX_SEED_SIZE
+                value = ShiftVal(SHIFT_FACTOR, seed[a % seed.Length] + a);
+            }
             return value;
         }
         private uint GetSeed(uint[] seed, ref uint a)
@@ -843,16 +915,16 @@ namespace MattUtil
             return (bits & (uint.MaxValue >> (32 - numBits)));
         }
 
-        private static string formatBits(ulong value, int numBits)
+        private static string FormatBits(ulong value, int numBits)
         {
-            //if (numBits < 13) return "";
-            int val = (int)(65 + 58 * (value / (Math.Pow(2, numBits))));
-            if (val > 90 && val < 97)
-                val = 32;
-            return ((char)val).ToString();
+            ////if (numBits < 13) return "";
+            //int val = (int)(65 + 58 * (value / (Math.Pow(2, numBits))));
+            //if (val > 90 && val < 97)
+            //    val = 32;
+            //return ((char)val).ToString();
 
             //Console.WriteLine(numBits);
-            //return Convert.ToString((long)value, 2).PadLeft(numBits, '0');
+            return Convert.ToString((long)value, 2).PadLeft(numBits, '0');
         }
 
         //    public static String toAlphanumeric(BigInteger value)
@@ -992,9 +1064,7 @@ namespace MattUtil
                 return value1;
             if (value1 > value2)
             {
-                int temp = value1;
-                value1 = value2;
-                value2 = temp;
+                (value2, value1) = (value1, value2);
             }
 
             //determine the number of bits we need
@@ -1019,9 +1089,7 @@ namespace MattUtil
             //no constraints on the parameters, so swap them if necessary
             if (value1 > value2)
             {
-                double temp = value1;
-                value1 = value2;
-                value2 = temp;
+                (value2, value1) = (value1, value2);
             }
 
             return DoubleHalf() * (value2 - value1) + value1;
@@ -1034,9 +1102,7 @@ namespace MattUtil
         {
             if (value1 > value2)
             {
-                float temp = value1;
-                value1 = value2;
-                value2 = temp;
+                (value2, value1) = (value1, value2);
             }
 
             return FloatHalf() * (value2 - value1) + value1;
@@ -1751,11 +1817,10 @@ namespace MattUtil
                 throw new ArgumentNullException("choices");
 
             int count = -1;
-            ICollection<T> collection;
             //if we have both a count and random access, we do not have to walk the enumeration at all
             IList<T> list = (choices as IList<T>);
             if (list == null)
-                if ((collection = choices as ICollection<T>) == null)
+                if (choices is not ICollection<T> collection)
                     //we must completely walk the enumeration to get the count, so put the results in a data structure with random access
                     list = choices.ToList();
                 else
@@ -1785,13 +1850,12 @@ namespace MattUtil
                 throw new ArgumentNullException("GetChance");
 
             //we have to loop through all elements to get the total, so we build a dictionary while doing so
-            Dictionary<T, int> dictionary = new Dictionary<T, int>();
+            Dictionary<T, int> dictionary = new();
             int total = 0;
             foreach (T obj in choices)
             {
-                int chance;
                 //ensure we only call GetChance once for each object, in case it doesnt always return a constant value
-                if (!dictionary.TryGetValue(obj, out chance))
+                if (!dictionary.TryGetValue(obj, out int chance))
                 {
                     chance = GetChance(obj);
                     CheckChance(chance);
@@ -1894,8 +1958,7 @@ namespace MattUtil
 
         private int WeightedInt(int max, double weight, bool isFloat)
         {
-            bool neg;
-            int retVal = RangeInt(0, Round(Weighted(max, ModWeight(weight, isFloat), out neg, isFloat), isFloat));
+            int retVal = RangeInt(0, Round(Weighted(max, ModWeight(weight, isFloat), out bool neg, isFloat), isFloat));
             if (neg)
                 retVal = max - retVal;
             return retVal;
@@ -1916,8 +1979,7 @@ namespace MattUtil
         }
         private double DoWeight(double max, double weight, bool isFloat)
         {
-            bool neg;
-            double retVal = Weighted(max, weight, out neg, isFloat);
+            double retVal = Weighted(max, weight, out bool neg, isFloat);
 
             if (isFloat)
                 retVal = DoubleHalf((float)retVal);
@@ -1992,8 +2054,10 @@ namespace MattUtil
         {
             if (thread == null)
             {
-                thread = new Thread(RunTick);
-                thread.IsBackground = true;
+                thread = new Thread(RunTick)
+                {
+                    IsBackground = true
+                };
                 thread.Start(frequency);
             }
             else
@@ -2007,7 +2071,7 @@ namespace MattUtil
         {
             ushort frequency = (ushort)obj;
 
-            //int inc = 0;
+            int inc = 0;
             while (true)
             {
                 //Console.WriteLine(inc++);
@@ -2017,7 +2081,7 @@ namespace MattUtil
                 int sleep = OEInt(frequency);
                 //Console.WriteLine(sleep);
 
-                ulong throwAway;
+                object throwAway;
 
                 ulong choose = NextBits(4);
                 //Console.WriteLine(choose);
@@ -2026,12 +2090,10 @@ namespace MattUtil
                 switch (choose)
                 {
                     case 0:
-                        //throwAway =
-                        Gaussian(false);
+                        throwAway = Gaussian(false);
                         break;
                     case 1:
-                        //throwAway =
-                        Gaussian(true);
+                        throwAway = Gaussian(true);
                         break;
                     case 2:
                     case 3:
@@ -2047,27 +2109,27 @@ namespace MattUtil
                     case 9:
                     case 10:
                         throwAway = MersenneTwister();
-                        //Console.WriteLine(formatBits(throwAway, 32) + " - MersenneTwister");
+                        //Console.WriteLine(formatBits((uint)throwAway, 32) + " - MersenneTwister");
                         break;
                     case 11:
                         throwAway = MarsagliaKISS();
-                        //Console.WriteLine(formatBits(throwAway, 32) + " - MarsagliaKISS");
+                        //Console.WriteLine(formatBits((uint)throwAway, 32) + " - MarsagliaKISS");
                         break;
                     case 12:
                         throwAway = LCG();
-                        //Console.WriteLine(formatBits(throwAway, 32) + " - LCG");
+                        //Console.WriteLine(formatBits((uint)throwAway, 32) + " - LCG");
                         break;
                     case 13:
                         throwAway = LFSR();
-                        //Console.WriteLine(formatBits(throwAway, 32) + " - LFSR");
+                        //Console.WriteLine(formatBits((uint)throwAway, 32) + " - LFSR");
                         break;
                     case 14:
                         throwAway = MWC1(ref mwc1);
-                        //Console.WriteLine((formatBits(throwAway & 65535, 16)).PadLeft(32) + " - MWC1");
+                        //Console.WriteLine((formatBits((uint)throwAway & 65535, 16)).PadLeft(32) + " - MWC1");
                         break;
                     case 15:
                         throwAway = MWC2(ref mwc2);
-                        //Console.WriteLine((formatBits(throwAway & 65535, 16)).PadLeft(32) + " - MWC2");
+                        //Console.WriteLine((formatBits((uint)throwAway & 65535, 16)).PadLeft(32) + " - MWC2");
                         break;
                     default:
                         throw new Exception("internal error");
@@ -2077,7 +2139,7 @@ namespace MattUtil
 
                 //permutate counter
                 GetShiftedTicks();
-                //Console.WriteLine(counter);
+                //Console.WriteLine(counter.ToString("X8"));
 
                 //Console.WriteLine();
                 Thread.Sleep(sleep);
