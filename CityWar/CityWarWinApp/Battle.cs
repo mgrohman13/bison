@@ -1,12 +1,9 @@
+using CityWar;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
 using System.Linq;
-using CityWar;
+using System.Windows.Forms;
 
 namespace CityWarWinApp
 {
@@ -258,10 +255,11 @@ namespace CityWarWinApp
                     int idx = lbAtt.SelectedIndex;
 
                     int oldHits = clicked.Hits;
-                    int damage = Map.Game.AttackUnit(battle, attack, clicked, out double relic, out Tuple<Unit, int, int, double> splash);
+                    int damage = Map.Game.AttackUnit(battle, attack, clicked, out double relic, out List<Tuple<Unit, int, int, double>> splashes);
                     if (damage > -1)
                         Log.LogAttack(attack.Owner, attack, clicked, damage, oldHits, relic);
-                    if (splash != null)
+                    //TODO: better logging 
+                    foreach (var splash in splashes)
                         Log.LogAttack(attack.Owner, attack, splash.Item1, splash.Item2, splash.Item3, splash.Item4);
 
                     if (clicked.Dead)

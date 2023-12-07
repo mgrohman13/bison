@@ -186,7 +186,15 @@ namespace CityWar
 
         #region internal methods
 
+        internal int SplashUnit(Unit unit, double splashMult, double upkeepMult, out double relicValue)
+        {
+            return AttackUnit(unit, false, out relicValue, splashMult, upkeepMult);
+        }
         internal int AttackUnit(Unit unit, bool usingMove, out double relicValue)
+        {
+            return AttackUnit(unit, usingMove, out relicValue, 1, 1);
+        }
+        private int AttackUnit(Unit unit, bool usingMove, out double relicValue, double splashMult, double upkeepMult)
         {
             relicValue = 0;
             if (!CanAttack(unit))
@@ -196,7 +204,7 @@ namespace CityWar
             owner.Attacked(unit.Type == UnitType.Immobile ? int.MaxValue : Length);
 
             int hits = unit.Hits, armor = unit.Armor;
-            int damage = DoDamage(armor, Unit.GetTotalDamageShield(Owner, unit), out _), retVal = damage;
+            int damage = Game.Random.WeightedInt(DoDamage(armor, Unit.GetTotalDamageShield(Owner, unit), out _), splashMult), retVal = damage;
             double overkill = 0;
             if (damage < 0)
             {
@@ -217,11 +225,11 @@ namespace CityWar
             }
             else
             {
-                double upkeep = RetaliateCost * (1 - overkill);
+                double upkeep = RetaliateCost * (1 - overkill) * upkeepMult;
                 owner.Owner.AddUpkeep(upkeep, .21);
             }
 
-            relicValue = (GetAverageDamage(this.damage, this.Pierce, armor, Unit.GetTotalDamageShield(Owner, unit), hits) - damage) / RelicDivide / unit.MaxHits;
+            relicValue = (GetAverageDamage(this.damage, this.Pierce, armor, Unit.GetTotalDamageShield(Owner, unit), hits) * splashMult - damage) / RelicDivide / unit.MaxHits;
             if (relicValue > 0)
             {
                 relicValue *= unit.RandedCost;

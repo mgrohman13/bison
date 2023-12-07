@@ -1,3 +1,5 @@
+better splash logging 
+
 new portal generation seed - avoid string hash
 
 unused atack when when die to retalliation

@@ -245,15 +245,16 @@ namespace CityWar
             }
         }
 
-        public int AttackUnit(Battle b, Attack attack, Unit target, out double relic, out Tuple<Unit, int, int, double> splash)
+        public int AttackUnit(Battle b, Attack attack, Unit target, out double relic, out List<Tuple<Unit, int, int, double>> splash)
         {
-            splash = null;
+            splash = new();
             int retVal = attack.AttackUnit(target, attack.Owner.Owner == target.Owner.Game.CurrentPlayer, out relic);
-            if (target.Dead)
-                b.defenders.Remove(target);
 
             if (retVal > -1)
             {
+                if (target.Dead)
+                    b.defenders.Remove(target);
+
                 if (attack.Special == Attack.SpecialType.Splash)
                 {
                     attack.Used = false;
@@ -262,17 +263,20 @@ namespace CityWar
                     {
                         double count = targets.Sum(u => u.IsThree ? Math.Sqrt(u.Attacks.Length) : 1);
                         double hp = targets.Sum(u => Math.Sqrt(u.Hits * u.MaxHits));
-                        double chance = count / (3.9 + count) * hp / (130 + hp);
                         targets = targets.Where(u => u != target);
-                        if (targets.Any() && Random.Bool(chance))
+                        double chance = count / (3.9 + count) * hp / (130 + hp);
+                        double splashCount = targets.Count();
+                        foreach (Unit splashTarget in targets)
                         {
-                            Unit splashTarget = Random.SelectValue(targets);
+                            attack.Used = false;
                             int oldHits = splashTarget.Hits;
-                            int splashDmg = attack.AttackUnit(splashTarget, false, out double splashRelic);
-                            if (splashDmg > 0)
-                                splash = new Tuple<Unit, int, int, double>(splashTarget, splashDmg, oldHits, splashRelic);
+                            int splashDmg = attack.SplashUnit(splashTarget, chance / splashCount, 1 / splashCount, out double splashRelic);
+                            //if (splashDmg > 0)
+                            //{
+                            splash.Add(new Tuple<Unit, int, int, double>(splashTarget, splashDmg, oldHits, splashRelic));
                             if (splashTarget.Dead)
                                 b.defenders.Remove(splashTarget);
+                            //}
                         }
                     }
                     attack.Used = true;
