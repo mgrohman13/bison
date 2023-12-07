@@ -1,7 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using MattUtil;
+using System;
 
 namespace CityWar
 {
@@ -30,15 +28,15 @@ namespace CityWar
             return ((UnitSchema.BalanceRow)schema.Balance.Rows[0]).CostMult;
         }
 
-        public static CityWar.UnitType GetType(string typeStr)
+        public static UnitType GetType(string typeStr)
         {
             return typeStr switch
             {
-                "W" => CityWar.UnitType.Water,
-                "G" => CityWar.UnitType.Ground,
-                "A" => CityWar.UnitType.Air,
-                "GW" => CityWar.UnitType.Amphibious,
-                "GWA" => CityWar.UnitType.Immobile,
+                "W" => UnitType.Water,
+                "G" => UnitType.Ground,
+                "A" => UnitType.Air,
+                "GW" => UnitType.Amphibious,
+                "GWA" => UnitType.Immobile,
                 _ => throw new Exception(),
             };
         }

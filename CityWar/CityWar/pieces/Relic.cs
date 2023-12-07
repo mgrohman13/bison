@@ -11,7 +11,7 @@ namespace CityWar
         private readonly List<string> units = new();
 
         internal Relic(Player owner, Tile tile)
-            : base(0, owner, tile, "Relic", CityWar.Ability.AircraftCarrier)
+            : base(0, owner, tile, "Relic", Ability.AircraftCarrier)
         {
             this.units = InitUnits(tile.Game, tile.Terrain);
         }
