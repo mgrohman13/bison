@@ -1,12 +1,10 @@
+using CityWar;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.ComponentModel;
 using System.Data;
 using System.Drawing;
-using System.Text;
+using System.Linq;
 using System.Windows.Forms;
-using CityWar;
 
 namespace CityWarWinApp
 {
@@ -123,8 +121,8 @@ namespace CityWarWinApp
                 //}
 
 
-                Dictionary<CostType, int[]> portalCost = Portal.SplitPortalCost(Map.Game.CurrentPlayer.Race);
-                List<CostType> keys = new List<CostType>(portalCost.Keys);
+                Dictionary<CostType, int[]> portalCost = Portal.SplitPortalCosts()[Map.Game.CurrentPlayer.Race];
+                List<CostType> keys = new(portalCost.Keys);
                 keys.Sort((c1, c2) => portalCost[c1][0] + portalCost[c1][1] - portalCost[c2][0] - portalCost[c2][1]);
                 foreach (CostType costType in keys)
                 {
@@ -387,15 +385,15 @@ namespace CityWarWinApp
 
         private void RefreshButtons()
         {
-            Dictionary<CostType, int[]> portalCost = Portal.SplitPortalCost(Map.Game.CurrentPlayer.Race);
+            Dictionary<CostType, int[]> portalCost = Portal.SplitPortalCosts()[Map.Game.CurrentPlayer.Race];
             foreach (Control control in Controls)
             {
-                if (control is Button && (control.Tag is string) && ((string)control.Tag != ""))
-                    if ((string)control.Tag == "Wizard")
+                if (control is Button && (control.Tag is string tag) && (tag != ""))
+                    if (tag == "Wizard")
                         control.Visible = (capts[0].Owner.Magic >= Player.WizardCost);
-                    else if (((string)control.Tag).EndsWith(" Portal"))
+                    else if (tag.EndsWith(" Portal"))
                     {
-                        CostType poralType = (CostType)Enum.Parse(typeof(CostType), ((string)control.Tag).Split(' ')[0]);
+                        CostType poralType = (CostType)Enum.Parse(typeof(CostType), tag.Split(' ')[0]);
                         int[] cost = portalCost[poralType];
                         int wiz = cost[0];
                         int other = cost[1];
@@ -407,7 +405,7 @@ namespace CityWarWinApp
                     {
                         control.Visible = false;
                         foreach (Capturable c in capts)
-                            if (c.CanBuild((string)control.Tag))
+                            if (c.CanBuild(tag))
                             {
                                 control.Visible = true;
                                 break;

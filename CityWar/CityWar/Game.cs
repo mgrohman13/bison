@@ -1,12 +1,9 @@
+using MattUtil;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.IO;
-using System.IO.Compression;
-using System.Runtime.Serialization.Formatters.Binary;
-using MattUtil;
-using System.Runtime.Serialization;
 using System.Collections.ObjectModel;
+using System.Linq;
+using System.Runtime.Serialization;
 
 namespace CityWar
 {
