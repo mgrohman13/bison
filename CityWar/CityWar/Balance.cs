@@ -1,6 +1,5 @@
-using System;
-using System.Collections.Generic;
 using MattUtil;
+using System;
 
 namespace CityWar
 {
@@ -234,7 +233,7 @@ namespace CityWar
                 //damage
                 result = unitTypes.GetAverageDamage(race, type, targets, damage, divide);
                 if (special == Attack.SpecialType.Splash)
-                    result *= Math.Pow(1 + .169 * targetMult, Math.Pow(lengthPct, .26));
+                    result *= 1 + .169 * targetMult;
                 //length
                 result *= Math.Pow(move * (air ? Math.Sqrt(GetAirMoveDiv(move, fuel)) : 1) + unitTypes.GetAverageMove(), lengthPct)
                     / Math.Pow(unitTypes.GetAverageMove(), lengthPct);

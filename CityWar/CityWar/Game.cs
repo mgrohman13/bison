@@ -258,25 +258,22 @@ namespace CityWar
                 if (attack.Special == Attack.SpecialType.Splash)
                 {
                     attack.Used = false;
-                    var targets = b.defenders.Where(u => attack.CanAttack(u));
+                    var targets = b.defenders.Where(u => attack.CanAttack(u) && u.Tile == target.Tile);
                     if (targets.Any())
                     {
-                        double count = targets.Sum(u => u.IsThree ? Math.Sqrt(u.Attacks.Length) : 1);
-                        double hp = targets.Sum(u => Math.Sqrt(u.Hits * u.MaxHits));
+                        double cost = targets.Sum(u => u.RandedCost);
+                        double splashMult = cost / (2.6 * UnitTypes.GetAverageCost() + cost);
+                        splashMult *= splashMult;
                         targets = targets.Where(u => u != target);
-                        double chance = count / (3.9 + count) * hp / (130 + hp);
-                        double splashCount = targets.Count();
-                        foreach (Unit splashTarget in targets)
+                        splashMult /= targets.Count();
+                        foreach (Unit splashTarget in Random.Iterate(targets))
                         {
-                            attack.Used = false;
                             int oldHits = splashTarget.Hits;
-                            int splashDmg = attack.SplashUnit(splashTarget, chance / splashCount, 1 / splashCount, out double splashRelic);
-                            //if (splashDmg > 0)
-                            //{
+                            int splashDmg = attack.SplashUnit(splashTarget, splashMult, out double splashRelic);
+                            attack.Used = false;
                             splash.Add(new Tuple<Unit, int, int, double>(splashTarget, splashDmg, oldHits, splashRelic));
                             if (splashTarget.Dead)
                                 b.defenders.Remove(splashTarget);
-                            //}
                         }
                     }
                     attack.Used = true;

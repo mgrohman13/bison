@@ -256,11 +256,35 @@ namespace CityWarWinApp
 
                     int oldHits = clicked.Hits;
                     int damage = Map.Game.AttackUnit(battle, attack, clicked, out double relic, out List<Tuple<Unit, int, int, double>> splashes);
+
+                    var posSum = AddRelicSign(+1);
+                    var negSum = AddRelicSign(-1);
+                    double AddRelicSign(int sign)
+                    {
+                        var items = splashes.Select(t => t.Item4).Concat(new double[] { relic }).Where(r => Math.Sign(r) == sign);
+                        return items.Any() ? items.Sum() : 0;
+                    }
+                    if (posSum != 0)
+                    {
+                        relic = posSum;
+                        posSum = 0;
+                    }
+                    else
+                    {
+                        relic = negSum;
+                        negSum = 0;
+                    }
+
                     if (damage > -1)
                         Log.LogAttack(attack.Owner, attack, clicked, damage, oldHits, relic);
-                    //TODO: better logging 
+
+                    double extraRelic = posSum != 0 ? posSum : negSum;
                     foreach (var splash in splashes)
-                        Log.LogAttack(attack.Owner, attack, splash.Item1, splash.Item2, splash.Item3, splash.Item4);
+                        if (splash.Item2 > 0)
+                        {
+                            Log.LogAttack(attack.Owner, attack, splash.Item1, splash.Item2, splash.Item3, extraRelic);
+                            extraRelic = 0;
+                        }
 
                     if (clicked.Dead)
                         validAttacks = null;

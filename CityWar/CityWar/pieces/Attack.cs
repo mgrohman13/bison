@@ -1,7 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Runtime.Serialization;
 using MattUtil;
+using System;
 
 namespace CityWar
 {
@@ -186,15 +184,15 @@ namespace CityWar
 
         #region internal methods
 
-        internal int SplashUnit(Unit unit, double splashMult, double upkeepMult, out double relicValue)
+        internal int SplashUnit(Unit unit, double splashMult, out double relicValue)
         {
-            return AttackUnit(unit, false, out relicValue, splashMult, upkeepMult);
+            return AttackUnit(unit, false, out relicValue, splashMult);
         }
         internal int AttackUnit(Unit unit, bool usingMove, out double relicValue)
         {
-            return AttackUnit(unit, usingMove, out relicValue, 1, 1);
+            return AttackUnit(unit, usingMove, out relicValue, 1);
         }
-        private int AttackUnit(Unit unit, bool usingMove, out double relicValue, double splashMult, double upkeepMult)
+        private int AttackUnit(Unit unit, bool usingMove, out double relicValue, double splashMult)
         {
             relicValue = 0;
             if (!CanAttack(unit))
@@ -204,7 +202,9 @@ namespace CityWar
             owner.Attacked(unit.Type == UnitType.Immobile ? int.MaxValue : Length);
 
             int hits = unit.Hits, armor = unit.Armor;
-            int damage = Game.Random.WeightedInt(DoDamage(armor, Unit.GetTotalDamageShield(Owner, unit), out _), splashMult), retVal = damage;
+            int damage = DoDamage(armor, Unit.GetTotalDamageShield(Owner, unit), out _);
+            damage = Game.Random.WeightedInt(damage, splashMult);
+            int retVal = damage;
             double overkill = 0;
             if (damage < 0)
             {
@@ -225,11 +225,12 @@ namespace CityWar
             }
             else
             {
-                double upkeep = RetaliateCost * (1 - overkill) * upkeepMult;
+                double upkeep = RetaliateCost * (1 - overkill) * splashMult;
                 owner.Owner.AddUpkeep(upkeep, .21);
             }
 
-            relicValue = (GetAverageDamage(this.damage, this.Pierce, armor, Unit.GetTotalDamageShield(Owner, unit), hits) * splashMult - damage) / RelicDivide / unit.MaxHits;
+            double avg = GetAverageDamage(this.damage, this.Pierce, armor, Unit.GetTotalDamageShield(Owner, unit), hits);
+            relicValue = (avg * splashMult - damage) / RelicDivide / unit.MaxHits;
             if (relicValue > 0)
             {
                 relicValue *= unit.RandedCost;

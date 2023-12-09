@@ -1,6 +1,6 @@
-better splash logging 
+REBALANCE UNITS - splash cost changed
 
-new portal generation seed - avoid string hash
+show avg splash dmg 
 
 unused atack when when die to retalliation
 
@@ -20,10 +20,8 @@ gameplay
 	"security" of public fields
 
 balance	
-	rebalance portals to enforce same min/max magic cost per race 
-		split all races at once with same MTRandom
+	portals cost   
 		rescale non min/max magic vals too to keep mag/elem ratios better?
-		make forced magicAvg differences less random
 	ensure each unit type has a unit that can only attack each other type?
 		G->A
 		W->A
@@ -33,8 +31,6 @@ balance
 	slyph regen
 	pay for recover regen
 	splash
-		rework to spread damage to multiple??
-		only look at target unit tile?
 		show splash damage/chance on UI?
 	bonus to element units on terrain?
 	attack bonuses, not just armor?

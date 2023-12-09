@@ -172,7 +172,7 @@ namespace CityWar
             {
                 //get a random unit 
                 Unit unit = Unit.NewUnit(Game.Random.SelectValue(Game.Races[player.Race]), tile, player);
-                player.BalanceForUnit(Game.UnitTypes.GetSchema().Unit.Average(u => u.Cost + u.People), unit.RandedCost);
+                player.BalanceForUnit(Game.UnitTypes.GetAverageCost(), unit.RandedCost);
                 return false;
             }
             return true;

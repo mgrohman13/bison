@@ -1,5 +1,6 @@
 using MattUtil;
 using System;
+using System.Linq;
 
 namespace CityWar
 {
@@ -59,6 +60,11 @@ namespace CityWar
                 "S" => Attack.SpecialType.Splash,
                 _ => Attack.SpecialType.None,
             };
+        }
+
+        internal double GetAverageCost()
+        {
+            return schema.Unit.Average(u => u.Cost + u.People);
         }
 
         public double GetAverageArmor()
