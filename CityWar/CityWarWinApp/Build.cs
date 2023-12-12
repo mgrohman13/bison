@@ -123,7 +123,7 @@ namespace CityWarWinApp
 
                 Dictionary<CostType, int[]> portalCost = Portal.SplitPortalCosts()[Map.Game.CurrentPlayer.Race];
                 List<CostType> keys = new(portalCost.Keys);
-                keys.Sort((c1, c2) => portalCost[c1][0] + portalCost[c1][1] - portalCost[c2][0] - portalCost[c2][1]);
+                keys.Sort((c1, c2) => portalCost[c1][0] - portalCost[c2][0]);
                 foreach (CostType costType in keys)
                 {
                     Color backColor;
@@ -155,8 +155,8 @@ namespace CityWarWinApp
                     enabled = (capts[0].Owner.Magic >= wizAmt) && ((int)capts[0].Owner.GetResource(costType.ToString()) >= otherAmt);
 
                     newBox(Xs[0], y, Ws[0], costType.ToString() + " Portal");
-                    newBox(Xs[1], y, Ws[1], otherAmt.ToString(), backColor, HorizontalAlignment.Right);
-                    newBox(Xs[2], y, Ws[1], wizAmt.ToString(), this.lblWizard.BackColor, HorizontalAlignment.Right);
+                    newBox(Xs[1], y, Ws[1], wizAmt.ToString(), this.lblWizard.BackColor, HorizontalAlignment.Right);
+                    newBox(Xs[2], y, Ws[1], otherAmt.ToString(), backColor, HorizontalAlignment.Right);
                     newButton(Xs[3], y, "Summon", costType.ToString() + " Portal", new EventHandler(build_Click));
 
                     y += 29;
