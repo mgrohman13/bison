@@ -245,39 +245,19 @@ namespace CityWar
             }
         }
 
-        public int AttackUnit(Battle b, Attack attack, Unit target, out double relic, out List<Tuple<Unit, int, int, double>> splash)
+        public int AttackUnit(Battle battle, Attack attack, Unit target, out double relic, out List<Tuple<Unit, int, int, double>> splash)
         {
+            Tile tile = target.Tile;
             splash = new();
+
             int retVal = attack.AttackUnit(target, attack.Owner.Owner == target.Owner.Game.CurrentPlayer, out relic);
 
             if (retVal > -1)
             {
                 if (target.Dead)
-                    b.defenders.Remove(target);
+                    battle.defenders.Remove(target);
 
-                if (attack.Special == Attack.SpecialType.Splash)
-                {
-                    attack.Used = false;
-                    var targets = b.defenders.Where(u => attack.CanAttack(u) && u.Tile == target.Tile);
-                    if (targets.Any())
-                    {
-                        double cost = targets.Sum(u => u.RandedCost);
-                        double splashMult = cost / (2.6 * UnitTypes.GetAverageCost() + cost);
-                        splashMult *= splashMult;
-                        targets = targets.Where(u => u != target);
-                        splashMult /= targets.Count();
-                        foreach (Unit splashTarget in Random.Iterate(targets))
-                        {
-                            int oldHits = splashTarget.Hits;
-                            int splashDmg = attack.SplashUnit(splashTarget, splashMult, out double splashRelic);
-                            attack.Used = false;
-                            splash.Add(new Tuple<Unit, int, int, double>(splashTarget, splashDmg, oldHits, splashRelic));
-                            if (splashTarget.Dead)
-                                b.defenders.Remove(splashTarget);
-                        }
-                    }
-                    attack.Used = true;
-                }
+                attack.DoSplashDamage(battle, tile, target, splash);
 
                 if (attack.Owner.Owner == CurrentPlayer)
                 {

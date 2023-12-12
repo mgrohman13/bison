@@ -1,5 +1,7 @@
 using MattUtil;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace CityWar
 {
@@ -86,13 +88,13 @@ namespace CityWar
             }
         }
 
-        public bool CanAttack(Unit u)
+        public bool CanAttack(Unit u, bool skipUsed = false)
         {
-            return CanAttack(u, u.Length);
+            return CanAttack(u, u.Length, skipUsed);
         }
-        public bool CanAttack(Unit u, int length)
+        public bool CanAttack(Unit u, int length, bool skipUsed = false)
         {
-            if (this.Used || this.Length < length)
+            if ((!skipUsed && this.Used) || this.Length < length)
                 return false;
 
             //Immobile units protect on defense only
@@ -202,8 +204,8 @@ namespace CityWar
             owner.Attacked(unit.Type == UnitType.Immobile ? int.MaxValue : Length);
 
             int hits = unit.Hits, armor = unit.Armor;
-            int damage = DoDamage(armor, Unit.GetTotalDamageShield(Owner, unit), out _);
-            damage = Game.Random.WeightedInt(damage, splashMult);
+            int rawDmg = DoDamage(armor, Unit.GetTotalDamageShield(Owner, unit), out _);
+            int damage = Game.Random.WeightedInt(rawDmg, splashMult);
             int retVal = damage;
             double overkill = 0;
             if (damage < 0)
@@ -219,6 +221,8 @@ namespace CityWar
             //attacking player gets work back for overkill, defender pays upkeep to retaliate
             if (usingMove)
             {
+                if (splashMult != 1)
+                    throw new Exception();
                 //double work = WorkRegen * 1 * Attack.OverkillPercent * (attacks.Length - usedAttacks) / (double)attacks.Length;
                 double work = owner.WorkRegen * overkill * OverkillPercent * 1 / (double)owner.Attacks.Length;
                 owner.Owner.AddWork(work);
@@ -272,6 +276,22 @@ namespace CityWar
         #endregion //internal methods
 
         #region damage 
+
+        public void DoSplashDamage(Battle battle, Tile tile, Unit target, List<Tuple<Unit, int, int, double>> splash)
+        {
+            if (this.Special == Attack.SpecialType.Splash)
+            {
+                double splashMult = GetSplash(out List<Unit> targets, out _, battle, tile, target);
+                foreach (Unit splashTarget in Game.Random.Iterate(targets))
+                {
+                    int oldHits = splashTarget.Hits;
+                    int splashDmg = this.SplashUnit(splashTarget, splashMult, out double splashRelic);
+                    splash.Add(new Tuple<Unit, int, int, double>(splashTarget, splashDmg, oldHits, splashRelic));
+                    if (splashTarget.Dead)
+                        battle.defenders.Remove(splashTarget);
+                }
+            }
+        }
 
         private int DoDamage(int armor, int shield, out int oe)
         {
@@ -358,6 +378,41 @@ namespace CityWar
             killPct /= total;
             avgRelic /= total;
             return avgDamage / total;
+        }
+
+        public double GetSplashDamage(Battle battle, Tile tile, Unit target, out double splashProc)
+        {
+            double splashAvg = 0;
+            double splashMult = GetSplash(out List<Unit> targets, out splashProc, battle, tile, target);
+            foreach (Unit splashTarget in Game.Random.Iterate(targets))
+                splashAvg += GetAverageDamage(this.Damage, this.Pierce, splashTarget.Armor, Unit.GetTotalDamageShield(Owner, splashTarget), splashTarget.Hits);
+            return splashAvg * splashMult;
+        }
+        private double GetSplash(out List<Unit> targets, out double splashProc, Battle battle, Tile tile, Unit target)
+        {
+            double splashMult = 0;
+            splashProc = 0;
+
+            IEnumerable<Unit> t = battle.defenders.Where(u => CanSplash(u, tile));
+            if (t.Any())
+            {
+                double cost = t.Sum(u => u.RandedCost * Math.Sqrt(u.GetHealthPct()));
+                splashMult = cost / (2.6 * Game.UnitTypes.GetAverageCost() + cost);
+                splashMult *= splashMult;
+                splashProc = splashMult;
+                t = t.Where(u => u != target);
+                if (t.Any())
+                    splashMult /= t.Count();
+                else
+                    splashMult = 0;
+            }
+
+            targets = t.ToList();
+            return splashMult;
+        }
+        public bool CanSplash(Unit unit, Tile tile)
+        {
+            return this.CanAttack(unit, skipUsed: true) && unit.Tile == tile;
         }
 
         #endregion //damage
