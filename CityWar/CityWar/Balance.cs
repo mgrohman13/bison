@@ -233,7 +233,7 @@ namespace CityWar
                 //damage
                 result = unitTypes.GetAverageDamage(race, type, targets, damage, divide);
                 if (special == Attack.SpecialType.Splash)
-                    result *= 1 + .169 * targetMult;
+                    result *= 1 + .13 * targetCount;
                 //length
                 result *= Math.Pow(move * (air ? Math.Sqrt(GetAirMoveDiv(move, fuel)) : 1) + unitTypes.GetAverageMove(), lengthPct)
                     / Math.Pow(unitTypes.GetAverageMove(), lengthPct);
