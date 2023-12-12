@@ -225,6 +225,15 @@ namespace CityWarWinApp
                     txtTargDmg.Text = string.Format("{0}({1})", avgDamage.ToString("0.00"), attack.GetMinDamage(newMoused));
                     txtChance.Text = killPct.ToString("0") + "%";
                     txtRelic.Text = avgRelic.ToString("0.00");
+
+                    bool splash = attack.Special == Attack.SpecialType.Splash;
+                    lblSplash.Visible = splash;
+                    txtSplash.Visible = splash;
+                    if (splash)
+                    {
+                        double splashAvg = attack.GetSplashDamage(battle, newMoused.Tile, newMoused, out double splashProc);
+                        txtSplash.Text = $"{splashAvg:0.00}({splashProc:P0})";
+                    }
                 }
                 else
                 {
@@ -241,6 +250,9 @@ namespace CityWarWinApp
             txtTargDmg.Clear();
             txtChance.Clear();
             txtRelic.Clear();
+
+            lblSplash.Visible = false;
+            txtSplash.Visible = false;
         }
 
         private void panelDefenders_MouseUp(object sender, MouseEventArgs e)
@@ -249,6 +261,7 @@ namespace CityWarWinApp
             {
                 Unit clicked = panelDefenders.GetClickedPiece(e) as Unit;
                 Attack attack = GetSelectedAttack();
+                Tile tile = clicked.Tile;
                 if (clicked != null && attack != null && Map.CheckAircraft(attack.Owner, 1, 1))
                 {
                     Unit prev = ((Attack)lbAttacks.SelectedItem).Owner;
@@ -264,7 +277,7 @@ namespace CityWarWinApp
                         var items = splashes.Select(t => t.Item4).Concat(new double[] { relic }).Where(r => Math.Sign(r) == sign);
                         return items.Any() ? items.Sum() : 0;
                     }
-                    if (posSum != 0)
+                    if (relic > 0 || (relic == 0 && posSum != 0))
                     {
                         relic = posSum;
                         posSum = 0;
@@ -279,10 +292,15 @@ namespace CityWarWinApp
                         Log.LogAttack(attack.Owner, attack, clicked, damage, oldHits, relic);
 
                     double extraRelic = posSum != 0 ? posSum : negSum;
+                    if (extraRelic != 0 && !splashes.Any())
+                    {
+                        Unit random = Game.Random.SelectValue(battle.GetDefenders().Where(u => attack.CanSplash(u, tile)));
+                        splashes.Add(new(random, 0, random.Hits, extraRelic));
+                    }
                     foreach (var splash in splashes)
                         if (splash.Item2 > 0)
                         {
-                            Log.LogAttack(attack.Owner, attack, splash.Item1, splash.Item2, splash.Item3, extraRelic);
+                            Log.LogAttack(attack.Owner, attack, splash.Item1, splash.Item2, splash.Item3, extraRelic, " (S)");
                             extraRelic = 0;
                         }
 

@@ -40,7 +40,7 @@ namespace CityWarWinApp
             }
         }
 
-        public static void LogAttack(Unit attacker, Attack attack, Unit defender, int damage, int oldHits, double relic)
+        public static void LogAttack(Unit attacker, Attack attack, Unit defender, int damage, int oldHits, double relic, string suffix = "")
         {
             const string scoreFormat = "0.0";
             string score = relic.ToString(scoreFormat);
@@ -49,11 +49,11 @@ namespace CityWarWinApp
             else if (relic > 0)
                 score = "+" + score;
 
-            string line = string.Format("{8} {0}, {1} -> {9} {2} ({3}, {6}{7}) :{5} {4}{10}\r\n",
+            string line = string.Format("{8} {0}, {1} -> {9} {2} ({3}, {6}{7}) :{5} {4}{11}{10}\r\n",
                 attacker, attack.GetLogString(), defender,
                 oldHits, -damage, score != null ? string.Format(" {0} :", score) : "",
                 defender.Armor, defender.IsAbility(Ability.Shield) ? string.Format(", {0}%", defender.Shield) : "",
-                attacker.Owner, defender.Owner, defender.Dead ? ", Killed!" : "");
+                attacker.Owner, defender.Owner, defender.Dead ? ", Killed!" : "", suffix);
 
             lines.Add(line);
             log = line + log;

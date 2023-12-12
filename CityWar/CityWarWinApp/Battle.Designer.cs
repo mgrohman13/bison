@@ -64,6 +64,8 @@ namespace CityWarWinApp
             this.label11 = new System.Windows.Forms.Label();
             this.panelDefenders = new CityWarWinApp.PiecesPanel();
             this.panelAttackers = new CityWarWinApp.PiecesPanel();
+            this.txtSplash = new System.Windows.Forms.TextBox();
+            this.lblSplash = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // lbAttacks
@@ -352,7 +354,7 @@ namespace CityWarWinApp
             // 
             // lbAtt
             // 
-            this.lbAtt.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            this.lbAtt.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left)));
             this.lbAtt.BackColor = System.Drawing.Color.White;
             this.lbAtt.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -361,7 +363,7 @@ namespace CityWarWinApp
             this.lbAtt.ItemHeight = 16;
             this.lbAtt.Location = new System.Drawing.Point(261, 157);
             this.lbAtt.Name = "lbAtt";
-            this.lbAtt.Size = new System.Drawing.Size(254, 100);
+            this.lbAtt.Size = new System.Drawing.Size(254, 84);
             this.lbAtt.TabIndex = 33;
             this.lbAtt.SelectedIndexChanged += new System.EventHandler(this.lbAtt_SelectedIndexChanged);
             this.lbAtt.MouseLeave += new System.EventHandler(this.lb_MouseLeave);
@@ -369,7 +371,7 @@ namespace CityWarWinApp
             // 
             // lbDef
             // 
-            this.lbDef.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            this.lbDef.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.lbDef.BackColor = System.Drawing.Color.White;
             this.lbDef.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -378,7 +380,7 @@ namespace CityWarWinApp
             this.lbDef.ItemHeight = 16;
             this.lbDef.Location = new System.Drawing.Point(521, 157);
             this.lbDef.Name = "lbDef";
-            this.lbDef.Size = new System.Drawing.Size(254, 100);
+            this.lbDef.Size = new System.Drawing.Size(254, 84);
             this.lbDef.TabIndex = 34;
             this.lbDef.SelectedIndexChanged += new System.EventHandler(this.lbDef_SelectedIndexChanged);
             this.lbDef.MouseLeave += new System.EventHandler(this.lb_MouseLeave);
@@ -523,7 +525,7 @@ namespace CityWarWinApp
             // 
             // panelDefenders
             // 
-            this.panelDefenders.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            this.panelDefenders.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.panelDefenders.BackColor = System.Drawing.Color.White;
             this.panelDefenders.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -538,7 +540,7 @@ namespace CityWarWinApp
             // 
             // panelAttackers
             // 
-            this.panelAttackers.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            this.panelAttackers.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left)));
             this.panelAttackers.BackColor = System.Drawing.Color.White;
             this.panelAttackers.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -549,6 +551,31 @@ namespace CityWarWinApp
             this.panelAttackers.MouseDown += new System.Windows.Forms.MouseEventHandler(this.PiecesPanel_MouseDown);
             this.panelAttackers.MouseUp += new System.Windows.Forms.MouseEventHandler(this.panelAttackers_MouseUp);
             // 
+            // txtSplash
+            // 
+            this.txtSplash.BackColor = System.Drawing.Color.Silver;
+            this.txtSplash.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtSplash.ForeColor = System.Drawing.Color.Black;
+            this.txtSplash.Location = new System.Drawing.Point(608, 129);
+            this.txtSplash.Name = "txtSplash";
+            this.txtSplash.ReadOnly = true;
+            this.txtSplash.Size = new System.Drawing.Size(84, 22);
+            this.txtSplash.TabIndex = 48;
+            this.txtSplash.TabStop = false;
+            // 
+            // lblSplash
+            // 
+            this.lblSplash.AutoSize = true;
+            this.lblSplash.BackColor = System.Drawing.Color.Black;
+            this.lblSplash.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblSplash.ForeColor = System.Drawing.Color.Silver;
+            this.lblSplash.Location = new System.Drawing.Point(605, 108);
+            this.lblSplash.Name = "lblSplash";
+            this.lblSplash.Size = new System.Drawing.Size(56, 18);
+            this.lblSplash.TabIndex = 47;
+            this.lblSplash.Text = "Splash";
+            this.lblSplash.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
+            // 
             // Battle
             // 
             this.AcceptButton = this.btnEnd;
@@ -557,6 +584,8 @@ namespace CityWarWinApp
             this.BackColor = System.Drawing.Color.Black;
             this.CancelButton = this.btnEnd;
             this.ClientSize = new System.Drawing.Size(1026, 337);
+            this.Controls.Add(this.txtSplash);
+            this.Controls.Add(this.lblSplash);
             this.Controls.Add(this.txtSpecial);
             this.Controls.Add(this.label11);
             this.Controls.Add(this.txtCost);
@@ -641,5 +670,7 @@ namespace CityWarWinApp
         private System.Windows.Forms.TextBox txtCost;
         private System.Windows.Forms.TextBox txtSpecial;
         private System.Windows.Forms.Label label11;
+        private System.Windows.Forms.TextBox txtSplash;
+        private System.Windows.Forms.Label lblSplash;
     }
 }
