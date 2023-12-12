@@ -1,4 +1,4 @@
-REBALANCE UNITS - splash cost changed
+sort units in xml file
 
 show avg splash dmg 
 
@@ -20,6 +20,7 @@ gameplay
 	"security" of public fields
 
 balance	
+	submerge mech
 	portals cost   
 		rescale non min/max magic vals too to keep mag/elem ratios better?
 	ensure each unit type has a unit that can only attack each other type?
