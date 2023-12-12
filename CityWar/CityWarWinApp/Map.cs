@@ -773,7 +773,7 @@ namespace CityWarWinApp
         private void MainMap_MouseMove(object sender, MouseEventArgs e)
         {
             //how close to the edge the mouse has to be to scroll
-            const int scrollRange = 21;
+            const int scrollRange = 26;
 
             //check for x-axis scrolling
             if (e.X < scrollRange)
@@ -821,7 +821,7 @@ namespace CityWarWinApp
             if (this.FormBorderStyle != FormBorderStyle.None)
             {
                 //stop scrolling if the mouse leaves the window
-                timerGraphics.Enabled = false;
+                //timerGraphics.Enabled = false;
                 //Console.WriteLine("MainMap_MouseLeave");
             }
         }
@@ -996,19 +996,17 @@ namespace CityWarWinApp
                     //set to full screen
                     storeOld = false;
                     this.FormBorderStyle = FormBorderStyle.None;
-                    this.Bounds = Screen.FromControl(this).Bounds;
+                    this.Bounds = GetScreenBounds();
                     storeOld = true;
                 }
-                screenBounds = Screen.FromControl(this);
             }
         }
 
-        private static Screen screenBounds = null;
         public static Rectangle GetScreenBounds()
         {
-            if (screenBounds == null)
-                screenBounds = Screen.PrimaryScreen;
-            return screenBounds.Bounds;
+            Rectangle screenBounds = Screen.PrimaryScreen.Bounds;
+            screenBounds.Inflate(3, 3);
+            return screenBounds;
         }
 
         private void MainMap_KeyPress(object sender, KeyPressEventArgs e)
