@@ -1,12 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
 using CityWar;
 using MattUtil;
+using System;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Windows.Forms;
 
 namespace UnitBalance
 {
@@ -308,9 +306,6 @@ namespace UnitBalance
                 }
             }
 
-            us.Balance.Clear();
-            us.Balance.AddBalanceRow(costMult);
-
             foreach (BalUnit unit in units)
             {
                 Form1.unitTypes.SetCostMult(costMult);
@@ -325,10 +320,30 @@ namespace UnitBalance
                 }
             }
 
-            us.WriteXml("..\\..\\..\\Units.xml");
-            MessageBox.Show("written");
+            SaveSchema(costMult);
+
             rebalanceAll = true;
             getAll();
+        }
+
+        private void SaveSchema(double costMult)
+        {
+            var units = us.Unit.OrderBy(u => u.Name).ToList();
+            var attacks = us.Attack.OrderBy(a => a.Unit).ToList();
+            var special = us.Special.OrderBy(s => s.Name).ThenBy(s => s.Special).ToList();
+
+            us = new UnitSchema();
+
+            foreach (var row in units)
+                us.Unit.AddUnitRow(row.Name, row.Cost, row.Type, row.Hits, row.Armor, row.Regen, row.Move, row.CostType, row.IsThree, row.People, row.Race);
+            foreach (var row in attacks)
+                us.Attack.AddAttackRow(row.Target_Type, row.Length, row.Damage, row.Divide_By, us.Unit.FindByName(row.Unit), row.Name, row.Special);
+            foreach (var row in special)
+                us.Special.AddSpecialRow(us.Unit.FindByName(row.Name), row.Special, row.Value);
+            us.Balance.AddBalanceRow(costMult);
+
+            us.WriteXml("..\\..\\..\\Units.xml");
+            MessageBox.Show("written");
         }
 
         struct BalUnit

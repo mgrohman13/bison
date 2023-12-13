@@ -2,7 +2,7 @@ gameplay
 	upgrade units
 		factory
 			add-on to town, not separate capturable, refunded when disappears
-			captured by player behavior?
+			captured by player - behavior?
 		portal?
 	movement features?
 		allow gamble move to use in between 1-full move
@@ -13,7 +13,6 @@ gameplay
 	"security" of public fields
 
 balance	
-	sort units in xml file
 	submerge mech
 	engagers 39 hp?
 	portals cost   
