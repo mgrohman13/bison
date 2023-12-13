@@ -188,16 +188,20 @@ namespace CityWar
 
         internal int SplashUnit(Unit unit, double splashMult, out double relicValue)
         {
-            return AttackUnit(unit, false, out relicValue, splashMult);
+            return AttackUnit(unit, out relicValue, false, splashMult);
         }
         internal int AttackUnit(Unit unit, bool usingMove, out double relicValue)
         {
-            return AttackUnit(unit, usingMove, out relicValue, 1);
+            return AttackUnit(unit, out relicValue, usingMove);
         }
-        private int AttackUnit(Unit unit, bool usingMove, out double relicValue, double splashMult)
+        private int AttackUnit(Unit unit, out double relicValue, bool usingMove, double? splashMult = null)
         {
             relicValue = 0;
-            if (!CanAttack(unit))
+
+            bool splash = splashMult.HasValue;
+            if (!splash)
+                splashMult = 1;
+            if (splash ? !CanTarget(unit) : !CanAttack(unit))
                 return -1;
 
             Used = true;
@@ -205,7 +209,7 @@ namespace CityWar
 
             int hits = unit.Hits, armor = unit.Armor;
             int rawDmg = DoDamage(armor, Unit.GetTotalDamageShield(Owner, unit), out _);
-            int damage = Game.Random.WeightedInt(rawDmg, splashMult);
+            int damage = Game.Random.WeightedInt(rawDmg, splashMult.Value);
             int retVal = damage;
             double overkill = 0;
             if (damage < 0)
@@ -221,7 +225,7 @@ namespace CityWar
             //attacking player gets work back for overkill, defender pays upkeep to retaliate
             if (usingMove)
             {
-                if (splashMult != 1)
+                if (splashMult.Value != 1)
                     throw new Exception();
                 //double work = WorkRegen * 1 * Attack.OverkillPercent * (attacks.Length - usedAttacks) / (double)attacks.Length;
                 double work = owner.WorkRegen * overkill * OverkillPercent * 1 / (double)owner.Attacks.Length;
@@ -229,12 +233,12 @@ namespace CityWar
             }
             else
             {
-                double upkeep = RetaliateCost * (1 - overkill) * splashMult;
+                double upkeep = RetaliateCost * (1 - overkill) * splashMult.Value;
                 owner.Owner.AddUpkeep(upkeep, .21);
             }
 
             double avg = GetAverageDamage(this.damage, this.Pierce, armor, Unit.GetTotalDamageShield(Owner, unit), hits);
-            relicValue = (avg * splashMult - damage) / RelicDivide / unit.MaxHits;
+            relicValue = (avg * splashMult.Value - damage) / RelicDivide / unit.MaxHits;
             if (relicValue > 0)
             {
                 relicValue *= unit.RandedCost;
@@ -244,6 +248,10 @@ namespace CityWar
             {
                 relicValue *= unit.InverseCost;
                 unit.Owner.AddScore(-relicValue);
+            }
+
+            if (unit.Owner == unit.Owner.Game.CurrentPlayer && damage >= hits && unit.Attacks.Any(a => a.used) && unit.Attacks.Any(a => !a.used))
+            {
             }
 
             unit.Wound(damage);
@@ -281,7 +289,7 @@ namespace CityWar
         {
             if (this.Special == Attack.SpecialType.Splash)
             {
-                double splashMult = GetSplash(out List<Unit> targets, out _, battle, tile, target);
+                double splashMult = GetSplash(battle, tile, target, out _, out List<Unit> targets);
                 foreach (Unit splashTarget in Game.Random.Iterate(targets))
                 {
                     int oldHits = splashTarget.Hits;
@@ -383,12 +391,12 @@ namespace CityWar
         public double GetSplashDamage(Battle battle, Tile tile, Unit target, out double splashProc)
         {
             double splashAvg = 0;
-            double splashMult = GetSplash(out List<Unit> targets, out splashProc, battle, tile, target);
+            double splashMult = GetSplash(battle, tile, target, out splashProc, out List<Unit> targets);
             foreach (Unit splashTarget in Game.Random.Iterate(targets))
                 splashAvg += GetAverageDamage(this.Damage, this.Pierce, splashTarget.Armor, Unit.GetTotalDamageShield(Owner, splashTarget), splashTarget.Hits);
             return splashAvg * splashMult;
         }
-        private double GetSplash(out List<Unit> targets, out double splashProc, Battle battle, Tile tile, Unit target)
+        private double GetSplash(Battle battle, Tile tile, Unit target, out double splashProc, out List<Unit> targets)
         {
             double splashMult = 0;
             splashProc = 0;
