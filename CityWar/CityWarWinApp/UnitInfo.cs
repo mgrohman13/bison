@@ -46,6 +46,7 @@ namespace CityWarWinApp
             }
             else
             {
+                this.txtCost.Text = "";
                 this.txtType.Text = "Passive";
                 if (piece is Wizard wizard)
                 {
