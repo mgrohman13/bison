@@ -5,8 +5,6 @@ namespace CityWar
 {
     public static class Balance
     {
-        private const double AttackTargetsPower = .39;
-
         public static double GetCost(UnitTypes unitTypes, string race, UnitType type, bool isThree, EnumFlags<Ability> abilities, int shield, int fuel, int maxHits, int baseArmor, int baseRegen, int maxMove, Attack[] attacks, out double gc)
         {
             double costMult = unitTypes.GetCostMult();
@@ -228,7 +226,7 @@ namespace CityWar
             if (damage > 0)
             {
                 double targetCount = targets == null ? unitTypes.GetAverageTargets() : targets.Count;
-                double targetMult = Math.Pow(targetCount, AttackTargetsPower);
+                double targetMult = Math.Pow(targetCount, .39);
                 double lengthPct = unitTypes.GetLengthPct(race, type, length);
                 //damage
                 result = unitTypes.GetAverageDamage(race, type, targets, damage, divide);

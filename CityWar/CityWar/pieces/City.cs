@@ -17,7 +17,7 @@ namespace CityWar
             this.units = InitUnits(tile);
         }
 
-        private const float avgChance = .8f;
+        private const double avgChance = .8;
         private static List<string> InitUnits(Tile tile)
         {
             double baseWaterChance = Math.Pow(1.3 + CountNeighbors(tile, terrain => terrain == Terrain.Water), tile.Terrain == Terrain.Water ? 1.69 : 1.3);
