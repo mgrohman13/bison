@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Collections.ObjectModel;
 using System.Drawing;
+using System.Linq;
 using System.Runtime.Serialization;
 
 namespace CityWar
@@ -591,7 +591,7 @@ namespace CityWar
             }
 
             for (int a = 0; a < points; a++)
-                Game.Random.SelectValue(typeFuncs)(Game.Random.GaussianCappedInt(50, .21, 26));
+                Game.Random.SelectValue(typeFuncs)(Game.Random.GaussianCappedInt(52, .21, 26));
         }
 
         internal void EndTurn()
