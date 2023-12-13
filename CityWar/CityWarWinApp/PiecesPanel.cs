@@ -1,9 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Windows.Forms;
 using CityWar;
+using System;
 using System.Drawing;
+using System.Windows.Forms;
 
 namespace CityWarWinApp
 {
@@ -83,12 +81,12 @@ namespace CityWarWinApp
                 //set the proper scroll bar height
                 RefreshScrollBar(numPieces, numColumns);
 
-                int end = ( getYIndex(this.Height) + 1 ) * numColumns;
+                int end = (getYIndex(this.Height) + 1) * numColumns;
                 if (end > numPieces)
                     end = numPieces;
                 Piece lastPiece = null;
                 int x = 0, y = 0;
-                for (int a = getYIndex(0) * numColumns ; a < end ; ++a)
+                for (int a = getYIndex(0) * numColumns; a < end; ++a)
                 {
                     Piece currentPiece = pieces[a];
 
@@ -96,8 +94,8 @@ namespace CityWarWinApp
                     if (lastPiece != null && lastPiece.Tile != currentPiece.Tile)
                         g.DrawLine(framePen, x + 106, y, x + 106, y + 100);
 
-                    x = 13 + 113 * ( a % numColumns );
-                    y = 13 - sbPieces.Value + ( a / numColumns ) * 126;
+                    x = 13 + 113 * (a % numColumns);
+                    y = 13 - sbPieces.Value + (a / numColumns) * 126;
 
                     //delimit units on different tiles
                     if (lastPiece != null && lastPiece.Tile != currentPiece.Tile)
@@ -107,6 +105,9 @@ namespace CityWarWinApp
 
                     if (drawFlags.Contains(DrawFlags.Background))
                         g.FillRectangle(Brushes.LightGray, x, y, 100, 100);
+
+                    if (currentPiece.IsAbility(Ability.Submerged) && currentPiece.Tile.Terrain == Terrain.Water)
+                        g.FillRectangle(Brushes.Blue, x + 90, y, 10, 10);
 
                     //draw the piece
                     g.DrawImage(currentPiece.Owner.GetConstPic(currentPiece.ToString()), x, y);
@@ -128,7 +129,7 @@ namespace CityWarWinApp
                         Tuple<string, string> text = GetText(currentPiece);
                         if (text != null)
                         {
-                            Font f = ( drawFlags.Contains(DrawFlags.Bold) ? fontBold : font );
+                            Font f = (drawFlags.Contains(DrawFlags.Bold) ? fontBold : font);
                             if (text.Item1 != null)
                                 g.DrawString(text.Item1, f, GetTextBrush(), x, y + 104);
                             if (text.Item2 != null)
@@ -151,7 +152,7 @@ namespace CityWarWinApp
 
         private int GetNumColumns()
         {
-            return ( this.Width - this.sbPieces.Width - 13 ) / 113;
+            return (this.Width - this.sbPieces.Width - 13) / 113;
         }
 
         private void RefreshScrollBar(int numPieces, int numColumns)
@@ -196,7 +197,7 @@ namespace CityWarWinApp
             int xIndex = 0;
             if (numColumns > 1)
             {
-                xIndex = ( x - 7 ) / 113;
+                xIndex = (x - 7) / 113;
                 if (xIndex < 0)
                     xIndex = 0;
                 if (xIndex >= numColumns)
@@ -206,7 +207,7 @@ namespace CityWarWinApp
         }
         private int getYIndex(int y)
         {
-            int yIndex = ( y + sbPieces.Value - 13 ) / 126;
+            int yIndex = (y + sbPieces.Value - 13) / 126;
             return yIndex < 0 ? 0 : yIndex;
         }
 
@@ -224,7 +225,7 @@ namespace CityWarWinApp
             Piece[] pieces = GetPieces();
             int length = pieces.Length;
             int firstIndex = -1, lastIndex = -1;
-            for (int i = 0 ; i < length ; ++i)
+            for (int i = 0; i < length; ++i)
             {
                 MattUtil.EnumFlags<DrawFlags> flags = GetDrawFlags(pieces[i]);
                 if (flags.Contains(DrawFlags.Frame))
@@ -236,12 +237,12 @@ namespace CityWarWinApp
             }
 
             int numColumns = GetNumColumns();
-            int newValue = ( lastIndex / numColumns ) * 126 - this.Height + 139;
+            int newValue = (lastIndex / numColumns) * 126 - this.Height + 139;
 
             if (!always && newValue > sbPieces.Value)
                 always = true;
 
-            int maxValue = ( firstIndex / numColumns ) * 126;
+            int maxValue = (firstIndex / numColumns) * 126;
 
             if (!always && maxValue < sbPieces.Value)
                 always = true;
