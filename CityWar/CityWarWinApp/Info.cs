@@ -1,25 +1,24 @@
+using CityWar;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
 using System.Drawing;
-using System.Text;
+using System.Linq;
 using System.Windows.Forms;
-using CityWar;
 
 namespace CityWarWinApp
 {
     partial class Info : Form
     {
-        private static Info theForm = new Info();
-        private ListBox[] units;
-        private ListBox[] have;
-        private ListBox[] needed;
+        private static Info theForm = new();
+        private readonly ListBox[] units;
+        private readonly ListBox[] have;
+        private readonly ListBox[] needed;
 
-        public static void showDialog()
+        new public static void ShowDialog()
         {
             theForm.RefreshStuff();
-            theForm.ShowDialog();
+            ((Form)theForm).ShowDialog();
         }
 
         private void RefreshStuff()
@@ -86,7 +85,7 @@ namespace CityWarWinApp
                 string[] race = Game.Races[raceName];
                 CreateRaceBoxes(10 + column * 300, row ? y : 50, raceName, ++arrayIndex);
 
-                List<string> raceUnits = new List<string>(race);
+                List<string> raceUnits = new(race);
                 raceUnits.Sort((name1, name2) => Unit.CreateTempUnit(name1).BaseTotalCost.CompareTo(Unit.CreateTempUnit(name2).BaseTotalCost));
                 foreach (string unit in raceUnits)
                 {
@@ -122,55 +121,59 @@ namespace CityWarWinApp
         private void CreateRaceBoxes(int x, int y, string raceName, int arrayIndex)
         {
             Label lblTitle = CreateLabel();
-            lblTitle.Location = new System.Drawing.Point(x, y);
+            lblTitle.Location = new Point(x, y);
             lblTitle.Name = "lblRace" + arrayIndex;
-            lblTitle.Size = new System.Drawing.Size(270, 18);
+            lblTitle.Size = new Size(270, 18);
             lblTitle.Text = raceName;
 
             y += 20;
 
             ListBox lbxUnit = CreateListBox();
-            lbxUnit.Location = new System.Drawing.Point(x, y);
+            lbxUnit.Location = new Point(x, y);
             lbxUnit.Name = "lbxUnit" + arrayIndex.ToString();
-            lbxUnit.Size = new System.Drawing.Size(130, 21);
+            lbxUnit.Size = new Size(130, 21);
             units[arrayIndex] = lbxUnit;
 
             ListBox lbxCurrent = CreateListBox();
-            lbxCurrent.Location = new System.Drawing.Point(x + 136, y);
+            lbxCurrent.Location = new Point(x + 136, y);
             lbxCurrent.Name = "lbxCurrent" + arrayIndex.ToString();
-            lbxCurrent.Size = new System.Drawing.Size(73, 21);
+            lbxCurrent.Size = new Size(73, 21);
             lbxCurrent.Tag = lbxUnit;
             have[arrayIndex] = lbxCurrent;
 
             ListBox lbxNeeded = CreateListBox();
-            lbxNeeded.Location = new System.Drawing.Point(x + 215, y);
+            lbxNeeded.Location = new Point(x + 215, y);
             lbxNeeded.Name = "lbxNeeded" + arrayIndex.ToString();
-            lbxNeeded.Size = new System.Drawing.Size(65, 21);
+            lbxNeeded.Size = new Size(65, 21);
             needed[arrayIndex] = lbxNeeded;
         }
 
         private Label CreateLabel()
         {
-            Label lbl = new Label();
-            lbl.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            lbl.BackColor = System.Drawing.Color.Black;
-            lbl.ForeColor = System.Drawing.Color.Silver;
-            lbl.TabIndex = 0;
-            lbl.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            Label lbl = new()
+            {
+                Font = new Font("Arial", 11.25F, FontStyle.Bold, GraphicsUnit.Point, ((byte)(0))),
+                BackColor = Color.Black,
+                ForeColor = Color.Silver,
+                TabIndex = 0,
+                TextAlign = ContentAlignment.MiddleCenter,
+            };
             this.Controls.Add(lbl);
             return lbl;
         }
 
         private ListBox CreateListBox()
         {
-            ListBox lbx = new ListBox();
-            lbx.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            lbx.BackColor = System.Drawing.Color.Silver;
-            lbx.ForeColor = System.Drawing.Color.Black;
-            lbx.FormattingEnabled = true;
-            lbx.ItemHeight = 17;
-            lbx.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.lbx_DrawItem);
-            lbx.DrawMode = DrawMode.OwnerDrawFixed;
+            ListBox lbx = new()
+            {
+                Font = new Font("Lucida Console", 12F, FontStyle.Regular, GraphicsUnit.Point, ((byte)(0))),
+                BackColor = Color.Silver,
+                ForeColor = Color.Black,
+                FormattingEnabled = true,
+                ItemHeight = 17,
+                DrawMode = DrawMode.OwnerDrawFixed,
+            };
+            lbx.DrawItem += new DrawItemEventHandler(this.Lbx_DrawItem);
             this.Controls.Add(lbx);
             return lbx;
         }
@@ -197,49 +200,63 @@ namespace CityWarWinApp
             this.lbxResources.Items.Clear();
             this.lbxMagic.Items.Clear();
 
-            foreach (Player p in Map.Game.GetPlayers())
+            Player[] players = Map.Game.GetPlayers();
+            var info = players.Select(p =>
             {
+                int airInc = 0, deathInc = 0, earthInc = 0, natureInc = 0, prodInc = 0, waterInc = 0, magicInc = 0, popInc = 0;
+                p.GenerateIncome(ref airInc, ref deathInc, ref earthInc, ref natureInc, ref prodInc, ref waterInc, ref magicInc, ref popInc);
+                int sum = airInc + deathInc + earthInc + natureInc + prodInc + waterInc + popInc;
+                return new string[] { $"{p.Score:0}", $"{p.GetArmyStrength():0}", $"+{sum}", $"+{magicInc}" };
+            }).ToArray();
+            for (int b = 0; b < 4; b++)
+            {
+                int max = -1;
+                for (int a = 0; a < players.Length; a++)
+                    max = Math.Max(max, info[a][b].Length);
+                for (int a = 0; a < players.Length; a++)
+                    info[a][b] = info[a][b].PadLeft(max);
+            }
+            for (int c = 0; c < players.Length; c++)
+            {
+                Player p = players[c];
+                p.GetCounts(out int wizards, out int portals, out int cities, out int relics, out int units);
+
                 this.lbxOrder.Items.Add(p);
-                this.lbxScore.Items.Add(string.Format("({1:0}) {0:0}", p.Score, p.Score - p.LastRelicScore));
-                int wizards, portals, cities, relics, units;
-                p.GetCounts(out wizards, out portals, out cities, out relics, out units);
-                this.lbxUnits.Items.Add("(" + units + ") " + p.GetArmyStrength().ToString("0"));
+
+                this.lbxScore.Items.Add($"({p.Score - p.LastRelicScore:0}) {info[c][0]}");
+                this.lbxUnits.Items.Add($"({units}) {info[c][1]}");
+                this.lbxResources.Items.Add($"{p.CountTradeableResources():0} {info[c][2]}");
+                this.lbxMagic.Items.Add($"{p.Magic} {info[c][3]}");
+
                 this.lbxRelics.Items.Add(relics);
                 this.lbxCities.Items.Add(cities);
                 this.lbxWizards.Items.Add(wizards);
                 this.lbxPortals.Items.Add(portals);
-                int airInc = 0, deathInc = 0, earthInc = 0, natureInc = 0, prodInc = 0, waterInc = 0, magicInc = 0, popInc = 0;
-                p.GenerateIncome(ref airInc, ref deathInc, ref earthInc, ref natureInc, ref prodInc, ref waterInc, ref magicInc, ref popInc);
-                int sum = airInc + deathInc + earthInc + natureInc + prodInc + waterInc + popInc;
-                this.lbxResources.Items.Add(p.CountTradeableResources().ToString("0") + " +" + sum);
-                this.lbxMagic.Items.Add(p.Magic + " +" + magicInc);
             }
         }
 
-        private void lbxOrder_DrawItem(object sender, DrawItemEventArgs e)
+        private void LbxOrder_DrawItem(object sender, DrawItemEventArgs e)
         {
             // check if the item exists
             if (e.Index >= 0 && e.Index < this.lbxOrder.Items.Count)
             {
                 Player p = ((Player)this.lbxOrder.Items[e.Index]);
 
-                // Draw the background of the ListBox control for each item.
-                //e.DrawBackground();
-                e.Graphics.FillRectangle(new SolidBrush(p.Color), e.Bounds);
-
-                //cheate a new black brush
-                SolidBrush myBrush = new SolidBrush(Color.Black);
+                // Draw the background of the ListBox control for each item. 
+                using SolidBrush playerBrush = new(p.Color);
+                e.Graphics.FillRectangle(playerBrush, e.Bounds);
 
                 // Draw the current item text based on the current Font and the custom brush settings.
                 float width = e.Graphics.MeasureString(p.Name, e.Font).Width;
-                e.Graphics.DrawString(p.Name, e.Font, new SolidBrush(p.InverseColor), e.Bounds.X + (e.Bounds.Width - width), e.Bounds.Y, StringFormat.GenericDefault);
+                using SolidBrush fontBrush = new(p.InverseColor);
+                e.Graphics.DrawString(p.Name, e.Font, fontBrush, e.Bounds.X + (e.Bounds.Width - width), e.Bounds.Y + 1, StringFormat.GenericDefault);
 
                 // If the ListBox has focus, draw a focus rectangle around the selected item.
                 e.DrawFocusRectangle();
             }
         }
 
-        private void lbxCapturables_DrawItem(object sender, DrawItemEventArgs e)
+        private void LbxCapturables_DrawItem(object sender, DrawItemEventArgs e)
         {
             ListBox box = (ListBox)sender;
 
@@ -248,23 +265,21 @@ namespace CityWarWinApp
             {
                 Player p = ((Player)this.lbxOrder.Items[e.Index]);
 
-                // Draw the background of the ListBox control for each item.
-                //e.DrawBackground();
-                e.Graphics.FillRectangle(new SolidBrush(p.Color), e.Bounds);
-
-                //cheate a new black brush
-                SolidBrush myBrush = new SolidBrush(Color.Black);
+                // Draw the background of the ListBox control for each item. 
+                using SolidBrush playerBrush = new(p.Color);
+                e.Graphics.FillRectangle(playerBrush, e.Bounds);
 
                 // Draw the current item text based on the current Font and the custom brush settings.
                 float width = e.Graphics.MeasureString(box.Items[e.Index].ToString(), e.Font).Width;
-                e.Graphics.DrawString(box.Items[e.Index].ToString(), e.Font, new SolidBrush(p.InverseColor), e.Bounds.X + (e.Bounds.Width - width), e.Bounds.Y, StringFormat.GenericDefault);
+                using SolidBrush fontBrush = new(p.InverseColor);
+                e.Graphics.DrawString(box.Items[e.Index].ToString(), e.Font, fontBrush, e.Bounds.X + (e.Bounds.Width - width), e.Bounds.Y + 1, StringFormat.GenericDefault);
 
                 // If the ListBox has focus, draw a focus rectangle around the selected item.
                 e.DrawFocusRectangle();
             }
         }
 
-        private void lbx_DrawItem(object sender, DrawItemEventArgs e)
+        private void Lbx_DrawItem(object sender, DrawItemEventArgs e)
         {
             ListBox box = (ListBox)sender;
 
@@ -279,25 +294,23 @@ namespace CityWarWinApp
                     back = Color.FromArgb(temp.R, temp.G, temp.B);
                 }
 
-                // Draw the background of the ListBox control for each item.
-                //e.DrawBackground();
-                e.Graphics.FillRectangle(new SolidBrush(back), e.Bounds);
-
-                //cheate a new black brush
-                SolidBrush myBrush = new SolidBrush(Color.Black);
+                // Draw the background of the ListBox control for each item. 
+                SolidBrush backBrush = new(back);
+                e.Graphics.FillRectangle(backBrush, e.Bounds);
 
                 // Draw the current item text based on the current Font and the custom brush settings.
                 float width = e.Graphics.MeasureString(box.Items[e.Index].ToString(), e.Font).Width;
-                e.Graphics.DrawString(box.Items[e.Index].ToString(), e.Font, new SolidBrush(fore), e.Bounds.X + (e.Bounds.Width - width), e.Bounds.Y, StringFormat.GenericDefault);
+                SolidBrush foreBrush = new(fore);
+                e.Graphics.DrawString(box.Items[e.Index].ToString(), e.Font, foreBrush, e.Bounds.X + (e.Bounds.Width - width), e.Bounds.Y + 1, StringFormat.GenericDefault);
 
                 // If the ListBox has focus, draw a focus rectangle around the selected item.
                 e.DrawFocusRectangle();
             }
         }
 
-        public static void clearDialog()
+        public static void ClearDialog()
         {
-            theForm = new Info();
+            theForm = new();
         }
     }
 }

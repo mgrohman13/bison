@@ -1392,12 +1392,12 @@ namespace CityWarWinApp
         private void btnInfo_Click(object sender, EventArgs e)
         {
             this.timerGraphics.Enabled = false;
-            Info.showDialog();
+            Info.ShowDialog();
         }
 
         private void btnQuit_Click(object sender, EventArgs e)
         {
-            Info.clearDialog();
+            Info.ClearDialog();
 
             this.timerGraphics.Enabled = false;
 
@@ -1494,7 +1494,7 @@ namespace CityWarWinApp
 
         private void btnLoad_Click(object sender, EventArgs e)
         {
-            Info.clearDialog();
+            Info.ClearDialog();
 
             this.timerGraphics.Enabled = false;
 
