@@ -261,9 +261,9 @@ namespace CityWarWinApp
             {
                 Unit clicked = panelDefenders.GetClickedPiece(e) as Unit;
                 Attack attack = GetSelectedAttack();
-                Tile tile = clicked.Tile;
                 if (clicked != null && attack != null && Map.CheckAircraft(attack.Owner, 1, 1))
                 {
+                    Tile tile = clicked.Tile;
                     Unit prev = ((Attack)lbAttacks.SelectedItem).Owner;
                     int idx = lbAtt.SelectedIndex;
 
@@ -292,17 +292,17 @@ namespace CityWarWinApp
                         Log.LogAttack(attack.Owner, attack, clicked, damage, oldHits, relic);
 
                     double extraRelic = posSum != 0 ? posSum : negSum;
+                    splashes = splashes.Where(splash => splash.Item2 > 0).ToList();
                     if (extraRelic != 0 && !splashes.Any())
                     {
                         Unit random = Game.Random.SelectValue(battle.GetDefenders().Where(u => attack.CanSplash(u, tile)));
                         splashes.Add(new(random, 0, random.Hits, extraRelic));
                     }
                     foreach (var splash in splashes)
-                        if (splash.Item2 > 0)
-                        {
-                            Log.LogAttack(attack.Owner, attack, splash.Item1, splash.Item2, splash.Item3, extraRelic, " (S)");
-                            extraRelic = 0;
-                        }
+                    {
+                        Log.LogAttack(attack.Owner, attack, splash.Item1, splash.Item2, splash.Item3, extraRelic, " (S)");
+                        extraRelic = 0;
+                    }
 
                     if (clicked.Dead)
                         validAttacks = null;
