@@ -511,11 +511,11 @@ namespace MattUtil
                 lfsr = SeedKISS(LFSR_SEED, b++, seed, ref a);
 
                 //initialize MT with a constant PRNG
-                SeedMT(SEED_FACTOR_1, INIT_SEED);
+                SeedMT(SEED_FACTOR_1, INIT_SEED, a);
                 //use all seed values in combination with the results of another (different) PRNG pass
                 SeedMT(SEED_FACTOR_2, seedSize, seed, ref a);
                 //run a third and final pass to ensure all seed values are represented in all MT state values
-                SeedMT(SEED_FACTOR_3, m[LENGTH - 1]);
+                SeedMT(SEED_FACTOR_3, m[LENGTH - 1], a);
 
                 a += MAX_SEED_SIZE;
                 b = m[LENGTH - 1];
@@ -548,10 +548,10 @@ namespace MattUtil
                 return (m[b] = GetSeed(seed, ref a) - 1) + initSeed;
             }
         }
-        private void SeedMT(uint seedFactor, uint initSeed)
+        private void SeedMT(uint seedFactor, uint initSeed, uint a)
         {
-            uint a = 0;
-            SeedMT(seedFactor, initSeed, null, ref a);
+            uint c = a;
+            SeedMT(seedFactor, initSeed, null, ref c);
         }
         private void SeedMT(uint seedFactor, uint initSeed, uint[] seed, ref uint a)
         {
