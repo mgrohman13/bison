@@ -1,11 +1,4 @@
-sort units in xml file
-
-show avg splash dmg 
-
-unused atack when when die to retalliation
-
 gameplay
-	wiz pts 52?  or other numbers mults of 5?
 	upgrade units
 		factory
 			add-on to town, not separate capturable, refunded when disappears
@@ -20,7 +13,9 @@ gameplay
 	"security" of public fields
 
 balance	
+	sort units in xml file
 	submerge mech
+	engagers 39 hp?
 	portals cost   
 		rescale non min/max magic vals too to keep mag/elem ratios better?
 	ensure each unit type has a unit that can only attack each other type?
@@ -30,9 +25,6 @@ balance
 	no cheap W/GW unit for dwarf
 	engager 6 fuel??
 	slyph regen
-	pay for recover regen
-	splash
-		show splash damage/chance on UI?
 	bonus to element units on terrain?
 	attack bonuses, not just armor?
 	unit abilities 
@@ -68,7 +60,7 @@ interface
 	damage calculator
 		multiple attacks
 	battles 
-		splash damage feedback
+		show shield next to armor
 		padding color at bottom?
 		mouseover lbx functionality?
 		better visibility for avail attacks/retaliation
