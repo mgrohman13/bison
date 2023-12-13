@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Drawing;
+using System.Linq;
 
 namespace CityWar
 {
@@ -773,31 +773,31 @@ namespace CityWar
             fuel -= (distance - move - 1) / maxMove;
             return (fuel < distance);
         }
-        private void AddTilesInRange(Dictionary<Tile, Tile> CanGetCarrier, Piece piece, Tile tile, int move)
+        private void AddTilesInRange(Dictionary<Tile, Tile> CanGetCarrier, Piece piece, Tile carrierTile, int move)
         {
             if (--move > -1)
             {
-                foreach (Tile t in tile.GetNeighbors())
-                    if (t != null)
+                foreach (Tile neightbor in carrierTile.GetNeighbors())
+                    if (neightbor != null)
                     {
                         int newMove = move;
                         UnitType carrierType = (piece is Unit unit ? unit.Type : UnitType.Immobile);
-                        Terrain terrain = t.Terrain;
+                        Terrain terrain = neightbor.Terrain;
                         //check if the carrier can move onto the tile
-                        if (!(tile.OccupiedByUnit(out Player occupying) && occupying != piece.Owner) &&
+                        if (!(neightbor.OccupiedByUnit(out Player occupying) && occupying != piece.Owner) &&
                             (carrierType == UnitType.Air || carrierType == UnitType.Immobile ||
                             ((carrierType == UnitType.Water || carrierType == UnitType.Amphibious) && terrain == Terrain.Water) ||
                             ((carrierType == UnitType.Ground || carrierType == UnitType.Amphibious) && (terrain == Terrain.Plains ||
                             (--newMove > -1 && (terrain == Terrain.Forest ||
                             (--newMove > -1 && terrain == Terrain.Mountain)))))))
                             //if so, add the tile and check its neighbors
-                            AddTilesInRange(CanGetCarrier, piece, t, newMove);
+                            AddTilesInRange(CanGetCarrier, piece, neightbor, newMove);
                     }
             }
 
             //the carrier is either already here or can move here, so add the tile
-            if (!CanGetCarrier.ContainsKey(tile))
-                CanGetCarrier.Add(tile, null);
+            if (!CanGetCarrier.ContainsKey(carrierTile))
+                CanGetCarrier.Add(carrierTile, null);
         }
 
         #endregion //check aircraft
