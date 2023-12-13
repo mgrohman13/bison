@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Security.Policy;
 
 namespace CityWar
 {
@@ -54,10 +55,49 @@ namespace CityWar
         }
         internal void AddTo()
         {
+            const double min = 2.6, max = 5.2, avg = (min + max) / 2.0;
+            if (avg < 2) throw new Exception();
+            int inc = Game.Random.GaussianOEInt(Game.Random.Range(min, max), .52, .13);
+
             if (Type == TreasureType.Wizard)
-                Value += Game.Random.RangeInt(0, 2);
+            {
+                //add reduced value
+                Value += Game.Random.RangeInt(Game.Random.RangeInt(0, 1), Game.Random.RangeInt(1, inc));
+            }
+            else if (Type == TreasureType.City || Type == TreasureType.Unit)
+            {
+                if (Value > 1 || Game.Random.Bool())
+                {
+                    //since cities and units count down to the real prize, have a chance to reduce rather than add to the counter
+                    if (Game.Random.Bool())
+                    {
+                        //reduce by 1 on average
+                        Value = Math.Max(1, Value - Game.Random.RangeInt(0, Game.Random.Round(inc * 2 / avg)));
+                    }
+                    else if (Game.Random.Bool())
+                    {
+                        //unlikely to add, but if it does, add 2x original average for city
+                        inc = Game.Random.RangeInt(inc + 1, inc * 2 + Game.Random.Round(avg) - 1);
+                        if (Type == TreasureType.Unit)
+                            inc = Game.Random.Round(inc / 2);
+                        else
+                            ;
+
+                        Value += inc;
+                    }
+                    else
+                    {
+                        //final chance to add up to an average of 1
+                        Value += Game.Random.RangeInt(0, Game.Random.Round(inc / avg));
+                    }
+                }
+                else
+                    ;
+            }
             else
-                Value += Game.Random.GaussianOEInt(3.9, .52, .21, 0);
+            {
+                Value += inc;
+            }
         }
 
         internal bool MoveTo(Tile tile, Piece piece)
