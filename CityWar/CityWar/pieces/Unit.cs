@@ -296,6 +296,8 @@ namespace CityWar
             if (IsAir())
                 owner.AddWork(Fuel * FuelWorkCost);
             RegenPct = 1;
+            double work = RegenPctCost(1) * Player.WorkMult / Player.UpkeepMult;
+            owner.AddWork(work);
 
             Tile.Remove(this);
             Owner.Remove(this);
@@ -577,16 +579,16 @@ namespace CityWar
 
                 double pay = value - this._regenPct;
                 if (pay > 0)
-                {
-                    pay *= MaxMove * MaxRegen * 2.6;
-                    pay *= Player.UpkeepMult / Player.WorkMult;
-                    if (Dead)
-                        pay /= 3.9;
-                    owner.AddUpkeep(pay);
-                }
+                    owner.AddUpkeep(RegenPctCost(pay));
 
                 this._regenPct = value;
             }
+        }
+        private double RegenPctCost(double pct)
+        {
+            pct *= MaxMove * MaxRegen * 2.6;
+            pct *= Player.UpkeepMult / Player.WorkMult;
+            return pct;
         }
 
         private void CheckAttacks()
