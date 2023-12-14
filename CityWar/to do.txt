@@ -1,4 +1,5 @@
 gameplay
+	splash dmg vs isThree?
 	upgrade units
 		factory
 			add-on to town, not separate capturable, refunded when disappears
@@ -73,6 +74,9 @@ interface
 		waypoints		
 		look at galwar functionality...
 	other 
+		incl splash in score est
+		better trading controls (+gambling?)
+		improve info panel for capturables 
 		escape/enter close forms (e.g. build)
 		can disband last unit?
 		show n-1 relic?  some kind of avg?

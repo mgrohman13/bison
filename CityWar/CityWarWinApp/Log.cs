@@ -40,11 +40,11 @@ namespace CityWarWinApp
             }
         }
 
+        public const string ScoreFormat = "0.0";
         public static void LogAttack(Unit attacker, Attack attack, Unit defender, int damage, int oldHits, double relic, string suffix = "")
         {
-            const string scoreFormat = "0.0";
-            string score = relic.ToString(scoreFormat);
-            if (score == scoreFormat)
+            string score = relic.ToString(ScoreFormat);
+            if (score == ScoreFormat)
                 score = null;
             else if (relic > 0)
                 score = "+" + score;
