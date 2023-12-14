@@ -345,8 +345,7 @@ namespace MattUtil
         public static uint[] GenerateSeed(IEnumerable<object> seedData)
         {
             byte[] bytes = seedData
-                //?
-                //.SelectMany(obj => obj is IEnumerable<object> arr ? arr : new object[] { obj })
+                .SelectMany(obj => obj is System.Collections.IEnumerable arr ? arr.OfType<object>() : new object[] { obj })
                 .SelectMany(obj => obj is string str ? str.ToCharArray().Cast<object>() : new object[] { obj })
                 .SelectMany(GetBytes)
                 .ToArray();
@@ -369,9 +368,7 @@ namespace MattUtil
             static byte[] GetBytes(object obj)
             {
                 if (obj is null)
-                    //?
-                    //return new byte[] { 188, 74, 110 };
-                    throw new ArgumentNullException();
+                    return new byte[] { 188, 74, 110 };
 
                 Type type = obj.GetType();
                 if (type.IsEnum)
