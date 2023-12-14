@@ -13,8 +13,6 @@ gameplay
 	"security" of public fields
 
 balance	
-	submerge mech
-	engagers 39 hp?
 	portals cost   
 		rescale non min/max magic vals too to keep mag/elem ratios better?
 	ensure each unit type has a unit that can only attack each other type?
@@ -22,8 +20,6 @@ balance
 		W->A
 		G->W
 	no cheap W/GW unit for dwarf
-	engager 6 fuel??
-	slyph regen
 	bonus to element units on terrain?
 	attack bonuses, not just armor?
 	unit abilities 

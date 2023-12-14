@@ -11,7 +11,7 @@ namespace UnitBalance
     public partial class Units : Form
     {
         //public static double minError = 500;
-        const double maxCostMult = 5.9;
+        const double maxCostMult = 6;
 
         int[] Xs = { 12, 78, 114, 180, 246, 312, 348, 384, 420, 595, 770, 945 };
         int[] Ws = { 60, 30, 60, 60, 60, 30, 30, 30, 169, 169, 169 };
@@ -309,11 +309,31 @@ namespace UnitBalance
             foreach (BalUnit unit in units)
             {
                 Form1.unitTypes.SetCostMult(costMult);
-                double cost = Balance.GetCost(Form1.unitTypes, unit.Race, unit.Type, unit.isThree, unit.Abilities, unit.Shield, unit.Fuel, unit.maxHits, unit.BaseArmor, unit.BaseRegen, unit.MaxMove, unit.Attacks, out _);
+                double cost = Balance.GetCost(Form1.unitTypes, unit.Race, unit.Type, unit.isThree, unit.Abilities,
+                    unit.Shield, unit.Fuel, unit.maxHits, unit.BaseArmor, unit.BaseRegen, unit.MaxMove, unit.Attacks, out _);
                 UnitSchema.UnitRow row = us.Unit.FindByName(unit.name);
-                row.People = Game.Random.Round(cost * unit.pplPct);
+
+                MTRandom r = new(MTRandom.GenerateSeed(new object[] { unit.Type, unit.Shield > 0, unit.Race, unit.isThree, unit.Abilities, unit.MaxMove, unit.BaseRegen > 1 }
+                    // unit.Fuel, unit.maxHits, unit.BaseArmor, 
+                    .Concat(unit.Attacks.SelectMany(a => new object[] { a.Pierce, a.Special, a.Length > 1, a.Target, a.Name, })))); // a.Damage, 
+                double popPct = unit.pplPct;
+                if (popPct >= .01 && popPct <= .99)
+                {
+                    double diff = .55 - popPct;
+                    if (diff == 0)
+                        diff = r.Bool() ? -1 : 1;
+                    diff = Math.Sign(diff) / Math.Pow(Math.Abs(diff), .13);
+                    popPct += r.GaussianCapped(.0169, .26) * diff;
+                }
+
+                row.People = r.Round(cost * popPct);
                 row.Cost = (int)Math.Round(cost - row.People);
-                if (unit.pplPct > .999)
+                if (unit.pplPct == 0 || row.People < 0)
+                {
+                    row.Cost += row.People;
+                    row.People = 0;
+                }
+                if (unit.pplPct == 1 || row.Cost < 0)
                 {
                     row.People += row.Cost;
                     row.Cost = 0;
