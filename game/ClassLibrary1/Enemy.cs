@@ -1,12 +1,9 @@
-﻿using System;
-using System.Diagnostics;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using MattUtil;
-using ClassLibrary1.Pieces;
+﻿using ClassLibrary1.Pieces;
 using ClassLibrary1.Pieces.Enemies;
 using ClassLibrary1.Pieces.Players;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Tile = ClassLibrary1.Map.Tile;
 
 namespace ClassLibrary1
@@ -20,7 +17,7 @@ namespace ClassLibrary1
         public IEnumerable<Piece> VisiblePieces => _pieces.Where(p => p.Tile.Visible);
 
         internal Enemy(Game game)
-            : base(game, Game.Rand.Round(Consts.EnemyEnergy * -2.6), 0)
+            : base(game, Game.Rand.Round(Consts.EnemyEnergy * -Consts.EnemySkipStart), 0)
         {
             this._research = new EnemyResearch(game);
             this._nextAlien = MechBlueprint.Alien(_research);
@@ -28,7 +25,7 @@ namespace ClassLibrary1
 
         internal void PlayTurn()
         {
-            double difficulty = (Game.Turn + Consts.DifficultyTurns) / Consts.DifficultyTurns;
+            double difficulty = (Game.Turn + Consts.DifficultyIncTurns) / Consts.DifficultyIncTurns;
 
             foreach (Piece piece in Game.Rand.Iterate(Pieces))
                 PlayTurn(piece, Math.Pow(difficulty, Consts.DifficultyMoveDirPow));
@@ -138,12 +135,15 @@ namespace ClassLibrary1
         }
         private static double GetKillWeight(IKillable killable, double avgHp)
         {
-            double attacks = 0;
+            double attacks = 0, repair = 0;
+
             if (killable.Piece.HasBehavior(out IAttacker attacker))
-                attacks = attacker.Attacks.Sum(a => a.Damage * (a.Range + 7.8));
-            double repair = 0;
+                attacks += attacker.Attacks.Sum(a => a.Damage * (a.Range + 7.8));
             if (killable.Piece.HasBehavior(out IRepair repairs))
-                repair = 13 + avgHp * repairs.Rate * (repairs.Range + 3.9);
+                repair += 26 + avgHp * repairs.Rate * (repairs.Range + 3.9);
+            if (killable.Piece.HasBehavior(out IBuilder builder))
+                repair += 13 + avgHp * (builder.Range + 13) / 130.0;
+
             double gc = (1 + attacks + 21 * repair) / (killable.HitsCur / (1 - killable.Armor) + killable.ShieldCur);
             double damagePct = 2 - killable.HitsCur / (double)killable.HitsMax;
             double shieldFactor = 3 + 13 * killable.ShieldInc / (killable.HitsMax / 6.5 + killable.ShieldCur);

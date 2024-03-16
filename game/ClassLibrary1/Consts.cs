@@ -1,11 +1,5 @@
-﻿using System;
-using System.Diagnostics;
-using System.Collections.Generic;
-using System.Linq;
-using MattUtil;
-using ClassLibrary1.Pieces;
-using ClassLibrary1.Pieces.Enemies;
-using ClassLibrary1.Pieces.Players;
+﻿using ClassLibrary1.Pieces;
+using System;
 
 namespace ClassLibrary1
 {
@@ -18,12 +12,13 @@ namespace ClassLibrary1
 
         public const double ResearchFactor = 2600;
 
-        public const double DifficultyTurns = 65;
+        public const double EnemyEnergy = 260;
+        public const double EnemySkipStart = 3.9;
+        public const double DifficultyIncTurns = 65;
         public const double DifficultyEnergyPow = 1.69;
         public const double DifficultyResearchPow = 1.3;
         public const double DifficultyMoveDirPow = .65;
         public const double DistanceMoveDirPow = .39;
-        public const double EnemyEnergy = 130;
 
         public const double HitsIncDev = .065;
         public const double MoveDev = .013;
