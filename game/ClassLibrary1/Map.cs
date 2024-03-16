@@ -1,10 +1,10 @@
 ﻿using ClassLibrary1.Pieces;
 using ClassLibrary1.Pieces.Players;
 using ClassLibrary1.Pieces.Terrain;
+using MattUtil;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using MattUtil;
 
 namespace ClassLibrary1
 {
@@ -18,6 +18,9 @@ namespace ClassLibrary1
 
         private readonly Dictionary<Point, Piece> _pieces;
         private readonly HashSet<Point> _explored;
+
+        private readonly RandBooleans[] _resourceRands;
+        private readonly RandBooleans _foundationRand;
 
         static Map()
         {
@@ -49,6 +52,13 @@ namespace ClassLibrary1
 
             this._pieces = new();
             this._explored = new();
+
+            _resourceRands = new[] {
+                new RandBooleans(Game.Rand, .26), //artifact
+                new RandBooleans(Game.Rand, .52), //biomass
+                new RandBooleans(Game.Rand, .65), //metal
+            };
+            _foundationRand = new(.39);
         }
 
         [NonSerialized]
@@ -207,28 +217,9 @@ namespace ClassLibrary1
                 }
                 else
                 {
-                    switch (Game.Rand.Next(11))
-                    {
-                        case 0:
-                        case 1:
-                        case 2:
-                        case 3:
-                            Biomass.NewBiomass(tile);
-                            break;
-                        case 4:
-                        case 5:
-                        case 6:
-                        case 7:
-                        case 8:
-                            Metal.NewMetal(tile);
-                            break;
-                        case 9:
-                        case 10:
-                            Artifact.NewArtifact(tile);
-                            break;
-                    }
+                    GenResourceType(tile);
 
-                    if (Game.Rand.Bool())
+                    if (_foundationRand.GetResult())
                     {
                         Tile t2;
                         do
@@ -242,6 +233,40 @@ namespace ClassLibrary1
                 }
             }
             return false;
+        }
+        private void GenResourceType(Tile tile)
+        {
+            bool[] resources;
+            int count;
+            do
+            {
+                resources = _resourceRands.Select(r => r.GetResult()).ToArray();
+                count = resources.Count(b => b);
+            }
+            while (count == 0);
+
+            int select;
+            if (count == 1)
+                select = Array.IndexOf(resources, true);
+            else
+                do
+                    select = Game.Rand.Next(3);
+                while (!resources[select]);
+
+            switch (select)
+            {
+                case 0:
+                    Artifact.NewArtifact(tile);
+                    break;
+                case 1:
+                    Biomass.NewBiomass(tile);
+                    break;
+                case 2:
+                    Metal.NewMetal(tile);
+                    break;
+                default:
+                    throw new Exception();
+            }
         }
 
         internal Tile GetEnemyTile()
