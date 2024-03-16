@@ -4,6 +4,7 @@ using ClassLibrary1.Pieces.Terrain;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 using Tile = ClassLibrary1.Map.Tile;
@@ -157,6 +158,8 @@ namespace WinFormsApp1
                 //    dataGridView1.AutoResizeColumns();
                 //    dataGridView1.AutoResizeRows();
                 //}
+                dataGridView1.Columns["Build"].HeaderText = "";
+                dataGridView1.Columns["Build"].DefaultCellStyle.Font = new Font(dataGridView1.DefaultCellStyle.Font, FontStyle.Bold);
                 dataGridView1.Columns["Build"].Visible = true;
 
                 //if (!dataGridView1.Columns.Contains("Notify"))
@@ -262,17 +265,10 @@ namespace WinFormsApp1
             public string ShieldPierce => Blueprint == null ? null : List(a => a.ShieldPierce.ToString("P0"));
             public string Randomness => Blueprint == null ? null : List(a => a.Dev.ToString("P0"));
 
-            public bool Build
+            public string Build
             {
-                get
-                {
-                    return Program.Game.Player.Has(Energy, Mass);
-                }
-                set
-                {
-                    if (Program.Game.Player.Has(Energy, Mass) != value)
-                        DataGridView1.Invalidate();
-                }
+                get => Program.Game.Player.Has(Energy, Mass) ? "BUILD" : "";
+                set => DataGridView1.Invalidate();
             }
 
             private string List(Func<IAttacker.Values, string> Get)

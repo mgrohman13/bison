@@ -13,7 +13,7 @@ namespace ClassLibrary1
         public const double ResearchFactor = 2600;
 
         public const double EnemyEnergy = 260;
-        public const double EnemySkipStart = 3.9;
+        public const double EnemySkipStart = 6.5;
         public const double DifficultyIncTurns = 65;
         public const double DifficultyEnergyPow = 1.69;
         public const double DifficultyResearchPow = 1.3;

@@ -103,6 +103,7 @@ FEATURES
 	power grid
 
 
+emperically test rand booleans for resources
 use range atack OR move and melee
 control energy/mass ratio better, esp early?
 combined power grid, but if separate pieces impose power penalty?

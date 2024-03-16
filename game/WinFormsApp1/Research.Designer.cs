@@ -29,309 +29,300 @@ namespace WinFormsApp1
         /// </summary>
         private void InitializeComponent()
         {
-            this.lbxAvailable = new System.Windows.Forms.ListBox();
-            this.lbxDone = new System.Windows.Forms.ListBox();
-            this.label1 = new System.Windows.Forms.Label();
-            this.label2 = new System.Windows.Forms.Label();
-            this.lblName = new System.Windows.Forms.Label();
-            this.label4 = new System.Windows.Forms.Label();
-            this.label5 = new System.Windows.Forms.Label();
-            this.label6 = new System.Windows.Forms.Label();
-            this.lblLast = new System.Windows.Forms.Label();
-            this.lblProgress = new System.Windows.Forms.Label();
-            this.lblCost = new System.Windows.Forms.Label();
-            this.btnOK = new System.Windows.Forms.Button();
-            this.btnCancel = new System.Windows.Forms.Button();
-            this.lblTotal = new System.Windows.Forms.Label();
-            this.label7 = new System.Windows.Forms.Label();
-            this.label3 = new System.Windows.Forms.Label();
-            this.lbxUnlocks = new System.Windows.Forms.ListBox();
-            this.label8 = new System.Windows.Forms.Label();
-            this.lvwAlso = new System.Windows.Forms.ListView();
-            this.cbxAll = new System.Windows.Forms.CheckBox();
-            this.cbxFilter = new System.Windows.Forms.CheckBox();
-            this.SuspendLayout();
+            lbxAvailable = new System.Windows.Forms.ListBox();
+            lbxDone = new System.Windows.Forms.ListBox();
+            label1 = new System.Windows.Forms.Label();
+            label2 = new System.Windows.Forms.Label();
+            lblName = new System.Windows.Forms.Label();
+            label4 = new System.Windows.Forms.Label();
+            label5 = new System.Windows.Forms.Label();
+            label6 = new System.Windows.Forms.Label();
+            lblLast = new System.Windows.Forms.Label();
+            lblProgress = new System.Windows.Forms.Label();
+            lblCost = new System.Windows.Forms.Label();
+            btnOK = new System.Windows.Forms.Button();
+            btnCancel = new System.Windows.Forms.Button();
+            lblTotal = new System.Windows.Forms.Label();
+            label7 = new System.Windows.Forms.Label();
+            label3 = new System.Windows.Forms.Label();
+            lbxUnlocks = new System.Windows.Forms.ListBox();
+            label8 = new System.Windows.Forms.Label();
+            lvwAlso = new System.Windows.Forms.ListView();
+            cbxAll = new System.Windows.Forms.CheckBox();
+            cbxFilter = new System.Windows.Forms.CheckBox();
+            SuspendLayout();
             // 
             // lbxAvailable
             // 
-            this.lbxAvailable.FormattingEnabled = true;
-            this.lbxAvailable.ItemHeight = 15;
-            this.lbxAvailable.Items.AddRange(new object[] {
-            "1",
-            "2",
-            "3",
-            "4",
-            "5"});
-            this.lbxAvailable.Location = new System.Drawing.Point(0, 17);
-            this.lbxAvailable.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
-            this.lbxAvailable.Name = "lbxAvailable";
-            this.lbxAvailable.Size = new System.Drawing.Size(127, 79);
-            this.lbxAvailable.TabIndex = 1;
-            this.lbxAvailable.SelectedValueChanged += new System.EventHandler(this.LB_SelectedValueChanged);
-            this.lbxAvailable.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.LbAvailable_MouseDoubleClick);
+            lbxAvailable.FormattingEnabled = true;
+            lbxAvailable.ItemHeight = 15;
+            lbxAvailable.Items.AddRange(new object[] { "1", "2", "3", "4", "5" });
+            lbxAvailable.Location = new System.Drawing.Point(0, 17);
+            lbxAvailable.Margin = new System.Windows.Forms.Padding(2);
+            lbxAvailable.Name = "lbxAvailable";
+            lbxAvailable.Size = new System.Drawing.Size(127, 79);
+            lbxAvailable.TabIndex = 1;
+            lbxAvailable.SelectedValueChanged += LB_SelectedValueChanged;
+            lbxAvailable.MouseDoubleClick += LbAvailable_MouseDoubleClick;
             // 
             // lbxDone
             // 
-            this.lbxDone.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left)));
-            this.lbxDone.FormattingEnabled = true;
-            this.lbxDone.ItemHeight = 15;
-            this.lbxDone.Location = new System.Drawing.Point(0, 113);
-            this.lbxDone.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
-            this.lbxDone.Name = "lbxDone";
-            this.lbxDone.Size = new System.Drawing.Size(127, 244);
-            this.lbxDone.TabIndex = 2;
-            this.lbxDone.SelectedValueChanged += new System.EventHandler(this.LB_SelectedValueChanged);
+            lbxDone.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
+            lbxDone.FormattingEnabled = true;
+            lbxDone.ItemHeight = 15;
+            lbxDone.Location = new System.Drawing.Point(0, 113);
+            lbxDone.Margin = new System.Windows.Forms.Padding(2);
+            lbxDone.Name = "lbxDone";
+            lbxDone.Size = new System.Drawing.Size(127, 244);
+            lbxDone.TabIndex = 2;
+            lbxDone.SelectedValueChanged += LB_SelectedValueChanged;
             // 
             // label1
             // 
-            this.label1.Location = new System.Drawing.Point(0, 0);
-            this.label1.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(126, 15);
-            this.label1.TabIndex = 2;
-            this.label1.Text = "Available:";
-            this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            label1.Location = new System.Drawing.Point(0, 0);
+            label1.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            label1.Name = "label1";
+            label1.Size = new System.Drawing.Size(126, 15);
+            label1.TabIndex = 2;
+            label1.Text = "Available:";
+            label1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // label2
             // 
-            this.label2.Location = new System.Drawing.Point(0, 96);
-            this.label2.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(126, 15);
-            this.label2.TabIndex = 3;
-            this.label2.Text = "Researched:";
-            this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            label2.Location = new System.Drawing.Point(0, 96);
+            label2.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            label2.Name = "label2";
+            label2.Size = new System.Drawing.Size(126, 15);
+            label2.TabIndex = 3;
+            label2.Text = "Researched:";
+            label2.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // lblName
             // 
-            this.lblName.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.lblName.Location = new System.Drawing.Point(130, 17);
-            this.lblName.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.lblName.Name = "lblName";
-            this.lblName.Size = new System.Drawing.Size(218, 30);
-            this.lblName.TabIndex = 4;
-            this.lblName.Text = "lblName";
-            this.lblName.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
+            lblName.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            lblName.Location = new System.Drawing.Point(130, 17);
+            lblName.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            lblName.Name = "lblName";
+            lblName.Size = new System.Drawing.Size(218, 30);
+            lblName.TabIndex = 4;
+            lblName.Text = "lblName";
+            lblName.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
             // 
             // label4
             // 
-            this.label4.Location = new System.Drawing.Point(130, 47);
-            this.label4.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(88, 15);
-            this.label4.TabIndex = 5;
-            this.label4.Text = "Last Researched";
-            this.label4.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            label4.Location = new System.Drawing.Point(130, 47);
+            label4.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            label4.Name = "label4";
+            label4.Size = new System.Drawing.Size(88, 15);
+            label4.TabIndex = 5;
+            label4.Text = "Last Researched";
+            label4.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // label5
             // 
-            this.label5.Location = new System.Drawing.Point(130, 62);
-            this.label5.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(88, 17);
-            this.label5.TabIndex = 6;
-            this.label5.Text = "Progress";
-            this.label5.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            label5.Location = new System.Drawing.Point(130, 62);
+            label5.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            label5.Name = "label5";
+            label5.Size = new System.Drawing.Size(88, 17);
+            label5.TabIndex = 6;
+            label5.Text = "Progress";
+            label5.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // label6
             // 
-            this.label6.Location = new System.Drawing.Point(130, 79);
-            this.label6.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(88, 15);
-            this.label6.TabIndex = 7;
-            this.label6.Text = "Cost";
-            this.label6.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            label6.Location = new System.Drawing.Point(130, 79);
+            label6.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            label6.Name = "label6";
+            label6.Size = new System.Drawing.Size(88, 15);
+            label6.TabIndex = 7;
+            label6.Text = "Cost";
+            label6.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // lblLast
             // 
-            this.lblLast.Location = new System.Drawing.Point(260, 47);
-            this.lblLast.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.lblLast.Name = "lblLast";
-            this.lblLast.Size = new System.Drawing.Size(88, 15);
-            this.lblLast.TabIndex = 8;
-            this.lblLast.Text = "lblLast";
-            this.lblLast.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            lblLast.Location = new System.Drawing.Point(260, 47);
+            lblLast.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            lblLast.Name = "lblLast";
+            lblLast.Size = new System.Drawing.Size(88, 15);
+            lblLast.TabIndex = 8;
+            lblLast.Text = "lblLast";
+            lblLast.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // lblProgress
             // 
-            this.lblProgress.Location = new System.Drawing.Point(260, 62);
-            this.lblProgress.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.lblProgress.Name = "lblProgress";
-            this.lblProgress.Size = new System.Drawing.Size(88, 17);
-            this.lblProgress.TabIndex = 9;
-            this.lblProgress.Text = "lblProgress";
-            this.lblProgress.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            lblProgress.Location = new System.Drawing.Point(260, 62);
+            lblProgress.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            lblProgress.Name = "lblProgress";
+            lblProgress.Size = new System.Drawing.Size(88, 17);
+            lblProgress.TabIndex = 9;
+            lblProgress.Text = "lblProgress";
+            lblProgress.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // lblCost
             // 
-            this.lblCost.Location = new System.Drawing.Point(260, 79);
-            this.lblCost.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.lblCost.Name = "lblCost";
-            this.lblCost.Size = new System.Drawing.Size(88, 15);
-            this.lblCost.TabIndex = 10;
-            this.lblCost.Text = "lblCost";
-            this.lblCost.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            lblCost.Location = new System.Drawing.Point(260, 79);
+            lblCost.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            lblCost.Name = "lblCost";
+            lblCost.Size = new System.Drawing.Size(88, 15);
+            lblCost.TabIndex = 10;
+            lblCost.Text = "lblCost";
+            lblCost.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // btnOK
             // 
-            this.btnOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnOK.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.btnOK.Location = new System.Drawing.Point(238, 330);
-            this.btnOK.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
-            this.btnOK.Name = "btnOK";
-            this.btnOK.Size = new System.Drawing.Size(78, 20);
-            this.btnOK.TabIndex = 11;
-            this.btnOK.Text = "OK";
-            this.btnOK.UseVisualStyleBackColor = true;
+            btnOK.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
+            btnOK.DialogResult = System.Windows.Forms.DialogResult.OK;
+            btnOK.Location = new System.Drawing.Point(238, 330);
+            btnOK.Margin = new System.Windows.Forms.Padding(2);
+            btnOK.Name = "btnOK";
+            btnOK.Size = new System.Drawing.Size(78, 20);
+            btnOK.TabIndex = 11;
+            btnOK.Text = "OK";
+            btnOK.UseVisualStyleBackColor = true;
             // 
             // btnCancel
             // 
-            this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(320, 330);
-            this.btnCancel.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
-            this.btnCancel.Name = "btnCancel";
-            this.btnCancel.Size = new System.Drawing.Size(78, 20);
-            this.btnCancel.TabIndex = 12;
-            this.btnCancel.Text = "Cancel";
-            this.btnCancel.UseVisualStyleBackColor = true;
+            btnCancel.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
+            btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
+            btnCancel.Location = new System.Drawing.Point(320, 330);
+            btnCancel.Margin = new System.Windows.Forms.Padding(2);
+            btnCancel.Name = "btnCancel";
+            btnCancel.Size = new System.Drawing.Size(78, 20);
+            btnCancel.TabIndex = 12;
+            btnCancel.Text = "Cancel";
+            btnCancel.UseVisualStyleBackColor = true;
             // 
             // lblTotal
             // 
-            this.lblTotal.Location = new System.Drawing.Point(260, 0);
-            this.lblTotal.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.lblTotal.Name = "lblTotal";
-            this.lblTotal.Size = new System.Drawing.Size(88, 15);
-            this.lblTotal.TabIndex = 14;
-            this.lblTotal.Text = "lblTotal";
-            this.lblTotal.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            lblTotal.Location = new System.Drawing.Point(260, 0);
+            lblTotal.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            lblTotal.Name = "lblTotal";
+            lblTotal.Size = new System.Drawing.Size(88, 15);
+            lblTotal.TabIndex = 14;
+            lblTotal.Text = "lblTotal";
+            lblTotal.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // label7
             // 
-            this.label7.Location = new System.Drawing.Point(130, 0);
-            this.label7.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(88, 15);
-            this.label7.TabIndex = 13;
-            this.label7.Text = "Total Research";
-            this.label7.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            label7.Location = new System.Drawing.Point(130, 0);
+            label7.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            label7.Name = "label7";
+            label7.Size = new System.Drawing.Size(88, 15);
+            label7.TabIndex = 13;
+            label7.Text = "Total Research";
+            label7.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // label3
             // 
-            this.label3.Location = new System.Drawing.Point(130, 113);
-            this.label3.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(126, 15);
-            this.label3.TabIndex = 15;
-            this.label3.Text = "Unlocks:";
-            this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            label3.Location = new System.Drawing.Point(130, 113);
+            label3.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            label3.Name = "label3";
+            label3.Size = new System.Drawing.Size(126, 15);
+            label3.TabIndex = 15;
+            label3.Text = "Unlocks:";
+            label3.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // lbxUnlocks
             // 
-            this.lbxUnlocks.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left)));
-            this.lbxUnlocks.BackColor = System.Drawing.SystemColors.Window;
-            this.lbxUnlocks.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.lbxUnlocks.FormattingEnabled = true;
-            this.lbxUnlocks.ItemHeight = 15;
-            this.lbxUnlocks.Location = new System.Drawing.Point(130, 130);
-            this.lbxUnlocks.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
-            this.lbxUnlocks.Name = "lbxUnlocks";
-            this.lbxUnlocks.Size = new System.Drawing.Size(126, 180);
-            this.lbxUnlocks.TabIndex = 3;
-            this.lbxUnlocks.SelectedValueChanged += new System.EventHandler(this.LbxUnlocks_SelectedValueChanged);
+            lbxUnlocks.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
+            lbxUnlocks.BackColor = System.Drawing.SystemColors.Window;
+            lbxUnlocks.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            lbxUnlocks.FormattingEnabled = true;
+            lbxUnlocks.ItemHeight = 15;
+            lbxUnlocks.Location = new System.Drawing.Point(130, 130);
+            lbxUnlocks.Margin = new System.Windows.Forms.Padding(2);
+            lbxUnlocks.Name = "lbxUnlocks";
+            lbxUnlocks.Size = new System.Drawing.Size(126, 180);
+            lbxUnlocks.TabIndex = 3;
+            lbxUnlocks.SelectedValueChanged += LbxUnlocks_SelectedValueChanged;
             // 
             // label8
             // 
-            this.label8.Location = new System.Drawing.Point(260, 113);
-            this.label8.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(126, 15);
-            this.label8.TabIndex = 18;
-            this.label8.Text = "Also Needs:";
-            this.label8.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            label8.Location = new System.Drawing.Point(260, 113);
+            label8.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            label8.Name = "label8";
+            label8.Size = new System.Drawing.Size(126, 15);
+            label8.TabIndex = 18;
+            label8.Text = "Also Needs:";
+            label8.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // lvwAlso
             // 
-            this.lvwAlso.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.lvwAlso.Enabled = false;
-            this.lvwAlso.HideSelection = false;
-            this.lvwAlso.Location = new System.Drawing.Point(260, 130);
-            this.lvwAlso.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
-            this.lvwAlso.Name = "lvwAlso";
-            this.lvwAlso.Size = new System.Drawing.Size(138, 173);
-            this.lvwAlso.TabIndex = 19;
-            this.lvwAlso.UseCompatibleStateImageBehavior = false;
-            this.lvwAlso.View = System.Windows.Forms.View.List;
+            lvwAlso.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            lvwAlso.Enabled = false;
+            lvwAlso.Location = new System.Drawing.Point(260, 130);
+            lvwAlso.Margin = new System.Windows.Forms.Padding(2);
+            lvwAlso.Name = "lvwAlso";
+            lvwAlso.Size = new System.Drawing.Size(138, 173);
+            lvwAlso.TabIndex = 19;
+            lvwAlso.UseCompatibleStateImageBehavior = false;
+            lvwAlso.View = System.Windows.Forms.View.List;
             // 
             // cbxAll
             // 
-            this.cbxAll.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.cbxAll.AutoSize = true;
-            this.cbxAll.Location = new System.Drawing.Point(131, 307);
-            this.cbxAll.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
-            this.cbxAll.Name = "cbxAll";
-            this.cbxAll.Size = new System.Drawing.Size(69, 19);
-            this.cbxAll.TabIndex = 20;
-            this.cbxAll.Text = "Full Tree";
-            this.cbxAll.UseVisualStyleBackColor = true;
-            this.cbxAll.CheckedChanged += new System.EventHandler(this.CBX_CheckedChanged);
+            cbxAll.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
+            cbxAll.AutoSize = true;
+            cbxAll.Location = new System.Drawing.Point(131, 307);
+            cbxAll.Margin = new System.Windows.Forms.Padding(2);
+            cbxAll.Name = "cbxAll";
+            cbxAll.Size = new System.Drawing.Size(69, 19);
+            cbxAll.TabIndex = 20;
+            cbxAll.Text = "Full Tree";
+            cbxAll.UseVisualStyleBackColor = true;
+            cbxAll.CheckedChanged += CBX_CheckedChanged;
             // 
             // cbxFilter
             // 
-            this.cbxFilter.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.cbxFilter.AutoSize = true;
-            this.cbxFilter.Location = new System.Drawing.Point(204, 307);
-            this.cbxFilter.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
-            this.cbxFilter.Name = "cbxFilter";
-            this.cbxFilter.Size = new System.Drawing.Size(114, 19);
-            this.cbxFilter.TabIndex = 21;
-            this.cbxFilter.Text = "Hide Researched";
-            this.cbxFilter.UseVisualStyleBackColor = true;
-            this.cbxFilter.CheckedChanged += new System.EventHandler(this.CBX_CheckedChanged);
+            cbxFilter.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
+            cbxFilter.AutoSize = true;
+            cbxFilter.Checked = true;
+            cbxFilter.CheckState = System.Windows.Forms.CheckState.Checked;
+            cbxFilter.Location = new System.Drawing.Point(204, 307);
+            cbxFilter.Margin = new System.Windows.Forms.Padding(2);
+            cbxFilter.Name = "cbxFilter";
+            cbxFilter.Size = new System.Drawing.Size(114, 19);
+            cbxFilter.TabIndex = 21;
+            cbxFilter.Text = "Hide Researched";
+            cbxFilter.UseVisualStyleBackColor = true;
+            cbxFilter.CheckedChanged += CBX_CheckedChanged;
             // 
             // Research
             // 
-            this.AcceptButton = this.btnOK;
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(409, 361);
-            this.Controls.Add(this.cbxFilter);
-            this.Controls.Add(this.cbxAll);
-            this.Controls.Add(this.lvwAlso);
-            this.Controls.Add(this.label8);
-            this.Controls.Add(this.lbxUnlocks);
-            this.Controls.Add(this.label3);
-            this.Controls.Add(this.lblTotal);
-            this.Controls.Add(this.label7);
-            this.Controls.Add(this.btnCancel);
-            this.Controls.Add(this.btnOK);
-            this.Controls.Add(this.lblCost);
-            this.Controls.Add(this.lblProgress);
-            this.Controls.Add(this.lblLast);
-            this.Controls.Add(this.label6);
-            this.Controls.Add(this.label5);
-            this.Controls.Add(this.label4);
-            this.Controls.Add(this.lblName);
-            this.Controls.Add(this.label2);
-            this.Controls.Add(this.label1);
-            this.Controls.Add(this.lbxDone);
-            this.Controls.Add(this.lbxAvailable);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;
-            this.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
-            this.MinimumSize = new System.Drawing.Size(425, 376);
-            this.Name = "Research";
-            this.ShowIcon = false;
-            this.Text = "Research";
-            this.Shown += new System.EventHandler(this.Research_Shown);
-            this.ResumeLayout(false);
-            this.PerformLayout();
-
+            AcceptButton = btnOK;
+            AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
+            AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            CancelButton = btnCancel;
+            ClientSize = new System.Drawing.Size(409, 361);
+            Controls.Add(cbxFilter);
+            Controls.Add(cbxAll);
+            Controls.Add(lvwAlso);
+            Controls.Add(label8);
+            Controls.Add(lbxUnlocks);
+            Controls.Add(label3);
+            Controls.Add(lblTotal);
+            Controls.Add(label7);
+            Controls.Add(btnCancel);
+            Controls.Add(btnOK);
+            Controls.Add(lblCost);
+            Controls.Add(lblProgress);
+            Controls.Add(lblLast);
+            Controls.Add(label6);
+            Controls.Add(label5);
+            Controls.Add(label4);
+            Controls.Add(lblName);
+            Controls.Add(label2);
+            Controls.Add(label1);
+            Controls.Add(lbxDone);
+            Controls.Add(lbxAvailable);
+            FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;
+            Margin = new System.Windows.Forms.Padding(2);
+            MinimumSize = new System.Drawing.Size(425, 376);
+            Name = "Research";
+            ShowIcon = false;
+            Text = "Research";
+            Shown += Research_Shown;
+            ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
