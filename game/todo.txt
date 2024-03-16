@@ -101,3 +101,20 @@ FEATURES
 			harvest
 	experience
 	power grid
+
+
+use range atack OR move and melee
+control energy/mass ratio better, esp early?
+combined power grid, but if separate pieces impose power penalty?
+
+
+plan:
+convert new combat system
+	attack, defense, single number? no hp?
+	different defense types protect against different offense types 
+	bonuses against types? anything else interesting?
+quick convert existing stuff to random parallels
+melee 
+end game...
+	redo paths?
+	4 caves appear, kill 2?
