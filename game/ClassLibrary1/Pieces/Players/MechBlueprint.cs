@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
-using MattUtil;
-using ClassLibrary1.Pieces;
 using Type = ClassLibrary1.Research.Type;
 
 namespace ClassLibrary1.Pieces.Players
@@ -22,6 +18,9 @@ namespace ClassLibrary1.Pieces.Players
         public readonly IKillable.Values Killable;
         public readonly IReadOnlyCollection<IAttacker.Values> Attacks;
         public readonly IMovable.Values Movable;
+
+        public bool Notify { get; set; }
+
         private MechBlueprint(int blueprintNum, MechBlueprint upgrade, int research, double vision, IKillable.Values killable, IEnumerable<IAttacker.Values> attacks, IMovable.Values movable)
         {
             this.BlueprintNum = "";

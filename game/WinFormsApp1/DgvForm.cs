@@ -1,21 +1,12 @@
-﻿using System;
-using System.Diagnostics;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using MattUtil;
-using ClassLibrary1;
-using ClassLibrary1.Pieces;
-using ClassLibrary1.Pieces.Enemies;
+﻿using ClassLibrary1.Pieces;
 using ClassLibrary1.Pieces.Players;
 using ClassLibrary1.Pieces.Terrain;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Windows.Forms;
 using Tile = ClassLibrary1.Map.Tile;
-using Point = MattUtil.Point;
 
 namespace WinFormsApp1
 {
@@ -157,29 +148,29 @@ namespace WinFormsApp1
                 //dataGridView1.Size = dataGridView1.PreferredSize;
                 //this.ClientSize = dataGridView1.PreferredSize;
 
-                if (!dataGridView1.Columns.Contains("Build"))
-                {
-                    DataGridViewButtonColumn buildColumn = new DataGridViewButtonColumn();
-                    buildColumn.Name = "Build";
-                    buildColumn.Text = "Build";
-                    buildColumn.UseColumnTextForButtonValue = true;
-                    buildColumn.HeaderText = "";
-                    dataGridView1.Columns.Add(buildColumn);
-                    dataGridView1.AutoResizeColumns();
-                    dataGridView1.AutoResizeRows();
-                }
+                //if (!dataGridView1.Columns.Contains("Build"))
+                //{
+                //    DataGridViewCheckBoxColumn buildColumn = new DataGridViewCheckBoxColumn();
+                //    buildColumn.Name = "Build";
+                //    buildColumn.ReadOnly = false;
+                //    dataGridView1.Columns.Add(buildColumn);
+                //    dataGridView1.AutoResizeColumns();
+                //    dataGridView1.AutoResizeRows();
+                //}
                 dataGridView1.Columns["Build"].Visible = true;
 
-                if (!dataGridView1.Columns.Contains("Notify"))
-                {
-                    DataGridViewCheckBoxColumn notifyColumn = new DataGridViewCheckBoxColumn();
-                    notifyColumn.Name = "Notify";
-                    dataGridView1.Columns.Add(notifyColumn);
-                    dataGridView1.AutoResizeColumns();
-                    dataGridView1.AutoResizeRows();
-                }
+                //if (!dataGridView1.Columns.Contains("Notify"))
+                //{
+                //    DataGridViewCheckBoxColumn notifyColumn = new DataGridViewCheckBoxColumn();
+                //    notifyColumn.Name = "Notify";
+                //    notifyColumn.ReadOnly = false;
+                //    dataGridView1.Columns.Add(notifyColumn);
+                //    dataGridView1.AutoResizeColumns();
+                //    dataGridView1.AutoResizeRows();
+                //}
                 dataGridView1.Columns["Notify"].Visible = true;
 
+                BuildRow.DataGridView1 = dataGridView1;
                 dataGridView1.Show();
             }
         }
@@ -187,13 +178,14 @@ namespace WinFormsApp1
         {
             return Program.Game.Player.PiecesOfType<T>().FirstOrDefault(b => selected.GetDistance(b.Piece.Tile) <= b.Range);
         }
+
         private void DataGridView1_CellClick(object sender, DataGridViewCellEventArgs e)
         {
             var senderGrid = (DataGridView)sender;
             if (selected != null
                 && e.ColumnIndex >= 0 && e.ColumnIndex < senderGrid.Columns.Count
                 && e.RowIndex >= 0 && e.RowIndex < rows.Count
-                && senderGrid.Columns[e.ColumnIndex] is DataGridViewButtonColumn)
+                && senderGrid.Columns[e.ColumnIndex].Name == "Build")
             {
                 BuildRow row = (BuildRow)rows[e.RowIndex];
                 IBuilder builder = row.Builder;
@@ -212,13 +204,43 @@ namespace WinFormsApp1
             }
         }
 
+        private void Button1_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+        private void DgvForm_FormClosing(object sender, EventArgs e)
+        {
+            dataGridView1.EndEdit();
+        }
+
         public class BuildRow
         {
+            public static DataGridView DataGridView1 { private get; set; }
             public IBuilder Builder { get; }
             public string Name { get; }
             public double Energy { get; }
             public double Mass { get; }
 
+            public bool Notify
+            {
+                get
+                {
+                    if (Blueprint is not null)
+                        return Blueprint.Notify;
+                    if (Builder is IBuilder.IBuildConstructor buildConstructor)
+                        return buildConstructor.Piece.Game.Player.NotifyConstructor;
+                    return true;
+                }
+                set
+                {
+                    if (Blueprint is not null)
+                        Blueprint.Notify = value;
+                    if (Builder is IBuilder.IBuildConstructor buildConstructor)
+                        buildConstructor.Piece.Game.Player.NotifyConstructor = value;
+                }
+            }
+
+            //public PlayerPiece Piece { get; }
             public MechBlueprint Blueprint { get; }
 
             public MechBlueprint Upgraded => Blueprint?.UpgradeFrom;
@@ -240,6 +262,19 @@ namespace WinFormsApp1
             public string ShieldPierce => Blueprint == null ? null : List(a => a.ShieldPierce.ToString("P0"));
             public string Randomness => Blueprint == null ? null : List(a => a.Dev.ToString("P0"));
 
+            public bool Build
+            {
+                get
+                {
+                    return Program.Game.Player.Has(Energy, Mass);
+                }
+                set
+                {
+                    if (Program.Game.Player.Has(Energy, Mass) != value)
+                        DataGridView1.Invalidate();
+                }
+            }
+
             private string List(Func<IAttacker.Values, string> Get)
             {
                 var data = Blueprint.Attacks.Select(Get);
@@ -260,11 +295,6 @@ namespace WinFormsApp1
                 this.Energy = energy;
                 this.Mass = mass;
             }
-        }
-
-        private void Button1_Click(object sender, EventArgs e)
-        {
-            this.Close();
         }
     }
 }
