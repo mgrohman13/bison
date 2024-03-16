@@ -1,8 +1,11 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net7.0-windows</TargetFramework> 
 	<LangVersion>latest</LangVersion> 
+	<AssemblyVersion></AssemblyVersion> 
+	<FileVersion></FileVersion>
+	<VersionPrefix>0.1.0</VersionPrefix>
   </PropertyGroup>
 
   <ItemGroup>
