@@ -226,17 +226,17 @@ namespace WinFormsApp1
                 get
                 {
                     if (Blueprint is not null)
-                        return Blueprint.Notify;
+                        return Program.GetNotify(Blueprint);
                     if (Builder is IBuilder.IBuildConstructor buildConstructor)
-                        return buildConstructor.Piece.Game.Player.NotifyConstructor;
+                        return Program.NotifyConstructor;
                     return true;
                 }
                 set
                 {
                     if (Blueprint is not null)
-                        Blueprint.Notify = value;
+                        Program.SetNotify(Blueprint, value);
                     if (Builder is IBuilder.IBuildConstructor buildConstructor)
-                        buildConstructor.Piece.Game.Player.NotifyConstructor = value;
+                        Program.NotifyConstructor = value;
                 }
             }
 

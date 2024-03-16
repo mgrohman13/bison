@@ -17,9 +17,7 @@ namespace ClassLibrary1.Pieces.Players
         public readonly double Vision;
         public readonly IKillable.Values Killable;
         public readonly IReadOnlyCollection<IAttacker.Values> Attacks;
-        public readonly IMovable.Values Movable;
-
-        public bool Notify { get; set; }
+        public readonly IMovable.Values Movable; 
 
         private MechBlueprint(int blueprintNum, MechBlueprint upgrade, int research, double vision, IKillable.Values killable, IEnumerable<IAttacker.Values> attacks, IMovable.Values movable)
         {

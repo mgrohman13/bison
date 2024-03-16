@@ -24,9 +24,7 @@ namespace ClassLibrary1
         }
         public Core Core => _core;
         new public int Energy => base.Energy;
-        new public int Mass => base.Mass;
-
-        public bool NotifyConstructor { get; set; }
+        new public int Mass => base.Mass; 
 
         internal Player(Game game)
             : base(game, 0, 1750)

@@ -1,15 +1,12 @@
-using System;
-using System.Diagnostics;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using System.IO;
 using ClassLibrary1;
 using ClassLibrary1.Pieces;
-using ClassLibrary1.Pieces.Enemies;
 using ClassLibrary1.Pieces.Players;
 using ClassLibrary1.Pieces.Terrain;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Windows.Forms;
 
 namespace WinFormsApp1
 {
@@ -21,6 +18,9 @@ namespace WinFormsApp1
         public static DgvForm DgvForm;
 
         private readonly static HashSet<PlayerPiece> moved = new();
+        private readonly static HashSet<MechBlueprint> notifyOff = new();
+
+        public static bool NotifyConstructor { get; set; } = true;
 
         public static string savePath;
 
@@ -104,7 +104,7 @@ namespace WinFormsApp1
         {
             bool end = true;
             if (Game.Player.Pieces.Any(MoveLeft))
-                end = MessageBox.Show("Move remaining.  End Turn?", string.Empty, MessageBoxButtons.OKCancel, MessageBoxIcon.Warning) == DialogResult.OK;
+                end = MessageBox.Show("Move remaining.  End Turn?", "", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning) == DialogResult.OK;
             if (end)
             {
                 ClassLibrary1.Research.Type? researched = Game.EndTurn();
@@ -199,11 +199,11 @@ namespace WinFormsApp1
             bool move = false;
             IBuilder builder = piece.GetBehavior<IBuilder>();
             if (!move && piece.HasBehavior<IBuilder.IBuildMech>(out _))
-                move = Game.Player.Research.Blueprints.Any(b => Game.Player.Has(b.Energy, b.Mass));
+                move = Game.Player.Research.Blueprints.Any(b => Game.Player.Has(b.Energy, b.Mass) && GetNotify(b));
             if (!move && piece.HasBehavior<IBuilder.IBuildConstructor>(out _))
             {
                 Constructor.Cost(Game, out int e, out int m);
-                move = Game.Player.Has(e, m);
+                move = Game.Player.Has(e, m) && NotifyConstructor;
             }
             if (!move && piece.HasBehavior<IBuilder.IBuildExtractor>(out _))
                 move = piece.Tile.GetVisibleTilesInRange(builder.Range).Select(t => t.Piece as Resource).Where(r => r != null).Any(r =>
@@ -235,6 +235,18 @@ namespace WinFormsApp1
             }
 
             return move;
+        }
+
+        internal static void SetNotify(MechBlueprint blueprint, bool value)
+        {
+            if (value)
+                notifyOff.Remove(blueprint);
+            else
+                notifyOff.Add(blueprint);
+        }
+        internal static bool GetNotify(MechBlueprint blueprint)
+        {
+            return !notifyOff.Contains(blueprint);
         }
     }
 }
