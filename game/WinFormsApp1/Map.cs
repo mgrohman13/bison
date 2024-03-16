@@ -1,21 +1,18 @@
-﻿using System;
-using System.Diagnostics;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using ClassLibrary1;
+﻿using ClassLibrary1;
 using ClassLibrary1.Pieces;
 using ClassLibrary1.Pieces.Enemies;
 using ClassLibrary1.Pieces.Players;
 using ClassLibrary1.Pieces.Terrain;
-using Tile = ClassLibrary1.Map.Tile;
-using Point = MattUtil.Point;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Diagnostics;
+using System.Drawing;
+using System.Linq;
+using System.Windows.Forms;
 using DPoint = System.Drawing.Point;
+using Point = MattUtil.Point;
+using Tile = ClassLibrary1.Map.Tile;
 
 namespace WinFormsApp1
 {
@@ -308,17 +305,21 @@ namespace WinFormsApp1
                 e.Graphics.DrawRectangle(sel, GetX(SelTile.X), GetY(SelTile.Y), scale, scale);
             }
 
-            if (viewAttacks && scale > 21)
+            if (viewAttacks && scale > 16.9f)
             {
-                using Font f = new(FontFamily.GenericMonospace, scale / 5.6f);
+                using Font f = new(FontFamily.GenericMonospace, scale / 3.9f);
                 foreach (var p in attacks)
                     if (mapCoords.Contains(p.Key.X, p.Key.Y))
-                        e.Graphics.DrawString(p.Value, f, Brushes.Red, new PointF(GetX(p.Key.X) + scale - e.Graphics.MeasureString(p.Value, f).Width, GetY(p.Key.Y) + scale - f.Size * 2 - 2));
+                    {
+                        SizeF size = e.Graphics.MeasureString(p.Value, f);
+                        e.Graphics.DrawString(p.Value, f, Brushes.Red, new PointF(GetX(p.Key.X) + scale - size.Width, GetY(p.Key.Y) + scale - size.Height));
+                    }
             }
             foreach (var p in letters)
             {
-                using Font f = new(FontFamily.GenericMonospace, (float)(scale / Math.PI));
-                e.Graphics.DrawString(p.Value, f, Brushes.Black, p.Key.X + (scale - e.Graphics.MeasureString(p.Value, f).Width) / 2f, p.Key.Y);
+                using Font f = new(FontFamily.GenericMonospace, scale / 2.6f);
+                SizeF size = e.Graphics.MeasureString(p.Value, f);
+                e.Graphics.DrawString(p.Value, f, Brushes.Black, p.Key.X + (scale - size.Width) / 2f, p.Key.Y);
             }
 
             foreach (IDisposable d in hitsBrushes.Values)
