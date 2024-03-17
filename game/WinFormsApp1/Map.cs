@@ -51,15 +51,15 @@ namespace WinFormsApp1
             get { return _moused; }
             set
             {
-                double range = -1;
+                float range = -1;
                 bool HasSel() => !scrollDown && !scrollLeft && !scrollUp && !scrollRight && (SelTile?.Piece?.IsPlayer).GetValueOrDefault();
                 bool InRange() => HasSel() && _moused != null && _moused.GetDistance(SelTile) <= range;
                 if (HasSel())
                 {
                     if (SelTile.Piece.HasBehavior(out IBuilder b))
-                        range = Math.Max(range, b.Range);
+                        range = (float)Math.Max(range, b.Range);
                     if (SelTile.Piece.HasBehavior(out IMovable m))
-                        range = Math.Max(range, m.MoveCur);
+                        range = (float)Math.Max(range, m.MoveCur);
                 }
 
                 if (_moused != value)
@@ -93,7 +93,7 @@ namespace WinFormsApp1
             //lblMouse.AutoSize\
             //lblMouse.
 
-            this.SetStyle(ControlStyles.DoubleBuffer | ControlStyles.UserPaint |
+            this.SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.UserPaint |
                 ControlStyles.AllPaintingInWmPaint, true);
             this.ResizeRedraw = true;
 
@@ -113,7 +113,7 @@ namespace WinFormsApp1
                 this.lblMouse.Text = string.Format("({0}, {1})", MouseTile.X, MouseTile.Y);
                 if (SelTile != null)// && SelTile.Piece != null && SelTile.Piece.HasBehavior(out IMovable movable))// && movable.MoveCur >= 1)
                 {
-                    double distance = MouseTile.GetDistance(SelTile);
+                    float distance = (float)MouseTile.GetDistance(SelTile);
                     //if (distance <= movable.MoveCur)
                     this.lblMouse.Text = distance.ToString("0.0");
                     this.lblMouse.Refresh();
@@ -364,13 +364,13 @@ namespace WinFormsApp1
 
             if (viewAttacks)
             {
-                Dictionary<Tile, double> attStr = new();
-                void AddAttStr(IEnumerable<Point> range, double damage)
+                Dictionary<Tile, float> attStr = new();
+                void AddAttStr(IEnumerable<Point> range, float damage)
                 {
                     foreach (Tile t in range.Select(Program.Game.Map.GetVisibleTile).Where(t => t != null))
                         if (t.Piece == null || !t.Piece.IsEnemy)
                         {
-                            attStr.TryGetValue(t, out double total);
+                            attStr.TryGetValue(t, out float total);
                             attStr[t] = total + damage;
                         }
                 }
@@ -446,9 +446,9 @@ namespace WinFormsApp1
             foreach (var pair in ranges)
                 foreach (var tiles in pair.Value)
                     foreach (Point t in tiles)
-                        if (mapCoords.Contains(new System.Drawing.Point(t.X, t.Y)))
+                        if (mapCoords.Contains(new DPoint(t.X, t.Y)))
                         {
-                            bool Show(Point p) => !tiles.Contains(p) && mapCoords.Contains(new System.Drawing.Point(p.X, p.Y));
+                            bool Show(Point p) => !tiles.Contains(p) && mapCoords.Contains(new DPoint(p.X, p.Y));
                             void AddLine(int x1, int y1, int x2, int y2)
                             {
                                 LineSegment l = new(x1, y1, x2, y2);
@@ -515,7 +515,7 @@ namespace WinFormsApp1
 
             //watch.Stop();
         }
-        private IEnumerable<HashSet<Point>> AddAttacks(IAttacker attacker, Action<IEnumerable<Point>, double> AddAttStr)
+        private IEnumerable<HashSet<Point>> AddAttacks(IAttacker attacker, Action<IEnumerable<Point>, float> AddAttStr)
         {
             HashSet<Point> moveTiles = (attacker.HasBehavior(out IMovable movable) ? movable.Piece.Tile.GetPointsInRange(movable) : new Point[] { new(attacker.Piece.Tile.X, attacker.Piece.Tile.Y) }).ToHashSet();
 
@@ -560,7 +560,7 @@ namespace WinFormsApp1
                         if (moveEdge.Any(mt => ClassLibrary1.Map.Tile.GetDistance(mt.X, mt.Y, point.X, point.Y) <= a.Range))
                             attPts.Add(point);
                     HashSet<Point> result = attPts.Union(moveTiles.Select(t => new Point(t.X, t.Y))).ToHashSet();
-                    AddAttStr?.Invoke(result, a.Damage);
+                    AddAttStr?.Invoke(result, (float)a.Damage);
                     retVal.Add(result);
                 }
 
@@ -665,7 +665,7 @@ namespace WinFormsApp1
             //private static bool OnMap(Rectangle mapCoords, Point p)
             //{
             //    //return true;
-            //    return mapCoords.Contains(new System.Drawing.Point(p.X, p.Y));
+            //    return mapCoords.Contains(new Point(p.X, p.Y));
             //}
         }
         private class LineSegment
