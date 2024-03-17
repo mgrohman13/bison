@@ -121,7 +121,7 @@ namespace ClassLibrary1
                     if (GetAngleDiff(path.Angle, angle) > Math.PI / 2.0)
                     {
                         double distX = point.X - x, distY = point.Y - y;
-                        double distSqr = distX * distX + distY * distY
+                        double distSqr = distX * distX + distY * distY;
                         backMult = Math.Min(1, Consts.PathWidth * Consts.PathWidth / distSqr);
                     }
 
