@@ -4,7 +4,10 @@ using ClassLibrary1.Pieces.Terrain;
 using MattUtil;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Drawing;
 using System.Linq;
+using Point = MattUtil.Point;
 
 namespace ClassLibrary1
 {
@@ -14,7 +17,7 @@ namespace ClassLibrary1
         public readonly Game Game;
 
         private readonly Noise noise;
-        private readonly Direction _left, _right, _down, _up;
+        private readonly Direction[] _paths;
 
         private readonly Dictionary<Point, Piece> _pieces;
         private readonly HashSet<Point> _explored;
@@ -36,19 +39,51 @@ namespace ClassLibrary1
             double min = Game.Rand.GaussianCapped(5.2, .039, 3.9);
             int steps = Game.Rand.GaussianOEInt(6.5, .13, .13, 4);
             double weightScale = Game.Rand.Weighted(.91);
-            double weightPower = Game.Rand.GaussianOE(6.5, .13, .13, 3.9);
-            this.noise = new Noise(Game.Rand, min, max, steps, .052, weightScale, weightPower);
+            this.noise = new Noise(Game.Rand, min, max, steps, .052, weightScale);
 
-            Tuple<double, double>[] enemyDirs = Game.Rand.Iterate(new Tuple<double, double>[] {
-                new(1, 1),
-                new(Game.Rand.GaussianCapped(1.69, .13,     1   ), Game.Rand.GaussianCapped( .65, .13 ,  .52)),
-                new(Game.Rand.GaussianCapped(1.13, .13,      .52), Game.Rand.GaussianCapped(1.69, .13 , 1.3 )),
-                new(Game.Rand.GaussianOE    (1   , .21, .26, .13), Game.Rand.GaussianCapped(1   , .169,  .65)),
-            }).ToArray();
-            this._left = new Direction(true, true, enemyDirs[0]);
-            this._right = new Direction(true, false, enemyDirs[1]);
-            this._up = new Direction(false, true, enemyDirs[2]);
-            this._down = new Direction(false, false, enemyDirs[3]);
+            //Tuple<double, double>[] enemyDirs = Game.Rand.Iterate(new Tuple<double, double>[] {
+            //    new(1, 1),
+            //    new(Game.Rand.GaussianCapped(1.69, .13,     1   ), Game.Rand.GaussianCapped( .65, .13 ,  .52)),
+            //    new(Game.Rand.GaussianCapped(1.13, .13,      .52), Game.Rand.GaussianCapped(1.69, .13 , 1.3 )),
+            //    new(Game.Rand.GaussianOE    (1   , .21, .26, .13), Game.Rand.GaussianCapped(1   , .169,  .65)),
+            //}).ToArray();
+
+            const double twoPi = Math.PI * 2;
+            int numPaths = Game.Rand.RangeInt(Consts.MinPaths, Consts.MaxPaths);
+            double separation = Consts.PathMinSeparation / numPaths;
+            double[] angles;
+            bool valid;
+            do
+            {
+                angles = Enumerable.Repeat(0, numPaths).Select(x => Game.Rand.NextDouble() * twoPi).ToArray();
+                valid = true;
+                for (int a = 0; valid && a < numPaths - 1; a++)
+                    for (int b = a; valid && ++b < numPaths;)
+                    {
+                        double check = GetAngleDiff(angles[a], angles[b]);
+                        if (check < separation)
+                            valid = false;
+                    }
+            } while (!valid);
+
+            double[] enemyPowers = angles.Select(x => 1 + Game.Rand.OE(1 / 13.0)).ToArray();
+            static double Increase(double x) => 1.3 + (x - 1) * 5;
+            enemyPowers[0] = Increase(enemyPowers[0]);
+            enemyPowers[1] = 1 / Increase(enemyPowers[1]);
+            for (int a = 2; a < numPaths; a++)
+                if (Game.Rand.Bool())
+                    enemyPowers[a] = 1 / enemyPowers[a];
+            Game.Rand.Shuffle(enemyPowers);
+
+            this._paths = new Direction[numPaths];
+            for (int a = 0; a < numPaths; a++)
+            {
+                double enemyPow = enemyPowers[a];
+                double enemyMult = 1 + Game.Rand.OE(1 / (enemyPow > 1 ? enemyPow : 1 / enemyPow));
+                if (Game.Rand.Bool())
+                    enemyMult = 1 / enemyMult;
+                this._paths[a] = new Direction(angles[a], enemyMult / enemyPow, enemyPow);
+            }
 
             this._pieces = new();
             this._explored = new();
@@ -70,13 +105,49 @@ namespace ClassLibrary1
                 evaluateCache = new Dictionary<Point, double>();
             if (evaluateCache.TryGetValue(p, out double v))
                 return v;
-            static double Gradient(double coord, double center) => 2 / (1 + Math.Pow(Math.E, -.065 * (center - coord)));
-            double xMult = Math.Min(Gradient(x, _right.Boundary), Gradient(-x, -_left.Boundary));
-            double yMult = Math.Min(Gradient(y, _down.Boundary), Gradient(-y, -_up.Boundary));
-            double mult = xMult * xMult + yMult * yMult;
+
+            double mult = 0;
+            foreach (var path in _paths)
+            {
+                double LineDistance(PointD point)
+                {
+                    double tan = Math.Tan(path.Angle);
+                    return (x * tan - point.X * tan + point.Y - y) / Math.Sqrt(tan * tan + 1);
+                }
+                double Gradient(PointD point, int sign)
+                {
+                    double backMult = 1;
+                    double angle = Math.Atan2(point.Y - y, point.X - x);
+                    if (GetAngleDiff(path.Angle, angle) > Math.PI / 2.0)
+                    {
+                        double distX = point.X - x, distY = point.Y - y;
+                        double distSqr = distX * distX + distY * distY
+                        backMult = Math.Min(1, Consts.PathWidth * Consts.PathWidth / distSqr);
+                    }
+
+                    if (GetAngleDiff(path.Angle, Math.PI) < Math.PI / 2.0)
+                        sign *= -1;
+                    double lineDist = LineDistance(point) * sign;
+
+                    return 2 / (1 + Math.Pow(Math.E, -.065 * lineDist)) * backMult;
+                }
+
+                double m = Math.Min(Gradient(path.Left, 1), Gradient(path.Right, -1));
+                mult += m * m;
+            }
+
             double value = noise.Evaluate(x, y) * mult;
             evaluateCache.Add(p, value);
             return value;
+        }
+
+        private static double GetAngleDiff(double a, double b)
+        {
+            const double twoPi = Math.PI * 2;
+            double check = Math.Abs(a - b) % twoPi;
+            if (check > Math.PI)
+                check = twoPi - check;
+            return check;
         }
 
         public Tile GetVisibleTile(Point p)
@@ -109,13 +180,21 @@ namespace ClassLibrary1
             return piece;
         }
 
-        public System.Drawing.Rectangle GameRect()
+        public Rectangle GameRect()
         {
-            int x = _left.Explored;
-            int y = _up.Explored;
-            int w = _right.Explored;
-            int h = _down.Explored;
-            return new System.Drawing.Rectangle(x, y, w - x + 1, h - y + 1);
+            int v = Game.TEST_MAP_GEN.Value;
+            return new Rectangle(-v, -v, v * 2, v * 2);
+
+            //int x = _left.Explored;
+            //int y = _up.Explored;
+            //int w = _right.Explored;
+            //int h = _down.Explored;
+            //Rectangle gameRect = new(x, y, w - x + 1, h - y + 1);
+
+            //if (Game.TEST_MAP_GEN.HasValue)
+            //    gameRect = Rectangle.Inflate(gameRect, Game.TEST_MAP_GEN.Value, Game.TEST_MAP_GEN.Value);
+
+            //return gameRect;
         }
 
         public bool Visible(Point tile)
@@ -127,7 +206,7 @@ namespace ClassLibrary1
             bool visible = _explored.Contains(new(x, y));
             //if (!visible)
             //    visible = _pieces.ContainsKey(new Point(x, y));
-            return visible;
+            return Game.TEST_MAP_GEN.HasValue || visible;
         }
 
         internal void AddPiece(Piece piece)
@@ -145,8 +224,8 @@ namespace ClassLibrary1
         {
             foreach (Point p in piece.Tile.GetPointsInRange(piece.Vision))
                 this._explored.Add(p);
-            foreach (Direction dir in new Direction[] { _left, _right, _up, _down })
-                dir.Explore(piece.Tile, (int)piece.Vision);
+            //foreach (Direction dir in new Direction[] { _left, _right, _up, _down })
+            //    dir.Explore(piece.Tile, (int)piece.Vision);
             GenResources(piece.Tile, (int)piece.Vision);
         }
 
@@ -154,32 +233,35 @@ namespace ClassLibrary1
         {
             Map.Tile tile;
             do
-                tile = GetTile(Game.Rand.GaussianInt(Consts.MapCoordSize), Game.Rand.GaussianInt(Consts.MapCoordSize));
+                tile = GetTile(Game.Rand.GaussianInt(Consts.PathWidth), Game.Rand.GaussianInt(Consts.PathWidth));
             while (InvalidStartTile(tile));
             return tile;
         }
         internal bool InvalidStartTile(Map.Tile tile)
         {
-            return (tile == null || tile.Piece != null || tile.Visible || tile.GetDistance(Game.Player.Core.Tile) <= Game.Player.Core.GetBehavior<IRepair>().Range);
+            if (tile == null) return true;
+
+            bool visible = tile.Visible && !Game.TEST_MAP_GEN.HasValue;
+            return (visible || tile.Piece != null || tile.GetDistance(Game.Player.Core.Tile) <= Game.Player.Core.GetBehavior<IRepair>().Range);
         }
 
         private void GenResources(Tile explored, int vision)
         {
-            IEnumerable<Tile> resources = this._pieces.Values.Where(p => p is Extractor || p is Resource).Select(r => r.Tile);
-            if (resources.Any())
-            {
-                var funcs = new Func<bool>[] {
-                    () => GenResource(true, true, _left.Boundary, explored.X - vision, resources.Min(t => t.X), ref _left.ResourceNum),
-                    () => GenResource(true, false, _right.Boundary, explored.X + vision, resources.Max(t => t.X), ref _right.ResourceNum),
-                    () => GenResource(false, true, _up.Boundary, explored.Y - vision, resources.Min(t => t.Y), ref _up.ResourceNum),
-                    () => GenResource(false, false, _down.Boundary, explored.Y + vision, resources.Max(t => t.Y), ref _down.ResourceNum),
-                };
-                bool generated = false;
-                foreach (var Func in Game.Rand.Iterate(funcs))
-                    generated |= Func();
-                if (generated)
-                    GenResources(explored, vision);
-            }
+            //IEnumerable<Tile> resources = this._pieces.Values.Where(p => p is Extractor || p is Resource).Select(r => r.Tile);
+            //if (resources.Any())
+            //{
+            //    var funcs = new Func<bool>[] {
+            //        () => GenResource(true, true, _left.Boundary, explored.X - vision, resources.Min(t => t.X), ref _left.ResourceNum),
+            //        () => GenResource(true, false, _right.Boundary, explored.X + vision, resources.Max(t => t.X), ref _right.ResourceNum),
+            //        () => GenResource(false, true, _up.Boundary, explored.Y - vision, resources.Min(t => t.Y), ref _up.ResourceNum),
+            //        () => GenResource(false, false, _down.Boundary, explored.Y + vision, resources.Max(t => t.Y), ref _down.ResourceNum),
+            //    };
+            //    bool generated = false;
+            //    foreach (var Func in Game.Rand.Iterate(funcs))
+            //        generated |= Func();
+            //    if (generated)
+            //        GenResources(explored, vision);
+            //}
         }
         private bool GenResource(bool dir, bool neg, double start, int explored, int min, ref int resourceNum)
         {
@@ -194,7 +276,7 @@ namespace ClassLibrary1
                 double avg = start + (resourceNum + .5) * Consts.ResourceAvgDist;
                 int x = avg > min ? Game.Rand.GaussianOEInt(avg, 1, 1 / Math.Sqrt(avg), min) : min;
                 x += Game.Rand.OEInt();
-                int y = Game.Rand.GaussianInt(Consts.MapCoordSize);
+                int y = Game.Rand.GaussianInt(Consts.PathWidth);
 
                 if (neg)
                 {
@@ -271,51 +353,53 @@ namespace ClassLibrary1
 
         internal Tile GetEnemyTile()
         {
-            double GetExplored(Direction dir)
-            {
-                int GetBound(double b) => Game.Rand.GaussianCappedInt(Math.Abs(b * 1.17), .13, 0);
-                int a = -GetBound(dir.IsX ? _up.Boundary : _left.Boundary);
-                int b = GetBound(dir.IsX ? _down.Boundary : _right.Boundary);
-                double max = 0, avg = 0;
-                for (int c = a; c <= b; c++)
-                {
-                    var e = _explored.Where(p => (dir.IsX ? p.Y : p.X) == c).Select(dir.GetCoord);
-                    if (e.Any())
-                    {
-                        int f = dir.Neg ? e.Min() : e.Max();
-                        max = ((Func<double, double, double>)(dir.Neg ? Math.Min : Math.Max))(max, f);
-                        avg += f;
-                    }
-                    else
-                        ;
-                }
-                avg /= (b - a + 1);
-                return (max + avg) / 2;
-            }
-            int GetChance(Direction dir)
-            {
-                double main = dir.EnemyMult * dir.EnemyMult * (13 + Math.Pow(Game.Turn / 2.1, dir.EnemyPow));
-                double exp = Math.Abs(GetExplored(dir)) / 1.3;
-                return Game.Rand.Round(Math.Sqrt(39 + main + exp));
-            };
+            return null;
 
-            Direction dir = Game.Rand.SelectValue(new Direction[] { _left, _right, _up, _down }, GetChance);
+            //double GetExplored(Direction dir)
+            //{
+            //    int GetBound(double b) => Game.Rand.GaussianCappedInt(Math.Abs(b * 1.17), .13, 0);
+            //    int a = -GetBound(dir.IsX ? _up.Boundary : _left.Boundary);
+            //    int b = GetBound(dir.IsX ? _down.Boundary : _right.Boundary);
+            //    double max = 0, avg = 0;
+            //    for (int c = a; c <= b; c++)
+            //    {
+            //        var e = _explored.Where(p => (dir.IsX ? p.Y : p.X) == c).Select(dir.GetCoord);
+            //        if (e.Any())
+            //        {
+            //            int f = dir.Neg ? e.Min() : e.Max();
+            //            max = ((Func<double, double, double>)(dir.Neg ? Math.Min : Math.Max))(max, f);
+            //            avg += f;
+            //        }
+            //        else
+            //            ;
+            //    }
+            //    avg /= (b - a + 1);
+            //    return (max + avg) / 2;
+            //}
+            //int GetChance(Direction dir)
+            //{
+            //    double main = dir.EnemyMult * dir.EnemyMult * (13 + Math.Pow(Game.Turn / 2.1, dir.EnemyPow));
+            //    double exp = Math.Abs(GetExplored(dir)) / 1.3;
+            //    return Game.Rand.Round(Math.Sqrt(39 + main + exp));
+            //};
 
-            Map.Tile tile;
-            do
-            {
-                int x = Game.Rand.GaussianInt(Consts.MapCoordSize);
-                int y = Game.Rand.Round(GetExplored(dir)) + Game.Rand.GaussianOEInt(Game.Rand.Range(2.1, 16.9), .39, .26, 1) * dir.Sign();
-                if (dir.IsX)
-                {
-                    int t = y;
-                    y = x;
-                    x = t;
-                }
-                tile = GetTile(x, y);
-            }
-            while (InvalidStartTile(tile));
-            return tile;
+            //Direction dir = Game.Rand.SelectValue(new Direction[] { _left, _right, _up, _down }, GetChance);
+
+            //Map.Tile tile;
+            //do
+            //{
+            //    int x = Game.Rand.GaussianInt(Consts.PathWidth);
+            //    int y = Game.Rand.Round(GetExplored(dir)) + Game.Rand.GaussianOEInt(Game.Rand.Range(2.1, 16.9), .39, .26, 1) * dir.Sign();
+            //    if (dir.IsX)
+            //    {
+            //        int t = y;
+            //        y = x;
+            //        x = t;
+            //    }
+            //    tile = GetTile(x, y);
+            //}
+            //while (InvalidStartTile(tile));
+            //return tile;
         }
 
         private static Func<Map, int, int, Tile> NewTile;
@@ -451,46 +535,65 @@ namespace ClassLibrary1
         [Serializable]
         private class Direction
         {
-            public readonly bool IsX, Neg;
-            public readonly double Boundary;
+            public readonly double Angle;
+            public readonly PointD Left, Right;
 
             public readonly double EnemyMult, EnemyPow;
 
-            public int ResourceNum, Explored;
+            public int ResourceNum;
+            public double Explored;
 
-            public Direction(bool isX, bool neg, Tuple<double, double> enemies)
+            public Direction(double angle, double enemyMult, double enemyPow)
             {
-                this.IsX = isX;
-                this.Neg = neg;
+                this.Angle = angle;
+                this.EnemyMult = enemyMult;
+                this.EnemyPow = enemyPow;
 
-                this.Boundary = Game.Rand.GaussianCapped(Consts.MapCoordSize, Consts.MapDev, Consts.MinMapCoord);
-                this.Boundary *= Sign();
+                static double Dist() => Game.Rand.GaussianCapped(Consts.PathWidth, Consts.PathWidthDev, Consts.PathWidthMin);
+                PointD GetOrigin(int sign)
+                {
+                    double dist = Dist();
+                    double dir = angle + Math.PI / 2.0 * sign;
+                    double x = Math.Cos(dir) * dist;
+                    double y = Math.Sin(dir) * dist;
+                    return new(x, y);
+                }
+                this.Left = GetOrigin(1);
+                this.Right = GetOrigin(-1);
 
-                this.EnemyMult = enemies.Item1;
-                this.EnemyPow = Math.Sqrt(enemies.Item2);
+                Debug.WriteLine(Left);
+                Debug.WriteLine(Right);
 
                 this.ResourceNum = 0;
                 this.Explored = 0;
             }
 
-            public int Sign()
-            {
-                return (Neg ? -1 : 1);
-            }
-            public int GetCoord(Tile tile)
-            {
-                return GetCoord(new Point(tile.X, tile.Y));
-            }
-            public int GetCoord(Point point)
-            {
-                return IsX ? point.X : point.Y;
-            }
+            ////calculates the line equation in the format ax + by + c = 0
+            //public void CalcLine(PointD start, out double a, out double b, out double c)
+            //{
+            //    a = Math.Tan(Angle);
+            //    b = -1;
+            //    c = start.Y - (a * start.X);
+            //}
 
-            public void Explore(Tile tile, int vision)
-            {
-                Func<int, int, int> F = Neg ? Math.Min : Math.Max;
-                Explored = F(Explored, GetCoord(tile) + vision * Sign());
-            }
+            //public int Sign()
+            //{
+            //    return (Neg ? -1 : 1);
+            //}
+            //public int GetCoord(Tile tile)
+            //{
+            //    return GetCoord(new Point(tile.X, tile.Y));
+            //}
+            //public int GetCoord(Point point)
+            //{
+            //    return IsX ? point.X : point.Y;
+            //}
+
+            //public void Explore(Tile tile, int vision)
+            //{
+            //    Func<int, int, int> F = Neg ? Math.Min : Math.Max;
+            //    Explored = F(Explored, GetCoord(tile) + vision * Sign());
+            //}
         }
     }
 }

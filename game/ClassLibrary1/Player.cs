@@ -1,12 +1,8 @@
-﻿using System;
-using System.Diagnostics;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using MattUtil;
-using ClassLibrary1.Pieces;
-using ClassLibrary1.Pieces.Enemies;
+﻿using ClassLibrary1.Pieces;
 using ClassLibrary1.Pieces.Players;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace ClassLibrary1
 {
@@ -24,7 +20,7 @@ namespace ClassLibrary1
         }
         public Core Core => _core;
         new public int Energy => base.Energy;
-        new public int Mass => base.Mass; 
+        new public int Mass => base.Mass;
 
         internal Player(Game game)
             : base(game, 0, 1750)
@@ -39,7 +35,12 @@ namespace ClassLibrary1
         }
         internal void CreateCore()
         {
-            this._core = Core.NewCore(Game);
+            const double stdDev = Consts.PathWidth / 3.5;
+            Map.Tile tile;
+            do tile = Game.Map.GetTile(Game.Rand.GaussianInt(stdDev), Game.Rand.GaussianInt(stdDev));
+            while (tile == null);
+
+            this._core = Core.NewCore(tile);
         }
 
         internal T GetUpgradeValues<T>() where T : IUpgradeValues

@@ -5,13 +5,14 @@ using ClassLibrary1.Pieces.Terrain;
 using MattUtil;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace ClassLibrary1
 {
     [Serializable]
     public class Game
     {
+        public static readonly int? TEST_MAP_GEN = 500;
+
         public static readonly MTRandom Rand;
         static Game()
         {
@@ -57,7 +58,8 @@ namespace ClassLibrary1
                 new( 2, -1),
                 new( 2,  1),
             });
-            Constructor.NewConstructor(Map.GetTile(constructor.X, constructor.Y), true);
+            if (!TEST_MAP_GEN.HasValue)
+                Constructor.NewConstructor(Map.GetTile(constructor.X, constructor.Y), true);
 
             for (int a = 0; a < 1; a++)
                 Biomass.NewBiomass(Map.StartTile());

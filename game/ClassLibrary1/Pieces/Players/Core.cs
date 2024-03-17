@@ -1,9 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
-using System.Collections.Generic;
-using System.Linq;
-using MattUtil;
-using ClassLibrary1.Pieces;
 
 namespace ClassLibrary1.Pieces.Players
 {
@@ -12,16 +7,16 @@ namespace ClassLibrary1.Pieces.Players
     {
         public Piece Piece => this;
 
-        private Core(Game game, Values values)
-            : base(game.Map.GetTile(0, 0), values.Vision)
+        private Core(Map.Tile tile, Values values)
+            : base(tile, values.Vision)
         {
             SetBehavior(new Killable(this, values.Killable), new Repair(this, values.Repair));
-            Unlock(game.Player.Research);
+            Unlock(tile.Map.Game.Player.Research);
         }
-        internal static Core NewCore(Game game)
+        internal static Core NewCore(Map.Tile tile)
         {
-            Core obj = new(game, GetValues(game));
-            game.AddPiece(obj);
+            Core obj = new(tile, GetValues(tile.Map.Game));
+            tile.Map.Game.AddPiece(obj);
             return obj;
         }
 

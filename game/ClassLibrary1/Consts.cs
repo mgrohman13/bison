@@ -5,9 +5,12 @@ namespace ClassLibrary1
 {
     public static class Consts
     {
-        public const double MapCoordSize = 16.9;
-        public const double MapDev = .13;
-        public const double MinMapCoord = 9.1;
+        public const int MinPaths = 3;
+        public static readonly int MaxPaths = Game.Rand.RangeInt(3, 4);
+        public const double PathMinSeparation = Math.PI * 1.3;
+        public const double PathWidth = 16.9;
+        public const double PathWidthDev = .13;
+        public const double PathWidthMin = 9.1;
         public const double ResourceAvgDist = 21;
 
         public const double ResearchFactor = 2600;
