@@ -107,15 +107,38 @@ emperically test rand booleans for resources
 use range atack OR move and melee
 control energy/mass ratio better, esp early?
 combined power grid, but if separate pieces impose power penalty?
+	batteries - building/mechs
+		excess power convert to research
+	moving slower takes less energy?
+randomize tech tree
+alien morale
+metal types? 
+research
+	exponential tiers - first excess power, then mining, etc.
+true fractal noise... build on smaller with larger as map grows?
+ensure start cant see wall
+evaluate use MemoryCache instead of Dictionary
 
 
 plan:
 convert new combat system
 	attack, defense, single number? no hp?
+		defense at 0 = death
+		attacks get drained to 0 on losing fights
+			alien attacks???
 	different defense types protect against different offense types 
 	bonuses against types? anything else interesting?
 quick convert existing stuff to random parallels
+research tree
+	start melee, get ranged
 melee 
 end game...
 	redo paths?
 	4 caves appear, kill 2?
+map
+	smaller?
+	three paths
+	caves
+	continguous
+		force between core, hives, resources (? - ensure generate past gap?)
+	water/islands
