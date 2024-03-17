@@ -4,6 +4,7 @@ using ClassLibrary1.Pieces.Players;
 using ClassLibrary1.Pieces.Terrain;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
@@ -94,7 +95,7 @@ namespace WinFormsApp1
                 savePath += Path.DirectorySeparatorChar;
             savePath += "game.sav";
 
-            if (File.Exists(savePath))
+            if (File.Exists(savePath) && !Game.TEST_MAP_GEN.HasValue)
                 Game = Game.LoadGame(savePath);
             else
                 Game = new Game(savePath);
@@ -138,7 +139,7 @@ namespace WinFormsApp1
         }
         public static void Next(bool dir)
         {
-            System.Drawing.Rectangle gameRect = Game.Map.GameRect();
+            Rectangle gameRect = Game.Map.GameRect();
             var tiles = Program.Game.Player.Pieces.Where(Program.MoveLeft).Select(p => p.Tile);
             if (tiles.Any() && Form.MapMain.SelTile != null)
                 tiles = tiles.Concat(new ClassLibrary1.Map.Tile[] { Form.MapMain.SelTile });
