@@ -110,7 +110,8 @@ namespace WinFormsApp1
             this.lblMouse.Text = "";
             if (MouseTile != null)
             {
-                this.lblMouse.Text = string.Format("({0}, {1})", MouseTile.X, MouseTile.Y);
+                Tile center = Program.Game.Player.Core.Tile;// Program.Game.Map.GetVisibleTile(0, 0);//
+                this.lblMouse.Text = string.Format("({0}, {1})", MouseTile.X - center.X, MouseTile.Y - center.Y);
                 if (SelTile != null)// && SelTile.Piece != null && SelTile.Piece.HasBehavior(out IMovable movable))// && movable.MoveCur >= 1)
                 {
                     float distance = (float)MouseTile.GetDistance(SelTile);

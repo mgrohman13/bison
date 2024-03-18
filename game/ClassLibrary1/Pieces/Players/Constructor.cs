@@ -1,16 +1,14 @@
-﻿using ClassLibrary1.Pieces.Terrain;
+﻿using MattUtil;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using MattUtil;
 
 namespace ClassLibrary1.Pieces.Players
 {
     [Serializable]
     public class Constructor : PlayerPiece, IKillable.IRepairable
     {
+        public const double START_VISION = 6.5;
+
         private bool _canUpgrade;
         private readonly bool _defenseType;
         private readonly double _rangeMult, _rounding;
@@ -62,7 +60,7 @@ namespace ClassLibrary1.Pieces.Players
         }
         private bool Upgrade()
         {
-            if (CanUpgrade && Side.PiecesOfType<IBuilder.IBuildConstructor>().Any(b => Tile.GetDistance(b.Piece.Tile) <= b.Range))
+            if (CanUpgrade && Side.PiecesOfType<IBuilder>().Any(b => b is not Constructor && Tile.GetDistance(b.Piece.Tile) <= b.Range))
             {
                 Unlock(Game.Player.Research);
                 Values values = GetValues(Game);
@@ -184,7 +182,7 @@ namespace ClassLibrary1.Pieces.Players
             private void UpgradeConstructorCost(double researchMult)
             {
                 researchMult = Math.Pow(researchMult, .5);
-                this.energy = this.mass = Game.Rand.Round(750 / researchMult);
+                this.energy = this.mass = Game.Rand.Round(850 / researchMult);
             }
             private void UpgradeConstructorDefense(double researchMult)
             {
@@ -207,7 +205,7 @@ namespace ClassLibrary1.Pieces.Players
                 int moveLimit = Game.Rand.Round(limit);
                 double mult = Math.Pow((max * 2 + limit) / (moveMax * 2 + moveLimit), 1 / 3.9);
                 double moveInc = 3 * mult * researchMult;
-                this.vision = 6.5 * researchMult;
+                this.vision = START_VISION * researchMult;
                 this.movable = new(moveInc, moveMax, moveLimit);
             }
             private void UpgradeConstructorRepair(double researchMult)

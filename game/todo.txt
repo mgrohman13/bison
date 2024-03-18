@@ -105,7 +105,6 @@ FEATURES
 
 emperically test rand booleans for resources
 use range atack OR move and melee
-control energy/mass ratio better, esp early?
 combined power grid, but if separate pieces impose power penalty?
 	batteries - building/mechs
 		excess power convert to research
@@ -116,8 +115,12 @@ metal types?
 research
 	exponential tiers - first excess power, then mining, etc.
 true fractal noise... build on smaller with larger as map grows?
-ensure start cant see wall
+	how not retroactively affect explored??
 evaluate use MemoryCache instead of Dictionary
+fix mirror image painting? may confuse in future?
+range OP
+move speed ramp up quickly
+building costs get more expensive with upgrade - countered by cost research
 
 
 plan:
@@ -137,7 +140,6 @@ end game...
 	4 caves appear, kill 2?
 map
 	smaller?
-	three paths
 	caves
 	continguous
 		force between core, hives, resources (? - ensure generate past gap?)

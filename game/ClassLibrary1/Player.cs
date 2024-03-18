@@ -1,5 +1,6 @@
 ﻿using ClassLibrary1.Pieces;
 using ClassLibrary1.Pieces.Players;
+using MattUtil;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,11 +34,22 @@ namespace ClassLibrary1
                 .OfType<IUpgradeValues>()
                 .ToArray();
         }
-        internal void CreateCore()
+        internal void CreateCore(Point constructorOffset)
         {
-            const double stdDev = Consts.PathWidth / 3.5;
+            const double stdDev = Consts.PathWidth / 1.3;
             Map.Tile tile;
-            do tile = Game.Map.GetTile(Game.Rand.GaussianInt(stdDev), Game.Rand.GaussianInt(stdDev));
+            do
+            {
+                tile = Game.Map.GetTile(Game.Rand.GaussianInt(stdDev), Game.Rand.GaussianInt(stdDev));
+
+                if (tile != null)
+                {
+                    var checkTiles = Map.Tile.GetPointsInRange(new(tile.X, tile.Y), Core.START_VISION);
+                    checkTiles = checkTiles.Union(Map.Tile.GetPointsInRange(new(tile.X + constructorOffset.X, tile.Y + constructorOffset.Y), Constructor.START_VISION));
+                    if (checkTiles.Any(point => Game.Map.GetTile(point) == null))
+                        tile = null;
+                }
+            }
             while (tile == null);
 
             this._core = Core.NewCore(tile);

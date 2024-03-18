@@ -1,7 +1,6 @@
 ﻿using ClassLibrary1.Pieces;
 using ClassLibrary1.Pieces.Enemies;
 using ClassLibrary1.Pieces.Players;
-using ClassLibrary1.Pieces.Terrain;
 using MattUtil;
 using System;
 using System.Collections.Generic;
@@ -11,7 +10,7 @@ namespace ClassLibrary1
     [Serializable]
     public class Game
     {
-        public static readonly int? TEST_MAP_GEN = 500;
+        public static readonly int? TEST_MAP_GEN = null; //500
 
         public static readonly MTRandom Rand;
         static Game()
@@ -47,7 +46,6 @@ namespace ClassLibrary1
 
             this._pieceNums = new Dictionary<string, int>();
 
-            Player.CreateCore();
             Point constructor = Game.Rand.SelectValue(new Point[] {
                 new(-2, -1),
                 new(-2,  1),
@@ -58,15 +56,9 @@ namespace ClassLibrary1
                 new( 2, -1),
                 new( 2,  1),
             });
-            if (!TEST_MAP_GEN.HasValue)
-                Constructor.NewConstructor(Map.GetTile(constructor.X, constructor.Y), true);
-
-            for (int a = 0; a < 1; a++)
-                Biomass.NewBiomass(Map.StartTile());
-            for (int b = 0; b < 2; b++)
-                Artifact.NewArtifact(Map.StartTile());
-            for (int c = 0; c < 3; c++)
-                Metal.NewMetal(Map.StartTile());
+            Player.CreateCore(constructor);
+            Constructor.NewConstructor(Map.GetTile(Player.Core.Tile.X + constructor.X, Player.Core.Tile.Y + constructor.Y), true);
+            Map.GenerateStartResources();
         }
 
         internal int GetPieceNum(Type type)

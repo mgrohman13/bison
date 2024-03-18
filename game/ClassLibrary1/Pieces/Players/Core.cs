@@ -5,6 +5,8 @@ namespace ClassLibrary1.Pieces.Players
     [Serializable]
     public class Core : PlayerPiece, IKillable.IRepairable
     {
+        public const double START_VISION = 3;
+
         public Piece Piece => this;
 
         private Core(Map.Tile tile, Values values)
@@ -108,7 +110,7 @@ namespace ClassLibrary1.Pieces.Players
             {
                 researchMult = Math.Pow(researchMult, .4);
                 int hits = Game.Rand.Round(100 * researchMult);
-                this.vision = 3 * researchMult;
+                this.vision = START_VISION * researchMult;
                 this.killable = new(hits, resilience, armor, killable.ShieldInc, killable.ShieldMax, killable.ShieldLimit);
             }
             private void UpgradeCoreShields(double researchMult)

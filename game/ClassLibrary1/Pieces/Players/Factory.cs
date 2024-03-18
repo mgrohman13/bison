@@ -1,11 +1,6 @@
-﻿using System;
-using System.Diagnostics;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
+﻿using ClassLibrary1.Pieces.Terrain;
 using MattUtil;
-using ClassLibrary1.Pieces;
-using ClassLibrary1.Pieces.Terrain;
+using System;
 
 namespace ClassLibrary1.Pieces.Players
 {
@@ -126,8 +121,8 @@ namespace ClassLibrary1.Pieces.Players
             {
                 researchMult = Math.Pow(researchMult, .3);
                 rounding = Game.Rand.NextDouble();
-                this.energy = MTRandom.Round(650 / researchMult, rounding);
-                this.mass = MTRandom.Round(250 / researchMult, rounding);
+                this.energy = MTRandom.Round(1250 / researchMult, rounding);
+                this.mass = MTRandom.Round(350 / researchMult, rounding);
             }
             private void UpgradeBuildingHits(double researchMult)
             {
