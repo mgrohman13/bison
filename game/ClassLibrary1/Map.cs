@@ -59,7 +59,7 @@ namespace ClassLibrary1
             bool valid;
             do
             {
-                angles = Enumerable.Repeat(0, numPaths).Select(x => Game.Rand.NextDouble() * twoPi).ToArray();
+                angles = Enumerable.Repeat(0, numPaths).Select(x => Game.Rand.NextDouble() * TWO_PI).ToArray();
                 valid = true;
                 for (int a = 0; valid && a < numPaths - 1; a++)
                     for (int b = a; valid && ++b < numPaths;)
