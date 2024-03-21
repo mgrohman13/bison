@@ -1,12 +1,7 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
-using MattUtil;
-using ClassLibrary1.Pieces;
-using ClassLibrary1.Pieces.Enemies;
-using ClassLibrary1.Pieces.Players;
+using Tile = ClassLibrary1.Map.Tile;
 
 namespace ClassLibrary1.Pieces
 {
@@ -20,15 +15,15 @@ namespace ClassLibrary1.Pieces
         Piece IBehavior.Piece => this;
         protected IReadOnlyCollection<IBehavior> behavior = Array.Empty<IBehavior>();
 
-        private Map.Tile _tile;
+        private Tile _tile;
 
         public Side Side => _side;
-        public Map.Tile Tile => _tile;
+        public Tile Tile => _tile;
 
         public bool IsPlayer => Side != null && Side == Game.Player;
         public bool IsEnemy => Side != null && Side == Game.Enemy;
 
-        internal Piece(Side side, Map.Tile tile)
+        internal Piece(Side side, Tile tile)
         {
             this.Game = tile.Map.Game;
             this._side = side;
@@ -69,7 +64,7 @@ namespace ClassLibrary1.Pieces
             Game.RemovePiece(this);
         }
 
-        internal void SetTile(Map.Tile tile)
+        internal void SetTile(Tile tile)
         {
             if (this.Tile != null)
                 Game.Map.RemovePiece(this);

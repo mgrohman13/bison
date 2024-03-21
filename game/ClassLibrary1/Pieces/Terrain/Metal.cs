@@ -1,19 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Tile = ClassLibrary1.Map.Tile;
 
 namespace ClassLibrary1.Pieces.Terrain
 {
     [Serializable]
     public class Metal : Resource
     {
-        private Metal(Map.Tile tile)
+        private Metal(Tile tile)
             : base(tile, Consts.MetalMassInc, Consts.MetalSustain)
         {
         }
-        internal static Metal NewMetal(Map.Tile tile)
+        internal static Metal NewMetal(Tile tile)
         {
             Metal obj = new(tile);
             tile.Map.Game.AddPiece(obj);

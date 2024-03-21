@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Type = ClassLibrary1.Research.Type;
 
@@ -17,7 +18,7 @@ namespace ClassLibrary1.Pieces.Players
         public readonly double Vision;
         public readonly IKillable.Values Killable;
         public readonly IReadOnlyCollection<IAttacker.Values> Attacks;
-        public readonly IMovable.Values Movable; 
+        public readonly IMovable.Values Movable;
 
         private MechBlueprint(int blueprintNum, MechBlueprint upgrade, int research, double vision, IKillable.Values killable, IEnumerable<IAttacker.Values> attacks, IMovable.Values movable)
         {
@@ -44,50 +45,67 @@ namespace ClassLibrary1.Pieces.Players
             double researchMult = Research.GetResearchMult(ResearchLevel);
 
             double resilience = Math.Pow(Math.Pow(Killable.Resilience, Math.Log(3) / Math.Log(2)) * 1.5 + 0.5, .39);
-            double armor = 1 / (1 - Killable.Armor * (1 - .21));
-            double hp = Killable.HitsMax * armor * resilience;
-            double shield = Killable.ShieldInc * 13 + Killable.ShieldMax * 1 + Killable.ShieldLimit / 2.6;
-            shield /= 3.0;
+            //double armor = 1 / (1 - Killable.Armor * (1 - .21));
+            //double hp = Killable.HitsMax * armor * resilience;
+            //double shield = Killable.ShieldInc * 13 + Killable.ShieldMax * 1 + Killable.ShieldLimit / 2.6;
+            //shield /= 3.0;
 
-            double dmg = 0, rng = 0, ap = 0, sp = 0, cnt = 0;
-            foreach (IAttacker.Values attack in Attacks)
-            {
-                double a = 1 + attack.ArmorPierce;
-                double s = 1 + attack.ShieldPierce;
-                double r = 2.6 + attack.Range;
-                dmg += a * s * attack.Damage;
-                double w = attack.Damage;
-                rng += r * w;
-                ap += a * w;
-                sp += s * w;
-                cnt += w;
-            }
-            rng /= cnt;
-            ap /= cnt;
-            sp /= cnt;
-            ap -= 1;
-            sp -= 1;
+            //double dmg = 0, rng = 0, ap = 0, sp = 0, cnt = 0;
+            //foreach (IAttacker.Values attack in Attacks)
+            //{
+            //    double a = 1 + attack.ArmorPierce;
+            //    double s = 1 + attack.ShieldPierce;
+            //    double r = 2.6 + attack.Range;
+            //    dmg += a * s * attack.Damage;
+            //    double w = attack.Damage;
+            //    rng += r * w;
+            //    ap += a * w;
+            //    sp += s * w;
+            //    cnt += w;
+            //}
+            //rng /= cnt;
+            //ap /= cnt;
+            //sp /= cnt;
+            //ap -= 1;
+            //sp -= 1;
 
-            double vision = (Vision + 5.2) / 9.1;
+            double att = Math.Pow(Attacks.Sum(a => StatValue(a.Attack)), 1.3);
+            double def = StatValue(Killable.Defense) * resilience;
+
+            double vision = (Vision + 6.5) / 13.0;
             double move = 26 * Movable.MoveInc / 1.0 + 2 * Movable.MoveMax / 2.1 + 1 * Movable.MoveLimit / 3.9;
             move /= 26 + 2 + 1;
 
-            hp /= Math.Pow(researchMult, .9);
-            shield /= Math.Pow(researchMult, .7);
-            rng /= Math.Pow(researchMult, .6);
-            dmg /= Math.Pow(researchMult, .8);
-            vision /= Math.Pow(researchMult, .5);
-            move /= Math.Pow(researchMult, .4);
-            rng *= 9.1;
-            move += 2.6;
-            double total = Math.Sqrt((hp + shield + rng) * (dmg + vision) * move) * Consts.MechCostMult;
+            //rng *= 9.1;
+            move += 3.9;
 
-            shield *= 3.9;
-            shield = (1 + shield) / (1.0 + hp + shield);
-            ap = (((1 + ap) / (2 + 1.5 * ap + sp) - 1 / 3.0) * 21 / 5.0 + .052) / 1.052;
-            rng /= (78 + rng);
+            //hp /= Math.Pow(researchMult, .9);
+            //shield /= Math.Pow(researchMult, .7);
+            //rng /= Math.Pow(researchMult, .6);
+            //dmg /= Math.Pow(researchMult, .8);
+            //vision /= Math.Pow(researchMult, .5);
+            //move /= Math.Pow(researchMult, .4);
+            //vision /= researchMult;
+            //move /= researchMult;
+            //double combatMult = researchMult * researchMult;
+            //att /= combatMult;
+            //def /= combatMult;
+
+            //double total = Math.Sqrt((hp + shield + rng) * (dmg + vision) * move) * Consts.MechCostMult;
+            double total = ((att + vision) * def * move) * Consts.MechCostMult;
+            total /= researchMult * researchMult;
+
+            Debug.WriteLine($"total: {total}");
+
+            //shield *= 3.9;
+            //shield = (1 + shield) / (1.0 + hp + shield);
+            //ap = (((1 + ap) / (2 + 1.5 * ap + sp) - 1 / 3.0) * 21 / 5.0 + .052) / 1.052;
+            //rng /= (78 + rng);
             move /= (9.1 + move);
-            double energyPct = Math.Pow(shield * ap * rng * move, 1 / 4.5);
+            vision /= (16.9 + vision);
+            att /= (att + def);
+            //double energyPct = Math.Pow(shield * ap * rng * move, 1 / 4.5);
+            double energyPct = Math.Pow(move * vision * att * att, 1 / 4.5);
 
             energy = total * energyPct;
             mass = (total - energy) / Consts.MechMassDiv;
@@ -95,6 +113,10 @@ namespace ClassLibrary1.Pieces.Players
         private int TotalCost()
         {
             return Energy + Mass;
+        }
+        public static double StatValue(double stat)
+        {
+            return Consts.MechStatMult * (stat * stat + stat);
         }
 
         internal static MechBlueprint Alien(IResearch research)
@@ -158,8 +180,8 @@ namespace ClassLibrary1.Pieces.Players
             IKillable.Values newKillable;
             IAttacker.Values newAttacker;
             IMovable.Values newMovable;
-            int hits, max, limit, damage;
-            double armor, inc, range, dev;
+            int max, limit, att, def;//, hits, damage;
+            double inc, range;//, armor,  dev;
 
             Type researching = research.GetType();
             int times = 1 + Game.Rand.OEInt(.39);
@@ -168,86 +190,90 @@ namespace ClassLibrary1.Pieces.Players
 
                 switch (researching)
                 {
-                    case Type.MechDamage:
+                    case Type.MechAttack:
                         attacker = attacker.Select(a =>
                         {
                             newAttacker = GenAttacker(research).First();
                             range = a.Range;
-                            if (newAttacker.Damage > a.Damage && Game.Rand.Bool())
+                            if (newAttacker.Attack > a.Attack && Game.Rand.Bool())
                                 range = newAttacker.Range;
-                            dev = Game.Rand.Bool() ? a.Dev : newAttacker.Dev;
-                            return new IAttacker.Values(newAttacker.Damage, a.ArmorPierce, a.ShieldPierce, dev, range);
+                            //dev = Game.Rand.Bool() ? a.Dev : newAttacker.Dev;
+                            //return new IAttacker.Values(newAttacker.Attack, a.ArmorPierce, a.ShieldPierce, dev, range);
+                            return new IAttacker.Values(newAttacker.Attack);//, range);
                         });
                         break;
                     case Type.MechRange:
                         attacker = attacker.Select(a =>
                         {
                             newAttacker = GenAttacker(research).First();
-                            damage = a.Damage;
+                            att = a.Attack;
                             if (newAttacker.Range > a.Range && Game.Rand.Bool())
-                                damage = newAttacker.Damage;
-                            dev = Game.Rand.Bool() ? a.Dev : newAttacker.Dev;
-                            return new IAttacker.Values(damage, a.ArmorPierce, a.ShieldPierce, dev, newAttacker.Range);
+                                att = newAttacker.Attack;
+                            //dev = Game.Rand.Bool() ? a.Dev : newAttacker.Dev;
+                            //return new IAttacker.Values(damage, a.ArmorPierce, a.ShieldPierce, dev, newAttacker.Range);
+                            return new IAttacker.Values(att);//, newAttacker.Range);
                         });
                         break;
                     case Type.MechAP:
                         attacker = attacker.Select(a =>
                         {
                             newAttacker = GenAttacker(research).First();
-                            damage = a.Damage;
-                            if (newAttacker.ArmorPierce > a.ArmorPierce && Game.Rand.Bool())
-                                damage = newAttacker.Damage;
-                            dev = Game.Rand.Bool() ? a.Dev : newAttacker.Dev;
-                            return new IAttacker.Values(damage, newAttacker.ArmorPierce, a.ShieldPierce, dev, a.Range);
+                            att = a.Attack;
+                            //if (newAttacker.ArmorPierce > a.ArmorPierce && Game.Rand.Bool())
+                            //    att = newAttacker.Attack;
+                            //dev = Game.Rand.Bool() ? a.Dev : newAttacker.Dev;
+                            //return new IAttacker.Values(damage, newAttacker.ArmorPierce, a.ShieldPierce, dev, a.Range);
+                            return new IAttacker.Values(att);//, a.Range);
                         });
                         break;
                     case Type.MechSP:
                         attacker = attacker.Select(a =>
                         {
                             newAttacker = GenAttacker(research).First();
-                            damage = a.Damage;
-                            if (newAttacker.ShieldPierce > a.ShieldPierce && Game.Rand.Bool())
-                                damage = newAttacker.Damage;
-                            dev = Game.Rand.Bool() ? a.Dev : newAttacker.Dev;
-                            return new IAttacker.Values(damage, a.ArmorPierce, newAttacker.ShieldPierce, dev, a.Range);
+                            att = a.Attack;
+                            //if (newAttacker.ShieldPierce > a.ShieldPierce && Game.Rand.Bool())
+                            //    att = newAttacker.Attack;
+                            //dev = Game.Rand.Bool() ? a.Dev : newAttacker.Dev;
+                            //return new IAttacker.Values(damage, a.ArmorPierce, newAttacker.ShieldPierce, dev, a.Range);
+                            return new IAttacker.Values(att);//, a.Range);
                         });
                         break;
                     case Type.MechArmor:
                         newKillable = GenKillable(research);
-                        hits = killable.HitsMax;
-                        if (newKillable.Armor > killable.Armor && Game.Rand.Bool())
-                            hits = newKillable.HitsMax;
-                        killable = new IKillable.Values(hits, killable.Resilience, newKillable.Armor, killable.ShieldInc, killable.ShieldMax, killable.ShieldLimit);
+                        def = killable.Defense;
+                        //if (newKillable.Armor > killable.Armor && Game.Rand.Bool())
+                        //    def = newKillable.Defense;
+                        killable = new IKillable.Values(def, killable.Resilience);//, newKillable.Armor, killable.ShieldInc, killable.ShieldMax, killable.ShieldLimit);
                         break;
                     case Type.MechResilience:
                         newKillable = GenKillable(research);
-                        hits = killable.HitsMax;
+                        def = killable.Defense;
                         if (newKillable.Resilience > killable.Resilience && Game.Rand.Bool())
-                            hits = newKillable.HitsMax;
-                        armor = killable.Armor;
-                        if (newKillable.Resilience > killable.Resilience && Game.Rand.Bool())
-                            armor = newKillable.Armor;
-                        killable = new IKillable.Values(hits, newKillable.Resilience, armor, killable.ShieldInc, killable.ShieldMax, killable.ShieldLimit);
+                            def = newKillable.Defense;
+                        //armor = killable.Armor;
+                        //if (newKillable.Resilience > killable.Resilience && Game.Rand.Bool())
+                        //    armor = newKillable.Armor;
+                        killable = new IKillable.Values(def, newKillable.Resilience);//, armor, killable.ShieldInc, killable.ShieldMax, killable.ShieldLimit);
                         break;
-                    case Type.MechHits:
+                    case Type.MechDefense:
                         newKillable = GenKillable(research);
-                        armor = killable.Armor;
-                        if (newKillable.HitsMax > killable.HitsMax && Game.Rand.Bool())
-                            armor = newKillable.Armor;
-                        killable = new IKillable.Values(newKillable.HitsMax, killable.Resilience, armor, killable.ShieldInc, killable.ShieldMax, killable.ShieldLimit);
+                        //armor = killable.Armor;
+                        //if (newKillable.Defense > killable.Defense && Game.Rand.Bool())
+                        //    armor = newKillable.Armor;
+                        killable = new IKillable.Values(newKillable.Defense, killable.Resilience);//, armor, killable.ShieldInc, killable.ShieldMax, killable.ShieldLimit);
                         break;
                     case Type.MechShields:
                         newKillable = GenKillable(research);
-                        inc = killable.ShieldInc;
-                        if (newKillable.ShieldInc > inc || Game.Rand.Bool())
-                            inc = newKillable.ShieldInc;
-                        max = killable.ShieldMax;
-                        if (newKillable.ShieldMax > max || Game.Rand.Bool())
-                            max = newKillable.ShieldMax;
-                        limit = killable.ShieldLimit;
-                        if (newKillable.ShieldLimit > limit || Game.Rand.Bool())
-                            limit = newKillable.ShieldLimit;
-                        killable = new IKillable.Values(killable.HitsMax, killable.Resilience, killable.Armor, inc, max, limit);
+                        //inc = killable.ShieldInc;
+                        //if (newKillable.ShieldInc > inc || Game.Rand.Bool())
+                        //    inc = newKillable.ShieldInc;
+                        //max = killable.ShieldMax;
+                        //if (newKillable.ShieldMax > max || Game.Rand.Bool())
+                        //    max = newKillable.ShieldMax;
+                        //limit = killable.ShieldLimit;
+                        //if (newKillable.ShieldLimit > limit || Game.Rand.Bool())
+                        //    limit = newKillable.ShieldLimit;
+                        killable = new IKillable.Values(killable.Defense, killable.Resilience);//, killable.Armor, inc, max, limit);
                         break;
                     case Type.MechMove:
                         newMovable = GenMovable(research);
@@ -285,145 +311,115 @@ namespace ClassLibrary1.Pieces.Players
             IMovable.Values movable = blueprint.Movable;
             void Rebuild() => blueprint = new(blueprintNum, blueprint.UpgradeFrom, blueprint.ResearchLevel, blueprint.Vision, killable, blueprint.Attacks, movable);
 
-            static double ModVal(bool increase, double amt) => (increase ? 1 : -1) * Game.Rand.DoubleFull(amt);
+            //static double ModVal(bool increase, double amt) => (increase ? 1 : -1) * Game.Rand.DoubleFull(amt);
             bool ModMass(bool increase)
             {
-                int hits = killable.HitsMax + (increase ? 1 : -1);
-                if (hits < 1)
+                int def = killable.Defense + (increase ? 1 : -1);
+                if (def < 1)
                     return false;
-                killable = new IKillable.Values(hits, killable.Resilience, killable.Armor, killable.ShieldInc, killable.ShieldMax, killable.ShieldLimit);
+                killable = new IKillable.Values(def, killable.Resilience);//, killable.Armor, killable.ShieldInc, killable.ShieldMax, killable.ShieldLimit);
                 Rebuild();
                 return true;
             };
             bool ModEnergy(bool increase)
             {
-                bool ModVals(bool increase, ref double inc, ref int max, ref int limit)
-                {
-                    double i = inc;
-                    int m = max, l = limit;
-                    void ModInc()
-                    {
-                        i += ModVal(increase, 1 / 13.0);
-                        while (increase && i >= m)
-                            ModMax();
-                    }
-                    void ModMax()
-                    {
-                        m += (increase ? 1 : -1);
-                        while (!increase && i >= m)
-                            ModInc();
-                        while (increase && m >= l)
-                            ModLimit();
-                    };
-                    void ModLimit()
-                    {
-                        l += (increase ? 1 : -1);
-                        while (!increase && m >= l)
-                            ModMax();
-                    }
-                    switch (Game.Rand.Next(3))
-                    {
-                        case 0:
-                            ModInc();
-                            break;
-                        case 1:
-                            ModMax();
-                            break;
-                        case 2:
-                            ModLimit();
-                            break;
-                    }
-                    inc = i; max = m; limit = l;
-                    return i >= .39 && m >= 1 && l >= 1;
-                };
-                if (killable.ShieldInc > 0)
-                {
-                    double shieldInc = killable.ShieldInc;
-                    int shieldMax = killable.ShieldMax;
-                    int shieldLimit = killable.ShieldLimit;
-                    if (!ModVals(increase, ref shieldInc, ref shieldMax, ref shieldLimit))
-                        return false;
-                    killable = new IKillable.Values(killable.HitsMax, killable.Resilience, killable.Armor, shieldInc, shieldMax, shieldLimit);
-                }
-                else
-                {
-                    throw new Exception();
-                    //return false;
-                }
+                //bool ModVals(bool increase, ref double inc, ref int max, ref int limit)
+                //{
+                //    double i = inc;
+                //    int m = max, l = limit;
+                //    void ModInc()
+                //    {
+                //        i += ModVal(increase, 1 / 13.0);
+                //        while (increase && i >= m)
+                //            ModMax();
+                //    }
+                //    void ModMax()
+                //    {
+                //        m += (increase ? 1 : -1);
+                //        while (!increase && i >= m)
+                //            ModInc();
+                //        while (increase && m >= l)
+                //            ModLimit();
+                //    };
+                //    void ModLimit()
+                //    {
+                //        l += (increase ? 1 : -1);
+                //        while (!increase && m >= l)
+                //            ModMax();
+                //    }
+                //    switch (Game.Rand.Next(3))
+                //    {
+                //        case 0:
+                //            ModInc();
+                //            break;
+                //        case 1:
+                //            ModMax();
+                //            break;
+                //        case 2:
+                //            ModLimit();
+                //            break;
+                //    }
+                //    inc = i; max = m; limit = l;
+                //    return i >= .39 && m >= 1 && l >= 1;
+                //};
+                //if (killable.ShieldInc > 0)
+                //{
+                //    double shieldInc = killable.ShieldInc;
+                //    int shieldMax = killable.ShieldMax;
+                //    int shieldLimit = killable.ShieldLimit;
+                //    if (!ModVals(increase, ref shieldInc, ref shieldMax, ref shieldLimit))
+                //        return false;
+                //    killable = new IKillable.Values(killable.HitsMax, killable.Resilience, killable.Armor, shieldInc, shieldMax, shieldLimit);
+                //}
                 //else
                 //{
-                //    double moveInc = movable.MoveInc;
-                //    double moveMax = movable.MoveMax;
-                //    double moveLimit = movable.MoveLimit;
-                //    if (!ModVals(increase, ref moveInc, ref moveMax, ref moveLimit))
-                //        return false;
-                //    movable = new IMovable.Values(moveInc, moveMax, moveLimit);
+                //    throw new Exception();
                 //}
+
+                IAttacker.Values attack = Game.Rand.SelectValue(blueprint.Attacks);
+                int att = attack.Attack + (increase ? 1 : -1);
+                if (att < 1)
+                    return false;
+                attack = new IAttacker.Values(att);//, killable.Resilience, killable.Armor, killable.ShieldInc, killable.ShieldMax, killable.ShieldLimit);
                 Rebuild();
                 return true;
             };
             bool Mod(bool increase)
             {
                 bool mass;
-                if (!increase && (research.GetType() == Type.MechHits || research.GetType() == Type.Mech))
-                    if (killable.ShieldInc > 0)
-                        mass = false;
-                    else
-                        return false;
-                else if (!increase && research.GetType() == Type.MechShields)
-                    mass = true;
-                else if (killable.ShieldInc > 0)
-                    mass = Game.Rand.Bool();
-                else
-                    mass = true;
+                //if (!increase && (research.GetType() == Type.MechDefense || research.GetType() == Type.Mech))
+                //    if (killable.ShieldInc > 0)
+                //        mass = false;
+                //    else
+                //        return false;
+                //else if (!increase && research.GetType() == Type.MechShields)
+                //    mass = true;
+                //else if (killable.ShieldInc > 0)
+                //    mass = Game.Rand.Bool();
+                //else
+                //    mass = true;
+
+                double attTot = blueprint.Attacks.Sum(a => StatValue(a.Attack));
+                double defTot = StatValue(killable.Defense);
+                mass = Game.Rand.NextDouble() < attTot / (attTot + defTot);
+
                 return mass ? ModMass(increase) : ModEnergy(increase);
             };
 
             Type researching = research.GetType();
-            //double minEnergy, maxEnergy, minMass, maxMass,
             int minTotal, maxTotal;
-            //if (researching == Type.Mech)
-            //{
-            //    //minEnergy = 130;
-            //    //maxEnergy = 390;
-            //    //minMass = 390;
-            //    //maxMass = 910;
-            //    minTotal = 520;
-            //    maxTotal = 1300;
-            //}
-            //else
             {
                 minTotal = research.GetMinCost();
                 maxTotal = research.GetMaxCost();
-                //minEnergy = minMass = minTotal / 2.0;
-                //maxEnergy = maxMass = maxTotal - minTotal;
-                //if (researching == Type.MechShields || researching == Type.MechAP || researching == Type.MechRange || researching == Type.MechMove)
-                //{
-                //    minEnergy = minTotal;
-                //    maxEnergy = 2 * maxTotal;
-                //}
-                //else
-                //{
-                //    minMass = minTotal;
-                //    maxMass = 2 * maxTotal;
-                //}
                 if (researching != Type.Mech)
                 {
                     const double minDev = .13;
-                    //minEnergy = Game.Rand.GaussianCapped(minEnergy, minDev);
-                    //minMass = Game.Rand.GaussianCapped(minMass, minDev);
                     minTotal = Game.Rand.GaussianCappedInt(minTotal, minDev);
                     const double maxDev = .21, maxOE = .169;
-                    //maxEnergy = Game.Rand.GaussianOE(maxEnergy, maxDev, maxOE, minEnergy);
-                    //maxMass = Game.Rand.GaussianOE(maxMass, maxDev, maxOE, minMass);
                     maxTotal = Game.Rand.GaussianOEInt(maxTotal, maxDev, maxOE, minTotal);
                 }
             }
 
-            //while (energy < minEnergy && ModEnergy(true)) ;
-            //while (mass < minMass && ModMass(true)) ;
-            //while (energy > maxEnergy && ModEnergy(false)) ;
-            //while (mass > maxMass && ModMass(false)) ;
             bool canKeep = true;
             while (blueprint.TotalCost() < minTotal && (canKeep &= Mod(true))) ;
             while (blueprint.TotalCost() > maxTotal && (canKeep &= Mod(false))) ;
@@ -435,80 +431,95 @@ namespace ClassLibrary1.Pieces.Players
         }
         private static double GenVision(IResearch research)
         {
-            double avg = 7.8, dev = .39, oe = .091;
-            ModValues(research.GetType() == Type.MechVision, 2.6, ref avg, ref dev, ref oe);
+            double avg = 5.2, dev = .39, oe = .091;
+            ModValues(research.GetType() == Type.MechVision, 2.1, ref avg, ref dev, ref oe);
             double vision = Game.Rand.GaussianOE(avg, dev, oe, 1);
-            vision *= research.GetMult(Type.MechVision, .3);
+            vision *= research.GetMult(Type.MechVision, .5);
             return vision;
         }
         private static IKillable.Values GenKillable(IResearch research)
         {
-            double avg = 26, dev = .26, oe = .078;
-            ModValues(research.GetType() == Type.MechHits, 1.69, ref avg, ref dev, ref oe);
-            int hitsMax = Game.Rand.GaussianOEInt(avg * research.GetMult(Type.MechHits, .9), dev, oe, 1);
+            double avg = 3.9, dev = .26, oe = .078;
+            ModValues(research.GetType() == Type.MechDefense, 1.69, ref avg, ref dev, ref oe);
+
+            int defense = Game.Rand.GaussianOEInt(2.6 + avg * research.GetMult(Type.MechDefense, .6), dev, oe, 1);
+
+            //int hitsMax = Game.Rand.GaussianOEInt(avg * research.GetMult(Type.MechHits, .9), dev, oe, 1);
 
             bool isResilience = research.GetType() == Type.MechResilience;
             double resilience = Consts.GetPct(Game.Rand.GaussianCapped(.39, .091, .169),
                 Math.Pow(research.GetMult(Type.MechResilience, 1) + (isResilience ? .52 : 0), isResilience ? .5 : .2));
 
-            double armor = 0;
+            //double armor = 0;
 
-            double shieldInc = 0;
-            int shieldMax = 0;
-            int shieldLimit = 0;
+            //double shieldInc = 0;
+            //int shieldMax = 0;
+            //int shieldLimit = 0;
 
-            bool isShields = research.GetType() == Type.MechShields;
-            if (isShields || research.MakeType(Type.MechShields))
-            {
-                avg = 1.3;
-                dev = .26;
-                oe = .21;
-                ModValues(isShields, 1.3, ref avg, ref dev, ref oe);
-                shieldInc = Game.Rand.GaussianOE(avg * research.GetMult(Type.MechShields, .9), dev, oe, .39);
-                shieldMax = Game.Rand.GaussianOEInt(shieldInc * 13 + 1, dev * 1.3, oe, (int)shieldInc + 1);
-                shieldLimit = Game.Rand.GaussianOEInt(shieldInc * 13 + shieldMax + 1, dev * 1.3, oe * 1.3, shieldMax + 1);
-            }
+            //bool isShields = research.GetType() == Type.MechShields;
+            //if (isShields || research.MakeType(Type.MechShields))
+            //{
+            //    avg = 1.3;
+            //    dev = .26;
+            //    oe = .21;
+            //    ModValues(isShields, 1.3, ref avg, ref dev, ref oe);
+            //    shieldInc = Game.Rand.GaussianOE(avg * research.GetMult(Type.MechShields, .9), dev, oe, .39);
+            //    shieldMax = Game.Rand.GaussianOEInt(shieldInc * 13 + 1, dev * 1.3, oe, (int)shieldInc + 1);
+            //    shieldLimit = Game.Rand.GaussianOEInt(shieldInc * 13 + shieldMax + 1, dev * 1.3, oe * 1.3, shieldMax + 1);
+            //}
 
-            bool isArmor = research.GetType() == Type.MechArmor;
-            if (isArmor || research.MakeType(Type.MechArmor))
-                armor = Game.Rand.Weighted(isArmor ? .95 : .75, 1 - Math.Pow(isArmor ? .52 : .65, research.GetMult(Type.MechArmor, .9)));
+            //bool isArmor = research.GetType() == Type.MechArmor;
+            //if (isArmor || research.MakeType(Type.MechArmor))
+            //    armor = Game.Rand.Weighted(isArmor ? .95 : .75, 1 - Math.Pow(isArmor ? .52 : .65, research.GetMult(Type.MechArmor, .9)));
 
-            return new(hitsMax, resilience, armor, shieldInc, shieldMax, shieldLimit);
+            //return new(hitsMax, armor, shieldInc, shieldMax, shieldLimit);
+            return new(defense, resilience);
         }
         private static IReadOnlyCollection<IAttacker.Values> GenAttacker(IResearch research)
         {
-            int num = Game.Rand.GaussianOEInt(1.69, .26, .13, 1);
+            int num = 1;// Game.Rand.GaussianOEInt(1.69, .26, .13, 1);
             List<IAttacker.Values> attacks = new(num);
             for (int a = 0; a < num; a++)
             {
-                double avg = 5.2, dev = .26, oe = .169;
-                ModValues(research.GetType() == Type.MechDamage, 2.1, ref avg, ref dev, ref oe);
-                int damage = Game.Rand.GaussianOEInt(avg * research.GetMult(Type.MechDamage, 1), dev, oe, 1);
-                double armorPierce = 0;
-                double shieldPierce = 0;
-                double randomness = Game.Rand.Weighted(.169);
-                avg = 3.9;
-                dev = .39;
-                oe = .104;
-                ModValues(research.GetType() == Type.MechRange, 2.1, ref avg, ref dev, ref oe);
-                double range = Game.Rand.GaussianOE(avg, dev, oe, 1);
+                double avg = 2.6, dev = .26, oe = .13;
+                ModValues(research.GetType() == Type.MechAttack, 1.3, ref avg, ref dev, ref oe);
 
-                bool isAP = research.GetType() == Type.MechAP;
-                if (isAP || research.MakeType(Type.MechAP))
-                    armorPierce = Game.Rand.Weighted(isAP ? .95 : .75, 1 - Math.Pow(isAP ? .52 : .65, research.GetMult(Type.MechAP, .6)));
-                bool isSP = research.GetType() == Type.MechSP;
-                if (isSP || research.MakeType(Type.MechSP))
-                    shieldPierce = Game.Rand.Weighted(isSP ? .95 : .75, 1 - Math.Pow(isSP ? .52 : .65, research.GetMult(Type.MechSP, .6)));
-                range *= research.GetMult(Type.MechRange, .6);
+                int attack = Game.Rand.GaussianOEInt(avg * research.GetMult(Type.MechAttack, .7), dev, oe, 1);
 
-                attacks.Add(new(damage, armorPierce, shieldPierce, randomness, range));
+                //int damage = Game.Rand.GaussianOEInt(avg * research.GetMult(Type.MechDamage, 1), dev, oe, 1);
+                //double armorPierce = 0;
+                //double shieldPierce = 0;
+                //double randomness = Game.Rand.Weighted(.169);
+                //avg = 3.9;
+                //dev = .39;
+                //oe = .104;
+                //ModValues(research.GetType() == Type.MechRange, 2.1, ref avg, ref dev, ref oe);
+                //double range = Game.Rand.GaussianOE(avg, dev, oe, 1);
+
+                //bool isAP = research.GetType() == Type.MechAP;
+                //if (isAP || research.MakeType(Type.MechAP))
+                //    armorPierce = Game.Rand.Weighted(isAP ? .95 : .75, 1 - Math.Pow(isAP ? .52 : .65, research.GetMult(Type.MechAP, .6)));
+                //bool isSP = research.GetType() == Type.MechSP;
+                //if (isSP || research.MakeType(Type.MechSP))
+                //    shieldPierce = Game.Rand.Weighted(isSP ? .95 : .75, 1 - Math.Pow(isSP ? .52 : .65, research.GetMult(Type.MechSP, .6)));
+                //range *= research.GetMult(Type.MechRange, .6);
+
+                //attacks.Add(new(damage, armorPierce, shieldPierce, randomness, range));
+                attacks.Add(new(attack));
             }
             return attacks;
         }
         private static IMovable.Values GenMovable(IResearch research)
         {
-            double avg = 2.6, dev = .13, oe = .21;
+            double avg = 13, dev = .13, oe = .21;
+
+            double researchMult = research.GetMult(Type.MechMove, 1);
+            const double lowPenalty = 5;
+            if (researchMult < lowPenalty)
+                avg *= researchMult / lowPenalty;
+
             ModValues(research.GetType() == Type.MechMove, 1.69, ref avg, ref dev, ref oe);
+
             double move = Game.Rand.GaussianOE(avg * research.GetMult(Type.MechMove, .4), dev, oe, 1);
             int max = Game.Rand.GaussianOEInt(move * 2, dev * 2.6, oe * 1.3, (int)move + 1);
             int limit = Game.Rand.GaussianOEInt(move + max, dev * 2.6, oe * 2.6, max + 1);

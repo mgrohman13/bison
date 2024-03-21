@@ -21,6 +21,14 @@ namespace WinFormsApp1
         {
             InitializeComponent();
             dataGridView1.CellContentClick += DataGridView1_CellClick;
+            dataGridView1.PreviewKeyDown += DataGridView1_PreviewKeyDown;
+        }
+
+        private void DataGridView1_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
+        {
+            dataGridView1.EndEdit();
+            if (e.KeyCode == Keys.Escape)
+                this.Close();
         }
 
         public static bool CanBuild(Tile selected)
@@ -135,42 +143,20 @@ namespace WinFormsApp1
                 dataGridView1.Columns["Builder"].Visible = false;
 
                 dataGridView1.Columns["Resilience"].DefaultCellStyle.Format = "P0";
-                dataGridView1.Columns["Armor"].DefaultCellStyle.Format = "P0";
+                //dataGridView1.Columns["Armor"].DefaultCellStyle.Format = "P0";
 
                 dataGridView1.Columns["Upgraded"].Visible = rows.Any(r => r.Upgraded != null);
-                dataGridView1.Columns["Armor"].Visible = rows.Any(r => r.Armor > 0);
-                dataGridView1.Columns["Shields"].Visible = rows.Any(r => r.Blueprint?.Killable.ShieldInc > 0);
-                dataGridView1.Columns["ArmorPierce"].Visible =
-                    rows.SelectMany(r => r.Blueprint?.Attacks ?? Array.Empty<IAttacker.Values>()).Any(a => a.ArmorPierce > 0);
-                dataGridView1.Columns["ShieldPierce"].Visible =
-                    rows.SelectMany(r => r.Blueprint?.Attacks ?? Array.Empty<IAttacker.Values>()).Any(a => a.ShieldPierce > 0);
+                //dataGridView1.Columns["Armor"].Visible = rows.Any(r => r.Armor > 0);
+                //dataGridView1.Columns["Shields"].Visible = rows.Any(r => r.Blueprint?.Killable.ShieldInc > 0);
+                //dataGridView1.Columns["ArmorPierce"].Visible =
+                //    rows.SelectMany(r => r.Blueprint?.Attacks ?? Array.Empty<IAttacker.Values>()).Any(a => a.ArmorPierce > 0);
+                //dataGridView1.Columns["ShieldPierce"].Visible =
+                //    rows.SelectMany(r => r.Blueprint?.Attacks ?? Array.Empty<IAttacker.Values>()).Any(a => a.ShieldPierce > 0);
 
-                //dataGridView1.Location = new System.Drawing.Point(0, 0);
-                //dataGridView1.Size = dataGridView1.PreferredSize;
-                //this.ClientSize = dataGridView1.PreferredSize;
-
-                //if (!dataGridView1.Columns.Contains("Build"))
-                //{
-                //    DataGridViewCheckBoxColumn buildColumn = new DataGridViewCheckBoxColumn();
-                //    buildColumn.Name = "Build";
-                //    buildColumn.ReadOnly = false;
-                //    dataGridView1.Columns.Add(buildColumn);
-                //    dataGridView1.AutoResizeColumns();
-                //    dataGridView1.AutoResizeRows();
-                //}
                 dataGridView1.Columns["Build"].HeaderText = "";
                 dataGridView1.Columns["Build"].DefaultCellStyle.Font = new Font(dataGridView1.DefaultCellStyle.Font, FontStyle.Bold);
                 dataGridView1.Columns["Build"].Visible = true;
 
-                //if (!dataGridView1.Columns.Contains("Notify"))
-                //{
-                //    DataGridViewCheckBoxColumn notifyColumn = new DataGridViewCheckBoxColumn();
-                //    notifyColumn.Name = "Notify";
-                //    notifyColumn.ReadOnly = false;
-                //    dataGridView1.Columns.Add(notifyColumn);
-                //    dataGridView1.AutoResizeColumns();
-                //    dataGridView1.AutoResizeRows();
-                //}
                 dataGridView1.Columns["Notify"].Visible = true;
 
                 BuildRow.DataGridView1 = dataGridView1;
@@ -230,7 +216,7 @@ namespace WinFormsApp1
                 {
                     if (Blueprint is not null)
                         return Program.GetNotify(Blueprint);
-                    if (Builder is IBuilder.IBuildConstructor buildConstructor)
+                    if (Builder is IBuilder.IBuildConstructor)
                         return Program.NotifyConstructor;
                     return true;
                 }
@@ -238,12 +224,11 @@ namespace WinFormsApp1
                 {
                     if (Blueprint is not null)
                         Program.SetNotify(Blueprint, value);
-                    if (Builder is IBuilder.IBuildConstructor buildConstructor)
+                    if (Builder is IBuilder.IBuildConstructor)
                         Program.NotifyConstructor = value;
                 }
             }
 
-            //public PlayerPiece Piece { get; }
             public MechBlueprint Blueprint { get; }
 
             public MechBlueprint Upgraded => Blueprint?.UpgradeFrom;
@@ -252,18 +237,21 @@ namespace WinFormsApp1
             public string Movement => Blueprint == null ? null : string.Format("{1} / {2} +{0:0.0}", Blueprint.Movable.MoveInc, Blueprint.Movable.MoveMax, Blueprint.Movable.MoveLimit);
             public string Vision => Info.FormatDown(Blueprint?.Vision);
 
-            public double? Hits => Blueprint?.Killable.HitsMax;
-            public double? Resilience => Blueprint?.Killable.Resilience;
-            public double? Armor => Blueprint?.Killable.Armor;
-            public string Shields => Blueprint == null ? null : Blueprint.Killable.ShieldInc <= 0 ? "" :
-                string.Format("{1} / {2} +{0:0.0}", Blueprint.Killable.ShieldInc, Blueprint.Killable.ShieldMax, Blueprint.Killable.ShieldLimit);
+            public double? Defense => Blueprint?.Killable.Defense;
 
-            public int? Attacks => Blueprint?.Attacks.Count;
-            public string Range => Blueprint == null ? null : List(a => a.Range.ToString("0.0"));
-            public string Damage => Blueprint == null ? null : List(a => a.Damage.ToString("0"));
-            public string ArmorPierce => Blueprint == null ? null : List(a => a.ArmorPierce.ToString("P0"));
-            public string ShieldPierce => Blueprint == null ? null : List(a => a.ShieldPierce.ToString("P0"));
-            public string Randomness => Blueprint == null ? null : List(a => a.Dev.ToString("P0"));
+            public double? Resilience => Blueprint?.Killable.Resilience;
+            //public double? Armor => Blueprint?.Killable.Armor;
+            //public string Shields => Blueprint == null ? null : Blueprint.Killable.ShieldInc <= 0 ? "" :
+            //    string.Format("{1} / {2} +{0:0.0}", Blueprint.Killable.ShieldInc, Blueprint.Killable.ShieldMax, Blueprint.Killable.ShieldLimit);
+
+            //public int? Attacks => Blueprint?.Attacks.Count;
+            //public string Range => Blueprint == null ? null : List(a => a.Range.ToString("0.0"));
+            //public string ArmorPierce => Blueprint == null ? null : List(a => a.ArmorPierce.ToString("P0"));
+            //public string ShieldPierce => Blueprint == null ? null : List(a => a.ShieldPierce.ToString("P0"));
+            //public string Randomness => Blueprint == null ? null : List(a => a.Dev.ToString("P0"));
+
+            public string Attack => Blueprint == null ? null : List(a => a.Attack.ToString());
+            //public int? Atta => Blueprint?.Killable.Defense;
 
             public string Build
             {

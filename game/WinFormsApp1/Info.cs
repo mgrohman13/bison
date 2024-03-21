@@ -1,20 +1,13 @@
-﻿using System;
-using System.Diagnostics;
-using System.Collections.Generic;
-using System.ComponentModel;
+﻿using ClassLibrary1;
+using ClassLibrary1.Pieces;
+using ClassLibrary1.Pieces.Players;
+using ClassLibrary1.Pieces.Terrain;
+using System;
 using System.Data;
 using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using ClassLibrary1;
-using ClassLibrary1.Pieces;
-using ClassLibrary1.Pieces.Enemies;
-using ClassLibrary1.Pieces.Players;
-using ClassLibrary1.Pieces.Terrain;
 using System.Threading;
-using Timer = System.Windows.Forms.Timer;
+using System.Windows.Forms;
 using Tile = ClassLibrary1.Map.Tile;
 
 namespace WinFormsApp1
@@ -116,28 +109,30 @@ namespace WinFormsApp1
 
                     lbl1.Show();
                     lblInf1.Show();
-                    lbl1.Text = "Hits";
-                    lblInf1.Text = string.Format("{0} / {1}{2}{3}",
-                        (killable.HitsCur), (killable.HitsMax),
-                        killable.Armor > 0 ? string.Format(" ({0})", FormatPct(killable.Armor)) : "",
+                    lbl1.Text = "Defense";
+
+                    lblInf1.Text = string.Format("{0} / {1}{2}",
+                        (killable.DefenseCur), (killable.DefenseMax),
                         repairInc != 0 ? string.Format(" +{0}", Format(repairInc)) : "");
 
-                    if (killable.ShieldInc > 0)
-                    {
-                        lbl2.Show();
-                        lblInf2.Show();
-                        lbl2.Text = "Shields";
-                        lblInf2.Text = string.Format("{0} / {1} / {2} +{3}{4}",
-                            Format(killable.ShieldCur), (killable.ShieldMax), (killable.ShieldLimit), Format(killable.GetInc()),
-                            CheckBase(killable.ShieldIncBase, killable.GetInc()));
-                    }
+                    //if (killable.ShieldInc > 0)
+                    //{
+                    //    lbl2.Show();
+                    //    lblInf2.Show();
+                    //    lbl2.Text = "Shields";
+                    //    lblInf2.Text = string.Format("{0} / {1} / {2} +{3}{4}",
+                    //        Format(killable.ShieldCur), (killable.ShieldMax), (killable.ShieldLimit), Format(killable.GetInc()),
+                    //        CheckBase(killable.ShieldIncBase, killable.GetInc()));
+                    //}
 
-                    lbl3.Show();
-                    lblInf3.Show();
-                    lbl3.Text = killable.HitsCur < killable.HitsMax ? "Efficiency" : "Resilience";
+                    //lbl3.Show();
+                    //lblInf3.Show();
+                    lbl3.Text = killable.DefenseCur < killable.DefenseMax ? "Efficiency" : "Resilience";
                     lblInf3.Text = string.Format("{0}{1}",
-                        FormatPct(killable.HitsCur < killable.HitsMax ? Consts.GetDamagedValue(killable.Piece, 1, 0) : killable.Resilience),
-                        killable.HitsCur < killable.HitsMax ? string.Format(" ({0})", FormatPct(killable.Resilience)) : "");
+                        FormatPct(killable.DefenseCur < killable.DefenseMax ? Consts.GetDamagedValue(killable.Piece, 1, 0) : killable.Resilience),
+                        killable.DefenseCur < killable.DefenseMax ? string.Format(" ({0})", FormatPct(killable.Resilience)) : "");
+
+                    //lblInf1.Text = killable.DefenseCur < killable.DefenseMax ? $"{killable.DefenseCur} / {killable.DefenseMax}" : killable.DefenseMax.ToString();
                 }
                 if (Selected.Piece.HasBehavior(out IMovable movable))
                 {
@@ -155,7 +150,7 @@ namespace WinFormsApp1
                     lbl5.Text = "Vision";
                     lblInf5.Text = string.Format("{0}{1}", FormatDown(playerPiece.Vision), CheckBase(playerPiece.VisionBase, playerPiece.Vision, FormatDown));
 
-                    if (!(playerPiece is Extractor))
+                    if (playerPiece is not Extractor)
                     {
                         double energyInc, energyUpk, massInc, massUpk, researchInc;
                         energyInc = energyUpk = massInc = massUpk = researchInc = 0;
@@ -257,53 +252,63 @@ namespace WinFormsApp1
                 {
                     dgvAttacks.Show();
 
-                    int idx = 0;
+                    //int idx = 0;
                     dgvAttacks.DataSource = attacker.Attacks.OrderByDescending(a => a.Range).ToList();
 
-                    dgvAttacks.Columns["Upkeep"].Visible = false;
 
-                    dgvAttacks.Columns["Range"].DisplayIndex = idx++;
-                    dgvAttacks.Columns["Range"].HeaderText = "RANGE";
-                    dgvAttacks.Columns["Range"].DefaultCellStyle.Format = "0.0";
+                    foreach (DataGridViewColumn c in dgvAttacks.Columns)
+                        c.Visible = false;
 
-                    //if (attacker.Attacks.Any(a => Format(a.Range) != Format(a.RangeBase)))
-                    //{
-                    //    dgvAttacks.Columns["RangeBase"].Visible = true;
-                    //    dgvAttacks.Columns["RangeBase"].DisplayIndex = idx++;
-                    //    dgvAttacks.Columns["RangeBase"].HeaderText = "(base)";
-                    //    dgvAttacks.Columns["RangeBase"].DefaultCellStyle.Format = "0.0";
-                    //}
-                    //else
-                    dgvAttacks.Columns["RangeBase"].Visible = false;
+                    dgvAttacks.Columns["AttackCur"].Visible = true;
+                    dgvAttacks.Columns["AttackMax"].Visible = true;
+                    dgvAttacks.Columns["Range"].Visible = true;
+                    dgvAttacks.Columns["Rounds"].Visible = true;
+                    dgvAttacks.Columns["Rounds"].DefaultCellStyle.Format = "0.0";
 
-                    dgvAttacks.Columns["Damage"].DisplayIndex = idx++;
-                    dgvAttacks.Columns["Damage"].HeaderText = "DMG";
-                    dgvAttacks.Columns["Damage"].DefaultCellStyle.Format = attacker.Attacks.Any(a => a.Damage < a.DamageBase) ? "0.0" : "0";
+                    //dgvAttacks.Columns["Upkeep"].Visible = false;
 
-                    //if (attacker.Attacks.Any(a => Format(a.Damage) != Format(a.DamageBase)))
-                    //{
-                    //    dgvAttacks.Columns["DamageBase"].Visible = true;
-                    //    dgvAttacks.Columns["DamageBase"].DisplayIndex = idx++;
-                    //    dgvAttacks.Columns["DamageBase"].HeaderText = "(base)";
-                    //    dgvAttacks.Columns["DamageBase"].DefaultCellStyle.Format = "0.0";
-                    //}
-                    //else
-                    dgvAttacks.Columns["DamageBase"].Visible = false;
+                    //dgvAttacks.Columns["Range"].DisplayIndex = idx++;
+                    //dgvAttacks.Columns["Range"].HeaderText = "RANGE";
+                    //dgvAttacks.Columns["Range"].DefaultCellStyle.Format = "0.0";
 
-                    dgvAttacks.Columns["ArmorPierce"].Visible = attacker.Attacks.Any(a => a.ArmorPierce > 0);
-                    dgvAttacks.Columns["ArmorPierce"].DisplayIndex = idx++;
-                    dgvAttacks.Columns["ArmorPierce"].HeaderText = "AP";
-                    dgvAttacks.Columns["ArmorPierce"].DefaultCellStyle.Format = "P0";
-                    dgvAttacks.Columns["ShieldPierce"].Visible = attacker.Attacks.Any(a => a.ShieldPierce > 0);
-                    dgvAttacks.Columns["ShieldPierce"].DisplayIndex = idx++;
-                    dgvAttacks.Columns["ShieldPierce"].HeaderText = "SP";
-                    dgvAttacks.Columns["ShieldPierce"].DefaultCellStyle.Format = "P0";
+                    ////if (attacker.Attacks.Any(a => Format(a.Range) != Format(a.RangeBase)))
+                    ////{
+                    ////    dgvAttacks.Columns["RangeBase"].Visible = true;
+                    ////    dgvAttacks.Columns["RangeBase"].DisplayIndex = idx++;
+                    ////    dgvAttacks.Columns["RangeBase"].HeaderText = "(base)";
+                    ////    dgvAttacks.Columns["RangeBase"].DefaultCellStyle.Format = "0.0";
+                    ////}
+                    ////else
+                    //dgvAttacks.Columns["RangeBase"].Visible = false;
 
-                    dgvAttacks.Columns["Dev"].DisplayIndex = idx++;
-                    dgvAttacks.Columns["Dev"].HeaderText = "RNDM";
-                    dgvAttacks.Columns["Dev"].DefaultCellStyle.Format = "P0";
-                    dgvAttacks.Columns["Attacked"].DisplayIndex = idx++;
-                    dgvAttacks.Columns["Attacked"].HeaderText = "USED";
+                    //dgvAttacks.Columns["Damage"].DisplayIndex = idx++;
+                    //dgvAttacks.Columns["Damage"].HeaderText = "DMG";
+                    //dgvAttacks.Columns["Damage"].DefaultCellStyle.Format = attacker.Attacks.Any(a => a.Damage < a.DamageBase) ? "0.0" : "0";
+
+                    ////if (attacker.Attacks.Any(a => Format(a.Damage) != Format(a.DamageBase)))
+                    ////{
+                    ////    dgvAttacks.Columns["DamageBase"].Visible = true;
+                    ////    dgvAttacks.Columns["DamageBase"].DisplayIndex = idx++;
+                    ////    dgvAttacks.Columns["DamageBase"].HeaderText = "(base)";
+                    ////    dgvAttacks.Columns["DamageBase"].DefaultCellStyle.Format = "0.0";
+                    ////}
+                    ////else
+                    //dgvAttacks.Columns["DamageBase"].Visible = false;
+
+                    //dgvAttacks.Columns["ArmorPierce"].Visible = attacker.Attacks.Any(a => a.ArmorPierce > 0);
+                    //dgvAttacks.Columns["ArmorPierce"].DisplayIndex = idx++;
+                    //dgvAttacks.Columns["ArmorPierce"].HeaderText = "AP";
+                    //dgvAttacks.Columns["ArmorPierce"].DefaultCellStyle.Format = "P0";
+                    //dgvAttacks.Columns["ShieldPierce"].Visible = attacker.Attacks.Any(a => a.ShieldPierce > 0);
+                    //dgvAttacks.Columns["ShieldPierce"].DisplayIndex = idx++;
+                    //dgvAttacks.Columns["ShieldPierce"].HeaderText = "SP";
+                    //dgvAttacks.Columns["ShieldPierce"].DefaultCellStyle.Format = "P0";
+
+                    //dgvAttacks.Columns["Dev"].DisplayIndex = idx++;
+                    //dgvAttacks.Columns["Dev"].HeaderText = "RNDM";
+                    //dgvAttacks.Columns["Dev"].DefaultCellStyle.Format = "P0";
+                    //dgvAttacks.Columns["Attacked"].DisplayIndex = idx++;
+                    //dgvAttacks.Columns["Attacked"].HeaderText = "USED";
 
                     int labelsY = this.Controls.OfType<Label>().Where(lbl => lbl.Visible && lbl.Parent != this.panel1).Max(lbl => lbl.Location.Y + lbl.Height);
                     dgvAttacks.MaximumSize = new Size(this.Width, this.panel1.Location.Y - labelsY);
@@ -489,8 +494,8 @@ namespace WinFormsApp1
                         LogPiece(entry.AttackerSide, entry.AttackerName, entry.AttackerType);
                         rtbLog.AppendText(" -> ");
                         LogPiece(entry.DefenderSide, entry.DefenderName, entry.DefenderType);
-                        rtbLog.AppendText(" ~ " + FormatInt(entry.BaseDamage));
-                        if (entry.HitsCur <= 0)
+                        //rtbLog.AppendText(" ~ " + FormatInt(entry.attMax));
+                        if (entry.defCur <= 0)
                         {
                             rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Bold);
                             rtbLog.AppendText("  Killed!");
@@ -499,36 +504,43 @@ namespace WinFormsApp1
                         // always leaving a trailing space fixes another weird RichTextBox bug
                         rtbLog.AppendText(Environment.NewLine + "  ");
 
-                        // damage breakdown
-                        if (entry.HitsDmg > 0)
-                            rtbLog.AppendText(string.Format("{0} -{1} = ", entry.HitsCur + entry.HitsDmg, entry.HitsDmg));
-                        rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Bold);
-                        rtbLog.AppendText(entry.HitsCur.ToString());
-                        rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Regular);
-                        if (entry.ShieldDmg > 0)
-                        {
-                            rtbLog.SelectionColor = Color.Blue;
-                            rtbLog.AppendText(string.Format(" ; {0:0.0} -{1:0.0} = ", FormatInt(entry.ShieldCur + entry.ShieldDmg), FormatInt(entry.ShieldDmg)));
-                            rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Bold);
-                            rtbLog.AppendText(FormatInt(entry.ShieldCur));
-                            rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Regular);
-                            rtbLog.SelectionColor = Color.Black;
-                        }
-                        rtbLog.AppendText(" ~ " + FormatInt(entry.RandDmg));
+                        //// damage breakdown
+                        //if (entry.HitsDmg > 0)
+                        //    rtbLog.AppendText(string.Format("{0} -{1} = ", entry.HitsCur + entry.HitsDmg, entry.HitsDmg));
+                        //rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Bold);
+                        //rtbLog.AppendText(entry.HitsCur.ToString());
+                        //rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Regular);
+                        //if (entry.ShieldDmg > 0)
+                        //{
+                        //    rtbLog.SelectionColor = Color.Blue;
+                        //    rtbLog.AppendText(string.Format(" ; {0:0.0} -{1:0.0} = ", FormatInt(entry.ShieldCur + entry.ShieldDmg), FormatInt(entry.ShieldDmg)));
+                        //    rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Bold);
+                        //    rtbLog.AppendText(FormatInt(entry.ShieldCur));
+                        //    rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Regular);
+                        //    rtbLog.SelectionColor = Color.Black;
+                        //}
+                        //rtbLog.AppendText(" ~ " + FormatInt(entry.RandDmg));
+
+                        static string FormatDmg(int cur, int max, int dmg) => $"{cur}" + (cur < max ? $"/{max}" : "") + (dmg > 0 ? $" -{dmg}" : "");
+                        static string FormatFinal(int cur, int dmg) => (dmg > 0 ? cur + dmg : cur).ToString();
+                        rtbLog.AppendText($"{FormatDmg(entry.attCur, entry.attMax, -entry.damage)} : {FormatDmg(entry.defCur, entry.defMax, entry.damage)}"
+                            + $" -> {FormatFinal(entry.attCur, -entry.damage)}/{FormatFinal(entry.defCur, entry.damage)}");
+                        //rtbLog.AppendText();
 
                         logPrevious = entry;
                     }
                 }
             EnableLogScroll();
+
         }
-        private static string FormatInt(double v)
-        {
-            //since damage values are frequently integers, only show extra digit when necessary
-            string result = v.ToString("0.0");
-            if (result.EndsWith(".0"))
-                result = v.ToString("0");
-            return result;
-        }
+        //private static string FormatInt(double v)
+        //{
+        //    //since damage values are frequently integers, only show extra digit when necessary
+        //    string result = v.ToString("0.0");
+        //    if (result.EndsWith(".0"))
+        //        result = v.ToString("0");
+        //    return result;
+        //}
 
         private void SelectLog(int position)
         {
@@ -548,7 +560,7 @@ namespace WinFormsApp1
                         {
                             if (line.Contains("->"))
                             {
-                                line = line.Substring(0, c).Trim();
+                                line = line[..c].Trim();
                                 // pick the friendly piece if it is still alive, else the enemy
                                 Piece select = Program.Game.Player.Pieces.Concat(Program.Game.Enemy.VisiblePieces)
                                     .FirstOrDefault(p => line.StartsWith(p.ToString()) || line.EndsWith(p.ToString()));

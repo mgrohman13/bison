@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Diagnostics;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
-using MattUtil;
-using ClassLibrary1.Pieces;
+using Tile = ClassLibrary1.Map.Tile;
 
 namespace ClassLibrary1.Pieces.Players
 {
@@ -14,13 +10,13 @@ namespace ClassLibrary1.Pieces.Players
         public Piece Piece => this;
         public MechBlueprint Blueprint { get; private set; }
 
-        private Mech(Map.Tile tile, MechBlueprint blueprint)
+        private Mech(Tile tile, MechBlueprint blueprint)
             : base(tile, blueprint.Vision)
         {
             this.Blueprint = blueprint;
             SetBehavior(new Killable(this, blueprint.Killable), new Attacker(this, blueprint.Attacks), new Movable(this, blueprint.Movable));
         }
-        internal static Mech NewMech(Map.Tile tile, MechBlueprint blueprint)
+        internal static Mech NewMech(Tile tile, MechBlueprint blueprint)
         {
             Mech obj = new(tile, blueprint);
             tile.Map.Game.AddPiece(obj);

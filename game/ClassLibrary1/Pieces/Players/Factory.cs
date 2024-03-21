@@ -1,6 +1,7 @@
 ﻿using ClassLibrary1.Pieces.Terrain;
 using MattUtil;
 using System;
+using Tile = ClassLibrary1.Map.Tile;
 
 namespace ClassLibrary1.Pieces.Players
 {
@@ -10,7 +11,7 @@ namespace ClassLibrary1.Pieces.Players
         private readonly double _rangeMult;
         public Piece Piece => this;
 
-        private Factory(Map.Tile tile, Values values)
+        private Factory(Tile tile, Values values)
             : base(tile, values.Vision)
         {
             this._rangeMult = Game.Rand.GaussianOE(values.BuilderRange, .169, .13, 1) / values.BuilderRange;
@@ -21,7 +22,7 @@ namespace ClassLibrary1.Pieces.Players
 
         internal static Factory NewFactory(Foundation foundation)
         {
-            Map.Tile tile = foundation.Tile;
+            Tile tile = foundation.Tile;
             foundation.Die();
 
             Factory obj = new(tile, GetValues(tile.Map.Game));
@@ -112,7 +113,7 @@ namespace ClassLibrary1.Pieces.Players
             {
                 if (type == Research.Type.BuildingCost)
                     UpgradeBuildingCost(researchMult);
-                else if (type == Research.Type.BuildingHits)
+                else if (type == Research.Type.BuildingDefense)
                     UpgradeBuildingHits(researchMult);
                 else if (type == Research.Type.FactoryRepair)
                     UpgradeFactoryRepair(researchMult);
@@ -121,15 +122,15 @@ namespace ClassLibrary1.Pieces.Players
             {
                 researchMult = Math.Pow(researchMult, .3);
                 rounding = Game.Rand.NextDouble();
-                this.energy = MTRandom.Round(1250 / researchMult, rounding);
-                this.mass = MTRandom.Round(350 / researchMult, rounding);
+                this.energy = MTRandom.Round(1750 / researchMult, rounding);
+                this.mass = MTRandom.Round(500 / researchMult, rounding);
             }
             private void UpgradeBuildingHits(double researchMult)
             {
-                researchMult = Math.Pow(researchMult, .5);
-                int hits = Game.Rand.Round(50 * researchMult);
-                this.vision = 4 * researchMult;
-                this.killable = new(hits, .5);
+                //researchMult = Math.Pow(researchMult, .5);
+                int defense = Game.Rand.Round(10 * Math.Pow(researchMult, .7));
+                this.vision = 4 * Math.Pow(researchMult, .5);
+                this.killable = new(defense, .5);
             }
             private void UpgradeFactoryRepair(double researchMult)
             {

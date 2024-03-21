@@ -1,19 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Tile = ClassLibrary1.Map.Tile;
 
 namespace ClassLibrary1.Pieces.Terrain
 {
     [Serializable]
     public class Biomass : Resource
     {
-        private Biomass(Map.Tile tile)
+        private Biomass(Tile tile)
             : base(tile, Consts.BiomassEnergyInc, Consts.BiomassSustain)
         {
         }
-        internal static Biomass NewBiomass(Map.Tile tile)
+        internal static Biomass NewBiomass(Tile tile)
         {
             Biomass obj = new(tile);
             tile.Map.Game.AddPiece(obj);

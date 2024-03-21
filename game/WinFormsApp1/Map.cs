@@ -99,8 +99,10 @@ namespace WinFormsApp1
 
             this.MouseWheel += Map_MouseWheel;
 
-            timer = new();
-            timer.Interval = Game.Rand.Round(scrollTime);
+            timer = new()
+            {
+                Interval = Game.Rand.Round(scrollTime)
+            };
             timer.Tick += Timer_Tick;
             //watch = new();
         }
@@ -194,10 +196,14 @@ namespace WinFormsApp1
                     fill.Add(b, l = new());
                 l.Add(r);
             }
-            void AddFillRect(Brush b, float x, float y, float w, float h) => AddFill(b, new(x, y, w, h));
+            //void AddFillRect(Brush b, float x, float y, float w, float h) => AddFill(b, new(x, y, w, h));
 
             Rectangle mapCoords = GetMapCoords();
             mapCoords = Rectangle.Intersect(mapCoords, Program.Game.Map.GameRect());
+
+            static IEnumerable<T> GetPieces<T>() where T : class, IBehavior => Program.Game.Map.GetVisiblePieces().SelectMany(p => p.GetBehaviors<T>());
+            float attackMax = GetPieces<IAttacker>().SelectMany(a => a.Attacks).Max(a => (a?.AttackMax)) ?? 1;
+            float defenseMax = GetPieces<IKillable>().Max(a => a?.DefenseMax) ?? 1;
 
             foreach (Piece piece in Program.Game.Map.GetVisiblePieces())
                 if (mapCoords.Contains(piece.Tile.X, piece.Tile.Y))
@@ -245,28 +251,52 @@ namespace WinFormsApp1
                     if (piece != null && piece.HasBehavior(out IKillable killable))
                     {
                         float barSize = .169f * rect.Height;
-                        RectangleF hitsBar = new(rect.X, rect.Bottom - barSize, rect.Width, barSize);
+                        float width = rect.Width * killable.DefenseMax / (float)defenseMax;
+                        RectangleF hitsBar = new(rect.X, rect.Bottom - barSize, width, barSize);
                         rectangles.Add(hitsBar);
 
-                        float hitsPct = killable.HitsCur / (float)killable.HitsMax;
-                        int color = Game.Rand.Round(255 * .65f * killable.Armor);
-                        if (!hitsBrushes.TryGetValue(color, out Brush hitsBrush))
-                            hitsBrushes.Add(color, hitsBrush = new SolidBrush(Color.FromArgb(color, color, color)));
-                        AddFillRect(hitsBrush, hitsBar.X, hitsBar.Y, hitsBar.Width * hitsPct, hitsBar.Height);
-                        AddFillRect(Brushes.White, hitsBar.X + hitsBar.Width * hitsPct, hitsBar.Y, hitsBar.Width * (1 - hitsPct), hitsBar.Height);
+                        float hitsPct = killable.DefenseCur / (float)killable.DefenseMax;
+                        //int color = Game.Rand.Round(255 * .65f * killable.Armor);
+                        //if (!hitsBrushes.TryGetValue(color, out Brush hitsBrush))
+                        //    hitsBrushes.Add(color, hitsBrush = new SolidBrush(Color.FromArgb(color, color, color)));
+                        //AddFillRect(Brushes.Black, hitsBar.X, hitsBar.Y, hitsBar.Width * hitsPct, hitsBar.Height);
 
-                        if (killable.ShieldInc > 0)
-                        {
-                            RectangleF shieldBar = new(hitsBar.X, hitsBar.Y - barSize, hitsBar.Width, barSize);
-                            rectangles.Add(shieldBar);
+                        RectangleF filled = new(hitsBar.X, hitsBar.Y, hitsBar.Width * hitsPct, hitsBar.Height);
+                        AddFill(Brushes.DarkGray, filled);
+                        RectangleF empty = new(hitsBar.X + hitsBar.Width * hitsPct, hitsBar.Y, hitsBar.Width * (1 - hitsPct), hitsBar.Height);
+                        AddFill(Brushes.White, empty);
 
-                            float shieldPct = (float)(killable.ShieldCur / killable.ShieldLimit);
-                            AddFillRect(Brushes.Purple, shieldBar.X, shieldBar.Y, shieldBar.Width * shieldPct, shieldBar.Height);
-                            AddFillRect(Brushes.White, shieldBar.X + shieldBar.Width * shieldPct, shieldBar.Y, shieldBar.Width * (1 - shieldPct), shieldBar.Height);
-                            float max = (float)(shieldBar.X + shieldBar.Width * killable.ShieldMax / killable.ShieldLimit);
-                            lines.Add(new(new(max, shieldBar.Y), new(max, shieldBar.Bottom)));
-                        }
+                        //Debug.WriteLine($"piece {piece}");
+                        //Debug.WriteLine($"hitsBar {hitsBar}");
+                        //Debug.WriteLine($"filled {filled}");
+                        //Debug.WriteLine($"empty {empty}");
+                        //Debug.WriteLine(Environment.NewLine);
+
+                        //if (killable.ShieldInc > 0)
+                        //{
+                        //    RectangleF shieldBar = new(hitsBar.X, hitsBar.Y - barSize, hitsBar.Width, barSize);
+                        //    rectangles.Add(shieldBar);
+
+                        //    float shieldPct = (float)(killable.ShieldCur / killable.ShieldLimit);
+                        //    AddFillRect(Brushes.Purple, shieldBar.X, shieldBar.Y, shieldBar.Width * shieldPct, shieldBar.Height);
+                        //    AddFillRect(Brushes.White, shieldBar.X + shieldBar.Width * shieldPct, shieldBar.Y, shieldBar.Width * (1 - shieldPct), shieldBar.Height);
+                        //    float max = (float)(shieldBar.X + shieldBar.Width * killable.ShieldMax / killable.ShieldLimit);
+                        //    lines.Add(new(new(max, shieldBar.Y), new(max, shieldBar.Bottom)));
+                        //}
                     }
+
+                    //if (piece != null && piece.HasBehavior(out IAttacker attacker))
+                    //{
+                    //    attacker.Attacks.Max(a => a.AttackCur);
+                    //    RectangleF shieldBar = new(hitsBar.X, hitsBar.Y - barSize, hitsBar.Width, barSize);
+                    //    rectangles.Add(shieldBar);
+
+                    //    float shieldPct = (float)(killable.ShieldCur / killable.ShieldLimit);
+                    //    AddFillRect(Brushes.Purple, shieldBar.X, shieldBar.Y, shieldBar.Width * shieldPct, shieldBar.Height);
+                    //    AddFillRect(Brushes.White, shieldBar.X + shieldBar.Width * shieldPct, shieldBar.Y, shieldBar.Width * (1 - shieldPct), shieldBar.Height);
+                    //    float max = (float)(shieldBar.X + shieldBar.Width * killable.ShieldMax / killable.ShieldLimit);
+                    //    lines.Add(new(new(max, shieldBar.Y), new(max, shieldBar.Bottom)));
+                    //}
                 }
 
             for (int a = 0; a < mapCoords.Width; a++)
@@ -284,7 +314,8 @@ namespace WinFormsApp1
             if (rects.Length > 0)
                 e.Graphics.FillRectangles(Brushes.White, rects);
 
-            HashSet<Brush> afterBrushes = hitsBrushes.Values.Append(Brushes.White).Append(Brushes.Purple).ToHashSet();
+            HashSet<Brush> afterBrushes = hitsBrushes.Values.Append(Brushes.DarkGray).Append(Brushes.White)//.Append(Brushes.Purple)
+                .ToHashSet();
             foreach (var p in fill)
                 if (!afterBrushes.Contains(p.Key))
                     e.Graphics.FillRectangles(p.Key, p.Value.ToArray());
@@ -359,7 +390,7 @@ namespace WinFormsApp1
             //Debug.WriteLine("2 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
 
             foreach (IBuilder b in Program.Game.Player.PiecesOfType<IBuilder>())
-                ranges[Blue].Add(b.Piece.Tile.GetPointsInRange(b.Range).ToHashSet());
+                ranges[Blue].Add(b.Piece.Tile.GetPointsInRange(b).ToHashSet());
 
             //Debug.WriteLine("3 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
 
@@ -435,7 +466,7 @@ namespace WinFormsApp1
                 //Debug.WriteLine("5 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
 
                 if (SelTile.Piece != null && SelTile.Piece.HasBehavior(out IBuilder b) && MouseTile != null && moveTiles.Contains(new(MouseTile.X, MouseTile.Y)))
-                    ranges[Blue].Add(MouseTile.GetPointsInRange(b.Range).ToHashSet());
+                    ranges[Blue].Add(MouseTile.GetPointsInRange(b).ToHashSet());
             }
 
             Rectangle mapCoords = GetMapCoords();
@@ -553,26 +584,25 @@ namespace WinFormsApp1
                     moveEdge = moveTiles;
                 }
 
-                var points = attacker.Piece.Tile.GetPointsInRange(attacker.Piece.GetBehavior<IMovable>().MoveCur + ar.Max(a => a.Range)).ToArray();
+                var points = attacker.Piece.Tile.GetPointsInRange(movable, movable.MoveCur + ar.Max(a => a.Range)).ToArray();
                 foreach (var a in ar)
                 {
                     List<Point> attPts = new(points.Length);
                     foreach (var point in points)
-                        if (moveEdge.Any(mt => ClassLibrary1.Map.Tile.GetDistance(mt.X, mt.Y, point.X, point.Y) <= a.Range))
+                        if (moveEdge.Any(mt => Tile.GetDistance(mt.X, mt.Y, point.X, point.Y) <= a.Range))
                             attPts.Add(point);
                     HashSet<Point> result = attPts.Union(moveTiles.Select(t => new Point(t.X, t.Y))).ToHashSet();
-                    AddAttStr?.Invoke(result, (float)a.Damage);
+                    AddAttStr?.Invoke(result, (float)a.AttackCur);
                     retVal.Add(result);
                 }
-
             }
             else
             {
                 foreach (var a in ar)
                     if (MouseTile != null && moveTiles.Contains(new Point(MouseTile.X, MouseTile.Y)))
-                        retVal.Add(MouseTile.GetPointsInRange(a.Range).ToHashSet());
+                        retVal.Add(MouseTile.GetPointsInRange(a).ToHashSet());
                     else
-                        retVal.Add(SelTile.GetPointsInRange(a.Range).ToHashSet());
+                        retVal.Add(SelTile.GetPointsInRange(a).ToHashSet());
             }
 
             foreach (var result in retVal)
@@ -609,9 +639,7 @@ namespace WinFormsApp1
                 {
                     if (a == 1)
                     {
-                        Point temp = p1;
-                        p1 = p2;
-                        p2 = temp;
+                        (p2, p1) = (p1, p2);
                     }
                     if (!range.TryGetValue(p1, out List<Point> list))
                         range.Add(p1, list = new(4));

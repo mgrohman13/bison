@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using MattUtil;
+﻿using MattUtil;
+using System;
+using Tile = ClassLibrary1.Map.Tile;
 
 namespace ClassLibrary1.Pieces.Terrain
 {
@@ -19,7 +16,7 @@ namespace ClassLibrary1.Pieces.Terrain
 
         internal double Rounding => _rounding;
 
-        internal Resource(Map.Tile tile, double baseValue, double sustainMult)
+        internal Resource(Tile tile, double baseValue, double sustainMult)
             : base(null, tile)
         {
             double value = Game.Rand.GaussianOE(baseValue, Consts.ResourceDev, Consts.ResourceOE);

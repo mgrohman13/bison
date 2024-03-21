@@ -119,8 +119,35 @@ true fractal noise... build on smaller with larger as map grows?
 evaluate use MemoryCache instead of Dictionary
 fix mirror image painting? may confuse in future?
 range OP
-move speed ramp up quickly
 building costs get more expensive with upgrade - countered by cost research
+rally units
+replace func tell you cost even if you cant afford
+replace extractors?
+escape after clicking notify cb
+more expensive, fewer mechs
+disband mech (recycle?)
+	turn off instead?
+upgrade can decrease a stat!?!
+ignore cur selected unit in enemy attack radius
+
+EARLY GAME
+mitigate balance of finding resources quicker?
+	distance to core? resource value?
+better balancing of starting mech
+	cost, speed/vision
+constructor better vision? quicker new constructors?
+hardcoded initial scout mech?
+constructor outrun too many early aliens
+
+COMBAT
+multiple defenses
+attack range
+attack types
+rethink move?
+have to not move to charge attacks?
+limit moving/attacking?
+	ranged cant do both?
+	melee limit move after attack? 
 
 
 plan:

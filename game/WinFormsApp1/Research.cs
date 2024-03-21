@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using Type = ClassLibrary1.Research.Type;
 
@@ -19,9 +16,11 @@ namespace WinFormsApp1
         {
             InitializeComponent();
 
-            ColumnHeader header = new();
-            header.Text = "col1";
-            header.Name = "col1";
+            ColumnHeader header = new()
+            {
+                Text = "col1",
+                Name = "col1",
+            };
             lvwAlso.HeaderStyle = ColumnHeaderStyle.None;
             lvwAlso.Scrollable = true;
             lvwAlso.View = View.Details;
@@ -32,8 +31,7 @@ namespace WinFormsApp1
 
         public static bool ShowForm()
         {
-            if (ResearchForm == null)
-                ResearchForm = new Research();
+            ResearchForm ??= new Research();
 
             if (ResearchForm.ShowDialog() == DialogResult.OK && ResearchForm.GetSelected().HasValue)
             {

@@ -1,20 +1,21 @@
 ﻿using MattUtil;
 using System;
 using System.Linq;
+using Tile = ClassLibrary1.Map.Tile;
 
 namespace ClassLibrary1.Pieces.Players
 {
     [Serializable]
     public class Constructor : PlayerPiece, IKillable.IRepairable
     {
-        public const double START_VISION = 6.5;
+        public const double START_VISION = 8.5;
 
         private bool _canUpgrade;
         private readonly bool _defenseType;
         private readonly double _rangeMult, _rounding;
         public Piece Piece => this;
 
-        private Constructor(Map.Tile tile, Values values, bool starter)
+        private Constructor(Tile tile, Values values, bool starter)
             : base(tile, values.Vision)
         {
             this._canUpgrade = false;
@@ -31,7 +32,7 @@ namespace ClassLibrary1.Pieces.Players
                 new Builder.BuildExtractor(this, values.GetRepair(_rangeMult).Builder));
             Unlock(Game.Player.Research);
         }
-        internal static Constructor NewConstructor(Map.Tile tile, bool starter)
+        internal static Constructor NewConstructor(Tile tile, bool starter)
         {
             Constructor obj = new(tile, GetValues(tile.Map.Game), starter);
             tile.Map.Game.AddPiece(obj);
@@ -145,12 +146,12 @@ namespace ClassLibrary1.Pieces.Players
             public double BuilderRange => repair.Builder.Range;
             public IKillable.Values GetKillable(Research research, bool defenseType)
             {
-                double armor = research.HasType(Research.Type.ConstructorDefense) && !defenseType ? killable.Armor : 0;
-                bool shields = research.HasType(Research.Type.ConstructorDefense) && defenseType;
-                double shieldInc = shields ? killable.ShieldInc : 0;
-                int shieldMax = shields ? killable.ShieldMax : 0;
-                int shieldLimit = shields ? killable.ShieldLimit : 0;
-                return new IKillable.Values(killable.HitsMax, killable.Resilience, armor, shieldInc, shieldMax, shieldLimit);
+                //double armor = research.HasType(Research.Type.ConstructorDefense) && !defenseType ? killable.Armor : 0;
+                //bool shields = research.HasType(Research.Type.ConstructorDefense) && defenseType;
+                //double shieldInc = shields ? killable.ShieldInc : 0;
+                //int shieldMax = shields ? killable.ShieldMax : 0;
+                //int shieldLimit = shields ? killable.ShieldLimit : 0;
+                return new IKillable.Values(killable.Defense, killable.Resilience);// ,armor, shieldInc, shieldMax, shieldLimit);
             }
             internal IMovable.Values GetMovable(double rangeMult, double rounding)
             {
@@ -182,29 +183,36 @@ namespace ClassLibrary1.Pieces.Players
             private void UpgradeConstructorCost(double researchMult)
             {
                 researchMult = Math.Pow(researchMult, .5);
-                this.energy = this.mass = Game.Rand.Round(850 / researchMult);
+                this.energy = this.mass = Game.Rand.Round(1250 / researchMult);
             }
             private void UpgradeConstructorDefense(double researchMult)
             {
-                researchMult = Math.Pow(researchMult, .8);
-                double armor = Consts.GetPct(1 / 3.0, researchMult);
-                double max = 26 * researchMult;
-                double limit = 52 * researchMult;
-                int shieldMax = Game.Rand.Round(max);
-                int shieldLimit = Game.Rand.Round(limit);
-                double mult = Math.Pow((max * 2 + limit) / (shieldMax * 2 + shieldLimit), 1 / 6.5);
-                double shieldInc = 1.69 * mult * researchMult;
-                this.killable = new(50, .35, armor, shieldInc, shieldMax, shieldLimit);
+                //double researchMult = Math.Pow(researchMult, .9);
+                //double armor = Consts.GetPct(1 / 3.0, researchMult);
+                //double max = 26 * researchMult;
+                //double limit = 52 * researchMult;
+                //int shieldMax = Game.Rand.Round(max);
+                //int shieldLimit = Game.Rand.Round(limit);
+                //double mult = Math.Pow((max * 2 + limit) / (shieldMax * 2 + shieldLimit), 1 / 6.5);
+                //double shieldInc = 1.69 * mult * researchMult;
+
+                double defMult = Math.Pow(researchMult, .6);
+                double defAvg = 25 * defMult;
+                const double lowPenalty = 5;
+                if (researchMult < lowPenalty)
+                    defAvg *= defMult / lowPenalty;
+                int defense = Game.Rand.Round(defAvg);
+                this.killable = new(defense, .35);//, armor, shieldInc, shieldMax, shieldLimit);
             }
             private void UpgradeConstructorMove(double researchMult)
             {
-                researchMult = Math.Pow(researchMult, .4);
-                double max = 7 * researchMult;
-                double limit = 12 * researchMult;
+                researchMult = Math.Pow(researchMult, .6);
+                double max = 8 * researchMult;
+                double limit = 15 * researchMult;
                 int moveMax = Game.Rand.Round(max);
                 int moveLimit = Game.Rand.Round(limit);
                 double mult = Math.Pow((max * 2 + limit) / (moveMax * 2 + moveLimit), 1 / 3.9);
-                double moveInc = 3 * mult * researchMult;
+                double moveInc = 3.5 * mult * researchMult;
                 this.vision = START_VISION * researchMult;
                 this.movable = new(moveInc, moveMax, moveLimit);
             }

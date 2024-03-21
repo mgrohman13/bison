@@ -1,4 +1,5 @@
 ﻿using System;
+using Tile = ClassLibrary1.Map.Tile;
 
 namespace ClassLibrary1.Pieces.Players
 {
@@ -9,13 +10,13 @@ namespace ClassLibrary1.Pieces.Players
 
         public Piece Piece => this;
 
-        private Core(Map.Tile tile, Values values)
+        private Core(Tile tile, Values values)
             : base(tile, values.Vision)
         {
             SetBehavior(new Killable(this, values.Killable), new Repair(this, values.Repair));
             Unlock(tile.Map.Game.Player.Research);
         }
-        internal static Core NewCore(Map.Tile tile)
+        internal static Core NewCore(Tile tile)
         {
             Core obj = new(tile, GetValues(tile.Map.Game));
             tile.Map.Game.AddPiece(obj);
@@ -101,27 +102,27 @@ namespace ClassLibrary1.Pieces.Players
 
             public void Upgrade(Research.Type type, double researchMult)
             {
-                if (type == Research.Type.BuildingHits)
+                if (type == Research.Type.BuildingDefense)
                     UpgradeBuildingHits(researchMult);
                 else if (type == Research.Type.CoreShields)
                     UpgradeCoreShields(researchMult);
             }
             private void UpgradeBuildingHits(double researchMult)
             {
-                researchMult = Math.Pow(researchMult, .4);
-                int hits = Game.Rand.Round(100 * researchMult);
-                this.vision = START_VISION * researchMult;
-                this.killable = new(hits, resilience, armor, killable.ShieldInc, killable.ShieldMax, killable.ShieldLimit);
+                //researchMult = Math.Pow(researchMult, .4);
+                int defense = Game.Rand.Round(25 * Math.Pow(researchMult, .7));
+                this.vision = START_VISION * Math.Pow(researchMult, .5);
+                this.killable = new(defense, resilience);//, armor, killable.ShieldInc, killable.ShieldMax, killable.ShieldLimit);
             }
             private void UpgradeCoreShields(double researchMult)
             {
-                double max = 78 * Math.Pow(researchMult, .7);
-                double limit = 91 * Math.Pow(researchMult, .8);
-                int shieldMax = Game.Rand.Round(max);
-                int shieldLimit = Game.Rand.Round(limit);
-                double mult = Math.Pow((max * 2 + limit) / (shieldMax * 2 + shieldLimit), 1 / 6.5);
-                double shieldInc = 1.3 * mult * Math.Pow(researchMult, .9);
-                this.killable = new(killable.HitsMax, resilience, armor, shieldInc, shieldMax, shieldLimit);
+                //double max = 78 * Math.Pow(researchMult, .7);
+                //double limit = 91 * Math.Pow(researchMult, .8);
+                //int shieldMax = Game.Rand.Round(max);
+                //int shieldLimit = Game.Rand.Round(limit);
+                //double mult = Math.Pow((max * 2 + limit) / (shieldMax * 2 + shieldLimit), 1 / 6.5);
+                //double shieldInc = 1.3 * mult * Math.Pow(researchMult, .9);
+                this.killable = new(killable.Defense, resilience);//, armor, shieldInc, shieldMax, shieldLimit);
             }
         }
     }

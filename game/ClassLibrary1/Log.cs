@@ -1,14 +1,8 @@
-﻿using System;
-using System.Diagnostics;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using MattUtil;
-using ClassLibrary1;
-using ClassLibrary1.Pieces;
-using ClassLibrary1.Pieces.Enemies;
+﻿using ClassLibrary1.Pieces;
 using ClassLibrary1.Pieces.Players;
-using Values = ClassLibrary1.Pieces.IAttacker.Values;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace ClassLibrary1
 {
@@ -37,9 +31,9 @@ namespace ClassLibrary1
             return entries ?? new();
         }
 
-        internal void LogAttack(IAttacker attacker, IKillable defender, double baseDamage, int randDmg, int hitsDmg, double shieldDmg)
+        internal void LogAttack(IAttacker attacker, IKillable defender, int attCur, int attMax, int defCur, int defMax, int damage)// double baseDamage, int randDmg, int hitsDmg, double shieldDmg)
         {
-            LogEntry entry = new(_logNumInc++, Game.Turn, attacker, defender, baseDamage, randDmg, hitsDmg, shieldDmg);
+            LogEntry entry = new(_logNumInc++, Game.Turn, attacker, defender, attCur, attMax, defCur, defMax, damage);// baseDamage, randDmg, hitsDmg, shieldDmg);
             //Debug.WriteLine(statement);
             AddLog(entry, attacker.Piece, defender.Piece);
         }
@@ -68,14 +62,17 @@ namespace ClassLibrary1
             public Side DefenderSide;
             public string DefenderName;
             public string DefenderType;
-            public readonly double BaseDamage;
-            public readonly int RandDmg;
-            public readonly int HitsDmg;
-            public readonly double ShieldDmg;
-            public readonly int HitsCur;
-            public readonly double ShieldCur;
 
-            public LogEntry(int logNum, int turn, IAttacker attacker, IKillable defender, double baseDamage, int randDmg, int hitsDmg, double shieldDmg)
+            public readonly int attCur, attMax, defCur, defMax, damage;
+
+            //public readonly double BaseDamage;
+            //public readonly int RandDmg;
+            //public readonly int HitsDmg;
+            //public readonly double ShieldDmg;
+            //public readonly int HitsCur;
+            //public readonly double ShieldCur;
+
+            public LogEntry(int logNum, int turn, IAttacker attacker, IKillable defender, int attCur, int attMax, int defCur, int defMax, int damage)// double baseDamage, int randDmg, int hitsDmg, double shieldDmg)
             {
                 static string GetName(IBehavior b) => b.Piece is Mech mech ? mech.GetName() : b.Piece.ToString();
                 static string GetBlueprint(IBehavior b) => b.Piece is Mech mech ? mech.GetBlueprintName() : "";
@@ -87,12 +84,19 @@ namespace ClassLibrary1
                 this.DefenderSide = defender.Piece.Side;
                 this.DefenderName = GetName(defender);
                 this.DefenderType = GetBlueprint(defender);
-                this.BaseDamage = baseDamage;
-                this.RandDmg = randDmg;
-                this.HitsDmg = hitsDmg;
-                this.ShieldDmg = shieldDmg;
-                this.HitsCur = defender.HitsCur;
-                this.ShieldCur = defender.ShieldCur;
+
+                this.attCur = attCur;
+                this.attMax = attMax;
+                this.defCur = defCur;
+                this.defMax = defMax;
+                this.damage = damage;
+
+                //this.BaseDamage = baseDamage;
+                //this.RandDmg = randDmg;
+                //this.HitsDmg = hitsDmg;
+                //this.ShieldDmg = shieldDmg;
+                //this.HitsCur = defender.HitsCur;
+                //this.ShieldCur = defender.ShieldCur;
             }
 
             public int CompareTo(object obj)

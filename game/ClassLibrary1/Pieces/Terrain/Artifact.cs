@@ -1,19 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Tile = ClassLibrary1.Map.Tile;
 
 namespace ClassLibrary1.Pieces.Terrain
 {
     [Serializable]
     public class Artifact : Resource
     {
-        private Artifact(Map.Tile tile)
+        private Artifact(Tile tile)
             : base(tile, Consts.ArtifactResearchInc, Consts.ArtifactSustain)
         {
         }
-        internal static Artifact NewArtifact(Map.Tile tile)
+        internal static Artifact NewArtifact(Tile tile)
         {
             Artifact artifact = new(tile);
             tile.Map.Game.AddPiece(artifact);

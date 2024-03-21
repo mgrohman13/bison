@@ -4,6 +4,7 @@ using MattUtil;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Tile = ClassLibrary1.Map.Tile;
 
 namespace ClassLibrary1
 {
@@ -37,15 +38,15 @@ namespace ClassLibrary1
         internal void CreateCore(Point constructorOffset)
         {
             const double stdDev = Consts.PathWidth / 1.3;
-            Map.Tile tile;
+            Tile tile;
             do
             {
                 tile = Game.Map.GetTile(Game.Rand.GaussianInt(stdDev), Game.Rand.GaussianInt(stdDev));
 
                 if (tile != null)
                 {
-                    var checkTiles = Map.Tile.GetPointsInRange(new(tile.X, tile.Y), Core.START_VISION);
-                    checkTiles = checkTiles.Union(Map.Tile.GetPointsInRange(new(tile.X + constructorOffset.X, tile.Y + constructorOffset.Y), Constructor.START_VISION));
+                    var checkTiles = Tile.GetPointsInRangeUnblocked(Game.Map, new(tile.X, tile.Y), Core.START_VISION);
+                    checkTiles = checkTiles.Union(Tile.GetPointsInRangeUnblocked(Game.Map, new(tile.X + constructorOffset.X, tile.Y + constructorOffset.Y), Constructor.START_VISION));
                     if (checkTiles.Any(point => Game.Map.GetTile(point) == null))
                         tile = null;
                 }

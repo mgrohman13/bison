@@ -75,16 +75,15 @@ namespace ClassLibrary1.Pieces
                 case Type.MechArmor:
                     add = .169;
                     break;
-                case Type.MechDamage:
-                    add = .39;
+                case Type.MechAttack:
+                    add = -.39;
                     break;
-                case Type.MechHits:
-                    mult = 1.3;
-                    add = .52;
+                case Type.MechDefense:
+                    add = .39;
                     break;
                 case Type.MechMove:
                     mult = .52;
-                    add = .21;
+                    add = .52;
                     break;
                 case Type.MechRange:
                     mult = .78;

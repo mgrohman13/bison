@@ -1,12 +1,7 @@
-﻿using System;
-using System.Diagnostics;
-using System.Collections.Generic;
-using System.Linq;
-using MattUtil;
-using ClassLibrary1.Pieces;
-using ClassLibrary1.Pieces.Enemies;
-using ClassLibrary1.Pieces.Players;
+﻿using ClassLibrary1.Pieces.Players;
 using ClassLibrary1.Pieces.Terrain;
+using System;
+using Tile = ClassLibrary1.Map.Tile;
 
 namespace ClassLibrary1.Pieces
 {
@@ -19,7 +14,7 @@ namespace ClassLibrary1.Pieces
 
         public interface IBuildConstructor : IBuilder
         {
-            public Constructor Build(Map.Tile tile);
+            public Constructor Build(Tile tile);
         }
         public interface IBuildExtractor : IBuilder
         {
@@ -28,7 +23,7 @@ namespace ClassLibrary1.Pieces
         }
         public interface IBuildMech : IBuilder
         {
-            public Mech Build(Map.Tile tile, MechBlueprint blueprint);
+            public Mech Build(Tile tile, MechBlueprint blueprint);
         }
         public interface IBuildFactory : IBuilder
         {
@@ -42,7 +37,7 @@ namespace ClassLibrary1.Pieces
         }
 
         [Serializable]
-        public struct Values
+        public readonly struct Values
         {
             private readonly double _range;
             public Values(double range)

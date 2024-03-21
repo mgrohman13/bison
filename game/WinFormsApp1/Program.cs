@@ -8,6 +8,8 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
+using Tile = ClassLibrary1.Map.Tile;
+using Type = ClassLibrary1.Research.Type;
 
 namespace WinFormsApp1
 {
@@ -73,7 +75,7 @@ namespace WinFormsApp1
             if (File.Exists(Game.SavePath))
             {
                 string path = Game.SavePath.Replace("\\", "/");
-                path = path.Substring(0, path.LastIndexOf("/")) + "/" + "auto_" + (Game.Turn - 1) + ".sav";
+                path = path[..path.LastIndexOf("/")] + "/" + "auto_" + (Game.Turn - 1) + ".sav";
                 if (File.Exists(path))
                     File.Delete(path);
                 File.Copy(Game.SavePath, path);
@@ -89,8 +91,7 @@ namespace WinFormsApp1
                 if (!Directory.Exists(savePath))
                     savePath = null;
             }
-            if (savePath == null)
-                savePath = ".";
+            savePath ??= ".";
             if (!savePath.EndsWith("/") && !savePath.EndsWith("\\") && !savePath.EndsWith(Path.PathSeparator))
                 savePath += Path.DirectorySeparatorChar;
             savePath += "game.sav";
@@ -108,7 +109,7 @@ namespace WinFormsApp1
                 end = MessageBox.Show("Move remaining.  End Turn?", "", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning) == DialogResult.OK;
             if (end)
             {
-                ClassLibrary1.Research.Type? researched = Game.EndTurn();
+                Type? researched = Game.EndTurn();
                 if (Game.GameOver)
                 {
                     MessageBox.Show("Game over!  " + Game.Turn + " turns.");
@@ -142,7 +143,7 @@ namespace WinFormsApp1
             Rectangle gameRect = Game.Map.GameRect();
             var tiles = Program.Game.Player.Pieces.Where(Program.MoveLeft).Select(p => p.Tile);
             if (tiles.Any() && Form.MapMain.SelTile != null)
-                tiles = tiles.Concat(new ClassLibrary1.Map.Tile[] { Form.MapMain.SelTile });
+                tiles = tiles.Concat(new Tile[] { Form.MapMain.SelTile });
             var moveLeft = tiles.Distinct().OrderBy(t =>
             {
                 int main, secondary;
@@ -199,28 +200,28 @@ namespace WinFormsApp1
 
             bool move = false;
             IBuilder builder = piece.GetBehavior<IBuilder>();
-            if (!move && piece.HasBehavior<IBuilder.IBuildMech>(out _))
+            if (!move && piece.HasBehavior<IBuilder.IBuildMech>())
                 move = Game.Player.Research.Blueprints.Any(b => Game.Player.Has(b.Energy, b.Mass) && GetNotify(b));
-            if (!move && piece.HasBehavior<IBuilder.IBuildConstructor>(out _))
+            if (!move && piece.HasBehavior<IBuilder.IBuildConstructor>())
             {
                 Constructor.Cost(Game, out int e, out int m);
                 move = Game.Player.Has(e, m) && NotifyConstructor;
             }
-            if (!move && piece.HasBehavior<IBuilder.IBuildExtractor>(out _))
-                move = piece.Tile.GetVisibleTilesInRange(builder.Range).Select(t => t.Piece as Resource).Where(r => r != null).Any(r =>
+            if (!move && piece.HasBehavior<IBuilder.IBuildExtractor>())
+                move = piece.Tile.GetVisibleTilesInRange(builder).Select(t => t.Piece as Resource).Where(r => r != null).Any(r =>
                 {
                     Extractor.Cost(out int e, out int m, r);
                     return Game.Player.Has(e, m);
                 });
             if (!move)
-                if (piece.Tile.GetVisibleTilesInRange(builder != null ? builder.Range : 0).Select(t => t.Piece as Foundation).Any(f => f != null))
+                if (builder != null && piece.Tile.GetVisibleTilesInRange(builder).Select(t => t.Piece as Foundation).Any(f => f != null))
                 {
-                    if (piece.HasBehavior<IBuilder.IBuildFactory>(out _))
+                    if (piece.HasBehavior<IBuilder.IBuildFactory>())
                     {
                         Factory.Cost(Game, out int e, out int m);
                         move = Game.Player.Has(e, m);
                     }
-                    if (!move && piece.HasBehavior<IBuilder.IBuildTurret>(out _))
+                    if (!move && piece.HasBehavior<IBuilder.IBuildTurret>())
                     {
                         Turret.Cost(Game, out int e, out int m);
                         move = Game.Player.Has(e, m);
@@ -228,11 +229,14 @@ namespace WinFormsApp1
                 }
 
             if (!move && piece.HasBehavior(out IMovable movable))
-                move |= movable.MoveCur > 1 && movable.MoveCur + movable.MoveInc > movable.MoveMax;
+                //need to support rallying long distances to uncomment this enhancement
+                move |= movable.MoveCur > 1 && movable.MoveCur + movable.MoveInc > movable.MoveMax;// + (movable.MoveLimit - movable.MoveMax > 1 ? 1 : 0);
             if (!move && piece.HasBehavior(out IAttacker attacker))
             {
-                double range = attacker.Attacks.Max(a => a.Attacked ? 0 : a.Range);
-                move |= range > 0 && piece.Tile.GetVisibleTilesInRange(range).Any(t => t.Piece != null && t.Piece.HasBehavior<IKillable>(out _) && t.Piece.IsEnemy);
+                static double GetRange(Attack a) => a.Attacked ? 0 : a.Range;
+                double maxRange = attacker.Attacks.Max(GetRange);
+                Attack max = Game.Rand.SelectValue(attacker.Attacks.Where(a => GetRange(a) == maxRange));
+                move |= maxRange > 0 && piece.Tile.GetVisibleTilesInRange(max).Any(t => t.Piece != null && t.Piece.HasBehavior<IKillable>() && t.Piece.IsEnemy);
             }
 
             return move;

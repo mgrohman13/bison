@@ -58,7 +58,7 @@ namespace WinFormsApp1
             dataGridView1.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllCells;
             dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dataGridView1.Dock = System.Windows.Forms.DockStyle.Fill;
-            dataGridView1.EditMode = System.Windows.Forms.DataGridViewEditMode.EditOnEnter;
+            dataGridView1.EditMode = System.Windows.Forms.DataGridViewEditMode.EditOnF2;
             dataGridView1.Location = new System.Drawing.Point(0, 0);
             dataGridView1.Margin = new System.Windows.Forms.Padding(2);
             dataGridView1.Name = "dataGridView1";

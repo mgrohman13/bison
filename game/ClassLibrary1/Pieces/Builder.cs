@@ -1,12 +1,8 @@
-﻿using System;
-using System.Diagnostics;
-using System.Collections.Generic;
-using System.Linq;
-using MattUtil;
-using ClassLibrary1.Pieces;
-using ClassLibrary1.Pieces.Enemies;
-using ClassLibrary1.Pieces.Players;
+﻿using ClassLibrary1.Pieces.Players;
 using ClassLibrary1.Pieces.Terrain;
+using MattUtil;
+using System;
+using Tile = ClassLibrary1.Map.Tile;
 
 namespace ClassLibrary1.Pieces
 {
@@ -50,13 +46,14 @@ namespace ClassLibrary1.Pieces
         {
         }
 
-        private bool Validate(Map.Tile tile, bool empty)
+        private bool Validate(Tile tile, bool empty)
         {
             return (tile != null && (!empty || tile.Piece == null) && tile.Visible && tile.GetDistance(this.Piece.Tile) <= Range);
         }
         private bool Replace(bool doReplace, PlayerPiece piece, CostFunc GetNewCost, Func<double> GetRounding, Action NewPiece, bool validateHits, out int energy, out int mass)
         {
-            if (piece != null && Validate(piece.Tile, false) && piece.HasBehavior(out IKillable killable) && (!validateHits || killable.HitsCur < killable.HitsMax))
+            //replace diminshed attack too
+            if (piece != null && Validate(piece.Tile, false) && piece.HasBehavior(out IKillable killable) && (!validateHits || killable.DefenseCur < killable.DefenseMax))
             {
                 GetNewCost(out int newEnergy, out int newMass);
                 if (piece is Extractor)
@@ -70,7 +67,7 @@ namespace ClassLibrary1.Pieces
                     Turret.Cost(piece.Game, out energy, out mass);
                 else throw new Exception();
 
-                double mult = killable.HitsCur / (double)killable.HitsMax * Consts.ReplaceRefundPct;
+                double mult = killable.DefenseCur / (double)killable.DefenseMax * Consts.ReplaceRefundPct;
                 double rounding = GetRounding();
                 energy = MTRandom.Round(newEnergy - energy * mult, rounding);
                 mass = MTRandom.Round(newMass - mass * mult, rounding);
@@ -97,7 +94,7 @@ namespace ClassLibrary1.Pieces
                 : base(piece, values)
             {
             }
-            public Constructor Build(Map.Tile tile)
+            public Constructor Build(Tile tile)
             {
                 if (Validate(tile, true))
                 {
@@ -141,7 +138,7 @@ namespace ClassLibrary1.Pieces
                 : base(piece, values)
             {
             }
-            public Mech Build(Map.Tile tile, MechBlueprint blueprint)
+            public Mech Build(Tile tile, MechBlueprint blueprint)
             {
                 if (Validate(tile, true))
                 {
@@ -170,7 +167,7 @@ namespace ClassLibrary1.Pieces
             }
             public bool Replace(bool doReplace, FoundationPiece foundationPiece, out int energy, out int mass)
             {
-                Map.Tile tile = foundationPiece?.Tile;
+                Tile tile = foundationPiece?.Tile;
                 return Replace(doReplace, foundationPiece,
                     (out int e, out int m) => Factory.Cost(Piece.Game, out e, out m),
                     () => Factory.GetRounding(Piece.Game),
@@ -197,7 +194,7 @@ namespace ClassLibrary1.Pieces
             }
             public bool Replace(bool doReplace, FoundationPiece foundationPiece, out int energy, out int mass)
             {
-                Map.Tile tile = foundationPiece?.Tile;
+                Tile tile = foundationPiece?.Tile;
                 return Replace(doReplace, foundationPiece,
                     (out int e, out int m) => Turret.Cost(Piece.Game, out e, out m),
                     () => Turret.GetRounding(Piece.Game),

@@ -1,13 +1,5 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using MattUtil;
-using ClassLibrary1.Pieces;
-using ClassLibrary1.Pieces.Enemies;
-using ClassLibrary1.Pieces.Players;
-using Attack = ClassLibrary1.Pieces.Attacker.Attack;
 
 namespace ClassLibrary1.Pieces
 {
@@ -19,26 +11,35 @@ namespace ClassLibrary1.Pieces
         public bool Fire(IKillable killable);
         internal bool EnemyFire(IKillable killable);
 
+        //public interface IAttack 
+        //{ 
+        //}
+
         [Serializable]
-        public struct Values
+        public readonly struct Values
         {
-            private readonly int _damage;
-            private readonly double _armorPierce, _shieldPierce, _dev, _range;
-            public Values(int _damage, double _armorPierce, double _shieldPierce, double _dev, double _range)
+            private readonly int _attack;
+            //private readonly int _numAttacks;
+
+            //private readonly double _armorPierce, _shieldPierce, _dev, _range;
+            public Values(int attack)//, double _armorPierce, double _shieldPierce, double _dev, double _range)
             {
-                this._damage = _damage;
-                this._armorPierce = _armorPierce;
-                this._shieldPierce = _shieldPierce;
-                this._dev = _dev;
-                this._range = _range;
-                if (Dev < .0052)
-                    this._dev = 0;
+                if (attack < 1)
+                    attack = 1;
+                this._attack = attack;
+                //this._armorPierce = _armorPierce;
+                //this._shieldPierce = _shieldPierce;
+                //this._dev = _dev;
+                //this._range = _range;
+                //if (Dev < .0052)
+                //    this._dev = 0;
             }
-            public double Range => _range;
-            public int Damage => _damage;
-            public double ArmorPierce => _armorPierce;
-            public double ShieldPierce => _shieldPierce;
-            public double Dev => _dev;
+            public double Range => 1.5;
+            public int Attack => _attack;
+            //public double ArmorPierce => _armorPierce;
+            //public double ShieldPierce => _shieldPierce;
+            //public double Dev => _dev;
         }
+
     }
 }

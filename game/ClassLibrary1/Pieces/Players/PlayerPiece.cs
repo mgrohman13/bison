@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Diagnostics;
-using System.Collections.Generic;
-using System.Linq;
-using MattUtil;
-using ClassLibrary1.Pieces;
+using Tile = ClassLibrary1.Map.Tile;
 
 namespace ClassLibrary1.Pieces.Players
 {
@@ -14,7 +10,7 @@ namespace ClassLibrary1.Pieces.Players
         public double Vision => Consts.GetDamagedValue(this, VisionBase, 0);
         public double VisionBase => _vision;
 
-        internal PlayerPiece(Map.Tile tile, double vision)
+        internal PlayerPiece(Tile tile, double vision)
             : base(tile.Map.Game.Player, tile)
         {
             this._vision = vision;

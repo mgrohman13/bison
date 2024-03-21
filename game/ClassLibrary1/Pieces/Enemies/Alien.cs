@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Collections.Generic;
-using System.Linq;
-using MattUtil;
-using ClassLibrary1.Pieces;
-using System.Collections.ObjectModel;
+using Tile = ClassLibrary1.Map.Tile;
 
 namespace ClassLibrary1.Pieces.Enemies
 {
@@ -17,7 +13,7 @@ namespace ClassLibrary1.Pieces.Enemies
 
         public Piece Piece => this;
 
-        private Alien(Map.Tile tile, IKillable.Values killable, IEnumerable<IAttacker.Values> attacks, IMovable.Values movable)
+        private Alien(Tile tile, IKillable.Values killable, IEnumerable<IAttacker.Values> attacks, IMovable.Values movable)
             : base(tile)
         {
             this.killable = new Killable(this, killable);
@@ -25,7 +21,7 @@ namespace ClassLibrary1.Pieces.Enemies
             this.movable = new Movable(this, movable);
             SetBehavior(this.killable, this.attacker, this.movable);
         }
-        internal static Alien NewAlien(Map.Tile tile, IKillable.Values killable, IEnumerable<IAttacker.Values> attacks, IMovable.Values movable)
+        internal static Alien NewAlien(Tile tile, IKillable.Values killable, IEnumerable<IAttacker.Values> attacks, IMovable.Values movable)
         {
             Alien obj = new(tile, killable, attacks, movable);
             tile.Map.Game.AddPiece(obj);

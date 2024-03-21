@@ -1,11 +1,5 @@
 ﻿using System;
-using System.Diagnostics;
-using System.Collections.Generic;
-using System.Linq;
-using MattUtil;
-using ClassLibrary1.Pieces;
-using ClassLibrary1.Pieces.Enemies;
-using ClassLibrary1.Pieces.Players;
+using Tile = ClassLibrary1.Map.Tile;
 
 namespace ClassLibrary1.Pieces
 {
@@ -51,17 +45,17 @@ namespace ClassLibrary1.Pieces
                 _moveCur = _moveCur * MoveLimit / oldMove;
         }
 
-        bool IMovable.Move(Map.Tile to)
+        bool IMovable.Move(Tile to)
         {
             bool move = (Piece.IsPlayer && to != null && to.Piece == null && to.Visible);
             return Move(move, to);
         }
-        bool IMovable.EnemyMove(Map.Tile to)
+        bool IMovable.EnemyMove(Tile to)
         {
             bool move = (Piece.IsEnemy && to != null && to.Piece == null);
             return Move(move, to);
         }
-        private bool Move(bool Move, Map.Tile to)
+        private bool Move(bool Move, Tile to)
         {
             if (Move && Piece.Tile != to)
             {

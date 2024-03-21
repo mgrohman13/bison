@@ -1,19 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Tile = ClassLibrary1.Map.Tile;
 
 namespace ClassLibrary1.Pieces.Terrain
 {
     [Serializable]
     public class Foundation : Piece
     {
-        internal Foundation(Map.Tile tile)
+        internal Foundation(Tile tile)
             : base(null, tile)
         {
         }
-        internal static Foundation NewFoundation(Map.Tile tile)
+        internal static Foundation NewFoundation(Tile tile)
         {
             Foundation obj = new(tile);
             tile.Map.Game.AddPiece(obj);

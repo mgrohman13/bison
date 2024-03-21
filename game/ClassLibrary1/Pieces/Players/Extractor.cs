@@ -1,10 +1,6 @@
-﻿using System;
-using System.Diagnostics;
-using System.Collections.Generic;
-using System.Linq;
-using MattUtil;
-using ClassLibrary1.Pieces;
-using ClassLibrary1.Pieces.Terrain;
+﻿using ClassLibrary1.Pieces.Terrain;
+using System;
+using Tile = ClassLibrary1.Map.Tile;
 
 namespace ClassLibrary1.Pieces.Players
 {
@@ -16,7 +12,7 @@ namespace ClassLibrary1.Pieces.Players
 
         public double Sustain => Resource.Sustain * GetValues(Game).SustainMult;
 
-        private Extractor(Map.Tile tile, Resource Resource, Values values)
+        private Extractor(Tile tile, Resource Resource, Values values)
             : base(tile, values.Vision)
         {
             SetBehavior(new Killable(this, values.Killable));
@@ -25,7 +21,7 @@ namespace ClassLibrary1.Pieces.Players
         }
         internal static Extractor NewExtractor(Resource resource)
         {
-            Map.Tile tile = resource.Tile;
+            Tile tile = resource.Tile;
             resource.Die();
 
             Extractor obj = new(tile, resource, GetValues(resource.Game));
@@ -61,7 +57,7 @@ namespace ClassLibrary1.Pieces.Players
 
         internal override void Die()
         {
-            Map.Tile tile = this.Tile;
+            Tile tile = this.Tile;
             base.Die();
             Resource.SetTile(tile);
         }
@@ -107,7 +103,7 @@ namespace ClassLibrary1.Pieces.Players
             {
                 if (type == Research.Type.BuildingCost)
                     UpgradeBuildingCost(researchMult);
-                else if (type == Research.Type.BuildingHits)
+                else if (type == Research.Type.BuildingDefense)
                     UpgradeBuildingHits(researchMult);
                 else if (type == Research.Type.ExtractorValue)
                     UpgradeExtractorValue(researchMult);
@@ -118,17 +114,17 @@ namespace ClassLibrary1.Pieces.Players
             }
             private void UpgradeBuildingHits(double researchMult)
             {
-                researchMult = Math.Pow(researchMult, .5);
-                int hits = Game.Rand.Round(75 * researchMult);
-                this.vision = 5 * researchMult;
-                this.killable = new(hits, killable.Resilience);
+                //researchMult = Math.Pow(researchMult, .5);
+                int defense = Game.Rand.Round(15 * Math.Pow(researchMult, .7));
+                this.vision = 5 * Math.Pow(researchMult, .5);
+                this.killable = new(defense, killable.Resilience);
             }
             private void UpgradeExtractorValue(double researchMult)
             {
                 double resilience = Consts.GetPct(.3, Math.Pow(researchMult, .4));
                 this.valueMult = Math.Pow(researchMult, .5);
                 this.sustainMult = Math.Pow(researchMult, .3);
-                this.killable = new(killable.HitsMax, resilience);
+                this.killable = new(killable.Defense, resilience);
             }
         }
     }

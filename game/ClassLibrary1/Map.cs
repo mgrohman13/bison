@@ -224,7 +224,7 @@ namespace ClassLibrary1
         private void UpdateVision(PlayerPiece piece)
         {
             Tile tile = piece.Tile;
-            foreach (Point p in tile.GetPointsInRange(piece.Vision))
+            foreach (Point p in tile.GetPointsInRangeUnblocked(piece.Vision))
                 this._explored.Add(p);
 
             int vision = (int)piece.Vision;
@@ -345,25 +345,32 @@ namespace ClassLibrary1
                 check = TWO_PI - check;
             return check;
         }
+
         //the sign indicates which side of the line the point is on
         private static double PointLineDistanceSigned(Path path, PointD linePoint, Point point)
         {
             path.CalcLine(linePoint, out double a, out double b, out double c);
 
-            double dist = (a * point.X + b * point.Y + c) / Math.Sqrt(a * a + b * b);
+            double dist = PointLineDistance(a, b, c, point);
             if (GetAngleDiff(path.Angle, Math.PI) < HALF_PI)
                 dist *= -1;
             return dist;
         }
-        //private double PointLineDist(Tile tile, int x, int y, Point p)
-        //{
-        //    if (tile.X == x)
-        //        return Math.Abs(p.Y - y);
-        //    double a = (tile.Y - y) / (tile.X - x);
-        //    double b = -1;
-        //    double c = y - a * x;
-        //    return Math.Abs(a * p.X + b * p.Y + c) / Math.Sqrt(a * a + b * b);
-        //}
+        private static double PointLineDistanceAbs(Point segment1, Point segment2, Point point)
+        {
+            if (segment2.X == segment1.X)
+                return Math.Abs(point.X - segment1.X);
+
+            //merge with CalcLine?
+            double a = (segment2.Y - segment1.Y) / (segment2.X - segment1.X);
+            double b = -1;
+            double c = segment1.Y - a * segment1.X;
+            return PointLineDistanceAbs(a, b, c, point);
+        }
+        private static double PointLineDistanceAbs(double a, double b, double c, Point point) =>
+            Math.Abs(PointLineDistance(a, b, c, point));
+        private static double PointLineDistance(double a, double b, double c, Point point) =>
+            (a * point.X + b * point.Y + c) / Math.Sqrt(a * a + b * b);
 
         private static Func<Map, int, int, Tile> NewTile;
         [Serializable]
@@ -385,18 +392,10 @@ namespace ClassLibrary1
                 this.Y = y;
             }
 
-            public double GetDistance(Point other)
-            {
-                return GetDistance(other.X, other.Y);
-            }
-            public double GetDistance(Tile other)
-            {
-                return GetDistance(other.X, other.Y);
-            }
-            public double GetDistance(int x, int y)
-            {
-                return GetDistance(this.X, this.Y, x, y);
-            }
+            public double GetDistance(Point other) => GetDistance(other.X, other.Y);
+            public double GetDistance(Tile other) => GetDistance(other.X, other.Y);
+            public double GetDistance(int x, int y) => GetDistance(this.X, this.Y, x, y);
+            public static double GetDistance(Point p1, Point p2) => GetDistance(p1.X, p1.Y, p2.X, p2.Y);
             public static double GetDistance(int x1, int y1, int x2, int y2)
             {
                 double xDiff = x1 - x2;
@@ -407,48 +406,36 @@ namespace ClassLibrary1
                 return Math.Sqrt(xDiff * xDiff + yDiff * yDiff);
             }
 
-            public IEnumerable<Tile> GetVisibleTilesInRange(double range)
-            {
-                return GetVisibleTilesInRange(range, false, null);
-            }
-            internal IEnumerable<Tile> GetTilesInRange(double range)
-            {
-                return GetTilesInRange(range, false, null);
-            }
-            public IEnumerable<Point> GetPointsInRange(double range)
-            {
-                return GetPointsInRange(range, false, null);
-            }
-            public IEnumerable<Point> GetPointsInRange(IMovable movable)
-            {
-                return GetPointsInRange(movable.MoveCur, true, movable.Piece);
-            }
+            public IEnumerable<Tile> GetVisibleTilesInRange(IBuilder builder) => GetVisibleTilesInRange(builder.Range, true, null);
+            public IEnumerable<Tile> GetVisibleTilesInRange(Attack attack) => GetVisibleTilesInRange(attack.Range, true, attack.Piece);
+            private IEnumerable<Tile> GetVisibleTilesInRange(double range, bool blockMap, Piece blockFor) => GetPointsInRange(range, blockMap, blockFor)
+                .Where(Map.Visible).Select(Map.GetTile).Where(t => t != null);
 
-            public IEnumerable<Tile> GetVisibleTilesInRange(double range, bool blockMap, Piece blockFor)
-            {
-                return GetPointsInRange(range, blockMap, blockFor).Where(Map.Visible).Select(Map.GetTile).Where(t => t != null);
-            }
-            internal IEnumerable<Tile> GetTilesInRange(double range, bool blockMap, Piece blockFor)
-            {
-                return GetPointsInRange(range, blockMap, blockFor).Select(Map.GetTile).Where(t => t != null);
-            }
-            public IEnumerable<Point> GetPointsInRange(double range, bool blockMap, Piece blockFor)
-            {
-                return GetPointsInRange(new(X, Y), range, blockMap, blockFor);
-            }
-            public static IEnumerable<Point> GetPointsInRange(Point point, double range, bool blockMap = false, Piece blockFor = null)
-            {
-                //double blockDist = Math.Sqrt(2) / 2;
+            internal IEnumerable<Tile> GetTilesInRange(IMovable movable) => GetTilesInRange(movable.MoveCur, false, movable.Piece);
+            internal IEnumerable<Tile> GetTilesInRange(double range, bool blockMap, Piece blockFor) => GetPointsInRange(range, blockMap, blockFor)
+                .Select(Map.GetTile).Where(t => t != null);
 
-                //IEnumerable<Point> block = Array.Empty<Point>();
-                //if (blockMap)
-                //    block = block.Concat(GetPointsInRange(range, false, null)).Where(p => Map.GetTile(p) == null);
-                //if (blockFor != null)
-                //    block = block.Concat(Map._pieces.Where(p => p.Value != blockFor &&
-                //       (p.Value.Side != blockFor.Side || !p.Value.HasBehavior<IMovable>())).Select(p => p.Key))
-                //        .Where(p => GetDistance(p) <= range);
+            internal IEnumerable<Point> GetPointsInRangeUnblocked(double vision) => GetPointsInRange(vision, false, null);
+            internal static IEnumerable<Point> GetPointsInRangeUnblocked(Map map, Point point, double range) => GetPointsInRange(map, point, range, false, null);
 
-                //PointLineDistanceSigned
+            public IEnumerable<Point> GetPointsInRange(IMovable movable) => GetPointsInRange(movable, movable.MoveCur);
+            public IEnumerable<Point> GetPointsInRange(IMovable movable, double move) => GetPointsInRange(move, false, movable.Piece);
+            public IEnumerable<Point> GetPointsInRange(IBuilder builder) => GetPointsInRange(builder.Range, true, null);
+            public IEnumerable<Point> GetPointsInRange(Attack attack) => GetPointsInRange(attack.Range, true, attack.Piece);
+            private IEnumerable<Point> GetPointsInRange(double range, bool blockMap, Piece blockFor) => GetPointsInRange(Map, new Point(X, Y), range, blockMap, blockFor);
+            private static IEnumerable<Point> GetPointsInRange(Map map, Point point, double range, bool blockMap, Piece blockFor)
+            {
+                IEnumerable<Point> block = Enumerable.Empty<Point>();
+
+                double sqrtTwo = Math.Sqrt(2);
+                double blockDist = sqrtTwo / 2;
+                double blockRange = range;
+                if (blockMap)
+                    block = block.Concat(GetPointsInRangeUnblocked(map, point, blockRange)).Where(p => map.GetTile(p) == null);
+                if (blockFor != null)
+                    block = block.Concat(map._pieces.Where(p => p.Value != blockFor &&
+                       (p.Value.Side != blockFor.Side || !p.Value.HasBehavior<IMovable>())).Select(p => p.Key))
+                        .Where(p => GetDistance(point, p) <= blockRange);
 
                 int max = (int)range + 1;
                 for (int a = -max; a <= max; a++)
@@ -457,10 +444,13 @@ namespace ClassLibrary1
                     for (int b = -max; b <= max; b++)
                     {
                         int y = point.Y + b;
-                        if (GetDistance(point.X, point.Y, x, y) <= range)
+                        double distance = GetDistance(point.X, point.Y, x, y);
+                        if (distance <= range)
                         {
-                            //if (!block.Any(p => (p.X != x || p.Y != y) && PointLineDist(this, x, y, p) <= blockDist))
-                            yield return new(x, y);
+                            if (!block.Any(p => GetDistance(point, p) < distance
+                                   && PointLineDistanceAbs(point, new(x, y), p) < blockDist
+                                   && (GetAngleDiff(GetAngle(p.X - point.X, p.Y - point.Y), GetAngle(x - point.X, y - point.Y)) < HALF_PI)))
+                                yield return new(x, y);
                         }
                     }
                 }

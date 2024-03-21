@@ -16,8 +16,9 @@ namespace ClassLibrary1
 
         public const double ResearchFactor = 2600;
 
+        public const double EnemyStartEnergy = 2600;
         public const double EnemyEnergy = 260;
-        public const double EnemySkipStart = 6.5;
+        public const double EnemyRampTurns = 16.9;
         public const double DifficultyIncTurns = 65;
         public const double DifficultyEnergyPow = 1.69;
         public const double DifficultyResearchPow = 1.3;
@@ -63,14 +64,16 @@ namespace ClassLibrary1
 
         public const double BaseConstructorUpkeep = 5;
         public const double BaseMechUpkeep = 1;
-        public const double WeaponRechargeUpkeep = 3;
+        public const double WeaponRechargeUpkeep = 10;
         public const double UpkeepPerShield = 2;
         public const double UpkeepPerMove = .5;
 
         public const double MechCostMult = 16.9;
+        public const double MechStatMult = .13;
         public const double MechMassDiv = 1.69;
 
         public const double RepairCost = .21;
+        public const double RechargeCost = .169;
         public const double EnergyRepairDiv = 2.1;
         public const double AutoRepair = .65;
         public const double AutoRepairPct = .0169;
@@ -90,6 +93,10 @@ namespace ClassLibrary1
         {
             return (mass + energy / Consts.EnergyRepairDiv) * Consts.RepairCost;
         }
+        public static double GetRechargeCost(double energy, double mass)
+        {
+            return energy * Consts.RechargeCost;
+        }
 
         public static double GetDamagedValue(Piece piece, double value, double min)
         {
@@ -102,7 +109,9 @@ namespace ClassLibrary1
                 double resilience = killable.Resilience;
                 if (sqrt)
                     resilience = Math.Sqrt(resilience);
-                return min + (value - min) * Math.Pow(killable.HitsCur / (double)killable.HitsMax, 1 - resilience);
+                return min + (value - min) * Math.Pow(killable.DefenseCur / (double)killable.DefenseMax, 1 - resilience);
+
+                //return min + (value - min) * Math.Sqrt(killable.DefenseCur / (double)killable.DefenseMax);
             }
             return value;
         }

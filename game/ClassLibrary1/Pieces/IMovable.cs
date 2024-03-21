@@ -1,11 +1,5 @@
 ﻿using System;
-using System.Diagnostics;
-using System.Collections.Generic;
-using System.Linq;
-using MattUtil;
-using ClassLibrary1.Pieces;
-using ClassLibrary1.Pieces.Enemies;
-using ClassLibrary1.Pieces.Players;
+using Tile = ClassLibrary1.Map.Tile;
 
 namespace ClassLibrary1.Pieces
 {
@@ -18,12 +12,12 @@ namespace ClassLibrary1.Pieces
         public int MoveLimit { get; }
 
         void Upgrade(Values values);
-        public bool Move(Map.Tile to);
-        internal bool EnemyMove(Map.Tile to);
+        public bool Move(Tile to);
+        internal bool EnemyMove(Tile to);
         public double GetInc();
 
         [Serializable]
-        public struct Values
+        public readonly struct Values
         {
             private readonly int _moveMax, _moveLimit;
             private readonly double _moveInc;

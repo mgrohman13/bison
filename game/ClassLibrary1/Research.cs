@@ -1,12 +1,7 @@
-﻿using System;
-using System.Diagnostics;
+﻿using ClassLibrary1.Pieces.Players;
+using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
-using MattUtil;
-using ClassLibrary1.Pieces;
-using ClassLibrary1.Pieces.Enemies;
-using ClassLibrary1.Pieces.Players;
 
 namespace ClassLibrary1
 {
@@ -254,11 +249,11 @@ namespace ClassLibrary1
         }
         public int GetMinCost()
         {
-            return Game.Rand.Round(Math.Pow(GetLevel() + 1.17 * Consts.ResearchFactor, 0.78) - 21);
+            return Game.Rand.Round(Math.Pow(GetLevel() + 2.6 * Consts.ResearchFactor, 0.78) - 21);
         }
         public int GetMaxCost()
         {
-            return Game.Rand.Round(Math.Pow(GetLevel() + 0.78 * Consts.ResearchFactor, 0.91) - 39);
+            return Game.Rand.Round(Math.Pow(GetLevel() + 1.69 * Consts.ResearchFactor, 0.91) - 39);
         }
         public bool MakeType(Type type)
         {
@@ -304,7 +299,7 @@ namespace ClassLibrary1
         }
         public static HashSet<Type> GetAllDependencies(Type type)
         {
-            HashSet<Type> allDependencies = new(ClassLibrary1.Research.Dependencies[type]);
+            HashSet<Type> allDependencies = new(Research.Dependencies[type]);
             foreach (Type a in allDependencies.ToArray())
                 foreach (Type b in GetAllDependencies(a))
                     allDependencies.Add(b);
@@ -314,7 +309,7 @@ namespace ClassLibrary1
         public static readonly Type[] NoUpgrades = new Type[] { Type.Mech, Type.Constructor, Type.Turret, Type.Factory,  Type.FactoryConstructor,
             Type.TurretAutoRepair, Type.FactoryAutoRepair, Type.ExtractorAutoRepair, Type.BurnMass, Type.ScrapResearch, Type.FabricateMass, };
         public static readonly Type[] UpgradeOnly = new Type[] { Type.ConstructorCost, Type.ConstructorMove, Type.TurretRange,
-            Type.BuildingCost, Type.BuildingHits, Type.ExtractorValue, Type.ResearchChoices, };
+            Type.BuildingCost, Type.BuildingDefense, Type.ExtractorValue, Type.ResearchChoices, };
         public static readonly Dictionary<Type, Type[]> Dependencies = new()
         {
             { Type.Mech, Array.Empty<Type>() },
@@ -326,12 +321,12 @@ namespace ClassLibrary1
             { Type.MechShields, new Type[] { Type.Mech, } },
             { Type.MechVision, new Type[] { Type.Mech, Type.MechShields, } },
             { Type.MechMove, new Type[] { Type.Mech, Type.MechVision, } },
-            { Type.MechHits, new Type[] { Type.Mech, Type.MechShields, } },
-            { Type.MechArmor, new Type[] { Type.Mech, Type.MechHits, } },
-            { Type.MechDamage, new Type[] { Type.Mech, Type.MechShields, } },
-            { Type.MechRange, new Type[] { Type.Mech, Type.MechDamage, } },
-            { Type.MechSP, new Type[] { Type.Mech, Type.MechDamage, Type.MechShields, } },
-            { Type.MechAP, new Type[] { Type.Mech, Type.MechDamage, Type.MechArmor, } },
+            { Type.MechDefense, new Type[] { Type.Mech, Type.MechShields, } },
+            { Type.MechArmor, new Type[] { Type.Mech, Type.MechDefense, } },
+            { Type.MechAttack, new Type[] { Type.Mech, Type.MechShields, } },
+            { Type.MechRange, new Type[] { Type.Mech, Type.MechAttack, } },
+            { Type.MechSP, new Type[] { Type.Mech, Type.MechAttack, Type.MechShields, } },
+            { Type.MechAP, new Type[] { Type.Mech, Type.MechAttack, Type.MechArmor, } },
             { Type.MechResilience, new Type[] { Type.Mech, Type.MechMove, Type.MechRange, Type.MechSP, Type.MechAP, } },
 
             { Type.ConstructorDefense, new Type[] { Type.Constructor, Type.MechShields, Type.MechArmor, } }, // early
@@ -340,18 +335,18 @@ namespace ClassLibrary1
             { Type.ConstructorRepair, new Type[] { Type.Constructor, Type.ConstructorMove, Type.ConstructorDefense, Type.FactoryConstructor, Type.FabricateMass, } }, // end
 
             { Type.TurretRange, new Type[] { Type.Turret, Type.MechRange, } }, // end
-            { Type.TurretAttack, new Type[] { Type.Turret, Type.MechDamage, Type.MechSP, Type.MechAP, } }, // end
-            { Type.TurretDefense, new Type[] { Type.Turret, Type.CoreShields, Type.MechArmor, Type.BuildingHits, } },
-            { Type.TurretAutoRepair, new Type[] { Type.Turret, Type.TurretDefense, Type.FactoryAutoRepair, } }, // end
+            { Type.TurretAttack, new Type[] { Type.Turret, Type.MechAttack, Type.MechSP, Type.MechAP, } }, // end
+            { Type.TurretDefenses, new Type[] { Type.Turret, Type.CoreShields, Type.MechArmor, Type.BuildingDefense, } },
+            { Type.TurretAutoRepair, new Type[] { Type.Turret, Type.TurretDefenses, Type.FactoryAutoRepair, } }, // end
 
             { Type.FactoryRepair, new Type[] { Type.Factory, Type.BuildingCost, } }, // early
-            { Type.FactoryConstructor, new Type[] { Type.Factory, Type.FactoryRepair, Type.BuildingHits, Type.ConstructorDefense, } },
+            { Type.FactoryConstructor, new Type[] { Type.Factory, Type.FactoryRepair, Type.BuildingDefense, Type.ConstructorDefense, } },
             { Type.FactoryAutoRepair, new Type[] { Type.Factory, Type.FactoryRepair, Type.ExtractorAutoRepair, } },
 
             { Type.BuildingCost, new Type[] { Type.CoreShields, } },
             { Type.ExtractorAutoRepair, new Type[] { Type.BuildingCost, } }, // early
-            { Type.BuildingHits, new Type[] { Type.BuildingCost, Type.Turret, Type.MechHits, } },
-            { Type.ResearchChoices, new Type[] { Type.BuildingHits, } },
+            { Type.BuildingDefense, new Type[] { Type.BuildingCost, Type.Turret, Type.MechDefense, } },
+            { Type.ResearchChoices, new Type[] { Type.BuildingDefense, } },
             { Type.BurnMass, new Type[] { Type.ResearchChoices, } },
             { Type.ScrapResearch, new Type[] { Type.ResearchChoices, } },
             { Type.FabricateMass, new Type[] { Type.BurnMass, Type.ScrapResearch, } },
@@ -371,8 +366,8 @@ namespace ClassLibrary1
 
             MechShields = 102,
             MechVision = 105,
-            MechHits = 110,
-            MechDamage = 119,
+            MechDefense = 110,
+            MechAttack = 119,//melee
             MechArmor = 123,
             MechAP = 126,
             MechRange = 128,
@@ -385,7 +380,7 @@ namespace ClassLibrary1
             ConstructorMove = 290,
             ConstructorRepair = 330, // end
 
-            TurretDefense = 120,
+            TurretDefenses = 120,
             TurretAttack = 140, // end
             TurretRange = 150, // end
             TurretAutoRepair = 205, // end
@@ -394,7 +389,7 @@ namespace ClassLibrary1
             FactoryAutoRepair = 285,
             FactoryConstructor = 340,
 
-            BuildingHits = 115,
+            BuildingDefense = 115,
             FabricateMass = 125,
             ScrapResearch = 145,
             ResearchChoices = 155,

@@ -1,15 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Tile = ClassLibrary1.Map.Tile;
 
 namespace ClassLibrary1.Pieces.Enemies
 {
     [Serializable]
     public abstract class EnemyPiece : Piece
     {
-        internal EnemyPiece(Map.Tile tile)
+        internal EnemyPiece(Tile tile)
             : base(tile.Map.Game.Enemy, tile)
         {
         }
