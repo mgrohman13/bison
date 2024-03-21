@@ -125,8 +125,8 @@ namespace WinFormsApp1
                     //        CheckBase(killable.ShieldIncBase, killable.GetInc()));
                     //}
 
-                    //lbl3.Show();
-                    //lblInf3.Show();
+                    lbl3.Show();
+                    lblInf3.Show();
                     lbl3.Text = killable.DefenseCur < killable.DefenseMax ? "Efficiency" : "Resilience";
                     lblInf3.Text = string.Format("{0}{1}",
                         FormatPct(killable.DefenseCur < killable.DefenseMax ? Consts.GetDamagedValue(killable.Piece, 1, 0) : killable.Resilience),
@@ -492,9 +492,10 @@ namespace WinFormsApp1
                             }
                         }
                         LogPiece(entry.AttackerSide, entry.AttackerName, entry.AttackerType);
-                        rtbLog.AppendText(" -> ");
+                        rtbLog.AppendText(" : ");
                         LogPiece(entry.DefenderSide, entry.DefenderName, entry.DefenderType);
-                        //rtbLog.AppendText(" ~ " + FormatInt(entry.attMax));
+                        rtbLog.AppendText($" ~ {FormatFinal(entry.attCur, entry.dmgNeg)} : {FormatFinal(entry.defCur, entry.dmgPos)}");// FormatInt(entry.damage));
+                        rtbLog.AppendText($"  ->  {entry.attCur} : {entry.defCur}");// FormatInt(entry.damage));
                         if (entry.defCur <= 0)
                         {
                             rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Bold);
@@ -521,10 +522,16 @@ namespace WinFormsApp1
                         //}
                         //rtbLog.AppendText(" ~ " + FormatInt(entry.RandDmg));
 
-                        static string FormatDmg(int cur, int max, int dmg) => $"{cur}" + (cur < max ? $"/{max}" : "") + (dmg > 0 ? $" -{dmg}" : "");
+                        static string FormatResult(int dmg) => (dmg > 0 ? "-" : "") + dmg;
+                        static string FormatDmg(int cur, int max, int dmg)
+                        {
+                            if (dmg > 0)
+                                cur += dmg;
+                            return $"{cur}" + (cur < max ? $"/{max}" : "") + (dmg > 0 ? $" -{dmg}" : "");
+                        }
                         static string FormatFinal(int cur, int dmg) => (dmg > 0 ? cur + dmg : cur).ToString();
-                        rtbLog.AppendText($"{FormatDmg(entry.attCur, entry.attMax, -entry.damage)} : {FormatDmg(entry.defCur, entry.defMax, entry.damage)}"
-                            + $" -> {FormatFinal(entry.attCur, -entry.damage)}/{FormatFinal(entry.defCur, entry.damage)}");
+                        rtbLog.AppendText($"{FormatDmg(entry.attCur, entry.attMax, entry.dmgNeg)} : {FormatDmg(entry.defCur, entry.defMax, entry.dmgPos)}"
+                            + $"  ~  {FormatResult(entry.dmgNeg)} : {FormatResult(entry.dmgPos)}");
                         //rtbLog.AppendText();
 
                         logPrevious = entry;
@@ -555,10 +562,10 @@ namespace WinFormsApp1
                     if (a >= 0 && a < rtbLog.Text.Length && b >= 0 && b < rtbLog.Text.Length)
                     {
                         string line = rtbLog.Text[a..b];
-                        int c = line.IndexOf("~");
+                        int c = line.IndexOf("->");
                         if (c >= 0 && c < line.Length)
                         {
-                            if (line.Contains("->"))
+                            if (line.Contains(':'))
                             {
                                 line = line[..c].Trim();
                                 // pick the friendly piece if it is still alive, else the enemy

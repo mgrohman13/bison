@@ -9,8 +9,10 @@ namespace ClassLibrary1.Pieces.Players
     [Serializable]
     public class Turret : FoundationPiece, IKillable.IRepairable
     {
+        const int NUM_ATTACKS = 1;
+
         private readonly double _hitsMult, _pierceMult, _rounding;
-        private readonly double[] _rangeMult = new double[2], _dev = new double[2];
+        private readonly double[] _rangeMult = new double[NUM_ATTACKS], _dev = new double[NUM_ATTACKS];
 
         public Piece Piece => this;
 
@@ -20,7 +22,7 @@ namespace ClassLibrary1.Pieces.Players
             this._hitsMult = Game.Rand.GaussianCapped(1, .169, .39);
             this._pierceMult = Game.Rand.GaussianCapped(1, .13, .13);
             this._rounding = Game.Rand.NextDouble();
-            for (int a = 0; a < 2; a++)
+            for (int a = 0; a < NUM_ATTACKS; a++)
             {
                 this._rangeMult[a] = Game.Rand.GaussianOE(values.AttackRange[a], .26, .26, 1) / values.AttackRange[a];
                 this._dev[a] = Game.Rand.Weighted(.21);
@@ -123,8 +125,8 @@ namespace ClassLibrary1.Pieces.Players
             }
             public IAttacker.Values[] GetAttacks(Research research, double _pierceMult, double[] rangeMult, double rounding, double[] dev)
             {
-                IAttacker.Values[] result = new IAttacker.Values[2];
-                for (int a = 0; a < 2; a++)
+                IAttacker.Values[] result = new IAttacker.Values[NUM_ATTACKS];
+                for (int a = 0; a < NUM_ATTACKS; a++)
                 {
                     IAttacker.Values attack = attacks[a];
                     int att = attack.Attack;
@@ -188,39 +190,37 @@ namespace ClassLibrary1.Pieces.Players
             private void UpgradeTurretRange(double researchMult)
             {
                 //researchMult = Math.Pow(researchMult, .8);
-                int a = 0;
-                //for (int a = 0; a < 2; a++)
-                //{
-                //double range = a == 0 ? 21 : 9.1;
-                //range *= researchMult;
-                IAttacker.Values attack = attacks[a];
-                attacks[a] = new(attack.Attack);//, attack.ArmorPierce, attack.ShieldPierce, -1, range);
-                //}
+                for (int a = 0; a < NUM_ATTACKS; a++)
+                {
+                    //double range = a == 0 ? 21 : 9.1;
+                    //range *= researchMult;
+                    IAttacker.Values attack = attacks[a];
+                    attacks[a] = new(attack.Attack);//, attack.ArmorPierce, attack.ShieldPierce, -1, range);
+                }
             }
             private void UpgradeTurretAttack(double researchMult)
             {
                 researchMult = Math.Pow(researchMult, .6);
-                int a = 0;
-                //for (int a = 0; a < 2; a++)
-                //{
-                double attAvg = 20 * researchMult;
-                const double lowPenalty = 2.5;
-                if (researchMult < lowPenalty)
-                    attAvg *= researchMult / lowPenalty;
-                int attack = Game.Rand.Round(attAvg);
+                for (int a = 0; a < NUM_ATTACKS; a++)
+                {
+                    double attAvg = 20 * researchMult;
+                    const double lowPenalty = 2.5;
+                    if (researchMult < lowPenalty)
+                        attAvg *= researchMult / lowPenalty;
+                    int attack = Game.Rand.Round(attAvg);
 
-                //double damage = a == 0 ? 7.8 : 13;
-                //double armorPierce = a == 0 ? .13 : 0;
-                //double shieldPierce = a == 0 ? 0 : .13;
+                    //double damage = a == 0 ? 7.8 : 13;
+                    //double armorPierce = a == 0 ? .13 : 0;
+                    //double shieldPierce = a == 0 ? 0 : .13;
 
-                //damage *= researchMult;
-                //if (armorPierce > 0)
-                //    armorPierce = Consts.GetPct(armorPierce, researchMult);
-                //if (shieldPierce > 0)
-                //    shieldPierce = Consts.GetPct(shieldPierce, researchMult);
+                    //damage *= researchMult;
+                    //if (armorPierce > 0)
+                    //    armorPierce = Consts.GetPct(armorPierce, researchMult);
+                    //if (shieldPierce > 0)
+                    //    shieldPierce = Consts.GetPct(shieldPierce, researchMult);
 
-                attacks[a] = new(attack);// Game.Rand.Round(damage), armorPierce, shieldPierce, -1, attacks[a].Range);
-                //}
+                    attacks[a] = new(attack);// Game.Rand.Round(damage), armorPierce, shieldPierce, -1, attacks[a].Range);
+                }
             }
         }
     }

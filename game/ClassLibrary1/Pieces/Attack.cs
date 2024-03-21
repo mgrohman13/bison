@@ -16,7 +16,7 @@ namespace ClassLibrary1.Pieces
         private int _attackCur;
         private double _attacked;
 
-        public bool Attacked => _attacked > 0;
+        public bool Attacked => _attacked > 0 || AttackCur == 0;
         //public double Upkeep => _attacked * Consts.WeaponRechargeUpkeep;
         public int AttackCur => _attackCur;
         //public int AttackCur => Consts.GetDamagedValue(Piece, AttackBase, 0);
@@ -55,6 +55,7 @@ namespace ClassLibrary1.Pieces
         }
         private bool CanAttack(Tile attackFrom, Piece target, out IKillable killable)
         {
+            //check blocks
             bool canAttack = CapableAttack(target, out killable) && !Attacked && attackFrom.GetDistance(killable.Piece.Tile) <= Range;
             if (!canAttack)
                 killable = null;
@@ -69,11 +70,17 @@ namespace ClassLibrary1.Pieces
             if (!CanAttack(attackFrom, target, out IKillable killable))
                 return Enumerable.Empty<IKillable>();
 
-            return target.Tile.GetTilesInRange(1.5, false, null)
+            IEnumerable<IKillable> friendly = target.Tile.GetTilesInRange(1.5, false, null)
                 .Select(t => t.Piece)
                 .Where(p => p?.Side == target.Side && p.HasBehavior<IAttacker>())
                 .Select(p => p?.GetBehavior<IKillable>())
-                .Where(k => k != null && k.DefenseCur >= killable.DefenseCur && !k.Dead);
+                .Where(k => k != null && !k.Dead);
+            int? maxDef = friendly.Max(k => k?.DefenseCur);
+            friendly = friendly.Where(k => k != null && k.DefenseCur >= (maxDef ?? 0));
+
+            if (!friendly.Any())
+                friendly = Enumerable.Repeat(killable, 1);
+            return friendly;
         }
         internal bool Fire(IKillable target)
         {
@@ -82,19 +89,20 @@ namespace ClassLibrary1.Pieces
             {
                 target = Game.Rand.SelectValue(defenders);
 
-                int dmg = 0;
+                int dmgPos = 0, dmgNeg = 0;
                 int rounds = Game.Rand.Round(Rounds);
                 for (int a = 0; a < rounds && AttackCur > 0 && !target.Dead; a++)
                 {
+                    this._attacked = 1;
                     int total = AttackCur + target.DefenseCur;
-                    if (Game.Rand.Next(total) < this.AttackCur)
+                    if (Game.Rand.Next(total) < AttackCur)
                     {
-                        dmg++;
+                        dmgPos++;
                         target.Damage(1);
                     }
                     else if (target.HasBehavior<IAttacker>())
                     {
-                        dmg--;
+                        dmgNeg++;
                         this._attackCur--;
 
                         //if (AttackCur < target.DefenseCur)
@@ -102,7 +110,10 @@ namespace ClassLibrary1.Pieces
                     }
                 }
 
-                this._attacked = 1;
+                //if ( dmg > 0 )
+                //{
+
+                //}
 
                 //// randomize damage first as an integer, though shields and armor may convert it back to a double
                 //int randDmg = Game.Rand.GaussianOEInt(Damage, Dev, Dev);
@@ -117,7 +128,8 @@ namespace ClassLibrary1.Pieces
                 //int hitsDmg = Game.Rand.Round(damage);
                 //this._attacked = target.Damage(hitsDmg, shieldDmg);
 
-                Piece.Game.Log.LogAttack(Piece.GetBehavior<IAttacker>(), target, AttackCur, AttackMax, target.DefenseCur, target.DefenseMax, dmg);
+                if (this.Attacked)
+                    Piece.Game.Log.LogAttack(Piece.GetBehavior<IAttacker>(), target, AttackCur, AttackMax, target.DefenseCur, target.DefenseMax, dmgPos, dmgNeg);
 
                 return true;
             }
@@ -135,7 +147,7 @@ namespace ClassLibrary1.Pieces
         }
         private void EndTurn(bool doEndTurn, ref double energyUpk, ref double massUpk)
         {
-            if (AttackCur < AttackMax && !Attacked)
+            if (AttackCur < AttackMax && this._attacked == 0)
             {
                 double cost = MechBlueprint.StatValue(AttackCur + 1) - MechBlueprint.StatValue(AttackCur);
                 cost /= Math.Sqrt(Consts.MechStatMult);

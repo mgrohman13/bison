@@ -53,6 +53,7 @@ namespace WinFormsApp1
             {
                 float range = -1;
                 bool HasSel() => !scrollDown && !scrollLeft && !scrollUp && !scrollRight && (SelTile?.Piece?.IsPlayer).GetValueOrDefault();
+                //check blocks
                 bool InRange() => HasSel() && _moused != null && _moused.GetDistance(SelTile) <= range;
                 if (HasSel())
                 {
@@ -127,7 +128,7 @@ namespace WinFormsApp1
         private void Map_Load(object sender, EventArgs e)
         {
             Rectangle gameRect = Program.Game.Map.GameRect();
-            scale = Math.Min((this.Width - 1 - padding * 2) / (float)gameRect.Width, (this.Height - 1 - padding * 2) / (float)gameRect.Height);
+            scale = Math.Min((this.Width - 1 - padding * 2) / gameRect.Width, (this.Height - 1 - padding * 2) / gameRect.Height);
             xStart = GetX(gameRect.X);
             yStart = GetY(gameRect.Y);
 
@@ -202,8 +203,15 @@ namespace WinFormsApp1
             mapCoords = Rectangle.Intersect(mapCoords, Program.Game.Map.GameRect());
 
             static IEnumerable<T> GetPieces<T>() where T : class, IBehavior => Program.Game.Map.GetVisiblePieces().SelectMany(p => p.GetBehaviors<T>());
-            float attackMax = GetPieces<IAttacker>().SelectMany(a => a.Attacks).Max(a => (a?.AttackMax)) ?? 1;
-            float defenseMax = GetPieces<IKillable>().Max(a => a?.DefenseMax) ?? 1;
+            static float SumAttacksCur(IAttacker attacker) => SumAttacks(attacker, a => a.AttackCur);
+            static float SumAttacksMax(IAttacker attacker) => SumAttacks(attacker, a => a.AttackMax);
+            static float SumAttacks(IAttacker attacker, Func<Attack, int> Stat) => attacker.Attacks.Sum(a => StatValue(Stat(a)));
+            static float StatValue(int stat) => stat;// (float)MechBlueprint.StatValue(stat);
+            const float padding = 1.13f;
+            float attackMax = GetPieces<IAttacker>().Max<IAttacker>(SumAttacksMax) * padding;
+            float defenseMax = GetPieces<IKillable>().Where(k => k.Piece.HasBehavior<IAttacker>())
+                .Max(a => StatValue(a.DefenseMax)) * padding;
+            attackMax = defenseMax = Math.Max(attackMax, defenseMax);
 
             foreach (Piece piece in Program.Game.Map.GetVisiblePieces())
                 if (mapCoords.Contains(piece.Tile.X, piece.Tile.Y))
@@ -250,12 +258,16 @@ namespace WinFormsApp1
 
                     if (piece != null && piece.HasBehavior(out IKillable killable))
                     {
+                        float defense = StatValue(killable.DefenseMax);
                         float barSize = .169f * rect.Height;
-                        float width = rect.Width * killable.DefenseMax / (float)defenseMax;
+                        float width = defense / defenseMax;
+                        if (width > 1)
+                            width = 1;
+                        width *= rect.Width;
                         RectangleF hitsBar = new(rect.X, rect.Bottom - barSize, width, barSize);
                         rectangles.Add(hitsBar);
 
-                        float hitsPct = killable.DefenseCur / (float)killable.DefenseMax;
+                        float hitsPct = StatValue(killable.DefenseCur) / defense;
                         //int color = Game.Rand.Round(255 * .65f * killable.Armor);
                         //if (!hitsBrushes.TryGetValue(color, out Brush hitsBrush))
                         //    hitsBrushes.Add(color, hitsBrush = new SolidBrush(Color.FromArgb(color, color, color)));
@@ -277,26 +289,29 @@ namespace WinFormsApp1
                         //    RectangleF shieldBar = new(hitsBar.X, hitsBar.Y - barSize, hitsBar.Width, barSize);
                         //    rectangles.Add(shieldBar);
 
-                        //    float shieldPct = (float)(killable.ShieldCur / killable.ShieldLimit);
+                        //    float shieldPct = (killable.ShieldCur / killable.ShieldLimit);
                         //    AddFillRect(Brushes.Purple, shieldBar.X, shieldBar.Y, shieldBar.Width * shieldPct, shieldBar.Height);
                         //    AddFillRect(Brushes.White, shieldBar.X + shieldBar.Width * shieldPct, shieldBar.Y, shieldBar.Width * (1 - shieldPct), shieldBar.Height);
-                        //    float max = (float)(shieldBar.X + shieldBar.Width * killable.ShieldMax / killable.ShieldLimit);
+                        //    float max = (shieldBar.X + shieldBar.Width * killable.ShieldMax / killable.ShieldLimit);
                         //    lines.Add(new(new(max, shieldBar.Y), new(max, shieldBar.Bottom)));
                         //}
                     }
 
-                    //if (piece != null && piece.HasBehavior(out IAttacker attacker))
-                    //{
-                    //    attacker.Attacks.Max(a => a.AttackCur);
-                    //    RectangleF shieldBar = new(hitsBar.X, hitsBar.Y - barSize, hitsBar.Width, barSize);
-                    //    rectangles.Add(shieldBar);
+                    if (piece != null && piece.HasBehavior(out IAttacker attacker))
+                    {
+                        float attacks = SumAttacksMax(attacker);
+                        float barSize = .169f * rect.Height;
+                        float width = rect.Width * attacks / attackMax;
+                        RectangleF hitsBar = new(rect.X, rect.Bottom - barSize * 2, width, barSize);
+                        rectangles.Add(hitsBar);
 
-                    //    float shieldPct = (float)(killable.ShieldCur / killable.ShieldLimit);
-                    //    AddFillRect(Brushes.Purple, shieldBar.X, shieldBar.Y, shieldBar.Width * shieldPct, shieldBar.Height);
-                    //    AddFillRect(Brushes.White, shieldBar.X + shieldBar.Width * shieldPct, shieldBar.Y, shieldBar.Width * (1 - shieldPct), shieldBar.Height);
-                    //    float max = (float)(shieldBar.X + shieldBar.Width * killable.ShieldMax / killable.ShieldLimit);
-                    //    lines.Add(new(new(max, shieldBar.Y), new(max, shieldBar.Bottom)));
-                    //}
+                        float attPct = SumAttacksCur(attacker) / attacks;
+
+                        RectangleF filled = new(hitsBar.X, hitsBar.Y, hitsBar.Width * attPct, hitsBar.Height);
+                        AddFill(Brushes.Purple, filled);
+                        RectangleF empty = new(hitsBar.X + hitsBar.Width * attPct, hitsBar.Y, hitsBar.Width * (1 - attPct), hitsBar.Height);
+                        AddFill(Brushes.White, empty);
+                    }
                 }
 
             for (int a = 0; a < mapCoords.Width; a++)
@@ -314,7 +329,7 @@ namespace WinFormsApp1
             if (rects.Length > 0)
                 e.Graphics.FillRectangles(Brushes.White, rects);
 
-            HashSet<Brush> afterBrushes = hitsBrushes.Values.Append(Brushes.DarkGray).Append(Brushes.White)//.Append(Brushes.Purple)
+            HashSet<Brush> afterBrushes = hitsBrushes.Values.Append(Brushes.DarkGray).Append(Brushes.White).Append(Brushes.Purple)
                 .ToHashSet();
             foreach (var p in fill)
                 if (!afterBrushes.Contains(p.Key))
@@ -454,6 +469,7 @@ namespace WinFormsApp1
                     //Debug.WriteLine("3 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
 
                     if (SelTile.Piece.IsPlayer && movable.MoveCur + movable.MoveInc > movable.MoveMax)
+                        //check blocks
                         ranges[Green].Add(moveTiles.Where(t => Math.Min(movable.MoveCur - 1, movable.MoveCur + movable.MoveInc - movable.MoveMax) > SelTile.GetDistance(t)).ToHashSet());
                 }
 
@@ -589,10 +605,11 @@ namespace WinFormsApp1
                 {
                     List<Point> attPts = new(points.Length);
                     foreach (var point in points)
+                        //check blocks
                         if (moveEdge.Any(mt => Tile.GetDistance(mt.X, mt.Y, point.X, point.Y) <= a.Range))
                             attPts.Add(point);
                     HashSet<Point> result = attPts.Union(moveTiles.Select(t => new Point(t.X, t.Y))).ToHashSet();
-                    AddAttStr?.Invoke(result, (float)a.AttackCur);
+                    AddAttStr?.Invoke(result, a.AttackCur);
                     retVal.Add(result);
                 }
             }
@@ -613,6 +630,7 @@ namespace WinFormsApp1
 
         private static IEnumerable<Point> GetEdge(IAttacker attacker, HashSet<Point> moveTiles, IMovable movable)
         {
+            //check blocks
             return moveTiles.Where(t => attacker.Piece.Tile.GetDistance(t) > movable.MoveCur - 1);
         }
 
@@ -815,7 +833,7 @@ namespace WinFormsApp1
         {
             float xs = xStart, ys = yStart;
 
-            float scrollAmt = scrollSpeed * (float)Math.Sqrt(scale);
+            float scrollAmt = (float)(scrollSpeed * Math.Sqrt(scale));
             scrollAmt *= (scrollTime + paintTime) / scrollTime;
             scrollAmt = Game.Rand.Gaussian(scrollAmt, .013f);
 

@@ -64,7 +64,7 @@ namespace ClassLibrary1
         {
             foreach (IUpgradeValues values in Game.Rand.Iterate(upgradeValues))
                 values.Upgrade(type, researchMult);
-            foreach (PlayerPiece piece in Game.Rand.Iterate(Pieces))
+            foreach (PlayerPiece piece in Game.Rand.Iterate(Pieces).Cast<PlayerPiece>())
                 piece.OnResearch(type);
         }
 
@@ -115,7 +115,7 @@ namespace ClassLibrary1
         public void GetIncome(out double energyInc, out double energyUpk, out double massInc, out double massUpk, out double researchInc)
         {
             energyInc = energyUpk = massInc = massUpk = researchInc = 0;
-            foreach (PlayerPiece piece in Game.Rand.Iterate(Pieces))
+            foreach (PlayerPiece piece in Game.Rand.Iterate(Pieces).Cast<PlayerPiece>())
                 piece.GenerateResources(ref energyInc, ref energyUpk, ref massInc, ref massUpk, ref researchInc);
         }
         internal Research.Type? EndTurn()

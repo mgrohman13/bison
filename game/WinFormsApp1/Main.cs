@@ -17,11 +17,14 @@ namespace WinFormsApp1
         {
             InitializeComponent();
             this.MouseWheel += Main_MouseWheel;
+            this.Bounds = Screen.FromControl(this).WorkingArea;
         }
 
         private void Main_Shown(object sender, EventArgs e)
         {
             Program.RefreshChanged();
+            Invalidate();
+            mapMain.Invalidate();
 
             //Debug.WriteLine(ClientSize);
         }

@@ -31,9 +31,9 @@ namespace ClassLibrary1
             return entries ?? new();
         }
 
-        internal void LogAttack(IAttacker attacker, IKillable defender, int attCur, int attMax, int defCur, int defMax, int damage)// double baseDamage, int randDmg, int hitsDmg, double shieldDmg)
+        internal void LogAttack(IAttacker attacker, IKillable defender, int attCur, int attMax, int defCur, int defMax, int dmgPos, int dmgNeg)// double baseDamage, int randDmg, int hitsDmg, double shieldDmg)
         {
-            LogEntry entry = new(_logNumInc++, Game.Turn, attacker, defender, attCur, attMax, defCur, defMax, damage);// baseDamage, randDmg, hitsDmg, shieldDmg);
+            LogEntry entry = new(_logNumInc++, Game.Turn, attacker, defender, attCur, attMax, defCur, defMax, dmgPos, dmgNeg);// baseDamage, randDmg, hitsDmg, shieldDmg);
             //Debug.WriteLine(statement);
             AddLog(entry, attacker.Piece, defender.Piece);
         }
@@ -63,7 +63,7 @@ namespace ClassLibrary1
             public string DefenderName;
             public string DefenderType;
 
-            public readonly int attCur, attMax, defCur, defMax, damage;
+            public readonly int attCur, attMax, defCur, defMax, dmgPos, dmgNeg;
 
             //public readonly double BaseDamage;
             //public readonly int RandDmg;
@@ -72,7 +72,7 @@ namespace ClassLibrary1
             //public readonly int HitsCur;
             //public readonly double ShieldCur;
 
-            public LogEntry(int logNum, int turn, IAttacker attacker, IKillable defender, int attCur, int attMax, int defCur, int defMax, int damage)// double baseDamage, int randDmg, int hitsDmg, double shieldDmg)
+            public LogEntry(int logNum, int turn, IAttacker attacker, IKillable defender, int attCur, int attMax, int defCur, int defMax, int dmgPos, int dmgNeg)// double baseDamage, int randDmg, int hitsDmg, double shieldDmg)
             {
                 static string GetName(IBehavior b) => b.Piece is Mech mech ? mech.GetName() : b.Piece.ToString();
                 static string GetBlueprint(IBehavior b) => b.Piece is Mech mech ? mech.GetBlueprintName() : "";
@@ -89,7 +89,8 @@ namespace ClassLibrary1
                 this.attMax = attMax;
                 this.defCur = defCur;
                 this.defMax = defMax;
-                this.damage = damage;
+                this.dmgPos = dmgPos;
+                this.dmgNeg = dmgNeg;
 
                 //this.BaseDamage = baseDamage;
                 //this.RandDmg = randDmg;

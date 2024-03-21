@@ -482,7 +482,7 @@ namespace ClassLibrary1.Pieces.Players
             for (int a = 0; a < num; a++)
             {
                 double avg = 2.6, dev = .26, oe = .13;
-                ModValues(research.GetType() == Type.MechAttack, 1.3, ref avg, ref dev, ref oe);
+                ModValues(research.GetType() == Type.MechAttack, 2.1, ref avg, ref dev, ref oe);
 
                 int attack = Game.Rand.GaussianOEInt(avg * research.GetMult(Type.MechAttack, .7), dev, oe, 1);
 

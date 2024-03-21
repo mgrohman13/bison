@@ -91,7 +91,7 @@ namespace ClassLibrary1
                             {
                                 double weight = weights.Max();
                                 attackWeight += 130 * attack.AttackCur * (.13 + Math.Pow(weight * weight * weights.Average(), 1 / 3.0) / avgWeight);
-                            } 
+                            }
                         }
                         result *= attackWeight;
                     }
@@ -129,7 +129,7 @@ namespace ClassLibrary1
             {
                 IKillable trg = Game.Rand.SelectValue(targWeights);
                 targWeights.Remove(trg);
-                if (attacker.Attacks.Any(a => a.AttackCur > Game.Rand.Next(trg.DefenseCur) || a.AttackCur == a.AttackMax))
+                if (attacker.Attacks.Any(a => a.AttackCur == a.AttackMax || !trg.Piece.HasBehavior<IAttacker>() || a.AttackCur > Game.Rand.Next(trg.DefenseCur)))
                     if (!attacker.EnemyFire(trg))
                         ;
             }

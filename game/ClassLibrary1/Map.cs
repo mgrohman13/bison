@@ -120,8 +120,7 @@ namespace ClassLibrary1
         private double Evaluate(int x, int y)
         {
             Point p = new(x, y);
-            if (evaluateCache == null)
-                evaluateCache = new Dictionary<Point, double>();
+            evaluateCache ??= new Dictionary<Point, double>();
             if (evaluateCache.TryGetValue(p, out double v))
                 return v;
 
@@ -228,12 +227,12 @@ namespace ClassLibrary1
                 this._explored.Add(p);
 
             int vision = (int)piece.Vision;
-            int x = Math.Min(_gameBounds.X, piece.Tile.X - vision);
-            int y = Math.Min(_gameBounds.Y, piece.Tile.Y - vision);
-            int right = Math.Max(_gameBounds.Right, piece.Tile.X + vision);
-            int bottom = Math.Max(_gameBounds.Bottom, piece.Tile.Y + vision);
+            int x = Math.Min(_gameBounds.X, piece.Tile.X - vision - 1);
+            int y = Math.Min(_gameBounds.Y, piece.Tile.Y - vision - 1);
+            int right = Math.Max(_gameBounds.Right, piece.Tile.X + vision + 2);
+            int bottom = Math.Max(_gameBounds.Bottom, piece.Tile.Y + vision + 2);
 
-            _gameBounds = new Rectangle(x, y, right - x + 1, bottom - y + 1);
+            _gameBounds = new Rectangle(x, y, right - x, bottom - y);
 
             Explore(tile, piece.Vision);
         }
@@ -392,6 +391,7 @@ namespace ClassLibrary1
                 this.Y = y;
             }
 
+            //support blocking
             public double GetDistance(Point other) => GetDistance(other.X, other.Y);
             public double GetDistance(Tile other) => GetDistance(other.X, other.Y);
             public double GetDistance(int x, int y) => GetDistance(this.X, this.Y, x, y);
@@ -425,17 +425,25 @@ namespace ClassLibrary1
             private IEnumerable<Point> GetPointsInRange(double range, bool blockMap, Piece blockFor) => GetPointsInRange(Map, new Point(X, Y), range, blockMap, blockFor);
             private static IEnumerable<Point> GetPointsInRange(Map map, Point point, double range, bool blockMap, Piece blockFor)
             {
-                IEnumerable<Point> block = Enumerable.Empty<Point>();
+                Dictionary<Point, double> block = new();
 
-                double sqrtTwo = Math.Sqrt(2);
-                double blockDist = sqrtTwo / 2;
-                double blockRange = range;
-                if (blockMap)
-                    block = block.Concat(GetPointsInRangeUnblocked(map, point, blockRange)).Where(p => map.GetTile(p) == null);
-                if (blockFor != null)
-                    block = block.Concat(map._pieces.Where(p => p.Value != blockFor &&
-                       (p.Value.Side != blockFor.Side || !p.Value.HasBehavior<IMovable>())).Select(p => p.Key))
-                        .Where(p => GetDistance(point, p) <= blockRange);
+                //double sqrtTwo = Math.Sqrt(2);
+                //double baseBlock = .5 + (sqrtTwo / 2.0 - .5) / 2.0;
+                //double enemyBlock = 1 + (sqrtTwo - 1) / 2.0;
+                //void AddBlock(Point b, double blockRange)
+                //{
+                //    block.TryGetValue(b, out double range);
+                //    range = Math.Max(range, blockRange);
+                //    block[b] = range;
+                //}
+                //if (blockMap)
+                //    foreach (var p in GetPointsInRangeUnblocked(map, point, range).Where(p => map.GetTile(p) == null))
+                //        AddBlock(p, baseBlock);
+                //if (blockFor != null)
+                //    foreach (var pair in map._pieces.Where(p => p.Value != blockFor
+                //            && (p.Value.Side != blockFor.Side || !p.Value.HasBehavior<IMovable>())
+                //            && GetDistance(point, p.Key) <= range))
+                //        AddBlock(pair.Key, pair.Value.Side != null && pair.Value.Side != blockFor.Side ? enemyBlock : baseBlock);
 
                 int max = (int)range + 1;
                 for (int a = -max; a <= max; a++)
@@ -447,9 +455,9 @@ namespace ClassLibrary1
                         double distance = GetDistance(point.X, point.Y, x, y);
                         if (distance <= range)
                         {
-                            if (!block.Any(p => GetDistance(point, p) < distance
-                                   && PointLineDistanceAbs(point, new(x, y), p) < blockDist
-                                   && (GetAngleDiff(GetAngle(p.X - point.X, p.Y - point.Y), GetAngle(x - point.X, y - point.Y)) < HALF_PI)))
+                            if (!block.Any(p => GetDistance(point, p.Key) < distance
+                                   && PointLineDistanceAbs(point, new(x, y), p.Key) < p.Value
+                                   && (GetAngleDiff(GetAngle(p.Key.X - point.X, p.Key.Y - point.Y), GetAngle(x - point.X, y - point.Y)) < HALF_PI)))
                                 yield return new(x, y);
                         }
                     }

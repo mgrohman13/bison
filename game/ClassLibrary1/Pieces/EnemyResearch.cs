@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Type = ClassLibrary1.Research.Type;
 
 namespace ClassLibrary1.Pieces
@@ -76,6 +74,7 @@ namespace ClassLibrary1.Pieces
                     add = .169;
                     break;
                 case Type.MechAttack:
+                    mult = .91;
                     add = -.39;
                     break;
                 case Type.MechDefense:

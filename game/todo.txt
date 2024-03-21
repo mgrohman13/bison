@@ -103,6 +103,9 @@ FEATURES
 	power grid
 
 
+attack values on map display use formula
+attack range circle not accurate around corners
+support rallying, multiple moves to get to destination
 emperically test rand booleans for resources
 use range atack OR move and melee
 combined power grid, but if separate pieces impose power penalty?
@@ -148,6 +151,7 @@ have to not move to charge attacks?
 limit moving/attacking?
 	ranged cant do both?
 	melee limit move after attack? 
+pos/neg dmg at same time in same attack?
 
 
 plan:
