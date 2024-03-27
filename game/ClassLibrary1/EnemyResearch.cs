@@ -62,47 +62,56 @@ namespace ClassLibrary1
 
         public double GetMult(Type type, double pow)
         {
-            double mult = 1, add = 0;
+            double start = 1, mult = 1;
             switch (type)
             {
+                case Type.MechAttack:
+                    start = .61;
+                    mult = .91;
+                    break;
                 case Type.MechEnergyWeapons:
+                    start = 0.87;
                     mult = 1.13;
-                    add = -.13;
                     break;
                 case Type.MechLasers:
+                    start = 1.13;
+                    mult = .91;
+                    break;
                 case Type.MechExplosives:
+                    start = 1.13;
                     mult = .91;
-                    add = .13;
-                    break;
-                case Type.MechArmor:
-                    add = .169;
-                    break;
-                case Type.MechAttack:
-                    mult = .91;
-                    add = -.39;
-                    break;
-                case Type.MechDefense:
-                    add = .39;
-                    break;
-                case Type.MechMove:
-                    mult = .52;
-                    add = .26;
                     break;
                 case Type.MechRange:
+                    start = 1.65;
                     mult = .78;
-                    add = .65;
                     break;
-                case Type.MechResilience:
-                    mult = .65;
+                case Type.MechDefense:
+                    start = 1.39;
+                    mult = 1;
                     break;
                 case Type.MechShields:
-                    add = .26;
+                    start = 1.26;
+                    mult = 1;
+                    break;
+                case Type.MechArmor:
+                    start = 1.169;
+                    mult = 1;
+                    break;
+                case Type.MechMove:
+                    start = 1.26;
+                    mult = .52;
+                    break;
+                case Type.MechResilience:
+                    start = 1;
+                    mult = .65;
                     break;
                 case Type.MechVision:
+                    start = 1;
+                    mult = 1;
                     break;
                 default: throw new Exception();
             }
-            return Math.Pow(add + mult * (_difficulty - 1) + 1, pow);
+            return Math.Pow(start + mult * (_difficulty - 1), pow);
         }
 
         bool IResearch.HasType(Type research)
