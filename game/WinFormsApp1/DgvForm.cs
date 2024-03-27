@@ -7,6 +7,8 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
+using AttackType = ClassLibrary1.Pieces.CombatTypes.AttackType;
+using DefenseType = ClassLibrary1.Pieces.CombatTypes.DefenseType;
 using Tile = ClassLibrary1.Map.Tile;
 
 namespace WinFormsApp1
@@ -139,25 +141,24 @@ namespace WinFormsApp1
 
                 dataGridView1.Columns["Name"].Visible = true;
                 dataGridView1.Columns["Upgraded"].Visible = true;
-
-                dataGridView1.Columns["Builder"].Visible = false;
-
-                dataGridView1.Columns["Resilience"].DefaultCellStyle.Format = "P0";
-                //dataGridView1.Columns["Armor"].DefaultCellStyle.Format = "P0";
+                dataGridView1.Columns["Build"].Visible = true;
+                dataGridView1.Columns["Notify"].Visible = true;
 
                 dataGridView1.Columns["Upgraded"].Visible = rows.Any(r => r.Upgraded != null);
-                //dataGridView1.Columns["Armor"].Visible = rows.Any(r => r.Armor > 0);
-                //dataGridView1.Columns["Shields"].Visible = rows.Any(r => r.Blueprint?.Killable.ShieldInc > 0);
-                //dataGridView1.Columns["ArmorPierce"].Visible =
-                //    rows.SelectMany(r => r.Blueprint?.Attacks ?? Array.Empty<IAttacker.Values>()).Any(a => a.ArmorPierce > 0);
-                //dataGridView1.Columns["ShieldPierce"].Visible =
-                //    rows.SelectMany(r => r.Blueprint?.Attacks ?? Array.Empty<IAttacker.Values>()).Any(a => a.ShieldPierce > 0);
+                dataGridView1.Columns["Resilience"].Visible = rows.Count > 1;
+                dataGridView1.Columns["Weapons"].Visible = CheckStats(b => b.Attacker, a => a.Type != AttackType.Kinetic);
+                dataGridView1.Columns["Range"].Visible = CheckStats(b => b.Attacker, a => a.Range > Attack.MELEE_RANGE);
+                dataGridView1.Columns["Shield"].Visible = CheckStats(b => b.Killable, k => k.Type == DefenseType.Shield);
+                dataGridView1.Columns["Armor"].Visible = CheckStats(b => b.Killable, k => k.Type == DefenseType.Armor);
+
+                dataGridView1.Columns["Builder"].Visible = false;
+                dataGridView1.Columns["Resilience"].DefaultCellStyle.Format = "P0";
 
                 dataGridView1.Columns["Build"].HeaderText = "";
                 dataGridView1.Columns["Build"].DefaultCellStyle.Font = new Font(dataGridView1.DefaultCellStyle.Font, FontStyle.Bold);
-                dataGridView1.Columns["Build"].Visible = true;
 
-                dataGridView1.Columns["Notify"].Visible = true;
+                bool CheckStats<T>(Func<MechBlueprint, IEnumerable<T>> Get, Func<T, bool> Predicate) =>
+                    rows.Any(r => r.Blueprint != null && Get(r.Blueprint).Any(Predicate));
 
                 BuildRow.DataGridView1 = dataGridView1;
                 dataGridView1.Show();
@@ -165,6 +166,7 @@ namespace WinFormsApp1
         }
         public static T GetBuilder<T>(Tile selected) where T : class, IBuilder
         {
+            //check blocks
             return Program.Game.Player.PiecesOfType<T>().FirstOrDefault(b => selected.GetDistance(b.Piece.Tile) <= b.Range);
         }
 
@@ -205,11 +207,12 @@ namespace WinFormsApp1
         public class BuildRow
         {
             public static DataGridView DataGridView1 { private get; set; }
+
             public IBuilder Builder { get; }
+
             public string Name { get; }
             public double Energy { get; }
             public double Mass { get; }
-
             public bool Notify
             {
                 get
@@ -228,30 +231,19 @@ namespace WinFormsApp1
                         Program.NotifyConstructor = value;
                 }
             }
-
             public MechBlueprint Blueprint { get; }
-
-            public MechBlueprint Upgraded => Blueprint?.UpgradeFrom;
-            public double? Research => Blueprint?.ResearchLevel;
-
-            public string Movement => Blueprint == null ? null : string.Format("{1} / {2} +{0:0.0}", Blueprint.Movable.MoveInc, Blueprint.Movable.MoveMax, Blueprint.Movable.MoveLimit);
+            public MechBlueprint Upgraded => Blueprint?.UpgradeFrom; public int? Research => Blueprint?.ResearchLevel;
+            public double? Resilience => Blueprint?.Resilience;
             public string Vision => Info.FormatDown(Blueprint?.Vision);
-
-            public double? Defense => Blueprint?.Killable.Defense;
-
-            public double? Resilience => Blueprint?.Killable.Resilience;
-            //public double? Armor => Blueprint?.Killable.Armor;
-            //public string Shields => Blueprint == null ? null : Blueprint.Killable.ShieldInc <= 0 ? "" :
-            //    string.Format("{1} / {2} +{0:0.0}", Blueprint.Killable.ShieldInc, Blueprint.Killable.ShieldMax, Blueprint.Killable.ShieldLimit);
-
-            //public int? Attacks => Blueprint?.Attacks.Count;
-            //public string Range => Blueprint == null ? null : List(a => a.Range.ToString("0.0"));
-            //public string ArmorPierce => Blueprint == null ? null : List(a => a.ArmorPierce.ToString("P0"));
-            //public string ShieldPierce => Blueprint == null ? null : List(a => a.ShieldPierce.ToString("P0"));
-            //public string Randomness => Blueprint == null ? null : List(a => a.Dev.ToString("P0"));
-
-            public string Attack => Blueprint == null ? null : List(a => a.Attack.ToString());
-            //public int? Atta => Blueprint?.Killable.Defense;
+            public string Movement => Blueprint == null ? null : string.Format("{1} / {2} +{0:0.0}",
+                Blueprint.Movable.MoveInc, Blueprint.Movable.MoveMax, Blueprint.Movable.MoveLimit);
+            public string Weapons => Blueprint == null ? null : FormatAtt(a => a.Type.ToString());
+            public string Range => Blueprint == null ? null :
+                FormatAtt(a => a.Range > ClassLibrary1.Pieces.Attack.MELEE_RANGE ? a.Range.ToString("0.0") : "0");
+            public string Attack => Blueprint == null ? null : FormatAtt(a => a.Attack.ToString());
+            public int? Defense => FormatDef(DefenseType.Hits);
+            public int? Shield => FormatDef(DefenseType.Shield);
+            public int? Armor => FormatDef(DefenseType.Armor);
 
             public string Build
             {
@@ -259,9 +251,13 @@ namespace WinFormsApp1
                 set => DataGridView1.Invalidate();
             }
 
-            private string List(Func<IAttacker.Values, string> Get)
+            private int? FormatDef(DefenseType type)
             {
-                var data = Blueprint.Attacks.Select(Get);
+                return Blueprint?.Killable.Where(k => k.Type == type).SingleOrDefault().Defense;
+            }
+            private string FormatAtt(Func<IAttacker.Values, string> Get)
+            {
+                var data = Blueprint.Attacker.Select(Get);
                 if (data.All("0%".Equals))
                     return "0%";
                 return string.Join(" , ", data);

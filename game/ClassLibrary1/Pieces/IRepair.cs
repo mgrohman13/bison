@@ -14,7 +14,7 @@ namespace ClassLibrary1.Pieces
         internal void Upgrade(IRepair.Values values);
 
         [Serializable]
-        new public struct Values
+        public new readonly struct Values
         {
             public readonly IBuilder.Values Builder;
 

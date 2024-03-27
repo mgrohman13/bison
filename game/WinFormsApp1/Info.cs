@@ -8,6 +8,8 @@ using System.Drawing;
 using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
+using AttackType = ClassLibrary1.Pieces.CombatTypes.AttackType;
+using DefenseType = ClassLibrary1.Pieces.CombatTypes.DefenseType;
 using Tile = ClassLibrary1.Map.Tile;
 
 namespace WinFormsApp1
@@ -111,44 +113,53 @@ namespace WinFormsApp1
                     lblInf1.Show();
                     lbl1.Text = "Defense";
 
-                    lblInf1.Text = string.Format("{0} / {1}{2}",
-                        (killable.DefenseCur), (killable.DefenseMax),
-                        repairInc != 0 ? string.Format(" +{0}", Format(repairInc)) : "");
+                    lblInf1.Text = $"{killable.Hits.DefenseCur}"
+                        + (killable.Hits.DefenseCur < killable.Hits.DefenseMax ? $"/{killable.Hits.DefenseMax}" : "")
+                        + (repairInc > 0 ? $"+{Format(repairInc)}" : "");
 
-                    //if (killable.ShieldInc > 0)
-                    //{
-                    //    lbl2.Show();
-                    //    lblInf2.Show();
-                    //    lbl2.Text = "Shields";
-                    //    lblInf2.Text = string.Format("{0} / {1} / {2} +{3}{4}",
-                    //        Format(killable.ShieldCur), (killable.ShieldMax), (killable.ShieldLimit), Format(killable.GetInc()),
-                    //        CheckBase(killable.ShieldIncBase, killable.GetInc()));
-                    //}
+                    Defense shield = killable.Defenses.Where(d => d.Type == DefenseType.Shield).FirstOrDefault();
+                    if (shield != null)
+                    {
+                        lbl2.Show();
+                        lblInf2.Show();
+                        lbl2.Text = "Shields";
+                        lblInf2.Text = $"{shield.DefenseCur}"
+                            + (shield.DefenseCur < shield.DefenseMax ? $"/{shield.DefenseMax}" : "")
+                            + (shield.GetRegen() > 0 ? $"+{shield.GetRegen()}" : "");
+                    }
+                    Defense armor = killable.Defenses.Where(d => d.Type == DefenseType.Armor).FirstOrDefault();
+                    if (armor != null)
+                    {
+                        lbl3.Show();
+                        lblInf3.Show();
+                        lbl3.Text = "Armor";
+                        lblInf3.Text = $"{armor.DefenseCur}"
+                            + (armor.DefenseCur < armor.DefenseMax ? $"/{armor.DefenseMax}" : "")
+                            + (armor.GetRegen() > 0 ? $"+{armor.GetRegen()}" : "");
+                    }
 
-                    lbl3.Show();
-                    lblInf3.Show();
-                    lbl3.Text = killable.DefenseCur < killable.DefenseMax ? "Efficiency" : "Resilience";
-                    lblInf3.Text = string.Format("{0}{1}",
-                        FormatPct(killable.DefenseCur < killable.DefenseMax ? Consts.GetDamagedValue(killable.Piece, 1, 0) : killable.Resilience),
-                        killable.DefenseCur < killable.DefenseMax ? string.Format(" ({0})", FormatPct(killable.Resilience)) : "");
-
-                    //lblInf1.Text = killable.DefenseCur < killable.DefenseMax ? $"{killable.DefenseCur} / {killable.DefenseMax}" : killable.DefenseMax.ToString();
+                    lbl4.Show();
+                    lblInf4.Show();
+                    lbl4.Text = killable.Hits.DefenseCur < killable.Hits.DefenseMax ? "Efficiency" : "Resilience";
+                    lblInf4.Text = string.Format("{0}{1}",
+                        FormatPct(killable.Hits.DefenseCur < killable.Hits.DefenseMax ? Consts.GetDamagedValue(killable.Piece, 1, 0) : killable.Resilience),
+                        killable.Hits.DefenseCur < killable.Hits.DefenseMax ? string.Format(" ({0})", FormatPct(killable.Resilience)) : "");
                 }
                 if (Selected.Piece.HasBehavior(out IMovable movable))
                 {
-                    lbl4.Show();
-                    lblInf4.Show();
-                    lbl4.Text = "Movement";
-                    lblInf4.Text = string.Format("{0} / {1} / {2} +{3}{4}",
+                    lbl5.Show();
+                    lblInf5.Show();
+                    lbl5.Text = "Movement";
+                    lblInf5.Text = string.Format("{0} / {1} / {2} +{3}{4}",
                             Format(movable.MoveCur), (movable.MoveMax), (movable.MoveLimit), Format(movable.GetInc()),
                             CheckBase(movable.MoveIncBase, movable.GetInc()));
                 }
                 if (playerPiece != null)
                 {
-                    lbl5.Show();
-                    lblInf5.Show();
-                    lbl5.Text = "Vision";
-                    lblInf5.Text = string.Format("{0}{1}", FormatDown(playerPiece.Vision), CheckBase(playerPiece.VisionBase, playerPiece.Vision, FormatDown));
+                    lbl6.Show();
+                    lblInf6.Show();
+                    lbl6.Text = "Vision";
+                    lblInf6.Text = string.Format("{0}{1}", FormatDown(playerPiece.Vision), CheckBase(playerPiece.VisionBase, playerPiece.Vision, FormatDown));
 
                     if (playerPiece is not Extractor)
                     {
@@ -159,40 +170,33 @@ namespace WinFormsApp1
                         massInc -= massUpk;
                         if (energyInc != 0)
                         {
-                            lbl6.Show();
-                            lblInf6.Show();
-                            lbl6.Text = "Energy";
-                            lblInf6.Text = string.Format("{1}{0}", Format(energyInc), energyInc < 0 ? "" : "+");
+                            lbl7.Show();
+                            lblInf7.Show();
+                            lbl7.Text = "Energy";
+                            lblInf7.Text = string.Format("{1}{0}", Format(energyInc), energyInc < 0 ? "" : "+");
                         }
                         if (massInc != 0)
                         {
-                            lbl7.Show();
-                            lblInf7.Show();
-                            lbl7.Text = "Mass";
-                            lblInf7.Text = string.Format("{1}{0}", Format(massInc), massInc < 0 ? "" : "+");
-                        }
-                        if (researchInc != 0)
-                        {
                             lbl8.Show();
                             lblInf8.Show();
-                            lbl8.Text = "Research";
-                            lblInf8.Text = string.Format("{1}{0}", Format(researchInc), researchInc < 0 ? "" : "+");
+                            lbl8.Text = "Mass";
+                            lblInf8.Text = string.Format("{1}{0}", Format(massInc), massInc < 0 ? "" : "+");
                         }
                     }
                 }
                 if (Selected.Piece.HasBehavior(out IRepair repair))
                 {
-                    lbl8.Show();
-                    lblInf8.Show();
-                    lbl8.Text = "Repair";
-                    lblInf8.Text = string.Format("{0}{1}", FormatPct(repair.Rate, true), CheckBase(repair.RateBase, repair.Rate, v => FormatPct(v, true)));
+                    lbl9.Show();
+                    lblInf9.Show();
+                    lbl9.Text = "Repair";
+                    lblInf9.Text = string.Format("{0}{1}", FormatPct(repair.Rate, true), CheckBase(repair.RateBase, repair.Rate, v => FormatPct(v, true)));
                 }
                 if (Selected.Piece.HasBehavior(out IBuilder builder))
                 {
-                    lbl9.Show();
-                    lblInf9.Show();
-                    lbl9.Text = "Range";
-                    lblInf9.Text = string.Format("{0}{1}", Format(builder.Range), CheckBase(builder.RangeBase, builder.Range));
+                    lbl10.Show();
+                    lblInf10.Show();
+                    lbl10.Text = "Range";
+                    lblInf10.Text = string.Format("{0}{1}", Format(builder.Range), CheckBase(builder.RangeBase, builder.Range));
                 }
 
                 Resource resource = Selected.Piece as Resource;
@@ -221,31 +225,31 @@ namespace WinFormsApp1
 
                     if (energyInc != 0)
                     {
-                        lbl6.Show();
-                        lblInf6.Show();
-                        lbl6.Text = "Energy";
-                        lblInf6.Text = string.Format("{1}{0}{2}", Format(energyInc), energyInc > 0 ? "+" : "", CheckBase(resource as Biomass, energyInc));
+                        lbl7.Show();
+                        lblInf7.Show();
+                        lbl7.Text = "Energy";
+                        lblInf7.Text = string.Format("{1}{0}{2}", Format(energyInc), energyInc > 0 ? "+" : "", CheckBase(resource as Biomass, energyInc));
                     }
                     if (massInc != 0)
                     {
-                        lbl7.Show();
-                        lblInf7.Show();
-                        lbl7.Text = "Mass";
-                        lblInf7.Text = string.Format("{1}{0}{2}", Format(massInc), massInc > 0 ? "+" : "", CheckBase(resource as Metal, massInc));
+                        lbl8.Show();
+                        lblInf8.Show();
+                        lbl8.Text = "Mass";
+                        lblInf8.Text = string.Format("{1}{0}{2}", Format(massInc), massInc > 0 ? "+" : "", CheckBase(resource as Metal, massInc));
                     }
                     if (researchInc != 0)
                     {
-                        lbl8.Show();
-                        lblInf8.Show();
-                        lbl8.Text = "Research";
-                        lblInf8.Text = string.Format("{1}{0}{2}", Format(researchInc), researchInc > 0 ? "+" : "", CheckBase(resource as Artifact, researchInc));
+                        lbl9.Show();
+                        lblInf9.Show();
+                        lbl9.Text = "Research";
+                        lblInf9.Text = string.Format("{1}{0}{2}", Format(researchInc), researchInc > 0 ? "+" : "", CheckBase(resource as Artifact, researchInc));
                     }
 
                     double sustain = extractor?.Sustain ?? resource.Sustain;
-                    lbl9.Show();
-                    lblInf9.Show();
-                    lbl9.Text = "Sustainability";
-                    lblInf9.Text = string.Format("{0}{1}", FormatPct(sustain), CheckBase(resource.Sustain, sustain, FormatPct));
+                    lbl10.Show();
+                    lblInf10.Show();
+                    lbl10.Text = "Sustainability";
+                    lblInf10.Text = string.Format("{0}{1}", FormatPct(sustain), CheckBase(resource.Sustain, sustain, FormatPct));
                 }
 
                 if (Selected.Piece.HasBehavior(out IAttacker attacker))
@@ -253,17 +257,28 @@ namespace WinFormsApp1
                     dgvAttacks.Show();
 
                     //int idx = 0;
-                    dgvAttacks.DataSource = attacker.Attacks.OrderByDescending(a => a.Range).ToList();
-
-
-                    foreach (DataGridViewColumn c in dgvAttacks.Columns)
-                        c.Visible = false;
-
-                    dgvAttacks.Columns["AttackCur"].Visible = true;
-                    dgvAttacks.Columns["AttackMax"].Visible = true;
-                    dgvAttacks.Columns["Range"].Visible = true;
-                    dgvAttacks.Columns["Rounds"].Visible = true;
+                    dgvAttacks.DataSource = attacker.Attacks.OrderByDescending(a => a.Range).Select(a => new
+                    {
+                        a.Type,
+                        Attack = $"{a.AttackCur}" + (a.AttackCur < a.AttackMax ? $"/{a.AttackMax}" + (a.GetRegen() > 0 ? $" +{a.GetRegen()}" : "") : ""),
+                        Range = a.Range > Attack.MELEE_RANGE ?
+                            $"{a.Range:0.0}" + (a.Range.ToString("0.0") != a.RangeBase.ToString("0.0") ? $"/{a.RangeBase:0.0}" : "") : "0",
+                        a.Rounds,
+                    }).ToList();
+                    dgvAttacks.Columns["Type"].Visible = attacker.Attacks.Any(a => a.Type != AttackType.Kinetic);
+                    dgvAttacks.Columns["Range"].Visible = attacker.Attacks.Any(a => a.Range > Attack.MELEE_RANGE);
                     dgvAttacks.Columns["Rounds"].DefaultCellStyle.Format = "0.0";
+
+                    //foreach (DataGridViewColumn c in dgvAttacks.Columns)
+                    //    c.Visible = false;
+
+                    //dgvAttacks.Columns["Type"].Visible = true;
+                    //dgvAttacks.Columns["AttackCur"].Visible = true;
+                    //dgvAttacks.Columns["AttackMax"].Visible = true;
+                    //dgvAttacks.Columns["Range"].Visible = true;
+                    //dgvAttacks.Columns["Rounds"].Visible = true;
+                    //dgvAttacks.Columns["Range"].DefaultCellStyle.Format = "0.0";
+
 
                     //dgvAttacks.Columns["Upkeep"].Visible = false;
 
@@ -494,9 +509,9 @@ namespace WinFormsApp1
                         LogPiece(entry.AttackerSide, entry.AttackerName, entry.AttackerType);
                         rtbLog.AppendText(" : ");
                         LogPiece(entry.DefenderSide, entry.DefenderName, entry.DefenderType);
-                        rtbLog.AppendText($" ~ {FormatFinal(entry.attCur, entry.dmgNeg)} : {FormatFinal(entry.defCur, entry.dmgPos)}");// FormatInt(entry.damage));
-                        rtbLog.AppendText($"  ->  {entry.attCur} : {entry.defCur}");// FormatInt(entry.damage));
-                        if (entry.defCur <= 0)
+                        rtbLog.AppendText($"  ~  {entry.Attack.Prev} : {FormatDef(s => s.Prev)}");
+
+                        if (entry.Killed)
                         {
                             rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Bold);
                             rtbLog.AppendText("  Killed!");
@@ -505,34 +520,54 @@ namespace WinFormsApp1
                         // always leaving a trailing space fixes another weird RichTextBox bug
                         rtbLog.AppendText(Environment.NewLine + "  ");
 
-                        //// damage breakdown
-                        //if (entry.HitsDmg > 0)
-                        //    rtbLog.AppendText(string.Format("{0} -{1} = ", entry.HitsCur + entry.HitsDmg, entry.HitsDmg));
-                        //rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Bold);
-                        //rtbLog.AppendText(entry.HitsCur.ToString());
-                        //rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Regular);
-                        //if (entry.ShieldDmg > 0)
-                        //{
-                        //    rtbLog.SelectionColor = Color.Blue;
-                        //    rtbLog.AppendText(string.Format(" ; {0:0.0} -{1:0.0} = ", FormatInt(entry.ShieldCur + entry.ShieldDmg), FormatInt(entry.ShieldDmg)));
-                        //    rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Bold);
-                        //    rtbLog.AppendText(FormatInt(entry.ShieldCur));
-                        //    rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Regular);
-                        //    rtbLog.SelectionColor = Color.Black;
-                        //}
-                        //rtbLog.AppendText(" ~ " + FormatInt(entry.RandDmg));
+                        rtbLog.SelectionColor = Color.Purple;
+                        rtbLog.AppendText($"{FormatDmg(entry.Attack)}");
+                        rtbLog.SelectionColor = Color.Black;
+                        rtbLog.AppendText($" : ");
+                        rtbLog.SelectionColor = Color.Purple;
+                        rtbLog.AppendText($"{FormatDef(FormatDmg)}");
+                        rtbLog.SelectionColor = Color.Black;
+                        rtbLog.AppendText($"  ->  ");
+                        rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Bold);
+                        rtbLog.AppendText($"{entry.Attack.Cur}");
+                        rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Regular);
+                        rtbLog.AppendText($"/{entry.Attack.Max}");
+                        rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Bold);
+                        rtbLog.AppendText($" : {FormatDef(s => s.Cur)}");
+                        rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Regular);
+                        rtbLog.AppendText($"/{FormatDef(s => s.Max)}");
 
-                        static string FormatResult(int dmg) => (dmg > 0 ? "-" : "") + dmg;
-                        static string FormatDmg(int cur, int max, int dmg)
-                        {
-                            if (dmg > 0)
-                                cur += dmg;
-                            return $"{cur}" + (cur < max ? $"/{max}" : "") + (dmg > 0 ? $" -{dmg}" : "");
-                        }
-                        static string FormatFinal(int cur, int dmg) => (dmg > 0 ? cur + dmg : cur).ToString();
-                        rtbLog.AppendText($"{FormatDmg(entry.attCur, entry.attMax, entry.dmgNeg)} : {FormatDmg(entry.defCur, entry.defMax, entry.dmgPos)}"
-                            + $"  ~  {FormatResult(entry.dmgNeg)} : {FormatResult(entry.dmgPos)}");
-                        //rtbLog.AppendText();
+                        ////// damage breakdown
+                        ////if (entry.HitsDmg > 0)
+                        ////    rtbLog.AppendText(string.Format("{0} -{1} = ", entry.HitsCur + entry.HitsDmg, entry.HitsDmg));
+                        ////rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Bold);
+                        ////rtbLog.AppendText(entry.HitsCur.ToString());
+                        ////rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Regular);
+                        ////if (entry.ShieldDmg > 0)
+                        ////{
+                        ////    rtbLog.SelectionColor = Color.Blue;
+                        ////    rtbLog.AppendText(string.Format(" ; {0:0.0} -{1:0.0} = ", FormatInt(entry.ShieldCur + entry.ShieldDmg), FormatInt(entry.ShieldDmg)));
+                        ////    rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Bold);
+                        ////    rtbLog.AppendText(FormatInt(entry.ShieldCur));
+                        ////    rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Regular);
+                        ////    rtbLog.SelectionColor = Color.Black;
+                        ////}
+                        ////rtbLog.AppendText(" ~ " + FormatInt(entry.RandDmg));
+                        //static string FormatResult(int dmg) => (dmg > 0 ? "-" : "") + dmg;
+                        //static string FormatDmg(int cur, int max, int dmg)
+                        //{
+                        //    if (dmg > 0)
+                        //        cur += dmg;
+                        //    return $"{cur}" + (cur < max ? $"/{max}" : "") + (dmg > 0 ? $" -{dmg}" : "");
+                        //}
+                        //static string FormatFinal(int cur, int dmg) => (dmg > 0 ? cur + dmg : cur).ToString();
+                        //rtbLog.AppendText($"{FormatDmg(entry.attCur, entry.attMax, entry.dmgNeg)} : {FormatDmg(entry.defCur, entry.defMax, entry.dmgPos)}"
+                        //    + $"  ~  {FormatResult(entry.dmgNeg)} : {FormatResult(entry.dmgPos)}");
+                        ////rtbLog.AppendText();
+
+                        string FormatDmg(Log.LogEntry.Stat stat) => $"{stat.Cur - stat.Prev}";
+                        string FormatDef(Func<Log.LogEntry.Stat, object> GetVal) =>
+                            string.Join(",", entry.Defense.Select(GetVal).Select(v => v.ToString()));
 
                         logPrevious = entry;
                     }
@@ -562,7 +597,7 @@ namespace WinFormsApp1
                     if (a >= 0 && a < rtbLog.Text.Length && b >= 0 && b < rtbLog.Text.Length)
                     {
                         string line = rtbLog.Text[a..b];
-                        int c = line.IndexOf("->");
+                        int c = line.IndexOf("~");
                         if (c >= 0 && c < line.Length)
                         {
                             if (line.Contains(':'))
@@ -757,7 +792,7 @@ namespace WinFormsApp1
 
         private void BtnResearch_Click(object sender, EventArgs e)
         {
-            if (Research.ShowForm())
+            if (ResearchForm.ShowForm())
                 Program.RefreshChanged();
         }
 

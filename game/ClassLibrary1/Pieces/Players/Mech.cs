@@ -14,7 +14,7 @@ namespace ClassLibrary1.Pieces.Players
             : base(tile, blueprint.Vision)
         {
             this.Blueprint = blueprint;
-            SetBehavior(new Killable(this, blueprint.Killable), new Attacker(this, blueprint.Attacks), new Movable(this, blueprint.Movable));
+            SetBehavior(new Killable(this, blueprint.Killable, blueprint.Resilience), new Attacker(this, blueprint.Attacker), new Movable(this, blueprint.Movable));
         }
         internal static Mech NewMech(Tile tile, MechBlueprint blueprint)
         {
@@ -35,6 +35,7 @@ namespace ClassLibrary1.Pieces.Players
                 energy = upgradeTo.Energy - Blueprint.Energy;
                 mass = upgradeTo.Mass - Blueprint.Mass;
 
+                //check blocks
                 return Game.Player.Has(energy, mass) && Side.PiecesOfType<IBuilder.IBuildMech>().Any(b => Tile.GetDistance(b.Piece.Tile) <= b.Range);
             }
             return false;
@@ -44,8 +45,8 @@ namespace ClassLibrary1.Pieces.Players
             if (CanUpgrade(out MechBlueprint upgradeTo, out int energy, out int mass) && Game.Player.Spend(energy, mass))
             {
                 this._vision = upgradeTo.Vision;
-                GetBehavior<IKillable>().Upgrade(upgradeTo.Killable);
-                GetBehavior<IAttacker>().Upgrade(upgradeTo.Attacks);
+                GetBehavior<IKillable>().Upgrade(upgradeTo.Killable, upgradeTo.Resilience);
+                GetBehavior<IAttacker>().Upgrade(upgradeTo.Attacker);
                 GetBehavior<IMovable>().Upgrade(upgradeTo.Movable);
                 this.Blueprint = upgradeTo;
                 return true;

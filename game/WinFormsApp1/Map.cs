@@ -10,6 +10,8 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
+using AttackType = ClassLibrary1.Pieces.CombatTypes.AttackType;
+using DefenseType = ClassLibrary1.Pieces.CombatTypes.DefenseType;
 using DPoint = System.Drawing.Point;
 using Point = MattUtil.Point;
 using Tile = ClassLibrary1.Map.Tile;
@@ -184,6 +186,8 @@ namespace WinFormsApp1
         }
         private void Tiles(PaintEventArgs e)
         {
+            const float defHeight = .169f;
+
             List<RectangleF> rectangles = new();
             List<RectangleF> ellipses = new();
             List<PointF[]> polygons = new();
@@ -203,14 +207,14 @@ namespace WinFormsApp1
             mapCoords = Rectangle.Intersect(mapCoords, Program.Game.Map.GameRect());
 
             static IEnumerable<T> GetPieces<T>() where T : class, IBehavior => Program.Game.Map.GetVisiblePieces().SelectMany(p => p.GetBehaviors<T>());
-            static float SumAttacksCur(IAttacker attacker) => SumAttacks(attacker, a => a.AttackCur);
-            static float SumAttacksMax(IAttacker attacker) => SumAttacks(attacker, a => a.AttackMax);
-            static float SumAttacks(IAttacker attacker, Func<Attack, int> Stat) => attacker.Attacks.Sum(a => StatValue(Stat(a)));
+            //static float? SumAttacksCur(IAttacker attacker) => SumAttacks(attacker, a => a.AttackCur);
+            static float? SumAttacksMax(IAttacker attacker) => SumAttacks(attacker, a => a.AttackMax);
+            static float? SumAttacks(IAttacker attacker, Func<Attack, int> Stat) => attacker.Attacks.Sum(a => StatValue(Stat(a)));
             static float StatValue(int stat) => stat;// (float)MechBlueprint.StatValue(stat);
             const float padding = 1.13f;
-            float attackMax = GetPieces<IAttacker>().Max<IAttacker>(SumAttacksMax) * padding;
-            float defenseMax = GetPieces<IKillable>().Where(k => k.Piece.HasBehavior<IAttacker>())
-                .Max(a => StatValue(a.DefenseMax)) * padding;
+            float attackMax = GetPieces<IAttacker>().Max<IAttacker>(SumAttacksMax) * padding ?? 1;
+            float defenseMax = (GetPieces<IKillable>().Where(k => k.Piece.HasBehavior<IAttacker>())
+                .Max(k => k.TotalDefenses.Sum(d => (float?)StatValue(d.DefenseMax))) ?? 1) * padding;
             attackMax = defenseMax = Math.Max(attackMax, defenseMax);
 
             foreach (Piece piece in Program.Game.Map.GetVisiblePieces())
@@ -258,60 +262,87 @@ namespace WinFormsApp1
 
                     if (piece != null && piece.HasBehavior(out IKillable killable))
                     {
-                        float defense = StatValue(killable.DefenseMax);
-                        float barSize = .169f * rect.Height;
-                        float width = defense / defenseMax;
-                        if (width > 1)
-                            width = 1;
-                        width *= rect.Width;
-                        RectangleF hitsBar = new(rect.X, rect.Bottom - barSize, width, barSize);
-                        rectangles.Add(hitsBar);
+                        float barSize = defHeight * rect.Height;
+                        //Sqrt here makes smaller bars bigger which helps visual clarity 
+                        float widthTotal = (float)Math.Sqrt(killable.TotalDefenses.Sum(k => StatValue(k.DefenseMax)) / defenseMax);
+                        if (widthTotal > 1)
+                            widthTotal = 1;
+                        widthTotal *= rect.Width;
 
-                        float hitsPct = StatValue(killable.DefenseCur) / defense;
-                        //int color = Game.Rand.Round(255 * .65f * killable.Armor);
-                        //if (!hitsBrushes.TryGetValue(color, out Brush hitsBrush))
-                        //    hitsBrushes.Add(color, hitsBrush = new SolidBrush(Color.FromArgb(color, color, color)));
-                        //AddFillRect(Brushes.Black, hitsBar.X, hitsBar.Y, hitsBar.Width * hitsPct, hitsBar.Height);
+                        Func<Defense, int?> Get = d => d.DefenseCur;
+                        float hitsCur = GetValue(DefenseType.Hits, Get);
+                        float armorCur = GetValue(DefenseType.Armor, Get);
+                        float shieldCur = GetValue(DefenseType.Shield, Get);
+                        Get = d => d.DefenseMax;
+                        float hitsMax = GetValue(DefenseType.Hits, Get);
+                        float armorMax = GetValue(DefenseType.Armor, Get);
+                        float shieldMax = GetValue(DefenseType.Shield, Get);
+                        float GetValue(DefenseType type, Func<Defense, int?> GetStat) =>
+                            StatValue(killable.TotalDefenses.Where(d => d.Type == type).Sum(GetStat) ?? 0);
 
-                        RectangleF filled = new(hitsBar.X, hitsBar.Y, hitsBar.Width * hitsPct, hitsBar.Height);
-                        AddFill(Brushes.DarkGray, filled);
-                        RectangleF empty = new(hitsBar.X + hitsBar.Width * hitsPct, hitsBar.Y, hitsBar.Width * (1 - hitsPct), hitsBar.Height);
-                        AddFill(Brushes.White, empty);
-
-                        //Debug.WriteLine($"piece {piece}");
-                        //Debug.WriteLine($"hitsBar {hitsBar}");
-                        //Debug.WriteLine($"filled {filled}");
-                        //Debug.WriteLine($"empty {empty}");
-                        //Debug.WriteLine(Environment.NewLine);
-
-                        //if (killable.ShieldInc > 0)
-                        //{
-                        //    RectangleF shieldBar = new(hitsBar.X, hitsBar.Y - barSize, hitsBar.Width, barSize);
-                        //    rectangles.Add(shieldBar);
-
-                        //    float shieldPct = (killable.ShieldCur / killable.ShieldLimit);
-                        //    AddFillRect(Brushes.Purple, shieldBar.X, shieldBar.Y, shieldBar.Width * shieldPct, shieldBar.Height);
-                        //    AddFillRect(Brushes.White, shieldBar.X + shieldBar.Width * shieldPct, shieldBar.Y, shieldBar.Width * (1 - shieldPct), shieldBar.Height);
-                        //    float max = (shieldBar.X + shieldBar.Width * killable.ShieldMax / killable.ShieldLimit);
-                        //    lines.Add(new(new(max, shieldBar.Y), new(max, shieldBar.Bottom)));
-                        //}
+                        DrawBar(1, new float[] { hitsCur, armorCur, shieldCur }, new float[] { hitsMax, armorMax, shieldMax },
+                            new Brush[] { Brushes.DarkGray, Brushes.LightGray, Brushes.SkyBlue, }, barSize, widthTotal);
                     }
-
                     if (piece != null && piece.HasBehavior(out IAttacker attacker))
                     {
-                        float attacks = SumAttacksMax(attacker);
-                        float barSize = .169f * rect.Height;
-                        float width = rect.Width * attacks / attackMax;
-                        RectangleF hitsBar = new(rect.X, rect.Bottom - barSize * 2, width, barSize);
-                        rectangles.Add(hitsBar);
+                        float barSize = defHeight * rect.Height;
+                        float widthTotal = (float)Math.Sqrt((SumAttacksMax(attacker) ?? 0) / attackMax);
+                        if (widthTotal > 1)
+                            widthTotal = 1;
+                        widthTotal *= rect.Width;
 
-                        float attPct = SumAttacksCur(attacker) / attacks;
+                        Func<Attack, int?> Get = a => a.AttackCur;
+                        float hitsCur = GetValue(AttackType.Kinetic, Get);
+                        float armorCur = GetValue(AttackType.Energy, Get);
+                        float shieldCur = GetValue(AttackType.Explosive, Get);
+                        Get = a => a.AttackMax;
+                        float hitsMax = GetValue(AttackType.Kinetic, Get);
+                        float armorMax = GetValue(AttackType.Energy, Get);
+                        float shieldMax = GetValue(AttackType.Explosive, Get);
+                        float GetValue(AttackType type, Func<Attack, int?> GetStat) =>
+                            StatValue(attacker.Attacks.Where(d => d.Type == type).Sum(GetStat) ?? 0);
 
-                        RectangleF filled = new(hitsBar.X, hitsBar.Y, hitsBar.Width * attPct, hitsBar.Height);
-                        AddFill(Brushes.Purple, filled);
-                        RectangleF empty = new(hitsBar.X + hitsBar.Width * attPct, hitsBar.Y, hitsBar.Width * (1 - attPct), hitsBar.Height);
-                        AddFill(Brushes.White, empty);
+                        DrawBar(2, new float[] { hitsCur, armorCur, shieldCur }, new float[] { hitsMax, armorMax, shieldMax },
+                            new Brush[] { Brushes.Silver, Brushes.OrangeRed, Brushes.GreenYellow, }, barSize, widthTotal);
                     }
+
+                    void DrawBar(int barNum, float[] curs, float[] maxes, Brush[] brushes, float barSize, float widthTotal)
+                    {
+                        RectangleF defBar = new(rect.X, rect.Bottom - barSize * barNum, widthTotal, barSize);
+                        rectangles.Add(defBar);
+                        float curX = defBar.X;
+
+                        float total = maxes.Sum();
+                        for (int a = 0; a < curs.Length; a++)
+                        {
+                            float mult = defBar.Width / total;
+                            float cur = curs[a] * mult;
+                            float max = maxes[a] * mult;
+                            AddFill(brushes[a], new(curX, defBar.Y, cur, defBar.Height));
+                            curX += cur;
+                            if (cur < max)
+                                AddFill(Brushes.White, new(curX, defBar.Y, max - cur, defBar.Height));
+                            curX += max - cur;
+                            if (a + 1 < curs.Length)
+                                lines.Add(new(new(curX, defBar.Y), new(curX, defBar.Bottom)));
+                        }
+                    }
+
+                    //if (piece != null && piece.HasBehavior(out IAttacker attacker))
+                    //{
+                    //    float attacks = SumAttacksMax(attacker) ?? 0;
+                    //    float barSize = defHeight * rect.Height;
+                    //    float width = rect.Width * (float)Math.Sqrt(attacks / attackMax);
+                    //    RectangleF hitsBar = new(rect.X, rect.Bottom - barSize * 2, width, barSize);
+                    //    rectangles.Add(hitsBar);
+
+                    //    float attPct = (SumAttacksCur(attacker) ?? 0) / attacks;
+
+                    //    RectangleF filled = new(hitsBar.X, hitsBar.Y, hitsBar.Width * attPct, hitsBar.Height);
+                    //    AddFill(Brushes.Purple, filled);
+                    //    RectangleF empty = new(hitsBar.X + hitsBar.Width * attPct, hitsBar.Y, hitsBar.Width * (1 - attPct), hitsBar.Height);
+                    //    AddFill(Brushes.White, empty);
+                    //}
                 }
 
             for (int a = 0; a < mapCoords.Width; a++)
@@ -325,12 +356,46 @@ namespace WinFormsApp1
                 }
             }
 
+            if (viewAttacks)// && scale > 16.9f)
+            {
+                using Font f = new(FontFamily.GenericMonospace, scale / 3.9f);
+                foreach (var p in attacks)
+                {
+                    int x = p.Key.X, y = p.Key.Y;
+                    if (mapCoords.Contains(p.Key.X, p.Key.Y))
+                    {
+                        RectangleF rect = new(GetX(x), GetY(y), scale, scale);
+                        float barSize = defHeight * rect.Height;
+
+                        //Sqrt here makes smaller bars bigger which helps visual clarity 
+                        float widthTotal = (float)Math.Sqrt(p.Value / defenseMax);
+                        if (widthTotal > 1)
+                            widthTotal = 1;
+                        widthTotal *= rect.Width;
+
+                        //new(rect.X, rect.Y, cur, defBar.Height));
+
+                        RectangleF attBar = new RectangleF(rect.X, rect.Bottom - barSize * 1, widthTotal, barSize);
+                        if (Program.Game.Map.GetVisibleTile(x, y).Piece != null)
+                            AddFill(Brushes.PaleVioletRed, attBar);
+                        else
+                        {
+                            AddFill(Brushes.LightPink, attBar);
+                            lines.Add(new(new(attBar.Right, attBar.Y), new(attBar.Right, attBar.Bottom)));
+                        }
+                        //SizeF size = e.Graphics.MeasureString(p.Value, f);
+                        //e.Graphics.DrawString(p.Value, f, Brushes.Red, new PointF(GetX(p.Key.X) + scale - size.Width, GetY(p.Key.Y) + scale - size.Height));
+                    }
+                }
+            }
+
             RectangleF[] rects = rectangles.ToArray();
             if (rects.Length > 0)
                 e.Graphics.FillRectangles(Brushes.White, rects);
 
-            HashSet<Brush> afterBrushes = hitsBrushes.Values.Append(Brushes.DarkGray).Append(Brushes.White).Append(Brushes.Purple)
-                .ToHashSet();
+            HashSet<Brush> afterBrushes = hitsBrushes.Values.Concat(new[] { Brushes.White, 
+                Brushes.DarkGray, Brushes.LightGray, Brushes.SkyBlue, Brushes.Silver, Brushes.OrangeRed, Brushes.GreenYellow,
+            }).ToHashSet();
             foreach (var p in fill)
                 if (!afterBrushes.Contains(p.Key))
                     e.Graphics.FillRectangles(p.Key, p.Value.ToArray());
@@ -358,8 +423,9 @@ namespace WinFormsApp1
                 foreach (var p in attacks)
                     if (mapCoords.Contains(p.Key.X, p.Key.Y))
                     {
-                        SizeF size = e.Graphics.MeasureString(p.Value, f);
-                        e.Graphics.DrawString(p.Value, f, Brushes.Red, new PointF(GetX(p.Key.X) + scale - size.Width, GetY(p.Key.Y) + scale - size.Height));
+                        string value = p.Value.ToString("0");
+                        SizeF size = e.Graphics.MeasureString(value, f);
+                        e.Graphics.DrawString(value, f, Brushes.Red, new PointF(GetX(p.Key.X) + scale - size.Width, GetY(p.Key.Y) + scale - size.Height));
                     }
             }
             foreach (var p in letters)
@@ -375,7 +441,7 @@ namespace WinFormsApp1
 
         private readonly static Pen Red = new(Color.Red, 3f), Green = new(Color.Green, 3f), Blue = new(Color.Blue, 3f), White = new(Color.White, 3f);
         private readonly Dictionary<Pen, List<HashSet<Point>>> ranges = new Pen[] { Blue, Red, Green, White }.ToDictionary(p => p, p => new List<HashSet<Point>>());
-        private readonly Dictionary<Point, string> attacks = new();
+        private readonly Dictionary<Point, float> attacks = new();
         public void RefreshRanges()
         {
             watch.Reset();
@@ -418,7 +484,7 @@ namespace WinFormsApp1
                         if (t.Piece == null || !t.Piece.IsEnemy)
                         {
                             attStr.TryGetValue(t, out float total);
-                            attStr[t] = total + damage;
+                            attStr[t] = (float)(total + Consts.StatValue(damage));
                         }
                 }
 
@@ -429,7 +495,7 @@ namespace WinFormsApp1
 
                 attacks.Clear();
                 foreach (var p in attStr)
-                    attacks.Add(new Point(p.Key.X, p.Key.Y), p.Value.ToString("0"));
+                    attacks.Add(new Point(p.Key.X, p.Key.Y), (float)Consts.StatValueInverse(p.Value));
             }
 
             //Debug.WriteLine("4 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);

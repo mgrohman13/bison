@@ -33,8 +33,8 @@ namespace ClassLibrary1
             base.EndTurn(out double energyUpk, out double massUpk);
 
             double energy = Math.Pow(difficulty, Consts.DifficultyEnergyPow) * Consts.EnemyEnergy;
-            if (Game.Turn < Consts.EnemyRampTurns)
-                energy *= Game.Turn / Consts.EnemyRampTurns;
+            if (Game.Turn < Consts.EnemyEnergyRampTurns)
+                energy *= Game.Turn / Consts.EnemyEnergyRampTurns;
             this._energy += Game.Rand.OEInt(energy) + this.Mass - Game.Rand.Round(energyUpk + massUpk);
             this._mass = 0;
 
@@ -44,7 +44,7 @@ namespace ClassLibrary1
                 if (this.Energy > cost)
                 {
                     this._energy -= cost;
-                    Alien.NewAlien(Game.Map.GetEnemyTile(), _nextAlien.Killable, _nextAlien.Attacks, _nextAlien.Movable);
+                    Alien.NewAlien(Game.Map.GetEnemyTile(), _nextAlien.Killable, _nextAlien.Resilience, _nextAlien.Attacker, _nextAlien.Movable);
                     _nextAlien = MechBlueprint.Alien(_research);
                 }
                 else break;
@@ -64,7 +64,7 @@ namespace ClassLibrary1
                 allTargets = Game.Player.PiecesOfType<IKillable>();
                 if (allTargets.Any())
                 {
-                    avgHp = allTargets.Average(k => k.DefenseMax);
+                    avgHp = allTargets.Average(k => k.Hits.DefenseMax);
                     avgWeight = (allTargets.Average(k => GetKillWeight(k, avgHp)));
                 }
                 targets = GetTargets(attacker, piece.Tile, allTargets);
@@ -86,7 +86,7 @@ namespace ClassLibrary1
                         double attackWeight = 1;
                         foreach (var attack in attacker.Attacks.Where(a => !a.Attacked))
                         {
-                            var weights = allTargets.SelectMany(k => attack.GetDefenders(moveTile, piece, k.Piece)).Select(k => GetKillWeight(k, avgHp));
+                            var weights = allTargets.SelectMany(k => attack.GetDefenders(moveTile, k.Piece)).Select(k => GetKillWeight(k, avgHp));
                             if (weights.Any())
                             {
                                 double weight = weights.Max();
@@ -118,7 +118,7 @@ namespace ClassLibrary1
         private static Dictionary<Attack, IEnumerable<IKillable>> GetTargets(IAttacker attacker, Tile from, IEnumerable<IKillable> allTargets)
         {
             return attacker.Attacks.Where(a => !a.Attacked)
-                .Select(a => new Tuple<Attack, IEnumerable<IKillable>>(a, allTargets.SelectMany(k => a.GetDefenders(from, attacker.Piece, k.Piece))))
+                .Select(a => new Tuple<Attack, IEnumerable<IKillable>>(a, allTargets.SelectMany(k => a.GetDefenders(from, k.Piece))))
                 .Where(t => t.Item2.Any())
                 .ToDictionary(t => t.Item1, t => t.Item2);
         }
@@ -129,7 +129,7 @@ namespace ClassLibrary1
             {
                 IKillable trg = Game.Rand.SelectValue(targWeights);
                 targWeights.Remove(trg);
-                if (attacker.Attacks.Any(a => a.AttackCur == a.AttackMax || !trg.Piece.HasBehavior<IAttacker>() || a.AttackCur > Game.Rand.Next(trg.DefenseCur)))
+                if (attacker.Attacks.Any(a => a.AttackCur == a.AttackMax || !trg.Piece.HasBehavior<IAttacker>() || a.AttackCur > Game.Rand.Next(trg.TotalDefenses.Max(d => d.DefenseCur))))
                     if (!attacker.EnemyFire(trg))
                         ;
             }
@@ -145,9 +145,11 @@ namespace ClassLibrary1
             if (killable.Piece.HasBehavior(out IBuilder builder))
                 repair += 13 + avgHp * (builder.Range + 13) / 130.0;
 
-            double gc = (1 + attacks + 21 * repair) / killable.DefenseCur;
+            double defCur = killable.TotalDefenses.Sum(d => d.DefenseCur);
+            double defMax = killable.TotalDefenses.Sum(d => d.DefenseMax);
+            double gc = (1 + attacks + 21 * repair) / defCur;
             //double gc = (1 + attacks + 21 * repair) / (killable.HitsCur / (1 - killable.Armor) + killable.ShieldCur);
-            double damagePct = 2 - killable.DefenseCur / (double)killable.DefenseMax;
+            double damagePct = 2 - defCur / (double)defMax;
             //double shieldFactor = 3 + 13 * killable.ShieldInc / (killable.HitsMax / 6.5 + killable.ShieldCur);
             double final = gc * gc * damagePct;// * shieldFactor;
             if (!(final > 0))

@@ -88,6 +88,8 @@ namespace ClassLibrary1.Pieces
         }
         internal virtual void EndTurn(ref double energyUpk, ref double massUpk)
         {
+            //bool moved = HasBehavior(out IMovable movable) && movable.Moved;
+            //bool attacked = HasBehavior(out IAttacker attacker) && attacker.Attacked;
             foreach (IBehavior behavior in behavior)
                 behavior.EndTurn(ref energyUpk, ref massUpk);
         }

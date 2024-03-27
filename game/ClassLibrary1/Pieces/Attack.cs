@@ -1,7 +1,7 @@
-﻿using ClassLibrary1.Pieces.Players;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using AttackType = ClassLibrary1.Pieces.CombatTypes.AttackType;
 using Tile = ClassLibrary1.Map.Tile;
 using Values = ClassLibrary1.Pieces.IAttacker.Values;
 
@@ -10,13 +10,17 @@ namespace ClassLibrary1.Pieces
     [Serializable]
     public class Attack
     {
+        public const double MELEE_RANGE = 1.5;
+        public const double MIN_RANGED = MELEE_RANGE * 2;
+
         public readonly Piece Piece;
         private Values _values;
 
         private int _attackCur;
-        private double _attacked;
+        private bool _attacked;
 
-        public bool Attacked => _attacked > 0 || AttackCur == 0;
+        public AttackType Type => _values.Type;
+        public bool Attacked => _attacked || AttackCur == 0;
         //public double Upkeep => _attacked * Consts.WeaponRechargeUpkeep;
         public int AttackCur => _attackCur;
         //public int AttackCur => Consts.GetDamagedValue(Piece, AttackBase, 0);
@@ -25,7 +29,7 @@ namespace ClassLibrary1.Pieces
         //public double ShieldPierce => _values.ShieldPierce;
         //public double Dev => _values.Dev;
         public double Range => RangeBase;
-        public double RangeBase => 1.5;
+        public double RangeBase => Consts.GetDamagedValue(Piece, _values.Range, MELEE_RANGE);
 
         public double Rounds => Math.Sqrt(AttackCur);
 
@@ -34,15 +38,21 @@ namespace ClassLibrary1.Pieces
             this.Piece = piece;
             this._values = values;
 
-            this._attackCur = values.Attack;
-            this._attacked = 1;
+            this._attackCur = CombatTypes.GetStartCur(values.Type, values.Attack);
+            this._attacked = true;
         }
 
         internal void Upgrade(Values values)
         {
-            double hitsPct = AttackCur / (double)AttackMax;
+            double attPct = AttackCur / (double)AttackMax;
             this._values = values;
-            this._attackCur = Game.Rand.Round(AttackMax * hitsPct);
+            this._attackCur = Game.Rand.Round(AttackMax * attPct);
+        }
+
+        internal void Damage()
+        {
+            if (AttackCur > 0)
+                this._attackCur--;
         }
 
         private bool CapableAttack(Piece target, out IKillable killable)
@@ -61,75 +71,68 @@ namespace ClassLibrary1.Pieces
                 killable = null;
             return canAttack;
         }
-        public IEnumerable<IKillable> GetDefenders(Piece attackBy, Piece target)
+        public IEnumerable<IKillable> GetDefenders(Piece target)
         {
-            return GetDefenders(attackBy.Tile, attackBy, target);
+            return GetDefenders(Piece.Tile, target);
         }
-        internal IEnumerable<IKillable> GetDefenders(Tile attackFrom, Piece attackBy, Piece target)
+        internal IEnumerable<IKillable> GetDefenders(Tile attackFrom, Piece target)
         {
             if (!CanAttack(attackFrom, target, out IKillable killable))
                 return Enumerable.Empty<IKillable>();
 
-            IEnumerable<IKillable> friendly = target.Tile.GetTilesInRange(1.5, false, null)
+            IEnumerable<IKillable> friendly = target.Tile.GetTilesInRange(MELEE_RANGE, false, null)
                 .Select(t => t.Piece)
                 .Where(p => p?.Side == target.Side && p.HasBehavior<IAttacker>())
                 .Select(p => p?.GetBehavior<IKillable>())
                 .Where(k => k != null && !k.Dead);
-            int? maxDef = friendly.Max(k => k?.DefenseCur);
-            friendly = friendly.Where(k => k != null && k.DefenseCur >= (maxDef ?? 0));
+
+            //int GetMaxDef(IKillable k) => k.GetDefenses(attack).Max(d => d?.DefenseCur) ?? 0;
+            //int GetSufficientDef(IKillable k)
+            //{
+            //    int maxDef = GetMaxDef(k);
+            //    if (maxDef < Math.Ceiling(attack.Rounds))
+            //        maxDef = 0;
+            //    return maxDef;
+            //}
+            //friendly = Game.Rand.Iterate(friendly).OrderByDescending(GetSufficientDef)
+            //    .ThenByDescending(k => k.DefenseCur)
+            //    .ThenByDescending(GetMaxDef)
+            //    .First();
+
+            static int? MaxDef(IKillable k) => k.TotalDefenses.Max(d => d?.DefenseCur);
+            int maxDef = friendly.Max(MaxDef) ?? 0;
+            friendly = friendly.Where(k => k != null && MaxDef(k) >= maxDef);
 
             if (!friendly.Any())
-                friendly = Enumerable.Repeat(killable, 1);
+                friendly = new[] { killable };
             return friendly;
+
         }
         internal bool Fire(IKillable target)
         {
-            var defenders = GetDefenders(Piece, target.Piece);
+            var defenders = GetDefenders(target.Piece);
             if (defenders.Any())
             {
                 target = Game.Rand.SelectValue(defenders);
 
-                int dmgPos = 0, dmgNeg = 0;
+                int startAttack = this.AttackCur;
+                Dictionary<Defense, int> startDefense = target.TotalDefenses.ToDictionary(d => d, d => d.DefenseCur);
+
                 int rounds = Game.Rand.Round(Rounds);
                 for (int a = 0; a < rounds && AttackCur > 0 && !target.Dead; a++)
                 {
-                    this._attacked = 1;
-                    int total = AttackCur + target.DefenseCur;
-                    if (Game.Rand.Next(total) < AttackCur)
-                    {
-                        dmgPos++;
-                        target.Damage(1);
-                    }
-                    else if (target.HasBehavior<IAttacker>())
-                    {
-                        dmgNeg++;
-                        this._attackCur--;
+                    Defense defense = Game.Rand.Iterate(target.TotalDefenses.Where(d => d.DefenseCur > 0)).OrderBy(CombatTypes.OrderBy).First();
 
-                        //if (AttackCur < target.DefenseCur)
-                        //    break;
-                    }
+                    double attChance = AttackCur / (double)(AttackCur + defense.DefenseCur);
+                    if (Game.Rand.Bool(attChance))
+                        defense.Damage(this);
+                    else if (target.HasBehavior<IAttacker>())
+                        this._attackCur--;
+                    this._attacked = true;
                 }
 
-                //if ( dmg > 0 )
-                //{
-
-                //}
-
-                //// randomize damage first as an integer, though shields and armor may convert it back to a double
-                //int randDmg = Game.Rand.GaussianOEInt(Damage, Dev, Dev);
-                //double damage = randDmg;
-
-                //double shieldDmg = Math.Min(damage * (1 - ShieldPierce), target.ShieldCur);
-                //damage -= shieldDmg;
-
-                //damage *= 1 - target.Armor * (1 - ArmorPierce);
-
-                //// round again since shields and armor may convert it back to a double
-                //int hitsDmg = Game.Rand.Round(damage);
-                //this._attacked = target.Damage(hitsDmg, shieldDmg);
-
                 if (this.Attacked)
-                    Piece.Game.Log.LogAttack(Piece.GetBehavior<IAttacker>(), target, AttackCur, AttackMax, target.DefenseCur, target.DefenseMax, dmgPos, dmgNeg);
+                    Piece.Game.Log.LogAttack(this, startAttack, target, startDefense);
 
                 return true;
             }
@@ -143,20 +146,26 @@ namespace ClassLibrary1.Pieces
         internal void EndTurn(ref double energyUpk, ref double massUpk)
         {
             EndTurn(true, ref energyUpk, ref massUpk);
-            this._attacked = 0;
         }
         private void EndTurn(bool doEndTurn, ref double energyUpk, ref double massUpk)
         {
-            if (AttackCur < AttackMax && this._attacked == 0)
+            int newValue = Consts.IncStatValue(AttackCur, AttackMax, GetRegen(), Consts.EnergyPerAttack, ref energyUpk);
+            if (doEndTurn)
             {
-                double cost = MechBlueprint.StatValue(AttackCur + 1) - MechBlueprint.StatValue(AttackCur);
-                cost /= Math.Sqrt(Consts.MechStatMult);
-
-                energyUpk += cost;
-
-                if (doEndTurn)
-                    this._attackCur++;
+                this._attackCur = newValue;
+                this._attacked = false;
             }
+        }
+        public int GetRegen()
+        {
+            //check blocks
+            bool inBuild = Piece.Side.PiecesOfType<IBuilder.IBuildMech>()
+                .Any(r => Piece != r.Piece && Piece.Side == r.Piece.Side && Piece.Tile.GetDistance(r.Piece.Tile) <= r.Range);
+            //bool moved = Piece.HasBehavior(out IMovable movable) && movable.Moved;
+
+            int regen = CombatTypes.GetRegen(Type, this._attacked, inBuild);
+            regen = Math.Min(regen, AttackMax - AttackCur);
+            return regen;
         }
     }
 }

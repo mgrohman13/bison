@@ -103,6 +103,7 @@ FEATURES
 	power grid
 
 
+pull gen/upgrade value constants, research powers into special consts we can see and tweak together
 attack values on map display use formula
 attack range circle not accurate around corners
 support rallying, multiple moves to get to destination
@@ -132,8 +133,18 @@ disband mech (recycle?)
 	turn off instead?
 upgrade can decrease a stat!?!
 ignore cur selected unit in enemy attack radius
+int-based repair system
+log colors, map colors for weapon/def types
+partial attacks?
+	use specific attack
+	rounds?
+occasional moves take long
+	generating resources?
+remove outliers from att/def bar length?
 
 EARLY GAME
+early core def/shield too strong?
+energy costs slightly too high
 mitigate balance of finding resources quicker?
 	distance to core? resource value?
 better balancing of starting mech
@@ -141,6 +152,9 @@ better balancing of starting mech
 constructor better vision? quicker new constructors?
 hardcoded initial scout mech?
 constructor outrun too many early aliens
+main map bar coloring for different att/def types
+notify cboxes that arent supported
+things a little too defensive?
 
 COMBAT
 multiple defenses
@@ -152,7 +166,11 @@ limit moving/attacking?
 	ranged cant do both?
 	melee limit move after attack? 
 pos/neg dmg at same time in same attack?
-
+replace range with melee/ranged flag and accuracy(?), LOS rules, etc.
+make num attacks, regen rate variables, reduce regen rate with dmg
+change inRepair to mean in any builder range?
+	constructor OP though? only do buildmech?
+splash damage hits adjacent units
 
 plan:
 convert new combat system
@@ -174,4 +192,5 @@ map
 	caves
 	continguous
 		force between core, hives, resources (? - ensure generate past gap?)
-	water/islands
+	water/islan
+	ds

@@ -1,5 +1,8 @@
 ﻿using ClassLibrary1.Pieces;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using DefenseType = ClassLibrary1.Pieces.CombatTypes.DefenseType;
 
 namespace ClassLibrary1
 {
@@ -16,10 +19,10 @@ namespace ClassLibrary1
 
         public const double ResearchFactor = 2600;
 
-        public const double EnemyStartEnergy = 2600;
+        public const double EnemyStartEnergy = 5200;
         public const double EnemyEnergy = 260;
-        public const double EnemyRampTurns = 26;
-        public const double DifficultyIncTurns = 130;
+        public const double EnemyEnergyRampTurns = 52;
+        public const double DifficultyIncTurns = 91;
         public const double DifficultyEnergyPow = 1.69;
         public const double DifficultyResearchPow = 1.3;
         public const double DifficultyMoveDirPow = .65;
@@ -28,7 +31,6 @@ namespace ClassLibrary1
         public const double HitsIncDev = .065;
         public const double MoveDev = .013;
         public const double MoveLimitPow = 1.3;
-        public const double ShieldLimitPow = 1.69;
 
         public const double ResourceDistAdd = 21;
         public const double ResourceDistDiv = 52;
@@ -60,24 +62,44 @@ namespace ClassLibrary1
 
         public const int EnergyForFabricateMass = 10;
         public const int BurnMassForEnergy = 2;
-        public const int MassForScrapResearch = 3; // inverted value from the other two
+        public const int MassForScrapResearch = 5; // inverted value from the other two
 
         public const double BaseConstructorUpkeep = 5;
         public const double BaseMechUpkeep = 1;
-        public const double WeaponRechargeUpkeep = 10;
-        public const double UpkeepPerShield = 2;
-        public const double UpkeepPerMove = .5;
+        //public const double WeaponRechargeUpkeep = 10;
 
-        public const double MechCostMult = 16.9;
-        public const double MechStatMult = .13;
+        public const double EnergyPerMove = 1;
+        public const double EnergyPerAttack = .25;
+        public const double EnergyPerShield = .5;
+        public const double MassPerArmor = .25;
+
+        public const double MechCostMult = .13;
+        //public const double MechStatMult = .13;
         public const double MechMassDiv = 1.69;
 
         public const double RepairCost = .21;
-        public const double RechargeCost = .169;
+        //public const double RechargeCost = .169;
         public const double EnergyRepairDiv = 2.1;
         public const double AutoRepair = .65;
         public const double AutoRepairPct = .0169;
         public const double ReplaceRefundPct = .8;
+
+        public static double StatValue(double stat)
+        {
+            return stat * stat + stat;
+        }
+        public static double StatValueInverse(double value)
+        {
+            return (Math.Sqrt(4 * value + 1) - 1) / 2.0;
+        }
+        public static double SumStats(IEnumerable<int> stats)
+        {
+            return SumStats(stats.Select(s => (double)s));
+        }
+        public static double SumStats(IEnumerable<double> stats)
+        {
+            return StatValueInverse(stats.Sum(StatValue));
+        }
 
         internal static int Income(double income)
         {
@@ -93,29 +115,57 @@ namespace ClassLibrary1
         {
             return (mass + energy / Consts.EnergyRepairDiv) * Consts.RepairCost;
         }
-        public static double GetRechargeCost(double energy, double mass)
-        {
-            return energy * Consts.RechargeCost;
-        }
+        //public static double GetRechargeCost(double energy, double mass)
+        //{
+        //    return energy * Consts.RechargeCost;
+        //}
 
         public static double GetDamagedValue(Piece piece, double value, double min)
         {
             return GetDamagedValue(piece, value, min, false);
         }
-        public static double GetDamagedValue(Piece piece, double value, double min, bool sqrt)
+        private static double GetDamagedValue(Piece piece, double value, double min, bool sqrt)
         {
             if (piece.HasBehavior(out IKillable killable))
             {
                 double resilience = killable.Resilience;
                 if (sqrt)
                     resilience = Math.Sqrt(resilience);
-                return min + (value - min) * Math.Pow(killable.DefenseCur / (double)killable.DefenseMax, 1 - resilience);
+                return min + (value - min) * Math.Pow(killable.Hits.DefenseCur / (double)killable.Hits.DefenseMax, 1 - resilience);
 
                 //return min + (value - min) * Math.Sqrt(killable.DefenseCur / (double)killable.DefenseMax);
             }
             return value;
         }
 
+        public static int IncDefense(DefenseType type, int cur, int max, bool inRepair, ref double energyUpk, ref double massUpk)
+        {
+            int newValue = cur;
+            int regen = CombatTypes.GetRegen(type, inRepair);
+            if (regen > 0)
+            {
+                double costMult = CombatTypes.GetRegenCostMult(type, out bool mass);
+                double upkeep = 0;
+                newValue = IncStatValue(cur, max, regen, costMult, ref upkeep);
+                if (mass)
+                    massUpk += upkeep;
+                else
+                    energyUpk += upkeep;
+            }
+            return newValue;
+        }
+        public static int IncStatValue(int cur, int max, int regen, double upkeepRate, ref double upkeep)
+        {
+            int newValue = cur;
+            if (cur < max)
+            {
+                newValue = Math.Min(max, cur + regen);
+                double cost = StatValue(newValue) - StatValue(cur);
+                cost *= upkeepRate;
+                upkeep += cost;
+            }
+            return newValue;
+        }
         public static double IncValueWithMaxLimit(double cur, double inc, double dev, double max, double limit, double pow, bool rand)
         {
             double start = cur;

@@ -3,6 +3,7 @@ using ClassLibrary1.Pieces.Players;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using DefenseType = ClassLibrary1.Pieces.CombatTypes.DefenseType;
 
 namespace ClassLibrary1
 {
@@ -11,7 +12,7 @@ namespace ClassLibrary1
     {
         public readonly Game Game;
 
-        private readonly Dictionary<Piece, SortedSet<LogEntry>> _log;
+        private readonly Dictionary<string, SortedSet<LogEntry>> _log;
         private int _logNumInc;
 
         internal Log(Game game)
@@ -27,15 +28,14 @@ namespace ClassLibrary1
             if (piece == null)
                 entries = new(_log.SelectMany(e => e.Value));
             else
-                _log.TryGetValue(piece, out entries);
+                _log.TryGetValue(piece.ToString(), out entries);
             return entries ?? new();
         }
 
-        internal void LogAttack(IAttacker attacker, IKillable defender, int attCur, int attMax, int defCur, int defMax, int dmgPos, int dmgNeg)// double baseDamage, int randDmg, int hitsDmg, double shieldDmg)
+        internal void LogAttack(Attack attack, int startAttack, IKillable target, Dictionary<Defense, int> startDefense)
         {
-            LogEntry entry = new(_logNumInc++, Game.Turn, attacker, defender, attCur, attMax, defCur, defMax, dmgPos, dmgNeg);// baseDamage, randDmg, hitsDmg, shieldDmg);
-            //Debug.WriteLine(statement);
-            AddLog(entry, attacker.Piece, defender.Piece);
+            LogEntry entry = new(_logNumInc++, Game.Turn, attack, startAttack, target, startDefense);
+            AddLog(entry, attack.Piece, target.Piece);
         }
 
         private void AddLog(LogEntry entry, params Piece[] pieces)
@@ -44,8 +44,9 @@ namespace ClassLibrary1
                 pieces = new Piece[] { null };
             foreach (Piece piece in pieces)
             {
-                if (!_log.TryGetValue(piece, out SortedSet<LogEntry> entries))
-                    _log.Add(piece, entries = new());
+                string key = piece.ToString();
+                if (!_log.TryGetValue(key, out SortedSet<LogEntry> entries))
+                    _log.Add(key, entries = new());
                 entries.Add(entry);
             }
         }
@@ -56,53 +57,63 @@ namespace ClassLibrary1
             public readonly int LogNum;
             public readonly int Turn;
 
-            public Side AttackerSide;
-            public string AttackerName;
-            public string AttackerType;
-            public Side DefenderSide;
-            public string DefenderName;
-            public string DefenderType;
+            public readonly Side AttackerSide;
+            public readonly string AttackerName;
+            public readonly string AttackerType;
+            public readonly Side DefenderSide;
+            public readonly string DefenderName;
+            public readonly string DefenderType;
 
-            public readonly int attCur, attMax, defCur, defMax, dmgPos, dmgNeg;
+            public readonly bool Killed;
 
-            //public readonly double BaseDamage;
-            //public readonly int RandDmg;
-            //public readonly int HitsDmg;
-            //public readonly double ShieldDmg;
-            //public readonly int HitsCur;
-            //public readonly double ShieldCur;
+            public readonly Stat Attack;
+            public readonly Stat[] Defense;
 
-            public LogEntry(int logNum, int turn, IAttacker attacker, IKillable defender, int attCur, int attMax, int defCur, int defMax, int dmgPos, int dmgNeg)// double baseDamage, int randDmg, int hitsDmg, double shieldDmg)
+            public LogEntry(int logNum, int turn, Attack attack, int startAttack, IKillable target, Dictionary<Defense, int> startDefense)
             {
-                static string GetName(IBehavior b) => b.Piece is Mech mech ? mech.GetName() : b.Piece.ToString();
-                static string GetBlueprint(IBehavior b) => b.Piece is Mech mech ? mech.GetBlueprintName() : "";
+                static string GetName(Piece p) => p is Mech mech ? mech.GetName() : p.ToString();
+                static string GetBlueprint(Piece p) => p is Mech mech ? mech.GetBlueprintName() : "";
+
                 this.LogNum = logNum;
                 this.Turn = turn;
-                this.AttackerSide = attacker.Piece.Side;
+
+                Piece attacker = attack.Piece;
+                this.AttackerSide = attacker.Side;
                 this.AttackerName = GetName(attacker);
                 this.AttackerType = GetBlueprint(attacker);
-                this.DefenderSide = defender.Piece.Side;
+
+                Piece defender = target.Piece;
+                this.DefenderSide = defender.Side;
                 this.DefenderName = GetName(defender);
                 this.DefenderType = GetBlueprint(defender);
 
-                this.attCur = attCur;
-                this.attMax = attMax;
-                this.defCur = defCur;
-                this.defMax = defMax;
-                this.dmgPos = dmgPos;
-                this.dmgNeg = dmgNeg;
+                this.Killed = target.Dead;
 
-                //this.BaseDamage = baseDamage;
-                //this.RandDmg = randDmg;
-                //this.HitsDmg = hitsDmg;
-                //this.ShieldDmg = shieldDmg;
-                //this.HitsCur = defender.HitsCur;
-                //this.ShieldCur = defender.ShieldCur;
+                this.Attack = new(startAttack, attack.AttackCur, attack.AttackMax);
+                this.Defense = target.TotalDefenses.OrderBy(d => d.Type switch
+                {
+                    DefenseType.Hits => 1,
+                    DefenseType.Shield => 2,
+                    DefenseType.Armor => 3,
+                    _ => throw new Exception(),
+                }).Select(d => new Stat(startDefense[d], d.DefenseCur, d.DefenseMax)).ToArray();
             }
 
             public int CompareTo(object obj)
             {
                 return ((LogEntry)obj).LogNum - LogNum;
+            }
+
+            [Serializable]
+            public class Stat
+            {
+                public readonly int Prev, Cur, Max;
+                public Stat(int prev, int cur, int max)
+                {
+                    this.Prev = prev;
+                    this.Cur = cur;
+                    this.Max = max;
+                }
             }
         }
     }

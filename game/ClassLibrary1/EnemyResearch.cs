@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Type = ClassLibrary1.Research.Type;
 
-namespace ClassLibrary1.Pieces
+namespace ClassLibrary1
 {
     [Serializable]
     internal class EnemyResearch : IResearch
@@ -16,24 +16,24 @@ namespace ClassLibrary1.Pieces
 
         private readonly HashSet<Type> _available;
 
-        private static readonly Type[] Unlocks = new Type[] { Type.MechShields, Type.MechSP, Type.MechAP, Type.MechArmor };
+        private static readonly Type[] Unlocks = new Type[] { Type.MechShields, Type.MechLasers, Type.MechExplosives, Type.MechArmor };
 
         public EnemyResearch(Game game)
         {
-            this.Game = game;
-            this._type = Type.BuildingCost;
-            this._research = 0;
-            this._difficulty = 1;
-            this._available = new HashSet<Type>();
+            Game = game;
+            _type = Type.BuildingCost;
+            _research = 0;
+            _difficulty = 1;
+            _available = new HashSet<Type>();
         }
 
         public void EndTurn(double difficulty)
         {
             if (Game.Rand.Bool())
-                this._type = Game.Rand.Bool() ? Type.BuildingCost : Game.Rand.SelectValue(Enum.GetValues<Type>()
+                _type = Game.Rand.Bool() ? Type.BuildingCost : Game.Rand.SelectValue(Enum.GetValues<Type>()
                     .Where(t => Research.IsMech(t) && (_available.Contains(t) || !Unlocks.Contains(t))));
-            this._research += Game.Rand.OE(difficulty);
-            this._difficulty = difficulty;
+            _research += Game.Rand.OE(difficulty);
+            _difficulty = difficulty;
 
             if (_available.Count < Unlocks.Length)
             {
@@ -53,20 +53,24 @@ namespace ClassLibrary1.Pieces
 
         public int GetMinCost()
         {
-            return Game.Rand.Round(Math.Pow(GetLevel() + 6.5 * Consts.ResearchFactor, 0.65));
+            return Game.Rand.Round(Math.Pow(GetLevel() + 6.5 * Consts.ResearchFactor, .65));
         }
         public int GetMaxCost()
         {
-            return Game.Rand.Round(Math.Pow(GetLevel() + 0.39 * Consts.ResearchFactor, 1.04));
+            return Game.Rand.Round(Math.Pow(GetLevel() + .39 * Consts.ResearchFactor, 1.04));
         }
 
-        public double GetMult(Research.Type type, double pow)
+        public double GetMult(Type type, double pow)
         {
             double mult = 1, add = 0;
             switch (type)
             {
-                case Type.MechSP:
-                case Type.MechAP:
+                case Type.MechEnergyWeapons:
+                    mult = 1.13;
+                    add = -.13;
+                    break;
+                case Type.MechLasers:
+                case Type.MechExplosives:
                     mult = .91;
                     add = .13;
                     break;
@@ -82,7 +86,7 @@ namespace ClassLibrary1.Pieces
                     break;
                 case Type.MechMove:
                     mult = .52;
-                    add = .52;
+                    add = .26;
                     break;
                 case Type.MechRange:
                     mult = .78;
@@ -95,23 +99,32 @@ namespace ClassLibrary1.Pieces
                     add = .26;
                     break;
                 case Type.MechVision:
-                    mult = 0;
-                    add = -1;
                     break;
                 default: throw new Exception();
             }
             return Math.Pow(add + mult * (_difficulty - 1) + 1, pow);
         }
 
-        public bool MakeType(Research.Type type)
+        bool IResearch.HasType(Type research)
+        {
+            return true;
+        }
+        public bool MakeType(Type type)
         {
             double mult = 1, add = 0;
             switch (type)
             {
-                case Type.MechSP:
-                case Type.MechAP:
+                case Type.MechEnergyWeapons:
+                    add = -.39;
+                    break;
+                case Type.MechLasers:
+                case Type.MechExplosives:
                     mult = 1.3;
                     add = -.91;
+                    break;
+                case Type.MechRange:
+                    mult = .78;
+                    add = -.13;
                     break;
                 case Type.MechArmor:
                     break;
@@ -125,7 +138,7 @@ namespace ClassLibrary1.Pieces
             return (_available.Contains(type) || !Unlocks.Contains(type)) && Game.Rand.Bool((1.3 + difficulty) / (5.2 + difficulty));
         }
 
-        Research.Type IResearch.GetType()
+        Type IResearch.GetType()
         {
             return _type;
         }

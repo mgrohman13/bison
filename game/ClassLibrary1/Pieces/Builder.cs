@@ -48,12 +48,12 @@ namespace ClassLibrary1.Pieces
 
         private bool Validate(Tile tile, bool empty)
         {
+            //check blocks
             return (tile != null && (!empty || tile.Piece == null) && tile.Visible && tile.GetDistance(this.Piece.Tile) <= Range);
         }
         private bool Replace(bool doReplace, PlayerPiece piece, CostFunc GetNewCost, Func<double> GetRounding, Action NewPiece, bool validateHits, out int energy, out int mass)
         {
-            //replace diminshed attack too
-            if (piece != null && Validate(piece.Tile, false) && piece.HasBehavior(out IKillable killable) && (!validateHits || killable.DefenseCur < killable.DefenseMax))
+            if (piece != null && Validate(piece.Tile, false) && piece.HasBehavior(out IKillable killable))// && (!validateHits || killable.DefenseCur < killable.DefenseMax))
             {
                 GetNewCost(out int newEnergy, out int newMass);
                 if (piece is Extractor)
@@ -67,9 +67,29 @@ namespace ClassLibrary1.Pieces
                     Turret.Cost(piece.Game, out energy, out mass);
                 else throw new Exception();
 
-                double mult = killable.DefenseCur / (double)killable.DefenseMax * Consts.ReplaceRefundPct;
+                double totCur = 0, totStart = 0, addEnergy = 0;
+                void ApplyValue(double cur, double start, double energyMult)
+                {
+                    cur = Consts.StatValue(cur);
+                    start = Consts.StatValue(start);
+                    if (cur > start)
+                    {
+                        addEnergy += (cur - start) * energyMult;
+                        cur = start;
+                    }
+                    totCur += cur;
+                    totStart += start;
+                }
+                foreach (var d in killable.Defenses)
+                    ApplyValue(d.DefenseCur, CombatTypes.GetStartCur(d.Type, d.DefenseMax), Consts.EnergyPerShield); //assuming EnergyPerShield...
+                if (piece.HasBehavior(out IAttacker attacker))
+                    foreach (var a in attacker.Attacks)
+                        ApplyValue(a.AttackCur, CombatTypes.GetStartCur(a.Type, a.AttackMax), Consts.EnergyPerAttack);
+                double mult = (totCur / totStart + 1.0) / 2.0;
+
+                mult *= Consts.ReplaceRefundPct * Consts.StatValue(killable.Hits.DefenseCur) / Consts.StatValue(killable.Hits.DefenseMax);
                 double rounding = GetRounding();
-                energy = MTRandom.Round(newEnergy - energy * mult, rounding);
+                energy = MTRandom.Round(newEnergy - energy * mult - addEnergy, rounding);
                 mass = MTRandom.Round(newMass - mass * mult, rounding);
 
                 if (Piece.Game.Player.Has(energy, mass))

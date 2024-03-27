@@ -1,6 +1,7 @@
 ﻿using ClassLibrary1.Pieces.Terrain;
 using MattUtil;
 using System;
+using DefenseType = ClassLibrary1.Pieces.CombatTypes.DefenseType;
 using Tile = ClassLibrary1.Map.Tile;
 
 namespace ClassLibrary1.Pieces.Players
@@ -16,7 +17,7 @@ namespace ClassLibrary1.Pieces.Players
         {
             this._rangeMult = Game.Rand.GaussianOE(values.BuilderRange, .169, .13, 1) / values.BuilderRange;
 
-            SetBehavior(new Killable(this, values.Killable));
+            SetBehavior(new Killable(this, values.Killable, values.Resilience));
             Unlock(tile.Map.Game.Player.Research);
         }
 
@@ -42,7 +43,7 @@ namespace ClassLibrary1.Pieces.Players
             Values values = GetValues(Game);
 
             this._vision = values.Vision;
-            GetBehavior<IKillable>().Upgrade(values.Killable);
+            GetBehavior<IKillable>().Upgrade(new[] { values.Killable }, values.Resilience);
             if (HasBehavior(out IRepair repair))
                 repair.Upgrade(values.GetRepair(_rangeMult));
             Builder.UpgradeAll(this, values.GetRepair(_rangeMult).Builder);
@@ -84,6 +85,8 @@ namespace ClassLibrary1.Pieces.Players
         [Serializable]
         private class Values : IUpgradeValues
         {
+            private const double resilience = .5;
+
             private int energy, mass;
             private double vision, rounding;
             private IKillable.Values killable;
@@ -95,6 +98,7 @@ namespace ClassLibrary1.Pieces.Players
                 UpgradeFactoryRepair(1);
             }
 
+            public double Resilience => resilience;
             public int Energy => energy;
             public int Mass => mass;
             public double Vision => vision;
@@ -129,8 +133,8 @@ namespace ClassLibrary1.Pieces.Players
             {
                 //researchMult = Math.Pow(researchMult, .5);
                 int defense = Game.Rand.Round(10 * Math.Pow(researchMult, .7));
-                this.vision = 4 * Math.Pow(researchMult, .5);
-                this.killable = new(defense, .5);
+                this.vision = 4 * Math.Pow(researchMult, .8);
+                this.killable = new(DefenseType.Hits, defense);
             }
             private void UpgradeFactoryRepair(double researchMult)
             {

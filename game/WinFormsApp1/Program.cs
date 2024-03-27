@@ -123,7 +123,7 @@ namespace WinFormsApp1
                 Program.RefreshChanged();
 
                 if (researched.HasValue)
-                    Research.ShowForm();
+                    ResearchForm.ShowForm();
             }
         }
 

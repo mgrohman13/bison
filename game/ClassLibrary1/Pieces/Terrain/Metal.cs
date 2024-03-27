@@ -18,7 +18,7 @@ namespace ClassLibrary1.Pieces.Terrain
         }
         internal override void GetCost(double costMult, out int energy, out int mass)
         {
-            GetCost(costMult, Consts.MetalMassInc, Consts.MetalExtractorEnergyCost, Consts.MetalExtractorMassCost, out energy, out mass); 
+            GetCost(costMult, Consts.MetalMassInc, Consts.MetalExtractorEnergyCost, Consts.MetalExtractorMassCost, out energy, out mass);
         }
 
         public override void GenerateResources(Piece piece, double valueMult, ref double energyInc, ref double energyUpk, ref double massInc, ref double massUpk, ref double researchInc)

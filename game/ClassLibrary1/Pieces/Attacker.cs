@@ -14,6 +14,11 @@ namespace ClassLibrary1.Pieces
         public Piece Piece => _piece;
         public IReadOnlyCollection<Attack> Attacks => _attacks.AsReadOnly();
 
+        //public double TotalAttackCur2 => Consts.SumStats(Attacks.Select(a => a.AttackCur));
+        //public double TotalAttackMax2 => Consts.SumStats(Attacks.Select(a => a.AttackMax));
+        //public double TotalAttackCurValue2 => Consts.StatValue(TotalAttackCur2);
+        //public double TotalAttackMaxValue2 => Consts.StatValue(TotalAttackMax2);
+
         internal Attacker(Piece piece, IEnumerable<Values> attacks)
         {
             this._piece = piece;
@@ -27,10 +32,14 @@ namespace ClassLibrary1.Pieces
         void IAttacker.Upgrade(IEnumerable<Values> values)
         {
             Values[] attacks = values.ToArray();
-            if (_attacks.Count != attacks.Length)
-                throw new Exception();
+            ////fix
+            //if (_attacks.Count != attacks.Length)
+            //    throw new Exception();
             for (int a = 0; a < attacks.Length; a++)
-                _attacks[a].Upgrade(attacks[a]);
+                if (a < _attacks.Count)
+                    _attacks[a].Upgrade(attacks[a]);
+                else
+                    _attacks.Add(new(Piece, attacks[a])); 
         }
 
         bool IAttacker.Fire(IKillable target)

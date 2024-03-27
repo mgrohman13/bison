@@ -10,6 +10,7 @@ namespace ClassLibrary1.Pieces
         private IMovable.Values _values;
 
         private double _moveCur;
+        private bool _moved;
 
         public Piece Piece => _piece;
 
@@ -23,6 +24,7 @@ namespace ClassLibrary1.Pieces
             this._values = values;
 
             this._moveCur = moveCur;
+            this._moved = false;
         }
         public T GetBehavior<T>() where T : class, IBehavior
         {
@@ -30,10 +32,11 @@ namespace ClassLibrary1.Pieces
         }
 
         public double MoveCur => _moveCur;
-        public double MoveInc => Consts.GetDamagedValue(Piece, MoveIncBase, 1, true);
+        public double MoveInc => Consts.GetDamagedValue(Piece, MoveIncBase, 1);//, true);
         public double MoveIncBase => _values.MoveInc;
         public int MoveMax => _values.MoveMax;
         public int MoveLimit => _values.MoveLimit;
+        public bool Moved => _moved;
 
         void IMovable.Upgrade(IMovable.Values values)
         {
@@ -59,9 +62,11 @@ namespace ClassLibrary1.Pieces
         {
             if (Move && Piece.Tile != to)
             {
+                //check blocks
                 double dist = Piece.Tile.GetDistance(to);
                 if (dist <= MoveCur)
                 {
+                    this._moved = true;
                     this._moveCur -= dist;
                     Piece.SetTile(to);
                     return true;
@@ -74,11 +79,14 @@ namespace ClassLibrary1.Pieces
         {
             return IncMove(false);
         }
-        private double IncMove(bool doInc)
+        private double IncMove(bool doEndTurn)
         {
-            double moveInc = Consts.IncValueWithMaxLimit(MoveCur, MoveInc, Consts.MoveDev, MoveMax, MoveLimit, Consts.MoveLimitPow, doInc);
-            if (doInc)
+            double moveInc = Consts.IncValueWithMaxLimit(MoveCur, MoveInc, Consts.MoveDev, MoveMax, MoveLimit, Consts.MoveLimitPow, doEndTurn);
+            if (doEndTurn)
+            {
+                this._moved = false;
                 this._moveCur += moveInc;
+            }
             return moveInc;
         }
         void IBehavior.GetUpkeep(ref double energyUpk, ref double massUpk)
@@ -91,7 +99,7 @@ namespace ClassLibrary1.Pieces
         }
         private void EndTurn(bool doEndTurn, ref double energyUpk)
         {
-            energyUpk += IncMove(doEndTurn) * Consts.UpkeepPerMove;
+            energyUpk += IncMove(doEndTurn) * Consts.EnergyPerMove;
         }
     }
 }

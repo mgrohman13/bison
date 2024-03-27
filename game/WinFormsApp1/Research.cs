@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ClassLibrary1;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Drawing;
@@ -8,11 +9,11 @@ using Type = ClassLibrary1.Research.Type;
 
 namespace WinFormsApp1
 {
-    public partial class Research : Form
+    public partial class ResearchForm : Form
     {
-        private static Research ResearchForm;
+        private static ResearchForm Form;
 
-        public Research()
+        public ResearchForm()
         {
             InitializeComponent();
 
@@ -31,11 +32,11 @@ namespace WinFormsApp1
 
         public static bool ShowForm()
         {
-            ResearchForm ??= new Research();
+            Form ??= new ResearchForm();
 
-            if (ResearchForm.ShowDialog() == DialogResult.OK && ResearchForm.GetSelected().HasValue)
+            if (Form.ShowDialog() == DialogResult.OK && Form.GetSelected().HasValue)
             {
-                Type selected = ResearchForm.GetSelected().Value;
+                Type selected = Form.GetSelected().Value;
                 if (Program.Game.Player.Research.Available.Contains(selected))
                     Program.Game.Player.Research.Researching = selected;
                 return true;
@@ -68,7 +69,7 @@ namespace WinFormsApp1
                     this.label6.Hide();
                 }
 
-                IEnumerable<Type> unlocks = cbxAll.Checked ? ClassLibrary1.Research.GetAllUnlocks(selected) : ClassLibrary1.Research.GetUnlocks(selected);
+                IEnumerable<Type> unlocks = cbxAll.Checked ? Research.GetAllUnlocks(selected) : Research.GetUnlocks(selected);
                 if (cbxFilter.Checked)
                     unlocks = FilterDone(unlocks);
                 if (unlocks.Any())
@@ -162,7 +163,7 @@ namespace WinFormsApp1
             this.label8.Hide();
             if (selected.HasValue)
             {
-                IEnumerable<Type> types = cbxAll.Checked ? ClassLibrary1.Research.GetAllDependencies(selected.Value) : ClassLibrary1.Research.GetDependencies(selected.Value);
+                IEnumerable<Type> types = cbxAll.Checked ? Research.GetAllDependencies(selected.Value) : Research.GetDependencies(selected.Value);
                 if (cbxFilter.Checked)
                     types = FilterDone(types);
                 if (main.HasValue)

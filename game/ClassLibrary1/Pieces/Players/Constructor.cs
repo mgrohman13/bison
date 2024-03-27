@@ -1,6 +1,8 @@
 ﻿using MattUtil;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using DefenseType = ClassLibrary1.Pieces.CombatTypes.DefenseType;
 using Tile = ClassLibrary1.Map.Tile;
 
 namespace ClassLibrary1.Pieces.Players
@@ -27,7 +29,7 @@ namespace ClassLibrary1.Pieces.Players
                 this._rangeMult = Game.Rand.GaussianOE(values.BuilderRange, .21, .26, 1) / values.BuilderRange;
 
             SetBehavior(
-                new Killable(this, values.GetKillable(Game.Player.Research, _defenseType)),
+                new Killable(Piece, values.GetKillable(Game.Player.Research, _defenseType), values.Resilience),
                 new Movable(this, values.GetMovable(_rangeMult, _rounding)),
                 new Builder.BuildExtractor(this, values.GetRepair(_rangeMult).Builder));
             Unlock(Game.Player.Research);
@@ -68,7 +70,7 @@ namespace ClassLibrary1.Pieces.Players
                 Values values = GetValues(Game);
 
                 this._vision = values.Vision;
-                GetBehavior<IKillable>().Upgrade(values.GetKillable(Game.Player.Research, _defenseType));
+                GetBehavior<IKillable>().Upgrade(values.GetKillable(Game.Player.Research, _defenseType), values.Resilience);
                 GetBehavior<IMovable>().Upgrade(values.GetMovable(_rangeMult, _rounding));
                 if (HasBehavior<IRepair>())
                     GetBehavior<IRepair>().Upgrade(values.GetRepair(_rangeMult));
@@ -128,9 +130,13 @@ namespace ClassLibrary1.Pieces.Players
         [Serializable]
         private class Values : IUpgradeValues
         {
+            private const double resilience = .4;
+
             private int energy, mass;
             private double vision;
-            private IKillable.Values killable;
+            private IKillable.Values hits;
+            private IKillable.Values shield;
+            private IKillable.Values armor;
             private IMovable.Values movable;
             private IRepair.Values repair;
             public Values()
@@ -141,20 +147,22 @@ namespace ClassLibrary1.Pieces.Players
                 UpgradeConstructorRepair(1);
             }
 
+            public double Resilience => resilience;
             public int Energy => energy;
             public int Mass => mass;
             public double Vision => vision;
             public double BuilderRange => repair.Builder.Range;
-            public IKillable.Values GetKillable(Research research, bool defenseType)
+            public IKillable.Values[] GetKillable(Research research, bool defenseType)
             {
-                //double armor = research.HasType(Research.Type.ConstructorDefense) && !defenseType ? killable.Armor : 0;
-                //bool shields = research.HasType(Research.Type.ConstructorDefense) && defenseType;
-                //double shieldInc = shields ? killable.ShieldInc : 0;
-                //int shieldMax = shields ? killable.ShieldMax : 0;
-                //int shieldLimit = shields ? killable.ShieldLimit : 0;
-                return new IKillable.Values(killable.Defense, killable.Resilience);// ,armor, shieldInc, shieldMax, shieldLimit);
+                List<IKillable.Values> defenses = new() { hits };
+                if (research.HasType(Research.Type.ConstructorDefense))
+                    if (defenseType)
+                        defenses.Add(this.shield);
+                    else
+                        defenses.Add(this.armor);
+                return defenses.ToArray();
             }
-            internal IMovable.Values GetMovable(double rangeMult, double rounding)
+            public IMovable.Values GetMovable(double rangeMult, double rounding)
             {
                 double mult = 1 / Math.Pow(rangeMult, .26);
                 double inc = movable.MoveInc * mult;
@@ -188,25 +196,24 @@ namespace ClassLibrary1.Pieces.Players
             }
             private void UpgradeConstructorDefense(double researchMult)
             {
-                //double researchMult = Math.Pow(researchMult, .9);
-                //double armor = Consts.GetPct(1 / 3.0, researchMult);
-                //double max = 26 * researchMult;
-                //double limit = 52 * researchMult;
-                //int shieldMax = Game.Rand.Round(max);
-                //int shieldLimit = Game.Rand.Round(limit);
-                //double mult = Math.Pow((max * 2 + limit) / (shieldMax * 2 + shieldLimit), 1 / 6.5);
-                //double shieldInc = 1.69 * mult * researchMult;
+                this.hits = Gen(DefenseType.Hits, 1);
+                this.shield = Gen(DefenseType.Shield, 1.17);
+                this.armor = Gen(DefenseType.Armor, 2.6);
 
-                double defMult = Math.Pow(researchMult, .6);
-                double defAvg = 25 * defMult;
-                const double lowPenalty = 5;
-                if (researchMult < lowPenalty)
-                    defAvg *= defMult / lowPenalty;
-                int defense = Game.Rand.Round(defAvg);
-                this.killable = new(defense, .35);//, armor, shieldInc, shieldMax, shieldLimit);
+                IKillable.Values Gen(DefenseType type, double mult)
+                {
+                    double defAvg = 20 * Math.Pow(researchMult, .7) * mult;
+                    const double lowPenalty = 4;
+                    if (researchMult < lowPenalty)
+                        defAvg *= researchMult / lowPenalty;
+                    int defense = Game.Rand.Round(defAvg);
+                    return new(type, defense);
+                }
             }
             private void UpgradeConstructorMove(double researchMult)
             {
+                this.vision = START_VISION * researchMult;
+
                 researchMult = Math.Pow(researchMult, .6);
                 double max = 8 * researchMult;
                 double limit = 15 * researchMult;
@@ -214,12 +221,11 @@ namespace ClassLibrary1.Pieces.Players
                 int moveLimit = Game.Rand.Round(limit);
                 double mult = Math.Pow((max * 2 + limit) / (moveMax * 2 + moveLimit), 1 / 3.9);
                 double moveInc = 3.5 * mult * researchMult;
-                this.vision = START_VISION * researchMult;
                 this.movable = new(moveInc, moveMax, moveLimit);
             }
             private void UpgradeConstructorRepair(double researchMult)
             {
-                researchMult = Math.Pow(researchMult, .5);
+                researchMult = Math.Pow(researchMult, .4);
                 double repairRange = 3.5 * researchMult;
                 double repairRate = Consts.GetPct(.052, researchMult);
                 this.repair = new(new(repairRange), repairRate);

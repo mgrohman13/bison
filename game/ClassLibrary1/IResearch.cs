@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Type = ClassLibrary1.Research.Type;
 
 namespace ClassLibrary1
 {
@@ -10,10 +6,11 @@ namespace ClassLibrary1
     {
         Game Game { get; }
         int GetLevel();
-        Research.Type GetType();
+        Type GetType();
         int GetMinCost();
         int GetMaxCost();
-        bool MakeType(Research.Type type);
-        double GetMult(Research.Type type, double pow);
+        bool HasType(Type research);
+        bool MakeType(Type type);
+        double GetMult(Type type, double pow);
     }
 }

@@ -54,7 +54,8 @@ namespace ClassLibrary1
             //}).ToArray();
 
             int numPaths = Game.Rand.GaussianOEInt(Math.PI, .091, .039, 2);
-            double separation = Consts.PathMinSeparation / numPaths;
+            double separation = Consts.PathMinSeparation;
+            separation = Game.Rand.GaussianCapped(separation, .104, Math.Max(0, 2 * separation - TWO_PI)) / numPaths;
             double[] angles;
             bool valid;
             do
@@ -234,7 +235,8 @@ namespace ClassLibrary1
 
             _gameBounds = new Rectangle(x, y, right - x, bottom - y);
 
-            Explore(tile, piece.Vision);
+            if (piece is not Core)
+                Explore(tile, piece.Vision);
         }
 
         internal Tile StartTile()
@@ -425,7 +427,7 @@ namespace ClassLibrary1
             private IEnumerable<Point> GetPointsInRange(double range, bool blockMap, Piece blockFor) => GetPointsInRange(Map, new Point(X, Y), range, blockMap, blockFor);
             private static IEnumerable<Point> GetPointsInRange(Map map, Point point, double range, bool blockMap, Piece blockFor)
             {
-                Dictionary<Point, double> block = new();
+                //Dictionary<Point, double> block = new();
 
                 //double sqrtTwo = Math.Sqrt(2);
                 //double baseBlock = .5 + (sqrtTwo / 2.0 - .5) / 2.0;
@@ -446,20 +448,17 @@ namespace ClassLibrary1
                 //        AddBlock(pair.Key, pair.Value.Side != null && pair.Value.Side != blockFor.Side ? enemyBlock : baseBlock);
 
                 int max = (int)range + 1;
-                for (int a = -max; a <= max; a++)
+                foreach (Point p in Game.Rand.Iterate(-max, max, -max, max))
                 {
-                    int x = point.X + a;
-                    for (int b = -max; b <= max; b++)
+                    int x = point.X + p.X;
+                    int y = point.Y + p.Y;
+                    double distance = GetDistance(point.X, point.Y, x, y);
+                    if (distance <= range)
                     {
-                        int y = point.Y + b;
-                        double distance = GetDistance(point.X, point.Y, x, y);
-                        if (distance <= range)
-                        {
-                            if (!block.Any(p => GetDistance(point, p.Key) < distance
-                                   && PointLineDistanceAbs(point, new(x, y), p.Key) < p.Value
-                                   && (GetAngleDiff(GetAngle(p.Key.X - point.X, p.Key.Y - point.Y), GetAngle(x - point.X, y - point.Y)) < HALF_PI)))
-                                yield return new(x, y);
-                        }
+                        //if (!block.Any(p => GetDistance(point, p.Key) < distance
+                        //       && PointLineDistanceAbs(point, new(x, y), p.Key) < p.Value
+                        //       && (GetAngleDiff(GetAngle(p.Key.X - point.X, p.Key.Y - point.Y), GetAngle(x - point.X, y - point.Y)) < HALF_PI)))
+                        yield return new(x, y);
                     }
                 }
             }

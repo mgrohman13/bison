@@ -10,6 +10,7 @@ namespace ClassLibrary1.Pieces
         public double MoveIncBase { get; }
         public int MoveMax { get; }
         public int MoveLimit { get; }
+        bool Moved { get; }
 
         void Upgrade(Values values);
         public bool Move(Tile to);

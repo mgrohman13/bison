@@ -29,414 +29,434 @@ namespace WinFormsApp1
         /// </summary>
         private void InitializeComponent()
         {
-            this.btnEndTurn = new System.Windows.Forms.Button();
-            this.lbl1 = new System.Windows.Forms.Label();
-            this.lblInf1 = new System.Windows.Forms.Label();
-            this.lblInf2 = new System.Windows.Forms.Label();
-            this.lbl2 = new System.Windows.Forms.Label();
-            this.lblInf3 = new System.Windows.Forms.Label();
-            this.lbl3 = new System.Windows.Forms.Label();
-            this.dgvAttacks = new System.Windows.Forms.DataGridView();
-            this.lblInf4 = new System.Windows.Forms.Label();
-            this.lbl4 = new System.Windows.Forms.Label();
-            this.lblTurn = new System.Windows.Forms.Label();
-            this.lblInf5 = new System.Windows.Forms.Label();
-            this.lbl5 = new System.Windows.Forms.Label();
-            this.lblInf6 = new System.Windows.Forms.Label();
-            this.lbl6 = new System.Windows.Forms.Label();
-            this.lblInf7 = new System.Windows.Forms.Label();
-            this.lbl7 = new System.Windows.Forms.Label();
-            this.lblInf8 = new System.Windows.Forms.Label();
-            this.lbl8 = new System.Windows.Forms.Label();
-            this.panel1 = new System.Windows.Forms.Panel();
-            this.btnInfo = new System.Windows.Forms.Button();
-            this.btnTrade = new System.Windows.Forms.Button();
-            this.btnResearch = new System.Windows.Forms.Button();
-            this.btnSave = new System.Windows.Forms.Button();
-            this.btnViewAtt = new System.Windows.Forms.Button();
-            this.btnBuild = new System.Windows.Forms.Button();
-            this.lblHeading = new System.Windows.Forms.Label();
-            this.lblInf9 = new System.Windows.Forms.Label();
-            this.lbl9 = new System.Windows.Forms.Label();
-            this.rtbLog = new System.Windows.Forms.RichTextBox();
-            ((System.ComponentModel.ISupportInitialize)(this.dgvAttacks)).BeginInit();
-            this.panel1.SuspendLayout();
-            this.SuspendLayout();
+            btnEndTurn = new System.Windows.Forms.Button();
+            lbl1 = new System.Windows.Forms.Label();
+            lblInf1 = new System.Windows.Forms.Label();
+            lblInf2 = new System.Windows.Forms.Label();
+            lbl2 = new System.Windows.Forms.Label();
+            lblInf4 = new System.Windows.Forms.Label();
+            lbl4 = new System.Windows.Forms.Label();
+            dgvAttacks = new System.Windows.Forms.DataGridView();
+            lblInf5 = new System.Windows.Forms.Label();
+            lbl5 = new System.Windows.Forms.Label();
+            lblTurn = new System.Windows.Forms.Label();
+            lblInf6 = new System.Windows.Forms.Label();
+            lbl6 = new System.Windows.Forms.Label();
+            lblInf7 = new System.Windows.Forms.Label();
+            lbl7 = new System.Windows.Forms.Label();
+            lblInf8 = new System.Windows.Forms.Label();
+            lbl8 = new System.Windows.Forms.Label();
+            lblInf9 = new System.Windows.Forms.Label();
+            lbl9 = new System.Windows.Forms.Label();
+            panel1 = new System.Windows.Forms.Panel();
+            btnInfo = new System.Windows.Forms.Button();
+            btnTrade = new System.Windows.Forms.Button();
+            btnResearch = new System.Windows.Forms.Button();
+            btnSave = new System.Windows.Forms.Button();
+            btnViewAtt = new System.Windows.Forms.Button();
+            btnBuild = new System.Windows.Forms.Button();
+            lblHeading = new System.Windows.Forms.Label();
+            lblInf10 = new System.Windows.Forms.Label();
+            lbl10 = new System.Windows.Forms.Label();
+            rtbLog = new System.Windows.Forms.RichTextBox();
+            lblInf3 = new System.Windows.Forms.Label();
+            lbl3 = new System.Windows.Forms.Label();
+            ((System.ComponentModel.ISupportInitialize)dgvAttacks).BeginInit();
+            panel1.SuspendLayout();
+            SuspendLayout();
             // 
             // btnEndTurn
             // 
-            this.btnEndTurn.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.btnEndTurn.Location = new System.Drawing.Point(0, 49);
-            this.btnEndTurn.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
-            this.btnEndTurn.Name = "btnEndTurn";
-            this.btnEndTurn.Size = new System.Drawing.Size(78, 20);
-            this.btnEndTurn.TabIndex = 0;
-            this.btnEndTurn.Text = "End Turn";
-            this.btnEndTurn.UseVisualStyleBackColor = true;
-            this.btnEndTurn.Click += new System.EventHandler(this.Button1_Click);
+            btnEndTurn.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
+            btnEndTurn.Location = new System.Drawing.Point(0, 49);
+            btnEndTurn.Margin = new System.Windows.Forms.Padding(2);
+            btnEndTurn.Name = "btnEndTurn";
+            btnEndTurn.Size = new System.Drawing.Size(78, 20);
+            btnEndTurn.TabIndex = 0;
+            btnEndTurn.Text = "End Turn";
+            btnEndTurn.UseVisualStyleBackColor = true;
+            btnEndTurn.Click += Button1_Click;
             // 
             // lbl1
             // 
-            this.lbl1.AutoSize = true;
-            this.lbl1.Location = new System.Drawing.Point(0, 15);
-            this.lbl1.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.lbl1.Name = "lbl1";
-            this.lbl1.Size = new System.Drawing.Size(26, 15);
-            this.lbl1.TabIndex = 1;
-            this.lbl1.Text = "lbl1";
+            lbl1.AutoSize = true;
+            lbl1.Location = new System.Drawing.Point(0, 15);
+            lbl1.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            lbl1.Name = "lbl1";
+            lbl1.Size = new System.Drawing.Size(26, 15);
+            lbl1.TabIndex = 1;
+            lbl1.Text = "lbl1";
             // 
             // lblInf1
             // 
-            this.lblInf1.AutoSize = true;
-            this.lblInf1.Location = new System.Drawing.Point(132, 15);
-            this.lblInf1.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.lblInf1.Name = "lblInf1";
-            this.lblInf1.Size = new System.Drawing.Size(40, 15);
-            this.lblInf1.TabIndex = 2;
-            this.lblInf1.Text = "lblInf1";
+            lblInf1.AutoSize = true;
+            lblInf1.Location = new System.Drawing.Point(132, 15);
+            lblInf1.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            lblInf1.Name = "lblInf1";
+            lblInf1.Size = new System.Drawing.Size(40, 15);
+            lblInf1.TabIndex = 2;
+            lblInf1.Text = "lblInf1";
             // 
             // lblInf2
             // 
-            this.lblInf2.AutoSize = true;
-            this.lblInf2.Location = new System.Drawing.Point(132, 30);
-            this.lblInf2.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.lblInf2.Name = "lblInf2";
-            this.lblInf2.Size = new System.Drawing.Size(40, 15);
-            this.lblInf2.TabIndex = 4;
-            this.lblInf2.Text = "lblInf2";
+            lblInf2.AutoSize = true;
+            lblInf2.Location = new System.Drawing.Point(132, 30);
+            lblInf2.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            lblInf2.Name = "lblInf2";
+            lblInf2.Size = new System.Drawing.Size(40, 15);
+            lblInf2.TabIndex = 4;
+            lblInf2.Text = "lblInf2";
             // 
             // lbl2
             // 
-            this.lbl2.AutoSize = true;
-            this.lbl2.Location = new System.Drawing.Point(0, 30);
-            this.lbl2.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.lbl2.Name = "lbl2";
-            this.lbl2.Size = new System.Drawing.Size(77, 15);
-            this.lbl2.TabIndex = 3;
-            this.lbl2.Text = "Sustainability";
-            // 
-            // lblInf3
-            // 
-            this.lblInf3.AutoSize = true;
-            this.lblInf3.Location = new System.Drawing.Point(132, 45);
-            this.lblInf3.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.lblInf3.Name = "lblInf3";
-            this.lblInf3.Size = new System.Drawing.Size(40, 15);
-            this.lblInf3.TabIndex = 6;
-            this.lblInf3.Text = "lblInf3";
-            // 
-            // lbl3
-            // 
-            this.lbl3.AutoSize = true;
-            this.lbl3.Location = new System.Drawing.Point(0, 45);
-            this.lbl3.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.lbl3.Name = "lbl3";
-            this.lbl3.Size = new System.Drawing.Size(26, 15);
-            this.lbl3.TabIndex = 5;
-            this.lbl3.Text = "lbl3";
-            // 
-            // dgvAttacks
-            // 
-            this.dgvAttacks.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.dgvAttacks.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
-            this.dgvAttacks.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllCells;
-            this.dgvAttacks.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dgvAttacks.Location = new System.Drawing.Point(0, 152);
-            this.dgvAttacks.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
-            this.dgvAttacks.MultiSelect = false;
-            this.dgvAttacks.Name = "dgvAttacks";
-            this.dgvAttacks.ReadOnly = true;
-            this.dgvAttacks.RowHeadersVisible = false;
-            this.dgvAttacks.RowHeadersWidth = 62;
-            this.dgvAttacks.RowTemplate.Height = 33;
-            this.dgvAttacks.Size = new System.Drawing.Size(350, 120);
-            this.dgvAttacks.TabIndex = 9;
+            lbl2.AutoSize = true;
+            lbl2.Location = new System.Drawing.Point(0, 30);
+            lbl2.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            lbl2.Name = "lbl2";
+            lbl2.Size = new System.Drawing.Size(26, 15);
+            lbl2.TabIndex = 3;
+            lbl2.Text = "lbl2";
             // 
             // lblInf4
             // 
-            this.lblInf4.AutoSize = true;
-            this.lblInf4.Location = new System.Drawing.Point(132, 60);
-            this.lblInf4.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.lblInf4.Name = "lblInf4";
-            this.lblInf4.Size = new System.Drawing.Size(40, 15);
-            this.lblInf4.TabIndex = 11;
-            this.lblInf4.Text = "lblInf4";
+            lblInf4.AutoSize = true;
+            lblInf4.Location = new System.Drawing.Point(132, 60);
+            lblInf4.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            lblInf4.Name = "lblInf4";
+            lblInf4.Size = new System.Drawing.Size(40, 15);
+            lblInf4.TabIndex = 6;
+            lblInf4.Text = "lblInf4";
             // 
             // lbl4
             // 
-            this.lbl4.AutoSize = true;
-            this.lbl4.Location = new System.Drawing.Point(0, 60);
-            this.lbl4.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.lbl4.Name = "lbl4";
-            this.lbl4.Size = new System.Drawing.Size(26, 15);
-            this.lbl4.TabIndex = 10;
-            this.lbl4.Text = "lbl4";
+            lbl4.AutoSize = true;
+            lbl4.Location = new System.Drawing.Point(0, 60);
+            lbl4.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            lbl4.Name = "lbl4";
+            lbl4.Size = new System.Drawing.Size(26, 15);
+            lbl4.TabIndex = 5;
+            lbl4.Text = "lbl4";
             // 
-            // lblTurn
+            // dgvAttacks
             // 
-            this.lblTurn.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.lblTurn.Location = new System.Drawing.Point(83, 49);
-            this.lblTurn.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.lblTurn.Name = "lblTurn";
-            this.lblTurn.Size = new System.Drawing.Size(267, 20);
-            this.lblTurn.TabIndex = 12;
-            this.lblTurn.Text = "lblTurn";
-            this.lblTurn.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            dgvAttacks.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            dgvAttacks.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            dgvAttacks.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllCells;
+            dgvAttacks.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            dgvAttacks.Location = new System.Drawing.Point(0, 182);
+            dgvAttacks.Margin = new System.Windows.Forms.Padding(2);
+            dgvAttacks.MultiSelect = false;
+            dgvAttacks.Name = "dgvAttacks";
+            dgvAttacks.ReadOnly = true;
+            dgvAttacks.RowHeadersVisible = false;
+            dgvAttacks.RowHeadersWidth = 62;
+            dgvAttacks.RowTemplate.Height = 33;
+            dgvAttacks.Size = new System.Drawing.Size(350, 120);
+            dgvAttacks.TabIndex = 9;
             // 
             // lblInf5
             // 
-            this.lblInf5.AutoSize = true;
-            this.lblInf5.Location = new System.Drawing.Point(132, 75);
-            this.lblInf5.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.lblInf5.Name = "lblInf5";
-            this.lblInf5.Size = new System.Drawing.Size(40, 15);
-            this.lblInf5.TabIndex = 14;
-            this.lblInf5.Text = "lblInf5";
+            lblInf5.AutoSize = true;
+            lblInf5.Location = new System.Drawing.Point(132, 75);
+            lblInf5.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            lblInf5.Name = "lblInf5";
+            lblInf5.Size = new System.Drawing.Size(40, 15);
+            lblInf5.TabIndex = 11;
+            lblInf5.Text = "lblInf5";
             // 
             // lbl5
             // 
-            this.lbl5.AutoSize = true;
-            this.lbl5.Location = new System.Drawing.Point(0, 75);
-            this.lbl5.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.lbl5.Name = "lbl5";
-            this.lbl5.Size = new System.Drawing.Size(26, 15);
-            this.lbl5.TabIndex = 13;
-            this.lbl5.Text = "lbl5";
+            lbl5.AutoSize = true;
+            lbl5.Location = new System.Drawing.Point(0, 75);
+            lbl5.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            lbl5.Name = "lbl5";
+            lbl5.Size = new System.Drawing.Size(26, 15);
+            lbl5.TabIndex = 10;
+            lbl5.Text = "lbl5";
+            // 
+            // lblTurn
+            // 
+            lblTurn.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            lblTurn.Location = new System.Drawing.Point(83, 49);
+            lblTurn.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            lblTurn.Name = "lblTurn";
+            lblTurn.Size = new System.Drawing.Size(267, 20);
+            lblTurn.TabIndex = 12;
+            lblTurn.Text = "lblTurn";
+            lblTurn.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // lblInf6
             // 
-            this.lblInf6.AutoSize = true;
-            this.lblInf6.Location = new System.Drawing.Point(132, 90);
-            this.lblInf6.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.lblInf6.Name = "lblInf6";
-            this.lblInf6.Size = new System.Drawing.Size(40, 15);
-            this.lblInf6.TabIndex = 16;
-            this.lblInf6.Text = "lblInf6";
+            lblInf6.AutoSize = true;
+            lblInf6.Location = new System.Drawing.Point(132, 90);
+            lblInf6.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            lblInf6.Name = "lblInf6";
+            lblInf6.Size = new System.Drawing.Size(40, 15);
+            lblInf6.TabIndex = 14;
+            lblInf6.Text = "lblInf6";
             // 
             // lbl6
             // 
-            this.lbl6.AutoSize = true;
-            this.lbl6.Location = new System.Drawing.Point(0, 90);
-            this.lbl6.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.lbl6.Name = "lbl6";
-            this.lbl6.Size = new System.Drawing.Size(26, 15);
-            this.lbl6.TabIndex = 15;
-            this.lbl6.Text = "lbl6";
+            lbl6.AutoSize = true;
+            lbl6.Location = new System.Drawing.Point(0, 90);
+            lbl6.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            lbl6.Name = "lbl6";
+            lbl6.Size = new System.Drawing.Size(26, 15);
+            lbl6.TabIndex = 13;
+            lbl6.Text = "lbl6";
             // 
             // lblInf7
             // 
-            this.lblInf7.AutoSize = true;
-            this.lblInf7.Location = new System.Drawing.Point(132, 105);
-            this.lblInf7.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.lblInf7.Name = "lblInf7";
-            this.lblInf7.Size = new System.Drawing.Size(40, 15);
-            this.lblInf7.TabIndex = 18;
-            this.lblInf7.Text = "lblInf7";
+            lblInf7.AutoSize = true;
+            lblInf7.Location = new System.Drawing.Point(132, 105);
+            lblInf7.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            lblInf7.Name = "lblInf7";
+            lblInf7.Size = new System.Drawing.Size(40, 15);
+            lblInf7.TabIndex = 16;
+            lblInf7.Text = "lblInf7";
             // 
             // lbl7
             // 
-            this.lbl7.AutoSize = true;
-            this.lbl7.Location = new System.Drawing.Point(0, 105);
-            this.lbl7.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.lbl7.Name = "lbl7";
-            this.lbl7.Size = new System.Drawing.Size(26, 15);
-            this.lbl7.TabIndex = 17;
-            this.lbl7.Text = "lbl7";
+            lbl7.AutoSize = true;
+            lbl7.Location = new System.Drawing.Point(0, 105);
+            lbl7.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            lbl7.Name = "lbl7";
+            lbl7.Size = new System.Drawing.Size(26, 15);
+            lbl7.TabIndex = 15;
+            lbl7.Text = "lbl7";
             // 
             // lblInf8
             // 
-            this.lblInf8.AutoSize = true;
-            this.lblInf8.Location = new System.Drawing.Point(132, 120);
-            this.lblInf8.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.lblInf8.Name = "lblInf8";
-            this.lblInf8.Size = new System.Drawing.Size(40, 15);
-            this.lblInf8.TabIndex = 20;
-            this.lblInf8.Text = "lblInf8";
+            lblInf8.AutoSize = true;
+            lblInf8.Location = new System.Drawing.Point(132, 120);
+            lblInf8.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            lblInf8.Name = "lblInf8";
+            lblInf8.Size = new System.Drawing.Size(40, 15);
+            lblInf8.TabIndex = 18;
+            lblInf8.Text = "lblInf8";
             // 
             // lbl8
             // 
-            this.lbl8.AutoSize = true;
-            this.lbl8.Location = new System.Drawing.Point(0, 120);
-            this.lbl8.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.lbl8.Name = "lbl8";
-            this.lbl8.Size = new System.Drawing.Size(26, 15);
-            this.lbl8.TabIndex = 19;
-            this.lbl8.Text = "lbl8";
-            // 
-            // panel1
-            // 
-            this.panel1.Controls.Add(this.btnInfo);
-            this.panel1.Controls.Add(this.btnTrade);
-            this.panel1.Controls.Add(this.btnResearch);
-            this.panel1.Controls.Add(this.btnSave);
-            this.panel1.Controls.Add(this.btnViewAtt);
-            this.panel1.Controls.Add(this.btnBuild);
-            this.panel1.Controls.Add(this.btnEndTurn);
-            this.panel1.Controls.Add(this.lblTurn);
-            this.panel1.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.panel1.Location = new System.Drawing.Point(0, 291);
-            this.panel1.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
-            this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(350, 69);
-            this.panel1.TabIndex = 21;
-            // 
-            // btnInfo
-            // 
-            this.btnInfo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnInfo.Location = new System.Drawing.Point(272, 25);
-            this.btnInfo.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
-            this.btnInfo.Name = "btnInfo";
-            this.btnInfo.Size = new System.Drawing.Size(78, 20);
-            this.btnInfo.TabIndex = 18;
-            this.btnInfo.Text = "Info";
-            this.btnInfo.UseVisualStyleBackColor = true;
-            this.btnInfo.Click += new System.EventHandler(this.BtnInfo_Click);
-            // 
-            // btnTrade
-            // 
-            this.btnTrade.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnTrade.Location = new System.Drawing.Point(190, 1);
-            this.btnTrade.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
-            this.btnTrade.Name = "btnTrade";
-            this.btnTrade.Size = new System.Drawing.Size(78, 20);
-            this.btnTrade.TabIndex = 17;
-            this.btnTrade.Text = "Trade";
-            this.btnTrade.UseVisualStyleBackColor = true;
-            this.btnTrade.Click += new System.EventHandler(this.BtnTrade_Click);
-            // 
-            // btnResearch
-            // 
-            this.btnResearch.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnResearch.Location = new System.Drawing.Point(272, 1);
-            this.btnResearch.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
-            this.btnResearch.Name = "btnResearch";
-            this.btnResearch.Size = new System.Drawing.Size(78, 20);
-            this.btnResearch.TabIndex = 16;
-            this.btnResearch.Text = "Research";
-            this.btnResearch.UseVisualStyleBackColor = true;
-            this.btnResearch.Click += new System.EventHandler(this.BtnResearch_Click);
-            // 
-            // btnSave
-            // 
-            this.btnSave.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnSave.Location = new System.Drawing.Point(272, 49);
-            this.btnSave.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
-            this.btnSave.Name = "btnSave";
-            this.btnSave.Size = new System.Drawing.Size(78, 20);
-            this.btnSave.TabIndex = 15;
-            this.btnSave.Text = "Save";
-            this.btnSave.UseVisualStyleBackColor = true;
-            this.btnSave.Click += new System.EventHandler(this.BtnSave_Click);
-            // 
-            // btnViewAtt
-            // 
-            this.btnViewAtt.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnViewAtt.Location = new System.Drawing.Point(189, 49);
-            this.btnViewAtt.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
-            this.btnViewAtt.Name = "btnViewAtt";
-            this.btnViewAtt.Size = new System.Drawing.Size(78, 20);
-            this.btnViewAtt.TabIndex = 14;
-            this.btnViewAtt.Text = "Attacks";
-            this.btnViewAtt.UseVisualStyleBackColor = true;
-            this.btnViewAtt.Click += new System.EventHandler(this.BtnViewAtt_Click);
-            // 
-            // btnBuild
-            // 
-            this.btnBuild.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.btnBuild.Location = new System.Drawing.Point(0, 25);
-            this.btnBuild.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
-            this.btnBuild.Name = "btnBuild";
-            this.btnBuild.Size = new System.Drawing.Size(78, 20);
-            this.btnBuild.TabIndex = 13;
-            this.btnBuild.Text = "Build";
-            this.btnBuild.UseVisualStyleBackColor = true;
-            this.btnBuild.Click += new System.EventHandler(this.BtnBuild_Click);
-            // 
-            // lblHeading
-            // 
-            this.lblHeading.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.lblHeading.Location = new System.Drawing.Point(0, 0);
-            this.lblHeading.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.lblHeading.Name = "lblHeading";
-            this.lblHeading.Size = new System.Drawing.Size(175, 15);
-            this.lblHeading.TabIndex = 22;
-            this.lblHeading.Text = "lblHeading";
-            this.lblHeading.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            lbl8.AutoSize = true;
+            lbl8.Location = new System.Drawing.Point(0, 120);
+            lbl8.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            lbl8.Name = "lbl8";
+            lbl8.Size = new System.Drawing.Size(26, 15);
+            lbl8.TabIndex = 17;
+            lbl8.Text = "lbl8";
             // 
             // lblInf9
             // 
-            this.lblInf9.AutoSize = true;
-            this.lblInf9.Location = new System.Drawing.Point(132, 135);
-            this.lblInf9.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.lblInf9.Name = "lblInf9";
-            this.lblInf9.Size = new System.Drawing.Size(40, 15);
-            this.lblInf9.TabIndex = 25;
-            this.lblInf9.Text = "lblInf9";
+            lblInf9.AutoSize = true;
+            lblInf9.Location = new System.Drawing.Point(132, 135);
+            lblInf9.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            lblInf9.Name = "lblInf9";
+            lblInf9.Size = new System.Drawing.Size(40, 15);
+            lblInf9.TabIndex = 20;
+            lblInf9.Text = "lblInf9";
             // 
             // lbl9
             // 
-            this.lbl9.AutoSize = true;
-            this.lbl9.Location = new System.Drawing.Point(0, 135);
-            this.lbl9.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.lbl9.Name = "lbl9";
-            this.lbl9.Size = new System.Drawing.Size(26, 15);
-            this.lbl9.TabIndex = 24;
-            this.lbl9.Text = "lbl9";
+            lbl9.AutoSize = true;
+            lbl9.Location = new System.Drawing.Point(0, 135);
+            lbl9.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            lbl9.Name = "lbl9";
+            lbl9.Size = new System.Drawing.Size(26, 15);
+            lbl9.TabIndex = 19;
+            lbl9.Text = "lbl9";
+            // 
+            // panel1
+            // 
+            panel1.Controls.Add(btnInfo);
+            panel1.Controls.Add(btnTrade);
+            panel1.Controls.Add(btnResearch);
+            panel1.Controls.Add(btnSave);
+            panel1.Controls.Add(btnViewAtt);
+            panel1.Controls.Add(btnBuild);
+            panel1.Controls.Add(btnEndTurn);
+            panel1.Controls.Add(lblTurn);
+            panel1.Dock = System.Windows.Forms.DockStyle.Bottom;
+            panel1.Location = new System.Drawing.Point(0, 306);
+            panel1.Margin = new System.Windows.Forms.Padding(2);
+            panel1.Name = "panel1";
+            panel1.Size = new System.Drawing.Size(350, 69);
+            panel1.TabIndex = 21;
+            // 
+            // btnInfo
+            // 
+            btnInfo.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
+            btnInfo.Location = new System.Drawing.Point(272, 25);
+            btnInfo.Margin = new System.Windows.Forms.Padding(2);
+            btnInfo.Name = "btnInfo";
+            btnInfo.Size = new System.Drawing.Size(78, 20);
+            btnInfo.TabIndex = 18;
+            btnInfo.Text = "Info";
+            btnInfo.UseVisualStyleBackColor = true;
+            btnInfo.Click += BtnInfo_Click;
+            // 
+            // btnTrade
+            // 
+            btnTrade.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
+            btnTrade.Location = new System.Drawing.Point(190, 1);
+            btnTrade.Margin = new System.Windows.Forms.Padding(2);
+            btnTrade.Name = "btnTrade";
+            btnTrade.Size = new System.Drawing.Size(78, 20);
+            btnTrade.TabIndex = 17;
+            btnTrade.Text = "Trade";
+            btnTrade.UseVisualStyleBackColor = true;
+            btnTrade.Click += BtnTrade_Click;
+            // 
+            // btnResearch
+            // 
+            btnResearch.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
+            btnResearch.Location = new System.Drawing.Point(272, 1);
+            btnResearch.Margin = new System.Windows.Forms.Padding(2);
+            btnResearch.Name = "btnResearch";
+            btnResearch.Size = new System.Drawing.Size(78, 20);
+            btnResearch.TabIndex = 16;
+            btnResearch.Text = "Research";
+            btnResearch.UseVisualStyleBackColor = true;
+            btnResearch.Click += BtnResearch_Click;
+            // 
+            // btnSave
+            // 
+            btnSave.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
+            btnSave.Location = new System.Drawing.Point(272, 49);
+            btnSave.Margin = new System.Windows.Forms.Padding(2);
+            btnSave.Name = "btnSave";
+            btnSave.Size = new System.Drawing.Size(78, 20);
+            btnSave.TabIndex = 15;
+            btnSave.Text = "Save";
+            btnSave.UseVisualStyleBackColor = true;
+            btnSave.Click += BtnSave_Click;
+            // 
+            // btnViewAtt
+            // 
+            btnViewAtt.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
+            btnViewAtt.Location = new System.Drawing.Point(189, 49);
+            btnViewAtt.Margin = new System.Windows.Forms.Padding(2);
+            btnViewAtt.Name = "btnViewAtt";
+            btnViewAtt.Size = new System.Drawing.Size(78, 20);
+            btnViewAtt.TabIndex = 14;
+            btnViewAtt.Text = "Attacks";
+            btnViewAtt.UseVisualStyleBackColor = true;
+            btnViewAtt.Click += BtnViewAtt_Click;
+            // 
+            // btnBuild
+            // 
+            btnBuild.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
+            btnBuild.Location = new System.Drawing.Point(0, 25);
+            btnBuild.Margin = new System.Windows.Forms.Padding(2);
+            btnBuild.Name = "btnBuild";
+            btnBuild.Size = new System.Drawing.Size(78, 20);
+            btnBuild.TabIndex = 13;
+            btnBuild.Text = "Build";
+            btnBuild.UseVisualStyleBackColor = true;
+            btnBuild.Click += BtnBuild_Click;
+            // 
+            // lblHeading
+            // 
+            lblHeading.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            lblHeading.Location = new System.Drawing.Point(0, 0);
+            lblHeading.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            lblHeading.Name = "lblHeading";
+            lblHeading.Size = new System.Drawing.Size(175, 15);
+            lblHeading.TabIndex = 22;
+            lblHeading.Text = "lblHeading";
+            lblHeading.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // lblInf10
+            // 
+            lblInf10.AutoSize = true;
+            lblInf10.Location = new System.Drawing.Point(132, 150);
+            lblInf10.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            lblInf10.Name = "lblInf10";
+            lblInf10.Size = new System.Drawing.Size(40, 15);
+            lblInf10.TabIndex = 25;
+            lblInf10.Text = "lblInf10";
+            // 
+            // lbl10
+            // 
+            lbl10.AutoSize = true;
+            lbl10.Location = new System.Drawing.Point(0, 150);
+            lbl10.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            lbl10.Name = "lbl10";
+            lbl10.Size = new System.Drawing.Size(26, 15);
+            lbl10.TabIndex = 24;
+            lbl10.Text = "lbl10";
             // 
             // rtbLog
             // 
-            this.rtbLog.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.rtbLog.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.rtbLog.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.rtbLog.Location = new System.Drawing.Point(0, 152);
-            this.rtbLog.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
-            this.rtbLog.Name = "rtbLog";
-            this.rtbLog.ReadOnly = true;
-            this.rtbLog.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
-            this.rtbLog.Size = new System.Drawing.Size(350, 28);
-            this.rtbLog.TabIndex = 26;
-            this.rtbLog.Text = "";
-            this.rtbLog.VScroll += new System.EventHandler(this.RtbLog_VScroll);
-            this.rtbLog.MouseClick += new System.Windows.Forms.MouseEventHandler(this.RTBLog_MouseClick);
+            rtbLog.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            rtbLog.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            rtbLog.Cursor = System.Windows.Forms.Cursors.Hand;
+            rtbLog.Location = new System.Drawing.Point(0, 167);
+            rtbLog.Margin = new System.Windows.Forms.Padding(2);
+            rtbLog.Name = "rtbLog";
+            rtbLog.ReadOnly = true;
+            rtbLog.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
+            rtbLog.Size = new System.Drawing.Size(350, 13);
+            rtbLog.TabIndex = 26;
+            rtbLog.Text = "";
+            rtbLog.VScroll += RtbLog_VScroll;
+            rtbLog.MouseClick += RTBLog_MouseClick;
+            // 
+            // lblInf3
+            // 
+            lblInf3.AutoSize = true;
+            lblInf3.Location = new System.Drawing.Point(132, 45);
+            lblInf3.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            lblInf3.Name = "lblInf3";
+            lblInf3.Size = new System.Drawing.Size(40, 15);
+            lblInf3.TabIndex = 28;
+            lblInf3.Text = "lblInf3";
+            // 
+            // lbl3
+            // 
+            lbl3.AutoSize = true;
+            lbl3.Location = new System.Drawing.Point(0, 45);
+            lbl3.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            lbl3.Name = "lbl3";
+            lbl3.Size = new System.Drawing.Size(26, 15);
+            lbl3.TabIndex = 27;
+            lbl3.Text = "lbl3";
             // 
             // Info
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Controls.Add(this.rtbLog);
-            this.Controls.Add(this.lblInf9);
-            this.Controls.Add(this.lbl9);
-            this.Controls.Add(this.lblHeading);
-            this.Controls.Add(this.panel1);
-            this.Controls.Add(this.lblInf8);
-            this.Controls.Add(this.lbl8);
-            this.Controls.Add(this.lblInf7);
-            this.Controls.Add(this.lbl7);
-            this.Controls.Add(this.lblInf6);
-            this.Controls.Add(this.lbl6);
-            this.Controls.Add(this.lblInf5);
-            this.Controls.Add(this.lbl5);
-            this.Controls.Add(this.lblInf4);
-            this.Controls.Add(this.lbl4);
-            this.Controls.Add(this.dgvAttacks);
-            this.Controls.Add(this.lblInf3);
-            this.Controls.Add(this.lbl3);
-            this.Controls.Add(this.lblInf2);
-            this.Controls.Add(this.lbl2);
-            this.Controls.Add(this.lblInf1);
-            this.Controls.Add(this.lbl1);
-            this.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
-            this.Name = "Info";
-            this.Size = new System.Drawing.Size(350, 360);
-            this.SizeChanged += new System.EventHandler(this.Info_SizeChanged);
-            ((System.ComponentModel.ISupportInitialize)(this.dgvAttacks)).EndInit();
-            this.panel1.ResumeLayout(false);
-            this.ResumeLayout(false);
-            this.PerformLayout();
-
+            AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
+            AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            Controls.Add(lblInf3);
+            Controls.Add(lbl3);
+            Controls.Add(rtbLog);
+            Controls.Add(lblInf10);
+            Controls.Add(lbl10);
+            Controls.Add(lblHeading);
+            Controls.Add(panel1);
+            Controls.Add(lblInf9);
+            Controls.Add(lbl9);
+            Controls.Add(lblInf8);
+            Controls.Add(lbl8);
+            Controls.Add(lblInf7);
+            Controls.Add(lbl7);
+            Controls.Add(lblInf6);
+            Controls.Add(lbl6);
+            Controls.Add(lblInf5);
+            Controls.Add(lbl5);
+            Controls.Add(dgvAttacks);
+            Controls.Add(lblInf4);
+            Controls.Add(lbl4);
+            Controls.Add(lblInf2);
+            Controls.Add(lbl2);
+            Controls.Add(lblInf1);
+            Controls.Add(lbl1);
+            Margin = new System.Windows.Forms.Padding(2);
+            Name = "Info";
+            Size = new System.Drawing.Size(350, 375);
+            SizeChanged += Info_SizeChanged;
+            ((System.ComponentModel.ISupportInitialize)dgvAttacks).EndInit();
+            panel1.ResumeLayout(false);
+            ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
@@ -445,31 +465,33 @@ namespace WinFormsApp1
         private System.Windows.Forms.Label lblInf1;
         private System.Windows.Forms.Label lblInf2;
         private System.Windows.Forms.Label lbl2;
-        private System.Windows.Forms.Label lblInf3;
-        private System.Windows.Forms.Label lbl3;
-        private System.Windows.Forms.DataGridView dgvAttacks;
-        private System.Windows.Forms.Button btnEndTurn;
         private System.Windows.Forms.Label lblInf4;
         private System.Windows.Forms.Label lbl4;
-        private System.Windows.Forms.Label lblTurn;
+        private System.Windows.Forms.DataGridView dgvAttacks;
+        private System.Windows.Forms.Button btnEndTurn;
         private System.Windows.Forms.Label lblInf5;
         private System.Windows.Forms.Label lbl5;
+        private System.Windows.Forms.Label lblTurn;
         private System.Windows.Forms.Label lblInf6;
         private System.Windows.Forms.Label lbl6;
         private System.Windows.Forms.Label lblInf7;
         private System.Windows.Forms.Label lbl7;
         private System.Windows.Forms.Label lblInf8;
         private System.Windows.Forms.Label lbl8;
+        private System.Windows.Forms.Label lblInf9;
+        private System.Windows.Forms.Label lbl9;
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.Button btnBuild;
         private System.Windows.Forms.Label lblHeading;
         private System.Windows.Forms.Button btnViewAtt;
         private System.Windows.Forms.Button btnSave;
-        private System.Windows.Forms.Label lblInf9;
-        private System.Windows.Forms.Label lbl9;
+        private System.Windows.Forms.Label lblInf10;
+        private System.Windows.Forms.Label lbl10;
         private System.Windows.Forms.Button btnResearch;
         private System.Windows.Forms.Button btnTrade;
         private System.Windows.Forms.RichTextBox rtbLog;
         private System.Windows.Forms.Button btnInfo;
+        private System.Windows.Forms.Label lblInf3;
+        private System.Windows.Forms.Label lbl3;
     }
 }

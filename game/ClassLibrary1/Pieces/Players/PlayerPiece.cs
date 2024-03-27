@@ -25,7 +25,7 @@ namespace ClassLibrary1.Pieces.Players
         {
             double result = 0;
             if (this.HasBehavior(out IKillable killable))
-                killable.Repair(false, out result, out _);
+                killable.GetHitsRepair(out result, out _);
             return result;
         }
 

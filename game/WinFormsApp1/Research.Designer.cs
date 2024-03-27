@@ -1,7 +1,7 @@
 ﻿
 namespace WinFormsApp1
 {
-    partial class Research
+    partial class ResearchForm
     {
         /// <summary>
         /// Required designer variable.
