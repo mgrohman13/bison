@@ -10,7 +10,7 @@
 
   <ItemGroup>
     <Reference Include="MattUtil">
-      <HintPath>..\..\MattUtil\MattUtil\bin\Release\MattUtil.dll</HintPath>
+      <HintPath>..\..\MattUtil\MattUtil\bin\Debug\MattUtil.dll</HintPath>
     </Reference>
   </ItemGroup>
 

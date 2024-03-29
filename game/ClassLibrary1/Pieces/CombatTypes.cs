@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace ClassLibrary1.Pieces
@@ -23,7 +24,7 @@ namespace ClassLibrary1.Pieces
         internal static int GetStartCur(DefenseType type, int defense) =>
             type == DefenseType.Shield ? 0 : defense;
 
-        internal static object OrderBy(Defense defense)
+        internal static object CompareDef(Defense defense)
         {
             int value = defense.DefenseCur;
             int higher = defense.Piece.GetBehavior<IKillable>().TotalDefenses.Max(d => d.DefenseCur) + 1;
@@ -33,6 +34,12 @@ namespace ClassLibrary1.Pieces
                 value += higher;
             return -value;
         }
+        internal static IReadOnlyCollection<IAttacker.Values> OrderAtt(IEnumerable<IAttacker.Values> attacks) =>
+            OrderAtt(attacks, a => a.Attack, a => a.Range, a => a.Type);
+        internal static IReadOnlyCollection<Attack> OrderAtt(IEnumerable<Attack> attacks) =>
+            OrderAtt(attacks, a => a.AttackMax, a => a.RangeBase, a => a.Type);
+        internal static IReadOnlyCollection<T> OrderAtt<T>(IEnumerable<T> attacks, Func<T, int> AttMax, Func<T, double> Range, Func<T, AttackType> Type) =>
+            attacks.OrderByDescending(AttMax).ThenByDescending(Range).ThenByDescending(Type).ToList().AsReadOnly();
         //internal static object OrderBy(Defense defense) => defense.Type switch
         //{
         //    DefenseType.Hits => 3,
@@ -46,9 +53,16 @@ namespace ClassLibrary1.Pieces
         //    AttackType.Energy => null,// DefenseType.Shield,
         //    AttackType.Explosive => null,// DefenseType.Armor, //???
         //    _ => throw new Exception(),
-        //};
-        internal static bool SplashDamage(AttackType attackType, DefenseType defenseType) =>
-            attackType == AttackType.Explosive && defenseType != DefenseType.Shield;
+        //}; 
+        internal static bool DoSplash(AttackType type, DefenseType defenseType) => type == AttackType.Explosive;
+        internal static bool SplashAgainst(Defense defense)
+        {
+            if (defense.Type == DefenseType.Shield)
+                return true;
+            if (defense.Piece.GetBehavior<IKillable>().TotalDefenses.Any(d => d.Type == DefenseType.Shield && !d.Dead))
+                return false;
+            return true;
+        }
 
         internal static int GetRegen(AttackType attackType, bool attacked, bool inBuild) => attackType switch //bool moved,
         {
@@ -100,14 +114,14 @@ namespace ClassLibrary1.Pieces
         };
         internal static double EnergyCostRatio(AttackType attackType) => attackType switch
         {
-            AttackType.Kinetic => .26,
+            AttackType.Kinetic => .21,
             AttackType.Energy => .78,
             AttackType.Explosive => .52,
             _ => throw new Exception(),
         };
         internal static double EnergyCostRatio(DefenseType defenseType) => defenseType switch
         {
-            DefenseType.Hits => .39,
+            DefenseType.Hits => .26,
             DefenseType.Shield => .91,
             DefenseType.Armor => .13,
             _ => throw new Exception(),

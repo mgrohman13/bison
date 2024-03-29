@@ -12,8 +12,11 @@ using Point = MattUtil.Point;
 namespace ClassLibrary1
 {
     [Serializable]
-    public class Map
+    public class Map // : IDeserializationCallback
     {
+        internal static readonly Stopwatch watch = new();
+        private static int evalCount = 0;
+
         private const double TWO_PI = Math.PI * 2;
         private const double HALF_PI = Math.PI / 2.0;
 
@@ -26,8 +29,7 @@ namespace ClassLibrary1
         private readonly HashSet<Point> _explored;
         private Rectangle _gameBounds;
 
-        private readonly RandBooleans[] _resourceRands;
-        private readonly RandBooleans _foundationRand;
+        private readonly Dictionary<ResourceType, int> resourcePool;
 
         static Map()
         {
@@ -37,6 +39,8 @@ namespace ClassLibrary1
 
         internal Map(Game game)
         {
+            LogEvalTime();
+
             this.Game = game;
 
             double max = Game.Rand.GaussianOE(130, .091, .13, 65);
@@ -95,35 +99,58 @@ namespace ClassLibrary1
             this._pieces = new();
             this._explored = new();
 
-            _resourceRands = new[] {
-                new RandBooleans(Game.Rand, .26), //artifact
-                new RandBooleans(Game.Rand, .52), //biomass
-                new RandBooleans(Game.Rand, .65), //metal
-            };
-            _foundationRand = new(.39);
+            resourcePool = new() { { ResourceType.Foundation, 1 },
+                { ResourceType.Biomass, 2 }, { ResourceType.Artifact, 3 }, { ResourceType.Metal, 5 }, };
+
+            LogEvalTime();
         }
+        //public void OnDeserialization(object sender)
+        //{
+        //    //LogEvalTime();
+        //}
 
         internal void GenerateStartResources()
         {
-            for (int a = 0; a < 1; a++)
-                Biomass.NewBiomass(StartTile());
-            for (int b = 0; b < 2; b++)
-                Artifact.NewArtifact(StartTile());
-            for (int c = 0; c < 3; c++)
-                Metal.NewMetal(StartTile());
+            for (int a = 0; a < 9; a++)
+            {
+                Tile tile = StartTile();
+                switch (GetResourceType())
+                {
+                    case ResourceType.Artifact:
+                        Artifact.NewArtifact(tile);
+                        break;
+                    case ResourceType.Biomass:
+                        Biomass.NewBiomass(tile);
+                        break;
+                    case ResourceType.Metal:
+                        Metal.NewMetal(tile);
+                        break;
+                    case ResourceType.Foundation:
+                        Foundation.NewFoundation(tile);
+                        break;
+                }
+            }
 
             foreach (var explore in Game.Rand.Iterate(_paths))
                 GenResources(explore.Explore(this, Consts.PathWidth));
         }
 
         [NonSerialized]
-        private Dictionary<Point, double> evaluateCache;
-        private double Evaluate(int x, int y)
+        private Dictionary<Point, Tuple<double, double>> evaluateCache;
+        private double Evaluate(int x, int y, out double lineDist)
         {
             Point p = new(x, y);
-            evaluateCache ??= new Dictionary<Point, double>();
-            if (evaluateCache.TryGetValue(p, out double v))
-                return v;
+            evaluateCache ??= new Dictionary<Point, Tuple<double, double>>();
+            if (evaluateCache.TryGetValue(p, out Tuple<double, double> t))
+            {
+                lineDist = t.Item2;
+                return t.Item1;
+            }
+
+            watch.Start();
+            evalCount++;
+
+            double minLineDist = double.MaxValue;
 
             double mult = 0;
             foreach (var path in _paths)
@@ -143,17 +170,20 @@ namespace ClassLibrary1
                         backMult = Math.Min(1, Consts.PathWidth * Consts.PathWidth / distSqr);
                     }
 
-                    double lineDist = PointLineDistanceSigned(path, point, new Point(x, y)) * sign;
-
-                    return 2 / (1 + Math.Pow(Math.E, -.065 * lineDist)) * backMult;
+                    double dist = PointLineDistanceSigned(path, point, new Point(x, y)) * sign;
+                    minLineDist = Math.Min(minLineDist, Math.Abs(dist));
+                    return 2 / (1 + Math.Pow(Math.E, -.065 * dist)) * backMult;
                 }
 
                 double m = Math.Min(Gradient(path.Left, 1), Gradient(path.Right, -1));
                 mult += m * m;
             }
 
+            lineDist = minLineDist;
             double value = noise.Evaluate(x, y) * mult;
-            evaluateCache.Add(p, value);
+            evaluateCache.Add(p, new(value, lineDist));
+
+            watch.Stop();
             return value;
         }
 
@@ -176,10 +206,19 @@ namespace ClassLibrary1
         }
         internal Tile GetTile(int x, int y)
         {
-            if (Evaluate(x, y) < .5)
+            double terrain = Evaluate(x, y, out double lineDist);
+            bool chasm = false;// (5 * terrain * Consts.PathWidth + lineDist) / 2.0 % Consts.PathWidth < 1;
+            if (!chasm && terrain < 1 / 3.0)
                 return null;
+
+            chasm |= terrain < 1 / 2.0;
+
             Piece piece = GetPiece(x, y);
-            return piece == null ? NewTile(this, x, y) : piece.Tile;
+            bool hasPiece = piece == null;
+            Tile tile = hasPiece ? NewTile(this, x, y, t => chasm ? new Chasm(t) : null) : piece.Tile;
+            //if (terrain < .5 && !hasPiece)
+            //    AddPiece(new Chasm(tile));
+            return tile;
         }
         private Piece GetPiece(int x, int y)
         {
@@ -223,20 +262,34 @@ namespace ClassLibrary1
         }
         private void UpdateVision(PlayerPiece piece)
         {
+            LogEvalTime();
+
             Tile tile = piece.Tile;
             foreach (Point p in tile.GetPointsInRangeUnblocked(piece.Vision))
                 this._explored.Add(p);
 
-            int vision = (int)piece.Vision;
-            int x = Math.Min(_gameBounds.X, piece.Tile.X - vision - 1);
-            int y = Math.Min(_gameBounds.Y, piece.Tile.Y - vision - 1);
-            int right = Math.Max(_gameBounds.Right, piece.Tile.X + vision + 2);
-            int bottom = Math.Max(_gameBounds.Bottom, piece.Tile.Y + vision + 2);
+            int vision = (int)piece.Vision + 1;
+            int x = Math.Min(_gameBounds.X, piece.Tile.X - vision);
+            int y = Math.Min(_gameBounds.Y, piece.Tile.Y - vision);
+            int right = Math.Max(_gameBounds.Right, piece.Tile.X + vision + 1);
+            int bottom = Math.Max(_gameBounds.Bottom, piece.Tile.Y + vision + 1);
 
             _gameBounds = new Rectangle(x, y, right - x, bottom - y);
 
             if (piece is not Core)
                 Explore(tile, piece.Vision);
+
+            LogEvalTime();
+        }
+        public static void LogEvalTime()
+        {
+            if (evalCount > 0)
+            {
+                float evalTime = 1000f * watch.ElapsedTicks / Stopwatch.Frequency;
+                Debug.WriteLine($"Evaluate ({evalCount}): {evalTime}");
+                watch.Reset();
+                evalCount = 0;
+            }
         }
 
         internal Tile StartTile()
@@ -254,7 +307,10 @@ namespace ClassLibrary1
             bool visible = tile.Visible && !Game.TEST_MAP_GEN.HasValue;
             Core core = tile.Map.Game.Player.Core;
             bool inCoreRange = core != null && tile.GetDistance(core.Tile) <= core.GetBehavior<IRepair>().Range;
-            return (visible || tile.Piece != null || inCoreRange);
+            bool valid = (visible || tile.Piece != null || inCoreRange);
+            if (!valid)
+                Debug.WriteLine("InvalidStartTile: " + tile);
+            return valid;
         }
 
         private void Explore(Tile tile, double vision)
@@ -270,51 +326,43 @@ namespace ClassLibrary1
         {
             foreach (Tile resource in Game.Rand.Iterate(tiles))
             {
-                GenResourceType(resource);
-
-                if (_foundationRand.GetResult())
+                switch (GetResourceType())
                 {
-                    Tile foundation;
-                    do
-                        foundation = GetTile(resource.X + Game.Rand.GaussianInt(Consts.ResourceAvgDist), resource.Y + Game.Rand.GaussianInt(Consts.ResourceAvgDist));
-                    while (InvalidStartTile(foundation));
-                    Foundation.NewFoundation(foundation);
+                    case ResourceType.Artifact:
+                        Artifact.NewArtifact(resource);
+                        break;
+                    case ResourceType.Biomass:
+                        Biomass.NewBiomass(resource);
+                        break;
+                    case ResourceType.Metal:
+                        Metal.NewMetal(resource);
+                        break;
+                    case ResourceType.Foundation:
+                        Foundation.NewFoundation(resource);
+                        break;
                 }
             }
         }
-        private void GenResourceType(Tile tile)
+        private ResourceType GetResourceType()
         {
-            bool[] resources;
-            int count;
-            do
+            if (resourcePool.Values.Any(v => v == 0))
             {
-                resources = _resourceRands.Select(r => r.GetResult()).ToArray();
-                count = resources.Count(b => b);
+                resourcePool[ResourceType.Artifact] += 4;
+                resourcePool[ResourceType.Biomass] += 8;
+                resourcePool[ResourceType.Metal] += 10;
+                resourcePool[ResourceType.Foundation] += 7;
             }
-            while (count == 0);
-
-            int select;
-            if (count == 1)
-                select = Array.IndexOf(resources, true);
-            else
-                do
-                    select = Game.Rand.Next(3);
-                while (!resources[select]);
-
-            switch (select)
-            {
-                case 0:
-                    Artifact.NewArtifact(tile);
-                    break;
-                case 1:
-                    Biomass.NewBiomass(tile);
-                    break;
-                case 2:
-                    Metal.NewMetal(tile);
-                    break;
-                default:
-                    throw new Exception();
-            }
+            ResourceType type = Game.Rand.SelectValue(resourcePool);
+            resourcePool[type]--;
+            return type;
+        }
+        [Serializable]
+        private enum ResourceType
+        {
+            Artifact,
+            Biomass,
+            Metal,
+            Foundation,
         }
 
         internal Tile GetEnemyTile()
@@ -373,18 +421,25 @@ namespace ClassLibrary1
         private static double PointLineDistance(double a, double b, double c, Point point) =>
             (a * point.X + b * point.Y + c) / Math.Sqrt(a * a + b * b);
 
-        private static Func<Map, int, int, Tile> NewTile;
+        private static Func<Map, int, int, Func<Tile, Terrain>, Tile> NewTile;
         [Serializable]
         public class Tile
         {
             public readonly Map Map;
             public readonly int X, Y;
-            public Piece Piece => Map.GetPiece(X, Y);
+            private Terrain _terrain;
+            public Terrain Terrain => _terrain;
+            public Piece Piece => Map.GetPiece(X, Y) ?? Terrain;
             public bool Visible => Map.Visible(X, Y);
 
             static Tile()
             {
-                NewTile = (map, x, y) => new Tile(map, x, y);
+                NewTile = (map, x, y, GetTerrain) =>
+                {
+                    Tile tile = new(map, x, y);
+                    tile._terrain = GetTerrain(tile);
+                    return tile;
+                };
             }
             private Tile(Map map, int x, int y)
             {
@@ -413,6 +468,7 @@ namespace ClassLibrary1
             private IEnumerable<Tile> GetVisibleTilesInRange(double range, bool blockMap, Piece blockFor) => GetPointsInRange(range, blockMap, blockFor)
                 .Where(Map.Visible).Select(Map.GetTile).Where(t => t != null);
 
+            internal IEnumerable<Tile> GetAdjacentTiles() => GetTilesInRange(Attack.MELEE_RANGE, false, null);
             internal IEnumerable<Tile> GetTilesInRange(IMovable movable) => GetTilesInRange(movable.MoveCur, false, movable.Piece);
             internal IEnumerable<Tile> GetTilesInRange(double range, bool blockMap, Piece blockFor) => GetPointsInRange(range, blockMap, blockFor)
                 .Select(Map.GetTile).Where(t => t != null);
@@ -563,7 +619,9 @@ namespace ClassLibrary1
             }
             private IEnumerable<double> CreateResources()
             {
-                const double generationBuffer = 2.1 * (Consts.PathWidth + Consts.ResourceAvgDist);
+                double generationBuffer = 2.1 * (Consts.PathWidth + Consts.ResourceAvgDist);
+                if (Game.TEST_MAP_GEN.HasValue)
+                    generationBuffer = Game.TEST_MAP_GEN.Value;
 
                 List<double> create = new();
                 while (ExploredDist + generationBuffer > NextResourceDist)
@@ -584,7 +642,7 @@ namespace ClassLibrary1
                     tile = map.GetTile(RandCoord(spawnCenter.X), RandCoord(spawnCenter.Y));
                 while (InvalidStartTile(tile));
 
-                Debug.WriteLine($"SpawnTile ({Angle:0.00}) {distance:0.0}: {spawnCenter} -> {tile}");
+                //Debug.WriteLine($"SpawnTile ({Angle:0.00}) {distance:0.0}: {spawnCenter} -> {tile}");
 
                 return tile;
             }

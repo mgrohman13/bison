@@ -22,13 +22,44 @@ namespace WinFormsApp1
     {
         private const float padding = 1f, scrollTime = 39f, scrollSpeed = 13f;
 
-        private float xStart, yStart, scale;
+        private float xStart, yStart, _scale;
         private Tile _selected, _moused;
         private bool viewAttacks;
 
         private readonly Timer timer;
         private readonly Stopwatch watch = new();
         private bool scrollDown, scrollLeft, scrollUp, scrollRight;
+
+        private static Pen Red, Green, Blue, White;
+        private Pen[] rgbw = new[] { Red, Green, Blue, White };
+        private Dictionary<Pen, List<HashSet<Point>>> ranges;
+        private readonly Dictionary<Point, float> attacks = new();
+
+        private float scale
+        {
+            get { return _scale; }
+            set
+            {
+                if (_scale != value)
+                {
+                    float size = Game.Rand.Round(Math.Max(3, Math.Sqrt(scale) - 1));
+                    if (Red?.Width != size)
+                    {
+                        Red = new(Color.Red, size);
+                        Green = new(Color.Green, size);
+                        Blue = new(Color.Blue, size);
+                        White = new(Color.White, size);
+                        Pen[] rgbwNew = new Pen[] { Red, Green, Blue, White };
+                        if (ranges != null)
+                            ranges = ranges.ToDictionary(p => rgbwNew[Array.IndexOf(rgbw, p.Key)], p => p.Value);
+                        rgbw = rgbwNew;
+                        ranges ??= new Pen[] { Blue, Red, Green, White }.ToDictionary(p => p, p => new List<HashSet<Point>>());
+                    }
+                }
+
+                _scale = value;
+            }
+        }
 
         public Tile SelTile
         {
@@ -116,7 +147,7 @@ namespace WinFormsApp1
             if (MouseTile != null)
             {
                 Tile center = Program.Game.Player.Core.Tile;// Program.Game.Map.GetVisibleTile(0, 0);//
-                this.lblMouse.Text = string.Format("({0}, {1})", MouseTile.X - center.X, MouseTile.Y - center.Y);
+                this.lblMouse.Text = string.Format("({0}, {1})", MouseTile.X - center.X, center.Y - MouseTile.Y);
                 if (SelTile != null)// && SelTile.Piece != null && SelTile.Piece.HasBehavior(out IMovable movable))// && movable.MoveCur >= 1)
                 {
                     float distance = (float)MouseTile.GetDistance(SelTile);
@@ -129,6 +160,8 @@ namespace WinFormsApp1
 
         private void Map_Load(object sender, EventArgs e)
         {
+            ClassLibrary1.Map.LogEvalTime();
+
             Rectangle gameRect = Program.Game.Map.GameRect();
             scale = Math.Min((this.Width - 1 - padding * 2) / gameRect.Width, (this.Height - 1 - padding * 2) / gameRect.Height);
             xStart = GetX(gameRect.X);
@@ -136,7 +169,9 @@ namespace WinFormsApp1
 
             RefreshRanges();
 
-            lblMouse.Location = new DPoint(this.ClientSize.Width - lblMouse.Width, this.ClientSize.Height - lblMouse.Height);
+            lblMouse.Location = new DPoint(0, this.ClientSize.Height - lblMouse.Height);
+
+            ClassLibrary1.Map.LogEvalTime();
         }
 
         public bool Center()
@@ -156,14 +191,14 @@ namespace WinFormsApp1
             return false;
         }
 
-        //private readonly float count = 0f, total = 0f;
+        ////private readonly float count = 0f, total = 0f;
         private float paintTime;
         protected override void OnPaint(PaintEventArgs e)
         {
             try
             {
-                watch.Reset();
-                watch.Start();
+                //watch.Reset();
+                //watch.Start();
 
                 e.Graphics.Clear(Color.Black);
 
@@ -174,10 +209,12 @@ namespace WinFormsApp1
                 }
 
                 base.OnPaint(e);
-
                 paintTime = watch.ElapsedTicks * 1000f / Stopwatch.Frequency;
-                Debug.WriteLine("OnPaint: " + paintTime);
-                watch.Stop();
+
+                //Debug.WriteLine("OnPaint: " + paintTime);
+                //watch.Stop();
+
+                //ClassLibrary1.Map.LogEvalTime();
             }
             catch (Exception exception)
             {
@@ -186,7 +223,7 @@ namespace WinFormsApp1
         }
         private void Tiles(PaintEventArgs e)
         {
-            const float defHeight = .169f;
+            const float defHeight = .169f, statBarPow = .39f;
 
             List<RectangleF> rectangles = new();
             List<RectangleF> ellipses = new();
@@ -210,9 +247,9 @@ namespace WinFormsApp1
             //static float? SumAttacksCur(IAttacker attacker) => SumAttacks(attacker, a => a.AttackCur);
             static float? SumAttacksMax(IAttacker attacker) => SumAttacks(attacker, a => a.AttackMax);
             static float? SumAttacks(IAttacker attacker, Func<Attack, int> Stat) => attacker.Attacks.Sum(a => StatValue(Stat(a)));
-            static float StatValue(int stat) => stat;// (float)MechBlueprint.StatValue(stat);
-            const float padding = 1.13f;
-            float attackMax = GetPieces<IAttacker>().Max<IAttacker>(SumAttacksMax) * padding ?? 1;
+            static float StatValue(float stat) => (float)Consts.StatValue(stat);
+            const float padding = 1.69f;
+            float attackMax = (GetPieces<IAttacker>().Max<IAttacker>(SumAttacksMax) ?? 1) * padding;
             float defenseMax = (GetPieces<IKillable>().Where(k => k.Piece.HasBehavior<IAttacker>())
                 .Max(k => k.TotalDefenses.Sum(d => (float?)StatValue(d.DefenseMax))) ?? 1) * padding;
             attackMax = defenseMax = Math.Max(attackMax, defenseMax);
@@ -263,8 +300,8 @@ namespace WinFormsApp1
                     if (piece != null && piece.HasBehavior(out IKillable killable))
                     {
                         float barSize = defHeight * rect.Height;
-                        //Sqrt here makes smaller bars bigger which helps visual clarity 
-                        float widthTotal = (float)Math.Sqrt(killable.TotalDefenses.Sum(k => StatValue(k.DefenseMax)) / defenseMax);
+                        //statBarPow smaller bars bigger which helps visual clarity 
+                        float widthTotal = (float)Math.Pow(killable.TotalDefenses.Sum(k => StatValue(k.DefenseMax)) / defenseMax, statBarPow);
                         if (widthTotal > 1)
                             widthTotal = 1;
                         widthTotal *= rect.Width;
@@ -278,7 +315,7 @@ namespace WinFormsApp1
                         float armorMax = GetValue(DefenseType.Armor, Get);
                         float shieldMax = GetValue(DefenseType.Shield, Get);
                         float GetValue(DefenseType type, Func<Defense, int?> GetStat) =>
-                            StatValue(killable.TotalDefenses.Where(d => d.Type == type).Sum(GetStat) ?? 0);
+                            killable.TotalDefenses.Where(d => d.Type == type).Sum(a => StatValue(GetStat(a) ?? 0));
 
                         DrawBar(1, new float[] { hitsCur, armorCur, shieldCur }, new float[] { hitsMax, armorMax, shieldMax },
                             new Brush[] { Brushes.DarkGray, Brushes.LightGray, Brushes.SkyBlue, }, barSize, widthTotal);
@@ -286,7 +323,7 @@ namespace WinFormsApp1
                     if (piece != null && piece.HasBehavior(out IAttacker attacker))
                     {
                         float barSize = defHeight * rect.Height;
-                        float widthTotal = (float)Math.Sqrt((SumAttacksMax(attacker) ?? 0) / attackMax);
+                        float widthTotal = (float)Math.Pow((SumAttacksMax(attacker) ?? 0) / attackMax, statBarPow);
                         if (widthTotal > 1)
                             widthTotal = 1;
                         widthTotal *= rect.Width;
@@ -300,10 +337,10 @@ namespace WinFormsApp1
                         float armorMax = GetValue(AttackType.Energy, Get);
                         float shieldMax = GetValue(AttackType.Explosive, Get);
                         float GetValue(AttackType type, Func<Attack, int?> GetStat) =>
-                            StatValue(attacker.Attacks.Where(d => d.Type == type).Sum(GetStat) ?? 0);
+                            attacker.Attacks.Where(d => d.Type == type).Sum(a => StatValue(GetStat(a) ?? 0));
 
                         DrawBar(2, new float[] { hitsCur, armorCur, shieldCur }, new float[] { hitsMax, armorMax, shieldMax },
-                            new Brush[] { Brushes.Silver, Brushes.OrangeRed, Brushes.GreenYellow, }, barSize, widthTotal);
+                            new Brush[] { Brushes.Silver, Brushes.SandyBrown, Brushes.MediumPurple, }, barSize, widthTotal);
                     }
 
                     void DrawBar(int barNum, float[] curs, float[] maxes, Brush[] brushes, float barSize, float widthTotal)
@@ -332,7 +369,7 @@ namespace WinFormsApp1
                     //{
                     //    float attacks = SumAttacksMax(attacker) ?? 0;
                     //    float barSize = defHeight * rect.Height;
-                    //    float width = rect.Width * (float)Math.Sqrt(attacks / attackMax);
+                    //    float width = rect.Width * (float)Math.Pow(attacks / attackMax, statBarPow);
                     //    RectangleF hitsBar = new(rect.X, rect.Bottom - barSize * 2, width, barSize);
                     //    rectangles.Add(hitsBar);
 
@@ -351,8 +388,17 @@ namespace WinFormsApp1
                 for (int b = 0; b < mapCoords.Height; b++)
                 {
                     int y = mapCoords.Y + b;
-                    if (Program.Game.Map.GetVisibleTile(x, y) != null)
-                        rectangles.Add(new(GetX(x), GetY(y), scale, scale));
+                    RectangleF rect = new(GetX(x), GetY(y), scale, scale);
+                    if (Program.Game.Map.Visible(x, y))
+                    {
+                        Tile tile = Program.Game.Map.GetVisibleTile(x, y);
+                        if (tile == null)
+                            AddFill(Brushes.DarkGray, rect);
+                        else if (tile.Terrain != null)
+                            AddFill(Brushes.SaddleBrown, rect);
+                        else
+                            rectangles.Add(rect);
+                    }
                 }
             }
 
@@ -367,17 +413,18 @@ namespace WinFormsApp1
                         RectangleF rect = new(GetX(x), GetY(y), scale, scale);
                         float barSize = defHeight * rect.Height;
 
-                        //Sqrt here makes smaller bars bigger which helps visual clarity 
-                        float widthTotal = (float)Math.Sqrt(p.Value / defenseMax);
+                        float widthTotal = (float)Math.Pow(StatValue(p.Value) / defenseMax, statBarPow);
                         if (widthTotal > 1)
                             widthTotal = 1;
                         widthTotal *= rect.Width;
 
                         //new(rect.X, rect.Y, cur, defBar.Height));
 
-                        RectangleF attBar = new RectangleF(rect.X, rect.Bottom - barSize * 1, widthTotal, barSize);
+                        RectangleF attBar = new(rect.X, rect.Bottom - barSize * 1, widthTotal, barSize);
                         if (Program.Game.Map.GetVisibleTile(x, y).Piece != null)
-                            AddFill(Brushes.PaleVioletRed, attBar);
+                        {
+                            //AddFill(Brushes.PaleVioletRed, attBar);
+                        }
                         else
                         {
                             AddFill(Brushes.LightPink, attBar);
@@ -393,8 +440,8 @@ namespace WinFormsApp1
             if (rects.Length > 0)
                 e.Graphics.FillRectangles(Brushes.White, rects);
 
-            HashSet<Brush> afterBrushes = hitsBrushes.Values.Concat(new[] { Brushes.White, 
-                Brushes.DarkGray, Brushes.LightGray, Brushes.SkyBlue, Brushes.Silver, Brushes.OrangeRed, Brushes.GreenYellow,
+            HashSet<Brush> afterBrushes = hitsBrushes.Values.Concat(new[] { Brushes.White,
+                Brushes.DarkGray, Brushes.LightGray, Brushes.SkyBlue, Brushes.Silver, Brushes.SandyBrown , Brushes.MediumPurple,
             }).ToHashSet();
             foreach (var p in fill)
                 if (!afterBrushes.Contains(p.Key))
@@ -439,13 +486,10 @@ namespace WinFormsApp1
                 d.Dispose();
         }
 
-        private readonly static Pen Red = new(Color.Red, 3f), Green = new(Color.Green, 3f), Blue = new(Color.Blue, 3f), White = new(Color.White, 3f);
-        private readonly Dictionary<Pen, List<HashSet<Point>>> ranges = new Pen[] { Blue, Red, Green, White }.ToDictionary(p => p, p => new List<HashSet<Point>>());
-        private readonly Dictionary<Point, float> attacks = new();
         public void RefreshRanges()
         {
-            watch.Reset();
-            watch.Start();
+            //watch.Reset();
+            //watch.Start();
 
             foreach (var pair in ranges)
                 pair.Value.Clear();
@@ -502,8 +546,8 @@ namespace WinFormsApp1
 
             this.Invalidate();
 
-            Debug.WriteLine("RefreshRanges: " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
-            watch.Stop();
+            //Debug.WriteLine("RefreshRanges: " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
+            //watch.Stop();
         }
         private void Ranges(PaintEventArgs e)
         {
@@ -645,9 +689,12 @@ namespace WinFormsApp1
                         CheckMovable(edge);
                     void CheckMovable(Point edge)
                     {
-                        Tile edgeTile;
                         if (moveTiles.Contains(edge) && !moveEdge.Contains(edge))
-                            if (Program.Game.Map.Visible(edge) && ((edgeTile = Program.Game.Map.GetVisibleTile(edge)) == null || (edgeTile.Piece != null && (!edgeTile.Piece.IsEnemy || !edgeTile.Piece.HasBehavior<IMovable>()))))
+                        {
+                            Tile edgeTile = Program.Game.Map.GetVisibleTile(edge);
+                            if (Program.Game.Map.Visible(edge) && (edgeTile == null || (edgeTile.Piece != null
+                                && (SelTile != edgeTile || !SelTile.Piece.IsPlayer || !(SelTile.Piece.HasBehavior(out IMovable selMove) && selMove.MoveCur >= 1))
+                                && (!edgeTile.Piece.IsEnemy || !edgeTile.Piece.HasBehavior<IMovable>()))))
                             {
                                 moveTiles.Remove(edge);
                                 CheckMovable(new Point(edge.X - 1, edge.Y));
@@ -659,6 +706,7 @@ namespace WinFormsApp1
                             {
                                 moveEdge.Add(edge);
                             }
+                        }
                     }
                 }
                 else
@@ -923,6 +971,8 @@ namespace WinFormsApp1
             float mult = e.Delta / Game.Rand.GaussianCapped(91f, .026f, 1);
             if (mult < 0)
                 mult = -1 / mult;
+            else if (mult == 0)
+                mult = 1;
 
             Tile sel = MouseTile ?? SelTile;
             Point anchor;

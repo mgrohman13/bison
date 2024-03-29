@@ -3,6 +3,7 @@ using ClassLibrary1.Pieces.Enemies;
 using ClassLibrary1.Pieces.Players;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Tile = ClassLibrary1.Map.Tile;
 
@@ -35,22 +36,23 @@ namespace ClassLibrary1
             double energy = Math.Pow(difficulty, Consts.DifficultyEnergyPow) * Consts.EnemyEnergy;
             if (Game.Turn < Consts.EnemyEnergyRampTurns)
                 energy *= Game.Turn / Consts.EnemyEnergyRampTurns;
-            this._energy += Game.Rand.OEInt(energy) + this.Mass - Game.Rand.Round(energyUpk + massUpk);
+            this._energy += Game.Rand.OEInt(energy) + Game.Rand.Round((this.Mass - massUpk) * Consts.MechMassDiv - energyUpk);
             this._mass = 0;
 
-            while (true)
+            int spawns = Game.Rand.OEInt(Game.Turn / 13.0);
+            for (int a = 0; a < spawns && GetCost() + 13 < this.Energy; a++)
             {
-                int cost = _nextAlien.Energy + _nextAlien.Mass;
-                if (this.Energy > cost)
-                {
-                    this._energy -= cost;
-                    Alien.NewAlien(Game.Map.GetEnemyTile(), _nextAlien.Killable, _nextAlien.Resilience, _nextAlien.Attacker, _nextAlien.Movable);
-                    _nextAlien = MechBlueprint.Alien(_research);
-                }
-                else break;
+                this._energy -= Game.Rand.Round(GetCost());
+                Alien.NewAlien(Game.Map.GetEnemyTile(), _nextAlien.Killable, _nextAlien.Resilience, _nextAlien.Attacker, _nextAlien.Movable);
+                _nextAlien = MechBlueprint.Alien(_research);
             }
 
+            Debug.WriteLine($"Enemy energy: {_energy}");
+
             _research.EndTurn(Math.Pow(difficulty, Consts.DifficultyResearchPow));
+
+            double GetCost() =>
+                _nextAlien.Energy + _nextAlien.Mass * Consts.MechMassDiv;
         }
         private void PlayTurn(Piece piece, double difficulty)
         {

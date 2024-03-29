@@ -40,10 +40,14 @@ namespace ClassLibrary1.Pieces
 
         internal void Damage(Attack attack)
         {
-            //splash adjacent units
-            if (CombatTypes.SplashDamage(attack.Type, this.Type))
-                foreach (Defense defense in Piece.GetBehavior<IKillable>().Defenses)
-                    if (defense != this && GetAdditionalDmg(defense.DefenseCur))
+            if (CombatTypes.DoSplash(attack.Type, this.Type))
+                foreach (Defense defense in Game.Rand.Iterate(Piece.Tile.GetAdjacentTiles()
+                        .Select(t => t?.Piece)
+                        .Where(p => p?.Side != attack.Piece.Side)
+                        .Select(p => p?.GetBehavior<IKillable>())
+                        .Where(k => k != null && !k.Dead)
+                        .SelectMany(k => k.TotalDefenses)))
+                    if (defense != this && CombatTypes.SplashAgainst(defense) && DoAdditionalDmg(defense.Piece, defense.DefenseCur))
                         defense.Damage();
 
             Damage();
@@ -51,8 +55,8 @@ namespace ClassLibrary1.Pieces
         private void Damage()
         {
             if (Type == DefenseType.Hits && Piece.HasBehavior(out IAttacker attacker))
-                foreach (Attack attack in attacker.Attacks)
-                    if (GetAdditionalDmg(attack.AttackCur))// - attack.GetRegen()))
+                foreach (Attack attack in Game.Rand.Iterate(attacker.Attacks))
+                    if (DoAdditionalDmg(attack.Piece, attack.AttackCur))
                         attack.Damage();
 
             if (!this.Dead)
@@ -61,7 +65,7 @@ namespace ClassLibrary1.Pieces
             if (Type == DefenseType.Hits && this.Dead)
                 Piece.Die();
         }
-        private bool GetAdditionalDmg(int cur)
+        private bool DoAdditionalDmg(Piece piece, int cur)
         {
             double dmgChance = 0;
             if (cur > 0)
@@ -69,6 +73,8 @@ namespace ClassLibrary1.Pieces
                     dmgChance = DmgValue(this.DefenseCur) / (double)DmgValue(cur);
                 else
                     dmgChance = (cur + 1) / (double)(this.DefenseCur + 2);
+            if (piece != this.Piece)
+                dmgChance /= 2;
             return Game.Rand.Bool(dmgChance);
         }
 

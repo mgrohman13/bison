@@ -260,9 +260,9 @@ namespace WinFormsApp1
                     dgvAttacks.DataSource = attacker.Attacks.OrderByDescending(a => a.Range).Select(a => new
                     {
                         a.Type,
-                        Attack = $"{a.AttackCur}" + (a.AttackCur < a.AttackMax ? $"/{a.AttackMax}" + (a.GetRegen() > 0 ? $" +{a.GetRegen()}" : "") : ""),
                         Range = a.Range > Attack.MELEE_RANGE ?
                             $"{a.Range:0.0}" + (a.Range.ToString("0.0") != a.RangeBase.ToString("0.0") ? $"/{a.RangeBase:0.0}" : "") : "0",
+                        Attack = $"{a.AttackCur}" + (a.AttackCur < a.AttackMax ? $"/{a.AttackMax}" + (a.GetRegen() > 0 ? $" +{a.GetRegen()}" : "") : ""),
                         a.Rounds,
                     }).ToList();
                     dgvAttacks.Columns["Type"].Visible = attacker.Attacks.Any(a => a.Type != AttackType.Kinetic);

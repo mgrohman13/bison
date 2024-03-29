@@ -8,6 +8,8 @@ namespace ClassLibrary1
     [Serializable]
     internal class EnemyResearch : IResearch
     {
+        private const Type noType = Type.BuildingCost;
+
         public Game Game { get; private set; }
 
         private Type _type;
@@ -16,12 +18,13 @@ namespace ClassLibrary1
 
         private readonly HashSet<Type> _available;
 
-        private static readonly Type[] Unlocks = new Type[] { Type.MechShields, Type.MechLasers, Type.MechExplosives, Type.MechArmor };
+        //in order of liklihood
+        private static readonly Type[] Unlocks = new Type[] { Type.MechEnergyWeapons, Type.MechShields, Type.MechRange, Type.MechArmor, Type.MechLasers, Type.MechExplosives, };
 
         public EnemyResearch(Game game)
         {
             Game = game;
-            _type = Type.BuildingCost;
+            _type = noType;
             _research = 0;
             _difficulty = 1;
             _available = new HashSet<Type>();
@@ -30,20 +33,25 @@ namespace ClassLibrary1
         public void EndTurn(double difficulty)
         {
             if (Game.Rand.Bool())
-                _type = Game.Rand.Bool() ? Type.BuildingCost : Game.Rand.SelectValue(Enum.GetValues<Type>()
-                    .Where(t => Research.IsMech(t) && (_available.Contains(t) || !Unlocks.Contains(t))));
+                _type = Game.Rand.Bool() ? noType : Game.Rand.SelectValue(Enum.GetValues<Type>()
+                    .Where(t => Research.IsMech(t) && TypeVailable(t)));
             _research += Game.Rand.OE(difficulty);
             _difficulty = difficulty;
 
             if (_available.Count < Unlocks.Length)
             {
                 double cost = Math.Pow(1.3, _available.Count) * Math.Pow(_available.Count + 1, 1.3) * 1.69;
-                if (_research > cost * Game.Rand.Gaussian(2.1, .13))
+                if (_research > cost * Game.Rand.GaussianCapped(2.1, .13))
                 {
                     _research -= cost;
-                    while (!_available.Add(Game.Rand.SelectValue(Unlocks))) ;
+                    while (!_available.Add(Game.Rand.SelectValue(Unlocks, t => Unlocks.Length - Array.IndexOf(Unlocks, t)))) ;
                 }
             }
+        }
+
+        private bool TypeVailable(Type type)
+        {
+            return (_available.Contains(type) || !Unlocks.Contains(type));
         }
 
         public int GetLevel()
@@ -53,11 +61,11 @@ namespace ClassLibrary1
 
         public int GetMinCost()
         {
-            return Game.Rand.Round(Math.Pow(GetLevel() + 6.5 * Consts.ResearchFactor, .65));
+            return Game.Rand.Round(Math.Pow(GetLevel() + 7.8 * Consts.ResearchFactor, 0.65));
         }
         public int GetMaxCost()
         {
-            return Game.Rand.Round(Math.Pow(GetLevel() + .39 * Consts.ResearchFactor, 1.04));
+            return Game.Rand.Round(Math.Pow(GetLevel() + 0.169 * Consts.ResearchFactor, 1.04)) + 390;
         }
 
         public double GetMult(Type type, double pow)
@@ -66,48 +74,43 @@ namespace ClassLibrary1
             switch (type)
             {
                 case Type.MechAttack:
-                    start = .61;
-                    mult = .91;
+                    start = 1.3;
+                    mult = 0.8;
                     break;
                 case Type.MechEnergyWeapons:
-                    start = 0.87;
-                    mult = 1.13;
+                    start = 1.4;
+                    mult = 0.9;
                     break;
                 case Type.MechLasers:
-                    start = 1.13;
-                    mult = .91;
+                    start = 0.7;
+                    mult = 1.5;
                     break;
                 case Type.MechExplosives:
-                    start = 1.13;
-                    mult = .91;
+                    mult = 0.7;
                     break;
                 case Type.MechRange:
-                    start = 1.65;
-                    mult = .78;
+                    start = 0.5;
+                    mult = 1.3;
                     break;
                 case Type.MechDefense:
-                    start = 1.39;
-                    mult = 1;
+                    start = 0.9;
+                    mult = 1.0;
                     break;
                 case Type.MechShields:
-                    start = 1.26;
-                    mult = 1;
+                    start = 1.2;
+                    mult = 0.6;
                     break;
                 case Type.MechArmor:
-                    start = 1.169;
-                    mult = 1;
+                    mult = 1.3;
                     break;
                 case Type.MechMove:
-                    start = 1.26;
-                    mult = .52;
+                    start = 1.5;
+                    mult = 0.5;
                     break;
                 case Type.MechResilience:
-                    start = 1;
-                    mult = .65;
+                    mult = 0.4;
                     break;
                 case Type.MechVision:
-                    start = 1;
-                    mult = 1;
                     break;
                 default: throw new Exception();
             }
@@ -120,31 +123,38 @@ namespace ClassLibrary1
         }
         public bool MakeType(Type type)
         {
-            double mult = 1, add = 0;
+            double start, mult;
             switch (type)
             {
                 case Type.MechEnergyWeapons:
-                    add = -.39;
+                    start = 1;
+                    mult = .65;
                     break;
                 case Type.MechLasers:
-                case Type.MechExplosives:
+                    start = .13;
                     mult = 1.3;
-                    add = -.91;
+                    break;
+                case Type.MechExplosives:
+                    start = 0;
+                    mult = 1;
                     break;
                 case Type.MechRange:
-                    mult = .78;
-                    add = -.13;
-                    break;
-                case Type.MechArmor:
+                    start = .52;
+                    mult = .91;
                     break;
                 case Type.MechShields:
-                    mult = .91;
-                    add = .13;
+                    start = 1.3;
+                    mult = .78;
+                    break;
+                case Type.MechArmor:
+                    start = .39;
+                    mult = 1.13;
                     break;
                 default: throw new Exception();
             }
-            double difficulty = add + mult * (_difficulty - 1);
-            return (_available.Contains(type) || !Unlocks.Contains(type)) && Game.Rand.Bool((1.3 + difficulty) / (5.2 + difficulty));
+
+            double difficulty = start + mult * (_difficulty - 1);
+            return TypeVailable(type) && Game.Rand.Bool(.91 * Math.Pow(difficulty / (difficulty + 1), 1.3));
         }
 
         Type IResearch.GetType()

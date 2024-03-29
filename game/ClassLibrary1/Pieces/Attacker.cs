@@ -12,7 +12,7 @@ namespace ClassLibrary1.Pieces
         private readonly List<Attack> _attacks;
 
         public Piece Piece => _piece;
-        public IReadOnlyCollection<Attack> Attacks => _attacks.AsReadOnly();
+        public IReadOnlyCollection<Attack> Attacks => CombatTypes.OrderAtt(_attacks);
 
         //public double TotalAttackCur2 => Consts.SumStats(Attacks.Select(a => a.AttackCur));
         //public double TotalAttackMax2 => Consts.SumStats(Attacks.Select(a => a.AttackMax));
@@ -39,7 +39,7 @@ namespace ClassLibrary1.Pieces
                 if (a < _attacks.Count)
                     _attacks[a].Upgrade(attacks[a]);
                 else
-                    _attacks.Add(new(Piece, attacks[a])); 
+                    _attacks.Add(new(Piece, attacks[a]));
         }
 
         bool IAttacker.Fire(IKillable target)

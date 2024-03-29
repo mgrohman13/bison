@@ -29,36 +29,35 @@ namespace WinFormsApp1
         /// </summary>
         private void InitializeComponent()
         {
-            this.lblMouse = new System.Windows.Forms.Label();
-            this.SuspendLayout();
+            lblMouse = new System.Windows.Forms.Label();
+            SuspendLayout();
             // 
             // lblMouse
             // 
-            this.lblMouse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.lblMouse.BackColor = System.Drawing.Color.White;
-            this.lblMouse.Location = new System.Drawing.Point(355, 526);
-            this.lblMouse.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.lblMouse.Name = "lblMouse";
-            this.lblMouse.Size = new System.Drawing.Size(65, 15);
-            this.lblMouse.TabIndex = 0;
-            this.lblMouse.Text = "(-222,-222)";
-            this.lblMouse.TextAlign = System.Drawing.ContentAlignment.BottomRight;
+            lblMouse.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
+            lblMouse.BackColor = System.Drawing.Color.White;
+            lblMouse.Location = new System.Drawing.Point(0, 526);
+            lblMouse.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            lblMouse.Name = "lblMouse";
+            lblMouse.Size = new System.Drawing.Size(65, 15);
+            lblMouse.TabIndex = 0;
+            lblMouse.Text = "(-222,-222)";
+            lblMouse.TextAlign = System.Drawing.ContentAlignment.BottomRight;
             // 
             // Map
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Controls.Add(this.lblMouse);
-            this.Margin = new System.Windows.Forms.Padding(2);
-            this.Name = "Map";
-            this.Size = new System.Drawing.Size(420, 541);
-            this.Load += new System.EventHandler(this.Map_Load);
-            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Map_KeyDown);
-            this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.Map_KeyUp);
-            this.MouseClick += new System.Windows.Forms.MouseEventHandler(this.Map_MouseClick);
-            this.MouseMove += new System.Windows.Forms.MouseEventHandler(this.Map_MouseMove);
-            this.ResumeLayout(false);
-
+            AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
+            AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            Controls.Add(lblMouse);
+            Margin = new System.Windows.Forms.Padding(2);
+            Name = "Map";
+            Size = new System.Drawing.Size(420, 541);
+            Load += Map_Load;
+            KeyDown += Map_KeyDown;
+            KeyUp += Map_KeyUp;
+            MouseClick += Map_MouseClick;
+            MouseMove += Map_MouseMove;
+            ResumeLayout(false);
         }
 
         #endregion

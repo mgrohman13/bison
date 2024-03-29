@@ -10,7 +10,7 @@ namespace ClassLibrary1
     [Serializable]
     public class Game
     {
-        public static readonly int? TEST_MAP_GEN = null; //500
+        public static readonly int? TEST_MAP_GEN = null;
 
         public static readonly MTRandom Rand;
         static Game()

@@ -103,8 +103,13 @@ FEATURES
 	power grid
 
 
+thicker lines when zooming in
+remove outliers from att/def bar length?
+enemy attacks/moves	
+	take into account new mechanics 
+rethink picking defense algorithm, randomize slightly 
+
 pull gen/upgrade value constants, research powers into special consts we can see and tweak together
-attack values on map display use formula
 attack range circle not accurate around corners
 support rallying, multiple moves to get to destination
 emperically test rand booleans for resources
@@ -113,64 +118,103 @@ combined power grid, but if separate pieces impose power penalty?
 	batteries - building/mechs
 		excess power convert to research
 	moving slower takes less energy?
+speed game up somehow?
 randomize tech tree
 alien morale
 metal types? 
+right click piece info?
+	attack though?? left click?
+use tooltips?
+	piece info on mouse over? 
+	tutorial type stuff?
+animations
+	all attacks
+	enemy moves
+research upgs show amt
 research
+	upgs show amt - exact where can e.g. core shields
 	exponential tiers - first excess power, then mining, etc.
 true fractal noise... build on smaller with larger as map grows?
 	how not retroactively affect explored??
-evaluate use MemoryCache instead of Dictionary
+alien types
+	discover, reasearch?
+	weaknesses? learn??
+metagame system pts
+	-1 to play
+	get for win or lose
+	spend for bonuses? unlocks? start with?
+	beat normal unlocks hard difficulty?
+evaluate use MemoryCache instead of Dictionary?
 fix mirror image painting? may confuse in future?
-range OP
 building costs get more expensive with upgrade - countered by cost research
-rally units
 replace func tell you cost even if you cant afford
 replace extractors?
-escape after clicking notify cb
-more expensive, fewer mechs
-disband mech (recycle?)
-	turn off instead?
-upgrade can decrease a stat!?!
-ignore cur selected unit in enemy attack radius
+disband mech
+	turn off power?
+	recycle?
 int-based repair system
-log colors, map colors for weapon/def types
+log colors for weapon/def types?
+	better log readability in general
 partial attacks?
 	use specific attack
 	rounds?
 occasional moves take long
 	generating resources?
-remove outliers from att/def bar length?
-
+more show attack options 
+	hide diff parts
+	e.g. lines only option 
+notify cboxes that arent supported
+after attack select to alien who actually defended
+fix build/repair/upgrade weirdness?
+	remove some research?
+	or clear up with colors?
+building upkeep?
+	disband/disable option
+check fors/foreaches again for Rand.Iterate
+nerf constructor vision increase
+map contiguity
+	instead, dont have walls limit move?
+		two diff kinds of walls? block and not block?
+		ensure spawns can reach core with move
+		ensure hive points have gaps "close enough"
+	use pathfinding to enforce? convert blocks
+buildings take more dmg somehow?
+	auto repair only work when not attacked?
+show mass/eng ratio on build screen? round mechs to 10? energy to 10? div by 10?
+move info bar to left of main map?
+minimap
+shroud
+	show last spotted aliens
+	keep alien vision in shroud for 1 turn after move out of vision?
+experience
+varaible scroll speed doesnt quite work
+scrap research doesnt lower cur?
+		
 EARLY GAME
-early core def/shield too strong?
-energy costs slightly too high
+early building def even weaker??
 mitigate balance of finding resources quicker?
 	distance to core? resource value?
 better balancing of starting mech
 	cost, speed/vision
 constructor better vision? quicker new constructors?
+	move?
+	???
+	constructor outrun too many early aliens?
 hardcoded initial scout mech?
-constructor outrun too many early aliens
-main map bar coloring for different att/def types
-notify cboxes that arent supported
 things a little too defensive?
 
+TOP PRIORITY
+rework repair
+end game
+
 COMBAT
-multiple defenses
-attack range
-attack types
 rethink move?
 have to not move to charge attacks?
 limit moving/attacking?
 	ranged cant do both?
 	melee limit move after attack? 
-pos/neg dmg at same time in same attack?
 replace range with melee/ranged flag and accuracy(?), LOS rules, etc.
 make num attacks, regen rate variables, reduce regen rate with dmg
-change inRepair to mean in any builder range?
-	constructor OP though? only do buildmech?
-splash damage hits adjacent units
 
 plan:
 convert new combat system

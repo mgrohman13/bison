@@ -249,30 +249,38 @@ namespace ClassLibrary1
         }
         public int GetMinCost()
         {
-            return Game.Rand.Round(Math.Pow(GetLevel() + 2.6 * Consts.ResearchFactor, 0.78) - 21);
+            return Game.Rand.Round(Math.Pow(GetLevel() + 2.6 * Consts.ResearchFactor, 0.78));
         }
         public int GetMaxCost()
         {
-            return Game.Rand.Round(Math.Pow(GetLevel() + 1.69 * Consts.ResearchFactor, 0.91) - 39);
+            return Game.Rand.Round(Math.Pow(GetLevel() + 1.69 * Consts.ResearchFactor, 0.91));
         }
         public bool MakeType(Type type)
         {
-            double chance = .5;
+            double totalPow, typePow;
             switch (type)
             {
-                case Type.MechRange:
                 case Type.MechShields:
-                    break;
                 case Type.MechLasers:
-                case Type.MechExplosives:
-                    chance *= Math.Pow(GetLevel() / (GetLevel() + Consts.ResearchFactor), 1.69);
-                    goto case Type.MechArmor;
+                    totalPow = .13;
+                    typePow = .91;
+                    break;
+                case Type.MechRange:
                 case Type.MechEnergyWeapons:
+                    totalPow = .39;
+                    typePow = .65;
+                    break;
                 case Type.MechArmor:
-                    chance *= Math.Pow(GetLast(type) / (double)GetLevel(), .65);
+                case Type.MechExplosives:
+                    totalPow = 1.3;
+                    typePow = .52;
                     break;
                 default: throw new Exception();
             }
+
+            double chance = .65 * Math.Pow(GetLevel() / (GetLevel() + Consts.ResearchFactor), totalPow);
+            chance *= Math.Pow(GetLast(type) / (double)GetLevel(), typePow);
+
             return HasType(type) && Game.Rand.Bool(chance);
         }
         public double GetMult(Type type, double pow)
@@ -321,17 +329,17 @@ namespace ClassLibrary1
             { Type.Turret, new Type[]               { Type.Constructor, } },
             { Type.Factory, new Type[]              { Type.Constructor, } },
 
-            { Type.MechShields, new Type[]          { Type.Mech, Type.CoreShields } },
+            { Type.MechShields, new Type[]          { Type.Mech, } },
             { Type.MechVision, new Type[]           { Type.Mech, Type.MechShields, } },
             { Type.MechMove, new Type[]             { Type.Mech, Type.MechVision, } },
             { Type.MechDefense, new Type[]          { Type.Mech, Type.MechShields, } },
             { Type.MechArmor, new Type[]            { Type.Mech, Type.MechDefense, } },
-            { Type.MechResilience, new Type[]       { Type.Mech, Type.MechMove,   Type.MechArmor } },
-            { Type.MechAttack, new Type[]           { Type.Mech, } },
-            { Type.MechEnergyWeapons, new Type[]    { Type.Mech, Type.MechAttack, Type.MechShields, } },
-            { Type.MechRange, new Type[]            { Type.Mech, Type.MechAttack, Type.MechMove, } },
-            { Type.MechLasers, new Type[]           { Type.Mech, Type.MechRange,  Type.MechEnergyWeapons, } },
-            { Type.MechExplosives, new Type[]       { Type.Mech, Type.MechRange,  Type.MechArmor, } },
+            { Type.MechResilience, new Type[]       { Type.Mech, Type.MechMove, Type.MechArmor } },
+            { Type.MechAttack, new Type[]           { Type.Mech, Type.MechShields, } },
+            { Type.MechRange, new Type[]            { Type.Mech, Type.MechAttack, } },
+            { Type.MechEnergyWeapons, new Type[]    { Type.Mech, Type.MechAttack, } },
+            { Type.MechLasers, new Type[]           { Type.Mech, Type.MechRange, Type.MechEnergyWeapons, } },
+            { Type.MechExplosives, new Type[]       { Type.Mech, Type.MechRange, Type.MechResilience, } },
 
             { Type.ConstructorDefense, new Type[]   { Type.Constructor, Type.MechShields, Type.MechArmor, } }, //remove armor dependency, if armor not researched only allow shield type?
             { Type.ConstructorCost, new Type[]      { Type.Constructor, Type.Factory, } },

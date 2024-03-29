@@ -15,14 +15,14 @@ namespace ClassLibrary1
         public const double PathWidthDev = .13;
         public const double PathWidthMin = 9.1;
 
-        public const double ResourceAvgDist = 21;
+        public const double ResourceAvgDist = 16.9;
 
         public const double ResearchFactor = 2600;
 
-        public const double EnemyStartEnergy = 5200;
-        public const double EnemyEnergy = 260;
-        public const double EnemyEnergyRampTurns = 52;
-        public const double DifficultyIncTurns = 91;
+        public const double EnemyStartEnergy = 6500;
+        public const double EnemyEnergy = 390;
+        public const double EnemyEnergyRampTurns = 91;
+        public const double DifficultyIncTurns = 65;
         public const double DifficultyEnergyPow = 1.69;
         public const double DifficultyResearchPow = 1.3;
         public const double DifficultyMoveDirPow = .65;

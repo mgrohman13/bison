@@ -31,7 +31,7 @@ namespace ClassLibrary1.Pieces
         public double Range => RangeBase;
         public double RangeBase => Consts.GetDamagedValue(Piece, _values.Range, MELEE_RANGE);
 
-        public double Rounds => Math.Sqrt(AttackCur);
+        public double Rounds => AttackCur;// Math.Sqrt(AttackCur);
 
         internal Attack(Piece piece, Values values)
         {
@@ -80,7 +80,7 @@ namespace ClassLibrary1.Pieces
             if (!CanAttack(attackFrom, target, out IKillable killable))
                 return Enumerable.Empty<IKillable>();
 
-            IEnumerable<IKillable> friendly = target.Tile.GetTilesInRange(MELEE_RANGE, false, null)
+            IEnumerable<IKillable> friendly = target.Tile.GetAdjacentTiles()
                 .Select(t => t.Piece)
                 .Where(p => p?.Side == target.Side && p.HasBehavior<IAttacker>())
                 .Select(p => p?.GetBehavior<IKillable>())
@@ -121,20 +121,23 @@ namespace ClassLibrary1.Pieces
                 int rounds = Game.Rand.Round(Rounds);
                 for (int a = 0; a < rounds && AttackCur > 0 && !target.Dead; a++)
                 {
-                    Defense defense = Game.Rand.Iterate(target.TotalDefenses.Where(d => d.DefenseCur > 0)).OrderBy(CombatTypes.OrderBy).First();
+                    Defense defense = Game.Rand.Iterate(target.TotalDefenses.Where(d => !d.Dead)).OrderBy(CombatTypes.CompareDef).First();
+                    bool activeDefense = target.HasBehavior<IAttacker>();
 
-                    double attChance = AttackCur / (double)(AttackCur + defense.DefenseCur);
-                    if (Game.Rand.Bool(attChance))
+                    int att = Game.Rand.RangeInt(0, AttackCur);
+                    int def = Game.Rand.RangeInt(0, defense.DefenseCur);
+                    if (att > def || (att == def && !activeDefense))
                         defense.Damage(this);
-                    else if (target.HasBehavior<IAttacker>())
+                    else if (def < att && activeDefense)
                         this._attackCur--;
                     this._attacked = true;
                 }
 
                 if (this.Attacked)
+                {
                     Piece.Game.Log.LogAttack(this, startAttack, target, startDefense);
-
-                return true;
+                    return true;
+                }
             }
             return false;
         }

@@ -197,8 +197,8 @@ namespace ClassLibrary1.Pieces.Players
             private void UpgradeConstructorDefense(double researchMult)
             {
                 this.hits = Gen(DefenseType.Hits, 1);
-                this.shield = Gen(DefenseType.Shield, 1.17);
-                this.armor = Gen(DefenseType.Armor, 2.6);
+                this.shield = Gen(DefenseType.Shield, 1.3);
+                this.armor = Gen(DefenseType.Armor, 2.1);
 
                 IKillable.Values Gen(DefenseType type, double mult)
                 {

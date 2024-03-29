@@ -38,7 +38,7 @@ namespace ClassLibrary1.Pieces.Players
             this.Vision = vision;
             this.Resilience = resilience;
             this.Killable = killable.ToList().AsReadOnly();
-            this.Attacker = attacks.ToList().AsReadOnly();
+            this.Attacker = CombatTypes.OrderAtt(attacks);
             this.Movable = movable;
 
             CalcCost(out double energy, out double mass);
@@ -82,7 +82,7 @@ namespace ClassLibrary1.Pieces.Players
             energy = total * energyPct;
             mass = (total - energy) / Consts.MechMassDiv;
         }
-        private int TotalCost()
+        public int TotalCost()
         {
             return Energy + Mass;
         }
@@ -143,8 +143,8 @@ namespace ClassLibrary1.Pieces.Players
         {
             double resilience = upgrade.Resilience;
             double vision = upgrade.Vision;
-            IEnumerable<IKillable.Values> killable = upgrade.Killable;
-            IEnumerable<IAttacker.Values> attacker = upgrade.Attacker;
+            IEnumerable<IKillable.Values> killable = upgrade.Killable.ToList();
+            IEnumerable<IAttacker.Values> attacker = upgrade.Attacker.ToList();
             IMovable.Values movable = upgrade.Movable;
 
             Type researching = research.GetType();
@@ -315,45 +315,40 @@ namespace ClassLibrary1.Pieces.Players
             {
                 Debug.WriteLine($"ModStat: {blueprint.TotalCost()} ({minTotal}-{maxTotal})");
 
-                int sum = blueprint.Killable.Select(k => k.Defense).Concat(blueprint.Attacker.Select(a => a.Attack)).Sum();
-                int select = Game.Rand.Next(sum);
+                int sum = blueprint.Killable.Where(CanModDef).Select(k => (int?)k.Defense)
+                    .Concat(blueprint.Attacker.Where(CanModAtt).Select(a => (int?)a.Attack))
+                    .Sum() ?? 0;
+                if (sum == 0)
+                    return false;
 
                 List<IKillable.Values> killable = new();
                 List<IAttacker.Values> attacker = new();
                 int mod = increase ? 1 : -1;
-                bool changed = false;
+                int select = Game.Rand.Next(sum);
                 foreach (var k in Game.Rand.Iterate(blueprint.Killable))
-                {
-                    select -= k.Defense;
-                    if (select < 0)
+                    if (CanModDef(k))
                     {
-                        select = sum;
-                        changed = increase || k.Defense > 1;
-                        killable.Add(new(k.Type, Math.Max(1, k.Defense + mod)));
+                        select -= k.Defense;
+                        if (select < 0)
+                            killable.Add(new(k.Type, Math.Max(1, k.Defense + mod)));
+                        else
+                            killable.Add(k);
                     }
-                    else
-                    {
-                        killable.Add(k);
-                    }
-                }
                 foreach (var a in Game.Rand.Iterate(blueprint.Attacker))
-                {
-                    select -= a.Attack;
-                    if (select < 0)
+                    if (CanModAtt(a))
                     {
-                        select = sum;
-                        changed = increase || a.Attack > 1;
-                        attacker.Add(new(a.Type, Math.Max(1, a.Attack + mod)));
+                        select -= a.Attack;
+                        if (select < 0)
+                            attacker.Add(new(a.Type, Math.Max(1, a.Attack + mod)));
+                        else
+                            attacker.Add(a);
                     }
-                    else
-                    {
-                        attacker.Add(a);
-                    }
-                }
 
-                if (changed)
-                    blueprint = new(blueprintNum, blueprint.UpgradeFrom, blueprint.ResearchLevel, blueprint.Vision, killable, blueprint.Resilience, attacker, blueprint.Movable);
-                return changed;
+                blueprint = new(blueprintNum, blueprint.UpgradeFrom, blueprint.ResearchLevel, blueprint.Vision, killable, blueprint.Resilience, attacker, blueprint.Movable);
+                return true;
+
+                bool CanModDef(IKillable.Values k) => increase || k.Defense > 1;
+                bool CanModAtt(IAttacker.Values a) => increase || a.Attack > 1;
             }
         }
         private static double GenVision(IResearch research)
@@ -409,7 +404,7 @@ namespace ClassLibrary1.Pieces.Players
                 Type researchType = a > 0 ? Type.Mech : research.GetType();
 
                 AttackType type = GetAttackType(researchType, out bool isLaser);
-                bool ranged = IsRanged(researchType, isLaser, type);
+                bool ranged = IsRanged(researchType, isLaser, ref type);
                 double range = GetRange(researchType, ranged, out double rangeAvg);
 
                 HashSet<Type> apply = GetResearchTypes(type, ranged);
@@ -458,12 +453,16 @@ namespace ClassLibrary1.Pieces.Players
                 used.Add(type);
                 return type;
             }
-            bool IsRanged(Type researchType, bool isLaser, AttackType type)
+            bool IsRanged(Type researchType, bool isLaser, ref AttackType type)
             {
                 bool ranged = isLaser || type == AttackType.Explosive ||
                     researchType == Type.MechRange || research.MakeType(Type.MechRange);
-                if ((ranged && type == AttackType.Energy && !research.HasType(Type.MechLasers))
-                        || (usedRange && Game.Rand.Bool()))
+                if (ranged && type == AttackType.Energy && !research.HasType(Type.MechLasers))
+                    if (researchType == Type.MechRange)
+                        type = AttackType.Kinetic;
+                    else
+                        ranged = false;
+                if (ranged && usedRange && Game.Rand.Bool())
                     ranged = false;
                 usedRange |= ranged;
                 return ranged;
@@ -501,18 +500,18 @@ namespace ClassLibrary1.Pieces.Players
         }
         private static IMovable.Values GenMovable(IResearch research)
         {
-            double avg = 13, dev = .13, oe = .21;
+            double avg = 9.1, dev = .13, oe = .21;
 
             double researchMult = research.GetMult(Type.MechMove, 1);
-            const double lowPenalty = 5;
+            const double lowPenalty = 4.5;
             if (researchMult < lowPenalty)
                 avg *= researchMult / lowPenalty;
 
             ModValues(research.GetType() == Type.MechMove, 1.69, ref avg, ref dev, ref oe);
 
-            double move = Game.Rand.GaussianOE(avg * research.GetMult(Type.MechMove, .4), dev, oe, 1);
-            int max = Game.Rand.GaussianOEInt(move * 2, dev * 2.6, oe * 1.3, (int)move + 1);
-            int limit = Game.Rand.GaussianOEInt(move + max, dev * 2.6, oe * 2.6, max + 1);
+            double move = Game.Rand.GaussianOE(1 + avg * research.GetMult(Type.MechMove, .4), dev, oe, 1);
+            int max = Game.Rand.GaussianOEInt(1 + move * 2, dev * 2.6, oe * 1.3, (int)move + 1);
+            int limit = Game.Rand.GaussianOEInt(1 + move + max, dev * 2.6, oe * 2.6, max + 1);
 
             return new(move, max, limit);
         }

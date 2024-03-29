@@ -258,8 +258,8 @@ namespace WinFormsApp1
             private string FormatAtt(Func<IAttacker.Values, string> Get)
             {
                 var data = Blueprint.Attacker.Select(Get);
-                if (data.All("0%".Equals))
-                    return "0%";
+                if (data.All("0".Equals))
+                    return "0";
                 return string.Join(" , ", data);
             }
 
