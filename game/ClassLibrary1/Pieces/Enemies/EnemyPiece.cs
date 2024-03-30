@@ -10,5 +10,10 @@ namespace ClassLibrary1.Pieces.Enemies
             : base(tile.Map.Game.Enemy, tile)
         {
         }
-    }
+
+        //internal override void Die()
+        //{
+        //    Game.CountKill();
+        //}
+    }    
 }

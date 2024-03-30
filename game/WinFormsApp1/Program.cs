@@ -112,7 +112,7 @@ namespace WinFormsApp1
                 Type? researched = Game.EndTurn();
                 if (Game.GameOver)
                 {
-                    MessageBox.Show("Game over!  " + Game.Turn + " turns.");
+                    MessageBox.Show((Game.Win ? "VICTORY!!!  :)" : "DEFEAT!  :(") + $"{Environment.NewLine}Game over...  {Game.Turn} turns.");
                     //Game = new Game(savePath);
                 }
                 else

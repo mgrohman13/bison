@@ -1,4 +1,5 @@
 ﻿using ClassLibrary1.Pieces;
+using ClassLibrary1.Pieces.Enemies;
 using ClassLibrary1.Pieces.Players;
 using ClassLibrary1.Pieces.Terrain;
 using MattUtil;
@@ -24,6 +25,7 @@ namespace ClassLibrary1
 
         private readonly Noise noise;
         private readonly Path[] _paths;
+        private readonly List<Cave> _caves;
 
         private readonly Dictionary<Point, Piece> _pieces;
         private readonly HashSet<Point> _explored;
@@ -44,22 +46,14 @@ namespace ClassLibrary1
             this.Game = game;
 
             double max = Game.Rand.GaussianOE(130, .091, .13, 65);
-            double min = Game.Rand.GaussianCapped(5.2, .065, 2.6);
-            int steps = Game.Rand.GaussianOEInt(6.5, .13, .13, 4);
+            double min = Game.Rand.GaussianCapped(5.2, .078, 2.6);
+            int steps = Game.Rand.GaussianOEInt(6.5, .13, .13, Game.Rand.RangeInt(2, 5));
             double weightScale = Game.Rand.Weighted(.78) + Game.Rand.OE(.13);
-            //double weightPower = Game.Rand.GaussianOE(6.5, .13, .13, 3.9);
-            this.noise = new Noise(Game.Rand, min, max, steps, .052, weightScale);//, weightPower);
-
-            //Tuple<double, double>[] enemyDirs = Game.Rand.Iterate(new Tuple<double, double>[] {
-            //    new(1, 1),
-            //    new(Game.Rand.GaussianCapped(1.69, .13,     1   ), Game.Rand.GaussianCapped( .65, .13 ,  .52)),
-            //    new(Game.Rand.GaussianCapped(1.13, .13,      .52), Game.Rand.GaussianCapped(1.69, .13 , 1.3 )),
-            //    new(Game.Rand.GaussianOE    (1   , .21, .26, .13), Game.Rand.GaussianCapped(1   , .169,  .65)),
-            //}).ToArray();
+            this.noise = new Noise(Game.Rand, min, max, steps, .065, weightScale);
 
             int numPaths = Game.Rand.GaussianOEInt(Math.PI, .091, .039, 2);
             double separation = Consts.PathMinSeparation;
-            separation = Game.Rand.GaussianCapped(separation, .104, Math.Max(0, 2 * separation - TWO_PI)) / numPaths;
+            separation = Game.Rand.GaussianCapped(separation, .104, Math.Max(0, 2 * separation - TWO_PI)) / (double)numPaths;
             double[] angles;
             bool valid;
             do
@@ -81,20 +75,48 @@ namespace ClassLibrary1
             enemyPowers[1] = Increase(enemyPowers[1]);
             enemyPowers = enemyPowers.Select(x => x > 2 ? 1 + Math.Sqrt(x - 1) : x).ToArray();
             enemyPowers[1] = 1 / enemyPowers[1];
-            for (int a = 2; a < numPaths; a++)
+            for (int c = 2; c < numPaths; c++)
                 if (Game.Rand.Bool())
-                    enemyPowers[a] = 1 / enemyPowers[a];
+                    enemyPowers[c] = 1 / enemyPowers[c];
             Game.Rand.Shuffle(enemyPowers);
 
             this._paths = new Path[numPaths];
-            for (int a = 0; a < numPaths; a++)
+            for (int d = 0; d < numPaths; d++)
             {
-                double enemyPow = enemyPowers[a];
+                double enemyPow = enemyPowers[d];
                 double enemyMult = 1 + Game.Rand.OE(1 / (enemyPow > 1 ? enemyPow : 1 / enemyPow));
                 if (Game.Rand.Bool())
                     enemyMult = 1 / enemyMult;
-                this._paths[a] = new Path(angles[a], enemyMult / enemyPow, enemyPow);
+                this._paths[d] = new Path(angles[d], enemyMult / enemyPow, enemyPow);
             }
+
+            separation /= 2.6;
+            double caveMult = Math.PI / numPaths;
+            int numCaves = Game.Rand.GaussianOEInt(2 + (Math.PI - 2) * caveMult * caveMult, .091, .039, 2);
+            _caves = new();
+            for (int e = 0; e < numCaves; e++)
+            {
+                int t = 0, tries = numCaves * numCaves * 13 + 169;
+                double caveDir, distMult = 1;
+                do
+                {
+                    caveDir = Game.Rand.NextDouble() * TWO_PI;
+                    if (t++ > tries)
+                    {
+                        distMult = 1.3;
+                        if (Game.Rand.Bool())
+                            e = numCaves;
+                        break;
+                    }
+                }
+                while (_caves.Select(c => GetAngle(c.Center)).Concat(angles).Any(a => GetAngleDiff(caveDir, a) < separation));
+
+                PointD cave = GetPoint(caveDir, Game.Rand.GaussianOE(Consts.CaveDistance * distMult, Consts.CaveDistanceDev / distMult, Consts.CaveDistanceOE, Consts.CaveMinDist));
+                PointD connect = Game.Rand.SelectValue(_caves.Select(c => c.Center).Concat(_paths.Select(p => p.GetClosestPoint(cave.X, cave.Y)))
+                     .OrderBy(p => GetDistSqr(cave, p)).Take(2));
+                _caves.Add(new(cave, connect));//, connectCave));
+            }
+            if (_caves.Count < 2) throw new Exception();
 
             this._pieces = new();
             this._explored = new();
@@ -104,17 +126,12 @@ namespace ClassLibrary1
 
             LogEvalTime();
         }
-        //public void OnDeserialization(object sender)
-        //{
-        //    //LogEvalTime();
-        //}
-
         internal void GenerateStartResources()
         {
-            for (int a = 0; a < 9; a++)
+            for (int a = 0; a < 8; a++)
             {
                 Tile tile = StartTile();
-                switch (GetResourceType())
+                switch (GenResourceType())
                 {
                     case ResourceType.Artifact:
                         Artifact.NewArtifact(tile);
@@ -134,17 +151,54 @@ namespace ClassLibrary1
             foreach (var explore in Game.Rand.Iterate(_paths))
                 GenResources(explore.Explore(this, Consts.PathWidth));
         }
+        internal void SpawnHives()
+        {
+            int hives = Game.Rand.GaussianOEInt(Math.PI - 1 + _caves.Count, .091, .039, Game.Rand.Round(3.9));
+            Dictionary<Cave, int> chances = new(), counts = new();
+            foreach (Cave c in _caves)
+                chances[c] = 2;
+            while (chances.Values.Sum() < hives)
+                chances[Game.Rand.SelectValue(chances)]++;
+            for (int f = 0; f < hives; f++)
+            {
+                Cave cave = Game.Rand.SelectValue(_caves);
+                if (Game.Rand.Next(13) > 0)
+                    chances[cave]--;
+                Hive.NewHive(SpawnTile(cave.Center, Consts.CaveSize), f);
+                counts.TryGetValue(cave, out int count);
+                counts[cave] = count + 1;
+            }
+
+            int cavesLeft = _caves.Count, resources = cavesLeft + 2;
+            double avgHives = hives / (double)cavesLeft + 1;
+            foreach (var cave in Game.Rand.Iterate(_caves))
+            {
+                counts.TryGetValue(cave, out int caveHives);
+                int spawn = resources;
+                if (cavesLeft > 1)
+                {
+                    double avg = resources / (double)cavesLeft * avgHives / (caveHives + 1.0);
+                    int cap = (int)Math.Ceiling(Math.Max(2 * avg - resources, 0));
+                    spawn = Math.Min(resources, avg > cap ? Game.Rand.GaussianCappedInt(avg, 1, cap) : Game.Rand.RangeInt(0, resources));
+                }
+
+                cavesLeft--;
+                resources -= spawn;
+                for (int c = 0; c < spawn; c++)
+                    GenResources(new[] { SpawnTile(cave.Center, Consts.CaveSize) }, true);
+            }
+        }
 
         [NonSerialized]
-        private Dictionary<Point, Tuple<double, double>> evaluateCache;
-        private double Evaluate(int x, int y, out double lineDist)
+        private Dictionary<Point, float> evaluateCache;//Tuple<float, float>> evaluateCache;
+        private float Evaluate(int x, int y)//, out float lineDist)
         {
             Point p = new(x, y);
-            evaluateCache ??= new Dictionary<Point, Tuple<double, double>>();
-            if (evaluateCache.TryGetValue(p, out Tuple<double, double> t))
+            evaluateCache ??= new();
+            if (evaluateCache.TryGetValue(p, out var t))
             {
-                lineDist = t.Item2;
-                return t.Item1;
+                //lineDist = t.Item2;
+                return t;//.Item1;
             }
 
             watch.Start();
@@ -161,11 +215,6 @@ namespace ClassLibrary1
                     double angle = GetAngle(x - point.X, y - point.Y);
                     if (GetAngleDiff(path.Angle, angle) > HALF_PI)
                     {
-                        static double GetDistSqr(int x, int y, PointD point)
-                        {
-                            double distX = point.X - x, distY = point.Y - y;
-                            return distX * distX + distY * distY;
-                        }
                         double distSqr = Math.Min(GetDistSqr(x, y, path.Left), GetDistSqr(x, y, path.Right));
                         backMult = Math.Min(1, Consts.PathWidth * Consts.PathWidth / distSqr);
                     }
@@ -178,13 +227,20 @@ namespace ClassLibrary1
                 double m = Math.Min(Gradient(path.Left, 1), Gradient(path.Right, -1));
                 mult += m * m;
             }
+            mult += _caves.Max(c => c.GetMult(x, y));
 
-            lineDist = minLineDist;
-            double value = noise.Evaluate(x, y) * mult;
-            evaluateCache.Add(p, new(value, lineDist));
+            //lineDist = (float)minLineDist;
+            float value = (float)(noise.Evaluate(x, y) * mult);
+            evaluateCache.Add(p, value);// new(value, lineDist));
 
             watch.Stop();
             return value;
+        }
+        private static double GetDistSqr(PointD v, PointD w) => GetDistSqr(v.X, v.Y, w);
+        private static double GetDistSqr(double x, double y, PointD point)
+        {
+            double distX = point.X - x, distY = point.Y - y;
+            return distX * distX + distY * distY;
         }
 
         public Tile GetVisibleTile(Point p)
@@ -206,9 +262,10 @@ namespace ClassLibrary1
         }
         internal Tile GetTile(int x, int y)
         {
-            double terrain = Evaluate(x, y, out double lineDist);
+            double terrain = Evaluate(x, y);//, out float lineDist);
+            //also use dist from center?
             bool chasm = false;// (5 * terrain * Consts.PathWidth + lineDist) / 2.0 % Consts.PathWidth < 1;
-            if (!chasm && terrain < 1 / 3.0)
+            if (!chasm && terrain < 1 / 4.0)
                 return null;
 
             chasm |= terrain < 1 / 2.0;
@@ -285,19 +342,24 @@ namespace ClassLibrary1
         {
             if (evalCount > 0)
             {
-                float evalTime = 1000f * watch.ElapsedTicks / Stopwatch.Frequency;
+                float evalTime = 1000f * watch.ElapsedTicks / (float)Stopwatch.Frequency;
                 Debug.WriteLine($"Evaluate ({evalCount}): {evalTime}");
                 watch.Reset();
                 evalCount = 0;
             }
         }
 
-        internal Tile StartTile()
+        internal Tile StartTile() => SpawnTile(new(0, 0), Consts.PathWidth + Consts.ResourceAvgDist);
+        private Tile SpawnTile(PointD spawnCenter, double deviation)
         {
+            int RandCoord(double coord) => Game.Rand.Round(coord + Game.Rand.Gaussian(deviation));
             Tile tile;
             do
-                tile = GetTile(Game.Rand.GaussianInt(Consts.PathWidth + Consts.ResourceAvgDist), Game.Rand.GaussianInt(Consts.PathWidth + Consts.ResourceAvgDist));
+                tile = GetTile(RandCoord(spawnCenter.X), RandCoord(spawnCenter.Y));
             while (InvalidStartTile(tile));
+
+            //Debug.WriteLine($"SpawnTile ({Angle:0.00}) {distance:0.0}: {spawnCenter} -> {tile}");
+
             return tile;
         }
         internal static bool InvalidStartTile(Tile tile)
@@ -313,7 +375,7 @@ namespace ClassLibrary1
             return valid;
         }
 
-        private void Explore(Tile tile, double vision)
+        internal void Explore(Tile tile, double vision)
         {
             if (tile.X != 0 || tile.Y != 0)
             {
@@ -322,11 +384,11 @@ namespace ClassLibrary1
                 GenResources(explore.Explore(tile, vision));
             }
         }
-        private void GenResources(IEnumerable<Tile> tiles)
+        internal void GenResources(IEnumerable<Tile> tiles, bool noFoundation = false)
         {
             foreach (Tile resource in Game.Rand.Iterate(tiles))
             {
-                switch (GetResourceType())
+                switch (GenResourceType(noFoundation))
                 {
                     case ResourceType.Artifact:
                         Artifact.NewArtifact(resource);
@@ -343,21 +405,23 @@ namespace ClassLibrary1
                 }
             }
         }
-        private ResourceType GetResourceType()
+        private ResourceType GenResourceType(bool noFoundation = false)
         {
             if (resourcePool.Values.Any(v => v == 0))
             {
-                resourcePool[ResourceType.Artifact] += 4;
-                resourcePool[ResourceType.Biomass] += 8;
-                resourcePool[ResourceType.Metal] += 10;
-                resourcePool[ResourceType.Foundation] += 7;
+                resourcePool[ResourceType.Artifact] += 2;
+                resourcePool[ResourceType.Biomass] += 4;
+                resourcePool[ResourceType.Metal] += 5;
+                resourcePool[ResourceType.Foundation] += 3;
             }
             ResourceType type = Game.Rand.SelectValue(resourcePool);
+            if (noFoundation && type == ResourceType.Foundation)
+                return GenResourceType(noFoundation);
             resourcePool[type]--;
             return type;
         }
         [Serializable]
-        private enum ResourceType
+        internal enum ResourceType
         {
             Artifact,
             Biomass,
@@ -378,10 +442,8 @@ namespace ClassLibrary1
             return path.SpawnTile(this, path.ExploredDist, Consts.PathWidth * 1.69);
         }
 
-        private static double GetAngle(double x, double y)
-        {
-            return Math.Atan2(y, x);
-        }
+        private static double GetAngle(PointD point) => GetAngle(point.X, point.Y);
+        private static double GetAngle(double x, double y) => Math.Atan2(y, x);
         private static PointD GetPoint(double angle, double dist)
         {
             return new(Math.Cos(angle) * dist, Math.Sin(angle) * dist);
@@ -405,19 +467,8 @@ namespace ClassLibrary1
                 dist *= -1;
             return dist;
         }
-        private static double PointLineDistanceAbs(Point segment1, Point segment2, Point point)
-        {
-            if (segment2.X == segment1.X)
-                return Math.Abs(point.X - segment1.X);
-
-            //merge with CalcLine?
-            double a = (segment2.Y - segment1.Y) / (segment2.X - segment1.X);
-            double b = -1;
-            double c = segment1.Y - a * segment1.X;
-            return PointLineDistanceAbs(a, b, c, point);
-        }
-        private static double PointLineDistanceAbs(double a, double b, double c, Point point) =>
-            Math.Abs(PointLineDistance(a, b, c, point));
+        //private static double PointLineDistanceAbs(double a, double b, double c, Point point) =>
+        //    Math.Abs(PointLineDistance(a, b, c, point));
         private static double PointLineDistance(double a, double b, double c, Point point) =>
             (a * point.X + b * point.Y + c) / Math.Sqrt(a * a + b * b);
 
@@ -470,12 +521,14 @@ namespace ClassLibrary1
 
             internal IEnumerable<Tile> GetAdjacentTiles() => GetTilesInRange(Attack.MELEE_RANGE, false, null);
             internal IEnumerable<Tile> GetTilesInRange(IMovable movable) => GetTilesInRange(movable.MoveCur, false, movable.Piece);
+            internal IEnumerable<Tile> GetTilesInRange(IAttacker attacker) => GetTilesInRange(attacker.Attacks.Max(a => a.Range), true, attacker.Piece);
             internal IEnumerable<Tile> GetTilesInRange(double range, bool blockMap, Piece blockFor) => GetPointsInRange(range, blockMap, blockFor)
                 .Select(Map.GetTile).Where(t => t != null);
 
             internal IEnumerable<Point> GetPointsInRangeUnblocked(double vision) => GetPointsInRange(vision, false, null);
             internal static IEnumerable<Point> GetPointsInRangeUnblocked(Map map, Point point, double range) => GetPointsInRange(map, point, range, false, null);
 
+            public IEnumerable<Point> GetAllPointsInRange(double range) => GetPointsInRange(range, false, null);
             public IEnumerable<Point> GetPointsInRange(IMovable movable) => GetPointsInRange(movable, movable.MoveCur);
             public IEnumerable<Point> GetPointsInRange(IMovable movable, double move) => GetPointsInRange(move, false, movable.Piece);
             public IEnumerable<Point> GetPointsInRange(IBuilder builder) => GetPointsInRange(builder.Range, true, null);
@@ -512,11 +565,22 @@ namespace ClassLibrary1
                     if (distance <= range)
                     {
                         //if (!block.Any(p => GetDistance(point, p.Key) < distance
-                        //       && PointLineDistanceAbs(point, new(x, y), p.Key) < p.Value
+                        //       && Dist(point, new(x, y), p.Key) < p.Value
                         //       && (GetAngleDiff(GetAngle(p.Key.X - point.X, p.Key.Y - point.Y), GetAngle(x - point.X, y - point.Y)) < HALF_PI)))
                         yield return new(x, y);
                     }
                 }
+                //static double Dist(PointD segment1, PointD segment2, Point point)
+                //{
+                //    if (segment2.X == segment1.X)
+                //        return Math.Abs(point.X - segment1.X);
+
+                //    //merge with CalcLine?
+                //    double a = (segment2.Y - segment1.Y) / (segment2.X - segment1.X);
+                //    double b = -1;
+                //    double c = segment1.Y - a * segment1.X;
+                //    return PointLineDistanceAbs(a, b, c, point);
+                //}
             }
 
             public static bool operator !=(Tile a, Tile b)
@@ -605,7 +669,12 @@ namespace ClassLibrary1
             }
             private double GetExploredDist(Tile tile, double vision)
             {
-                double x = tile.X, y = tile.Y;
+                PointD closest = GetClosestPoint(tile.X, tile.Y);
+                return Math.Sqrt(closest.X * closest.X + closest.Y * closest.Y) + vision;
+
+            }
+            public PointD GetClosestPoint(double x, double y)
+            {
                 CalcLine(new PointD(0, 0), out double a, out double b, out double c);
 
                 double div = a * a + b * b;
@@ -614,8 +683,8 @@ namespace ClassLibrary1
                 double path = GetAngle(lineX, lineY);
                 //check can be againsts any arbitrarily small value - angle will either be equal or opposite
                 if (GetAngleDiff(path, Angle) < HALF_PI)
-                    return Math.Sqrt(lineX * lineX + lineY * lineY) + vision;
-                return -1;
+                    return new(lineX, lineY);
+                return new(0, 0);
             }
             private IEnumerable<double> CreateResources()
             {
@@ -633,19 +702,7 @@ namespace ClassLibrary1
                 return create;
             }
 
-            public Tile SpawnTile(Map map, double distance, double deviation)
-            {
-                PointD spawnCenter = GetPoint(Angle, distance);
-                int RandCoord(double coord) => Game.Rand.Round(coord + Game.Rand.Gaussian(deviation));
-                Tile tile;
-                do
-                    tile = map.GetTile(RandCoord(spawnCenter.X), RandCoord(spawnCenter.Y));
-                while (InvalidStartTile(tile));
-
-                //Debug.WriteLine($"SpawnTile ({Angle:0.00}) {distance:0.0}: {spawnCenter} -> {tile}");
-
-                return tile;
-            }
+            public Tile SpawnTile(Map map, double distance, double deviation) => map.SpawnTile(GetPoint(Angle, distance), deviation);
 
             //calculates the line equation in the format ax + by + c = 0 
             public void CalcLine(PointD start, out double a, out double b, out double c)
@@ -653,6 +710,55 @@ namespace ClassLibrary1
                 a = Math.Tan(Angle);
                 b = -1;
                 c = start.Y - (a * start.X);
+            }
+        }
+        [Serializable]
+        private class Cave
+        {
+            public readonly PointD Center;
+            private readonly double[] shape;
+
+            private readonly PointD seg1, seg2;
+            private readonly double segSize;
+
+            public Cave(PointD center, PointD connectTo, bool connectCave = false)
+            {
+                double off2 = connectCave ? Consts.CaveSize : 1.3 * Consts.PathWidth;
+                static double Offset(double amt) => Game.Rand.Gaussian(amt / 2.1);
+
+                this.Center = center;
+                this.seg1 = new(center.X + Offset(Consts.CaveSize), center.Y + Offset(Consts.CaveSize));
+                this.seg2 = new(connectTo.X + Offset(off2), connectTo.Y + Offset(off2));
+                this.segSize = Game.Rand.GaussianOE(2.6, .13, .13, 1.3);
+
+                this.shape = new[] { Game.Rand.GaussianOE(1.69, .39, .13), 1 + Game.Rand.GaussianOEInt(1.3, .26, .26), Game.Rand.NextDouble() * TWO_PI,
+                    Game.Rand.GaussianCapped(1.3, .26), Game.Rand.GaussianOE(6.5, .39, .13), Game.Rand.GaussianCapped(1, .13, .5) };
+                if (shape[1] != (int)shape[1])
+                    throw new Exception();
+            }
+
+            internal double GetMult(int x, int y)
+            {
+                double offset = 1.3 + shape[0];
+                double s = offset + Math.Sin((GetAngle(Center.X - x, Center.Y - y) + Math.PI) * shape[1] + shape[2]);
+                s *= s;
+                double distance = GetDistSqr(x, y, Center) / s;
+                double centerMult = GetMult(distance, shape[5] * Consts.CaveSize / offset, shape[3]);
+
+                double connection = GetMult(PointLineDistSqr(seg1, seg2, new(x, y)), segSize, shape[4]);
+
+                return centerMult + connection;
+
+                static double GetMult(double distSqr, double size, double o) =>
+                    (Math.Pow(size, Consts.CaveDistPow) + o) / (Math.Pow(distSqr, Consts.CaveDistPow / 2.0) + o);
+            }
+            private static double PointLineDistSqr(PointD v, PointD w, PointD p)
+            {
+                var l2 = GetDistSqr(v, w);
+                if (l2 == 0) return GetDistSqr(p, v);
+                var t = ((p.X - v.X) * (w.X - v.X) + (p.Y - v.Y) * (w.Y - v.Y)) / l2;
+                t = Math.Max(0, Math.Min(1, t));
+                return GetDistSqr(p, new(v.X + t * (w.X - v.X), v.Y + t * (w.Y - v.Y)));
             }
         }
     }

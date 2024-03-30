@@ -47,7 +47,7 @@ namespace ClassLibrary1
                 {
                     var checkTiles = Tile.GetPointsInRangeUnblocked(Game.Map, new(tile.X, tile.Y), Core.START_VISION);
                     checkTiles = checkTiles.Union(Tile.GetPointsInRangeUnblocked(Game.Map, new(tile.X + constructorOffset.X, tile.Y + constructorOffset.Y), Constructor.START_VISION));
-                    if (checkTiles.Any(point => Game.Map.GetTile(point) == null))
+                    if (checkTiles.Select(Game.Map.GetTile).Any(t => t == null || t.Piece != null))
                         tile = null;
                 }
             }
@@ -109,13 +109,13 @@ namespace ClassLibrary1
         }
         public bool Has(double energy, double mass)
         {
-            return (Energy >= energy && Mass >= mass);
+            return ((Energy >= energy || energy < 0) && (Mass >= mass || mass < 0));
         }
 
         public void GetIncome(out double energyInc, out double energyUpk, out double massInc, out double massUpk, out double researchInc)
         {
             energyInc = energyUpk = massInc = massUpk = researchInc = 0;
-            foreach (PlayerPiece piece in Game.Rand.Iterate(Pieces).Cast<PlayerPiece>())
+            foreach (PlayerPiece piece in Pieces)
                 piece.GenerateResources(ref energyInc, ref energyUpk, ref massInc, ref massUpk, ref researchInc);
         }
         internal Research.Type? EndTurn()

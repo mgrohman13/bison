@@ -202,7 +202,7 @@ namespace ClassLibrary1.Pieces.Players
 
                 IKillable.Values Gen(DefenseType type, double mult)
                 {
-                    double defAvg = 20 * Math.Pow(researchMult, .7) * mult;
+                    double defAvg = 20 * Math.Pow(researchMult, .2) * mult;
                     const double lowPenalty = 4;
                     if (researchMult < lowPenalty)
                         defAvg *= researchMult / lowPenalty;
@@ -212,7 +212,7 @@ namespace ClassLibrary1.Pieces.Players
             }
             private void UpgradeConstructorMove(double researchMult)
             {
-                this.vision = START_VISION * researchMult;
+                this.vision = START_VISION * Math.Pow(researchMult, .3);
 
                 researchMult = Math.Pow(researchMult, .6);
                 double max = 8 * researchMult;

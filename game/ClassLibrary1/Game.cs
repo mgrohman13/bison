@@ -24,12 +24,13 @@ namespace ClassLibrary1
         public readonly Enemy Enemy;
         public readonly Log Log;
 
-        private int _turn;
+        private int _turn, _victory;
         public int Turn => _turn;
 
         public readonly string SavePath;
-        private bool _gameOver;
+        private bool _gameOver, _win;
         public bool GameOver => _gameOver;
+        public bool Win => _win;
 
         private readonly Dictionary<string, int> _pieceNums;
 
@@ -41,8 +42,10 @@ namespace ClassLibrary1
             this.Log = new(this);
 
             this._turn = 0;
+            this._victory = 0;
             this.SavePath = savePath;
             this._gameOver = false;
+            this._win = false;
 
             this._pieceNums = new Dictionary<string, int>();
 
@@ -56,9 +59,12 @@ namespace ClassLibrary1
                 new( 2, -1),
                 new( 2,  1),
             });
+
             Player.CreateCore(constructor);
             Constructor.NewConstructor(Map.GetTile(Player.Core.Tile.X + constructor.X, Player.Core.Tile.Y + constructor.Y), true);
+
             Map.GenerateStartResources();
+            Map.SpawnHives();
         }
 
         internal int GetPieceNum(Type type)
@@ -69,9 +75,19 @@ namespace ClassLibrary1
             return num;
         }
 
-        internal void End()
+        internal void CollectHive(double cost)
         {
-            _gameOver = true;
+            int energy = Game.Rand.RangeInt(0, Game.Rand.Round(cost));
+            int mass = Game.Rand.Round((cost - energy) / Consts.MechMassDiv);
+            Player.Spend(energy, mass);
+
+            if (++_victory >= 2)
+                End(true);
+        }
+        internal void End(bool win = false)
+        {
+            this._gameOver = true;
+            this._win = win;
             System.IO.File.Delete(SavePath);
         }
 

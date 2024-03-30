@@ -1,12 +1,14 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using Values = ClassLibrary1.Pieces.IKillable.Values;
 
 namespace ClassLibrary1.Pieces
 {
     [Serializable]
-    public class Killable : IKillable
+    public class Killable : IKillable, IDeserializationCallback
     {
         private readonly Piece _piece;
         private readonly Defense _hits;
@@ -42,6 +44,8 @@ namespace ClassLibrary1.Pieces
             this._hits = new(piece, hits);
             this._defenses = defenses.Except(new[] { hits }).Select(v => new Defense(piece, v)).ToList();
             this._resilience = resilience;
+
+            OnDeserialization(this);
         }
 
         T IBehavior.GetBehavior<T>()
@@ -96,8 +100,35 @@ namespace ClassLibrary1.Pieces
         }
         void IBehavior.EndTurn(ref double energyUpk, ref double massUpk)
         {
-            foreach (Defense defense in ((IKillable)this).TotalDefenses)
+            foreach (Defense defense in Game.Rand.Iterate(((IKillable)this).TotalDefenses))
                 defense.EndTurn(ref energyUpk, ref massUpk);
+        }
+
+        [NonSerialized]
+        private Events _event = new();
+        public Events Event => _event;
+        public class Events
+        {
+            public delegate void DamagedEventHandler(object sender, DamagedEventArgs e);
+            public event DamagedEventHandler DamagedEvent;
+            internal void RaiseDamagedEvent(Attack attack, Defense defense)=>
+                DamagedEvent?.Invoke(this, new DamagedEventArgs(attack, defense));
+        }
+        public class DamagedEventArgs
+        {
+            public readonly Attack Attack;
+            public readonly Defense Defense;
+            public DamagedEventArgs(Attack attack, Defense defense)
+            {
+                this.Attack = attack;
+                this.Defense = defense;
+            }
+        }
+        void IKillable.RaiseDamagedEvent(Attack attack, Defense defense) => Event.RaiseDamagedEvent(attack, defense);
+
+        public void OnDeserialization(object sender)
+        {
+            _event = new();
         }
     }
 }

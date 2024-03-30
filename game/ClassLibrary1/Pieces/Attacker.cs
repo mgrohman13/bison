@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using Values = ClassLibrary1.Pieces.IAttacker.Values;
 
 namespace ClassLibrary1.Pieces
 {
     [Serializable]
-    public class Attacker : IAttacker
+    public class Attacker : IAttacker, IDeserializationCallback
     {
         private readonly Piece _piece;
         private readonly List<Attack> _attacks;
@@ -23,7 +24,10 @@ namespace ClassLibrary1.Pieces
         {
             this._piece = piece;
             this._attacks = attacks.Select(a => new Attack(Piece, a)).ToList();
+
+            OnDeserialization(this);
         }
+
         public T GetBehavior<T>() where T : class, IBehavior
         {
             return _piece.GetBehavior<T>();
@@ -75,8 +79,36 @@ namespace ClassLibrary1.Pieces
         void IBehavior.EndTurn(ref double energyUpk, ref double massUpk)
         {
             ((IBehavior)this).GetUpkeep(ref energyUpk, ref massUpk);
-            foreach (Attack attack in Attacks)
+            foreach (Attack attack in Game.Rand.Iterate(Attacks))
                 attack.EndTurn(ref energyUpk, ref massUpk);
+        }
+
+        [NonSerialized]
+        private Events _event = new();
+        public Events Event => _event;
+        public class Events
+        {
+            public delegate void AttackEventHandler(object sender, AttackEventArgs e);
+            public event AttackEventHandler AttackEvent;
+            internal void RaiseAttackEvent(Attack attack, IKillable killable) =>
+
+                AttackEvent?.Invoke(this, new AttackEventArgs(attack, killable));
+        }
+        public class AttackEventArgs
+        {
+            public readonly Attack Attack;
+            public readonly IKillable Killable;
+            public AttackEventArgs(Attack attack, IKillable killable)
+            {
+                this.Attack = attack;
+                this.Killable = killable;
+            }
+        }
+        void IAttacker.RaiseAttackEvent(Attack attack, IKillable killable) => Event.RaiseAttackEvent(attack, killable);
+
+        public void OnDeserialization(object sender)
+        {
+            _event = new();
         }
     }
 }

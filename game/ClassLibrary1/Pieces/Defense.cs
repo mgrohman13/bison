@@ -51,6 +51,8 @@ namespace ClassLibrary1.Pieces
                         defense.Damage();
 
             Damage();
+
+            Piece.GetBehavior<IKillable>().RaiseDamagedEvent(attack, this);
         }
         private void Damage()
         {

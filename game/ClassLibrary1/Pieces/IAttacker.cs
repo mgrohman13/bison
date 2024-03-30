@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using static ClassLibrary1.Pieces.Attacker;
 using AttackType = ClassLibrary1.Pieces.CombatTypes.AttackType;
 
 namespace ClassLibrary1.Pieces
@@ -21,6 +22,13 @@ namespace ClassLibrary1.Pieces
         //public interface IAttack 
         //{ 
         //}
+
+        //[NonSerialized]
+        //static
+
+        public Events Event { get; }
+        internal void RaiseAttackEvent(Attack attack, IKillable killable);
+
 
         [Serializable]
         public readonly struct Values

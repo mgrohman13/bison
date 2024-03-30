@@ -15,6 +15,13 @@ namespace ClassLibrary1
         public const double PathWidthDev = .13;
         public const double PathWidthMin = 9.1;
 
+        public const double CaveDistance = 130;
+        public const double CaveDistanceDev = .13;
+        public const double CaveDistanceOE = .169;
+        public const double CaveMinDist = 65;
+        public const double CaveSize = 13;
+        public const double CaveDistPow = 1.13;
+
         public const double ResourceAvgDist = 16.9;
 
         public const double ResearchFactor = 2600;

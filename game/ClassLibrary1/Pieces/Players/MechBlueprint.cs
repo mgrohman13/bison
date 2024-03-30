@@ -24,7 +24,7 @@ namespace ClassLibrary1.Pieces.Players
         public readonly IMovable.Values Movable;
 
         private MechBlueprint(int blueprintNum, MechBlueprint upgrade, int research, double vision,
-            IEnumerable<IKillable.Values> killable, double resilience, IEnumerable<IAttacker.Values> attacks, IMovable.Values movable)
+            IEnumerable<IKillable.Values> killable, double resilience, IEnumerable<IAttacker.Values> attacker, IMovable.Values movable)
         {
             this.BlueprintNum = "";
             while (blueprintNum > 0)
@@ -38,7 +38,7 @@ namespace ClassLibrary1.Pieces.Players
             this.Vision = vision;
             this.Resilience = resilience;
             this.Killable = killable.ToList().AsReadOnly();
-            this.Attacker = CombatTypes.OrderAtt(attacks);
+            this.Attacker = CombatTypes.OrderAtt(attacker);
             this.Movable = movable;
 
             CalcCost(out double energy, out double mass);
@@ -48,34 +48,43 @@ namespace ClassLibrary1.Pieces.Players
         private void CalcCost(out double energy, out double mass)
         {
             double researchMult = Research.GetResearchMult(ResearchLevel);
-
+            CalcCost(researchMult, Vision, Killable, Resilience, Attacker, Movable, out energy, out mass);
+        }
+        public static void CalcCost(double researchMult, double vision, IEnumerable<IKillable.Values> killable, double resilience,
+            IEnumerable<IAttacker.Values> attacker, IMovable.Values? movable, out double energy, out double mass)
+        {
             const double attPow = 1.13;
             double AttCost(IAttacker.Values a) => Consts.StatValue(a.Attack) * CombatTypes.Cost(a.Type)
                 * Math.Sqrt((a.Range + 2.1) / (Attack.MELEE_RANGE + 2.1));
             double DefCost(IKillable.Values d) => Consts.StatValue(d.Defense) * CombatTypes.Cost(d.Type);
 
-            double resilience = Math.Pow(Math.Pow(Resilience, Math.Log(3) / Math.Log(2)) * 1.5 + 0.5, .39);
-            double att = Math.Pow(Attacker.Sum(AttCost), attPow) / researchMult;
-            double def = Killable.Sum(DefCost) * resilience / researchMult;
+            double r = Math.Pow(Math.Pow(resilience, Math.Log(3) / Math.Log(2)) * 1.5 + 0.5, .39);
+            double att = Math.Pow(attacker.Sum(AttCost), attPow) / researchMult;
+            double def = killable.Sum(DefCost) * r / researchMult;
 
-            double vision = Vision;
-            double move = 8 * Movable.MoveInc / 1.0 + 2 * Movable.MoveMax / 2.1 + 1 * Movable.MoveLimit / 3.9;
+            double v = vision;
+            double move = 0;
+            if (movable.HasValue)
+            {
+                var m = movable.Value;
+                move = 8 * m.MoveInc / 1.0 + 2 * m.MoveMax / 2.1 + 1 * m.MoveLimit / 3.9;
+            }
             move /= 8 + 2 + 1;
             double mult = Math.Sqrt(researchMult);
             move = (move + 2.6) * 26 / mult;
-            vision = (vision + 6.5) * 3.9 / mult;
+            v = (v + 6.5) * 3.9 / mult;
 
-            double total = (att + vision) * (def + move) * Consts.MechCostMult;
+            double total = (att + v) * (def + move) * Consts.MechCostMult;
 
             //Debug.WriteLine($"total: {total}");
 
             double energyPct = Math.Sqrt(att / (att + def));
-            energyPct *= Math.Sqrt(move / (move + vision));
+            energyPct *= Math.Sqrt(move / (move + v));
 
-            double attEnergy = Attacker.Sum(a => AttCost(a) * CombatTypes.EnergyCostRatio(a.Type));
-            double defEnergy = Killable.Sum(d => DefCost(d) * CombatTypes.EnergyCostRatio(d.Type));
-            double attMass = Attacker.Sum(a => AttCost(a) * (1 - CombatTypes.EnergyCostRatio(a.Type)));
-            double defMass = Killable.Sum(d => DefCost(d) * (1 - CombatTypes.EnergyCostRatio(d.Type)));
+            double attEnergy = attacker.Sum(a => AttCost(a) * CombatTypes.EnergyCostRatio(a.Type));
+            double defEnergy = killable.Sum(d => DefCost(d) * CombatTypes.EnergyCostRatio(d.Type));
+            double attMass = attacker.Sum(a => AttCost(a) * (1 - CombatTypes.EnergyCostRatio(a.Type)));
+            double defMass = killable.Sum(d => DefCost(d) * (1 - CombatTypes.EnergyCostRatio(d.Type)));
 
             energyPct = Math.Sqrt(energyPct * (attEnergy + defEnergy) / (attEnergy + defEnergy + attMass + defMass));
 
@@ -411,12 +420,12 @@ namespace ClassLibrary1.Pieces.Players
 
                 //modify for current research type
                 double attAvg = 2.6, dev = .26, oe = .13;
-                foreach (var item in apply) // Game.Rand.Iterate(apply))
+                foreach (var item in apply)//Game.Rand.Iterate(apply))
                     ModValues(researchType == item, 2.1, ref attAvg, ref dev, ref oe);
 
                 //modify for research totals
                 double researchMult = 1;
-                foreach (var item in apply) //Game.Rand.Iterate(apply))
+                foreach (var item in apply)
                     researchMult *= research.GetMult(item, .7);
                 researchMult = Math.Pow(researchMult, 1.0 / apply.Count);
                 attAvg *= researchMult;

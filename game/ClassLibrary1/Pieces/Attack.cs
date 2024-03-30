@@ -31,7 +31,7 @@ namespace ClassLibrary1.Pieces
         public double Range => RangeBase;
         public double RangeBase => Consts.GetDamagedValue(Piece, _values.Range, MELEE_RANGE);
 
-        public double Rounds => AttackCur;// Math.Sqrt(AttackCur);
+        public double Rounds => Math.Sqrt(AttackCur);// AttackCur;// Math.Sqrt(AttackCur);
 
         internal Attack(Piece piece, Values values)
         {
@@ -124,17 +124,21 @@ namespace ClassLibrary1.Pieces
                     Defense defense = Game.Rand.Iterate(target.TotalDefenses.Where(d => !d.Dead)).OrderBy(CombatTypes.CompareDef).First();
                     bool activeDefense = target.HasBehavior<IAttacker>();
 
-                    int att = Game.Rand.RangeInt(0, AttackCur);
-                    int def = Game.Rand.RangeInt(0, defense.DefenseCur);
-                    if (att > def || (att == def && !activeDefense))
+                    //int att = Game.Rand.RangeInt(0, AttackCur);
+                    //int def = Game.Rand.RangeInt(0, defense.DefenseCur);
+                    //if (att > def || (att == def && !activeDefense))
+                    double attChance = AttackCur / (AttackCur + defense.DefenseCur);
+                    if (Game.Rand.Bool(attChance))
                         defense.Damage(this);
-                    else if (def < att && activeDefense)
+                    else if (activeDefense)//&& def < att
                         this._attackCur--;
                     this._attacked = true;
                 }
 
                 if (this.Attacked)
                 {
+                    Piece.GetBehavior<IAttacker>().RaiseAttackEvent(this, target);
+
                     Piece.Game.Log.LogAttack(this, startAttack, target, startDefense);
                     return true;
                 }

@@ -31,7 +31,7 @@ namespace ClassLibrary1.Pieces
 
         internal static void UpgradeAll(Piece piece, IBuilder.Values values)
         {
-            foreach (IBuilder builder in piece.GetBehaviors<IBuilder>())
+            foreach (IBuilder builder in Game.Rand.Iterate(piece.GetBehaviors<IBuilder>()))
                 builder.Upgrade(values);
         }
         void IBuilder.Upgrade(IBuilder.Values values)

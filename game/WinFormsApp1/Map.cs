@@ -267,8 +267,13 @@ namespace WinFormsApp1
                     Extractor extractor = piece as Extractor;
                     if (resource == null && extractor != null)
                         resource = extractor.Resource;
-                    if (piece is Alien)
-                        AddFill(Brushes.Red, rect);
+                    if (piece is EnemyPiece)
+                    {
+                        if (piece is Hive)
+                            AddFill(Brushes.Red, rect);
+                        else
+                            AddFill(Brushes.IndianRed, rect);
+                    }
                     else if (piece is Mech mech)
                     {
                         AddFill(Brushes.Green, rect);
@@ -392,12 +397,12 @@ namespace WinFormsApp1
                     if (Program.Game.Map.Visible(x, y))
                     {
                         Tile tile = Program.Game.Map.GetVisibleTile(x, y);
-                        if (tile == null)
-                            AddFill(Brushes.DarkGray, rect);
-                        else if (tile.Terrain != null)
+                        if (tile?.Terrain != null)
                             AddFill(Brushes.SaddleBrown, rect);
-                        else
+                        else if (tile != null)
                             rectangles.Add(rect);
+                        else if (!Game.TEST_MAP_GEN.HasValue)
+                            AddFill(Brushes.DarkGray, rect);
                     }
                 }
             }
@@ -714,7 +719,7 @@ namespace WinFormsApp1
                     moveEdge = moveTiles;
                 }
 
-                var points = attacker.Piece.Tile.GetPointsInRange(movable, movable.MoveCur + ar.Max(a => a.Range)).ToArray();
+                var points = attacker.Piece.Tile.GetAllPointsInRange((movable?.MoveCur ?? 0) + ar.Max(a => a.Range)).ToArray();
                 foreach (var a in ar)
                 {
                     List<Point> attPts = new(points.Length);

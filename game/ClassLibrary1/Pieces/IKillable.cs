@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using static ClassLibrary1.Pieces.Killable;
+
 using DefenseType = ClassLibrary1.Pieces.CombatTypes.DefenseType;
 
 namespace ClassLibrary1.Pieces
@@ -40,6 +42,11 @@ namespace ClassLibrary1.Pieces
         //public interface IDefense 
         //{ 
         //}
+
+
+        public Events Event { get; }
+        internal void RaiseDamagedEvent(Attack attack, Defense defense);
+
 
         [Serializable]
         public readonly struct Values

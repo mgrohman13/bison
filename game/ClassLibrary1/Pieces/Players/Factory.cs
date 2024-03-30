@@ -131,8 +131,11 @@ namespace ClassLibrary1.Pieces.Players
             }
             private void UpgradeBuildingHits(double researchMult)
             {
-                //researchMult = Math.Pow(researchMult, .5);
-                int defense = Game.Rand.Round(10 * Math.Pow(researchMult, .7));
+                double defAvg = 10 * Math.Pow(researchMult, .3);
+                const double lowPenalty = 2;
+                if (researchMult < lowPenalty)
+                    defAvg *= researchMult / lowPenalty;
+                int defense = Game.Rand.Round(defAvg);
                 this.vision = 4 * Math.Pow(researchMult, .8);
                 this.killable = new(DefenseType.Hits, defense);
             }

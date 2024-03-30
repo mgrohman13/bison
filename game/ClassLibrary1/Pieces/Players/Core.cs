@@ -128,8 +128,8 @@ namespace ClassLibrary1.Pieces.Players
             {
                 this.vision = START_VISION * Math.Pow(researchMult, 1);
 
-                double defAvg = 25 * Math.Pow(researchMult, .9);
-                const double lowPenalty = 2.5;
+                double defAvg = 25 * Math.Pow(researchMult, .5);
+                const double lowPenalty = 5;
                 if (researchMult < lowPenalty)
                     defAvg *= researchMult / lowPenalty;
                 this.hits = new(DefenseType.Hits, Game.Rand.Round(defAvg));

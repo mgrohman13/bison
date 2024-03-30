@@ -90,7 +90,7 @@ namespace ClassLibrary1.Pieces
         {
             //bool moved = HasBehavior(out IMovable movable) && movable.Moved;
             //bool attacked = HasBehavior(out IAttacker attacker) && attacker.Attacked;
-            foreach (IBehavior behavior in behavior)
+            foreach (IBehavior behavior in Game.Rand.Iterate(behavior))
                 behavior.EndTurn(ref energyUpk, ref massUpk);
         }
     }

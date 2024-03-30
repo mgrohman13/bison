@@ -40,20 +40,44 @@ namespace ClassLibrary1
             this._mass = 0;
 
             int spawns = Game.Rand.OEInt(Game.Turn / 13.0);
-            for (int a = 0; a < spawns && GetCost() + 13 < this.Energy; a++)
-            {
-                this._energy -= Game.Rand.Round(GetCost());
-                Alien.NewAlien(Game.Map.GetEnemyTile(), _nextAlien.Killable, _nextAlien.Resilience, _nextAlien.Attacker, _nextAlien.Movable);
-                _nextAlien = MechBlueprint.Alien(_research);
-            }
+            for (int a = 0; a < spawns && NextAlienCost() + 13 < this.Energy; a++)
+                SpawnAlien(Game.Map.GetEnemyTile());
 
             Debug.WriteLine($"Enemy energy: {_energy}");
 
             _research.EndTurn(Math.Pow(difficulty, Consts.DifficultyResearchPow));
 
-            double GetCost() =>
-                _nextAlien.Energy + _nextAlien.Mass * Consts.MechMassDiv;
         }
+
+        internal void HiveDamaged(Hive hive, ref double energy, int hits, double hitsPct, double range)
+        {
+            hitsPct = 1 - hitsPct;
+            int xfer = Game.Rand.Round(energy);
+            if (hive.Dead)
+                hitsPct = 1;
+            else
+                xfer = Game.Rand.GaussianInt(energy * hitsPct, 1);
+            this._energy += xfer;
+            energy -= xfer;
+
+            if (this.Energy > 0 && Game.Rand.Bool(hitsPct / Math.Sqrt(hits)))
+            {
+                Tile tile;
+                int RandCoord(double coord) => Game.Rand.Round(coord + Game.Rand.Gaussian(Math.Sqrt(range) + Attack.MELEE_RANGE));
+                do
+                    tile = Game.Map.GetTile(RandCoord(hive.Tile.X), RandCoord(hive.Tile.Y));
+                while (tile == null || tile.Piece != null);
+                SpawnAlien(tile);
+            }
+        }
+        private void SpawnAlien(Tile tile)
+        {
+            this._energy -= Game.Rand.Round(NextAlienCost());
+            Alien.NewAlien(tile, _nextAlien.Killable, _nextAlien.Resilience, _nextAlien.Attacker, _nextAlien.Movable);
+            _nextAlien = MechBlueprint.Alien(_research);
+        }
+        private double NextAlienCost() => _nextAlien.Energy + _nextAlien.Mass * Consts.MechMassDiv;
+
         private void PlayTurn(Piece piece, double difficulty)
         {
             IAttacker attacker = piece.GetBehavior<IAttacker>();
@@ -75,7 +99,7 @@ namespace ClassLibrary1
             if (piece.HasBehavior(out IMovable movable) && movable.MoveCur >= 1)
             {
                 double d = piece.Tile.GetDistance(Game.Player.Core.Tile);
-                double distMult = 1.3 * difficulty * Math.Pow((d + 52) / 52, Consts.DistanceMoveDirPow);
+                double distMult = 1.3 * difficulty * Math.Pow((d + 52) / 52.0, Consts.DistanceMoveDirPow);
 
                 double minDist = Math.Max(0, d - movable.MoveCur);
                 double maxDist = d + movable.MoveCur;
@@ -106,7 +130,7 @@ namespace ClassLibrary1
                 if (!attackFirst && attacker != null)
                     attackFirst = targets.Keys.Any(a => !newTargets.ContainsKey(a));
                 if (attackFirst)
-                    Attack(attacker, targets, avgHp, avgWeight);
+                    Fire(attacker, targets, avgHp, avgWeight);
 
                 if (movable.EnemyMove(moveTo))
                     targets = newTargets;
@@ -115,7 +139,7 @@ namespace ClassLibrary1
             }
 
             if (attacker != null)
-                Attack(attacker, targets, avgHp, avgWeight);
+                Fire(attacker, targets, avgHp, avgWeight);
         }
         private static Dictionary<Attack, IEnumerable<IKillable>> GetTargets(IAttacker attacker, Tile from, IEnumerable<IKillable> allTargets)
         {
@@ -124,7 +148,7 @@ namespace ClassLibrary1
                 .Where(t => t.Item2.Any())
                 .ToDictionary(t => t.Item1, t => t.Item2);
         }
-        private static void Attack(IAttacker attacker, Dictionary<Attack, IEnumerable<IKillable>> targets, double avgHp, double avgWeight)
+        private static void Fire(IAttacker attacker, Dictionary<Attack, IEnumerable<IKillable>> targets, double avgHp, double avgWeight)
         {
             Dictionary<IKillable, int> targWeights = targets.Values.SelectMany(v => v).Distinct().ToDictionary(k => k, k => Game.Rand.Round(1 + 13 * GetKillWeight(k, avgHp) / avgWeight));
             while (attacker.Attacks.Any(a => !a.Attacked && targets.ContainsKey(a)) && targWeights.Any())
