@@ -92,7 +92,7 @@ namespace ClassLibrary1.Pieces
                 double mult = ((totStart == 0 ? totCur : totCur / totStart) + 1.0) / 2.0;
 
                 mult *= Consts.ReplaceRefundPct * Consts.StatValue(killable.Hits.DefenseCur) / Consts.StatValue(killable.Hits.DefenseMax);
-                double rounding = GetRounding();
+                double rounding = 1 - GetRounding();
                 energy = MTRandom.Round(newEnergy - energy * mult - addEnergy, rounding);
                 mass = MTRandom.Round(newMass - mass * mult, rounding);
 

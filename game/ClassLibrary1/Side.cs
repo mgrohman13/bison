@@ -45,6 +45,8 @@ namespace ClassLibrary1
             this._pieces.Remove(piece);
         }
 
+        internal abstract bool Spend(int energy, int mass);
+
         protected void StartTurn()
         {
             foreach (Piece piece in Game.Rand.Iterate(_pieces))

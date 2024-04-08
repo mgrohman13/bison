@@ -38,9 +38,9 @@ namespace ClassLibrary1.Pieces
 
         internal void Upgrade(Values values)
         {
-            double attPct = DefenseCur / (double)DefenseMax;
+            double defPct = Consts.StatValue(DefenseCur) / Consts.StatValue(DefenseMax);
             this._values = values;
-            this._defenseCur = Game.Rand.Round(DefenseMax * attPct);
+            this._defenseCur = Game.Rand.Round(Consts.StatValueInverse(Consts.StatValue(DefenseMax) * defPct));
         }
 
         internal void Damage(Attack attack)
@@ -188,7 +188,7 @@ namespace ClassLibrary1.Pieces
             bool moved = Piece.GetBehavior<IMovable>()?.Moved ?? false;
             bool attacked = Piece.GetBehavior<IAttacker>()?.Attacked ?? false;
             bool defended = Piece.GetBehavior<IKillable>()?.Defended ?? false;
-            return Consts.IncDefense(Type, Piece.HasBehavior<IAttacker>(), DefenseCur, DefenseMax, 
+            return Consts.IncDefense(Type, Piece.HasBehavior<IAttacker>(), DefenseCur, DefenseMax,
                 moved, attacked, defended, InRepairRange(out _), ref energyUpk, ref massUpk);
         }
     }

@@ -8,15 +8,15 @@ namespace ClassLibrary1.Pieces
     {
         public enum AttackType
         {
-            Kinetic,
-            Energy,
             Explosive,
+            Energy,
+            Kinetic,
         }
         public enum DefenseType
         {
-            Hits, //reduce attack values?
+            Hits,
+            Armor,
             Shield,
-            Armor, //needs special..
         }
 
         internal static int GetStartCur(AttackType type, int attack) =>
@@ -34,12 +34,20 @@ namespace ClassLibrary1.Pieces
                 value += higher;
             return -value;
         }
+
         internal static IReadOnlyCollection<IAttacker.Values> OrderAtt(IEnumerable<IAttacker.Values> attacks) =>
             OrderAtt(attacks, a => a.Attack, a => a.Range, a => a.Type);
         internal static IReadOnlyCollection<Attack> OrderAtt(IEnumerable<Attack> attacks) =>
             OrderAtt(attacks, a => a.AttackMax, a => a.RangeBase, a => a.Type);
-        internal static IReadOnlyCollection<T> OrderAtt<T>(IEnumerable<T> attacks, Func<T, int> AttMax, Func<T, double> Range, Func<T, AttackType> Type) =>
-            Game.Rand.Iterate(attacks).OrderByDescending(AttMax).ThenByDescending(Range).ThenByDescending(Type).ToList().AsReadOnly();
+        private static IReadOnlyCollection<T> OrderAtt<T>(IEnumerable<T> attacks, Func<T, int> AttMax, Func<T, double> Range, Func<T, AttackType> Type) =>
+            Game.Rand.Iterate(attacks).OrderByDescending(AttMax).ThenByDescending(Range).ThenBy(Type).ToList().AsReadOnly();
+        internal static IReadOnlyCollection<IKillable.Values> OrderDef(IEnumerable<IKillable.Values> killable) =>
+            OrderDef(killable, d => d.Type);
+        internal static IReadOnlyCollection<Defense> OrderDef(IEnumerable<Defense> killable) =>
+            OrderDef(killable, d => d.Type);
+        private static IReadOnlyCollection<T> OrderDef<T>(IEnumerable<T> killable, Func<T, DefenseType> Type) =>
+            Game.Rand.Iterate(killable).OrderBy(Type).ToList().AsReadOnly();
+
         //internal static object OrderBy(Defense defense) => defense.Type switch
         //{
         //    DefenseType.Hits => 3,

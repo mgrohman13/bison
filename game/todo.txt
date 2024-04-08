@@ -1,22 +1,15 @@
 NEW
 	can upgrade to just interim step 
 	cycle through move first, then build	
-	build form show distinction for can afford
 	consolidate explored points around 0 into range tuple
 	hide unused columns for build extractor/turret/etc only
 	enemies go after long range attackers (esp turrets)
-	enemies target with preference using AP/SP
 	enemies dodge attacks
 	income breakdown
-	turrent chance to swap which attack does ap/sp?
 	lower avg randomness?
-	turret UpgradeBuildingCost sets rounding - affects shields
-	reduce enemy ap/sp late
-	increase avg shields
 	decrease HP when shields,armor?
 	armor + shields less likely
-	ap + sp less likely
-	ap/sp consistency in single unit?
+	attack consistency in single unit?
 		make multpl attacks more interesintg
 	mouse move stops scroll
 	show avg damage
@@ -66,17 +59,15 @@ GAMEPLAY
 	unused upkeep on death?
 	research/blueprint chances also based on current blueprints?
 	use type research levels in blueprint cost?
-	armor reduce with dmg?
 	upkeep doesnt scale
 	repair decrease with pow?
 	negative mass/energy shuts things off
 	enforce information hiding at project level
 
 FEATURES
-	current armor implementation = meh
 	enemy hive
 		protected by turrets
-		constant spawn pct in dir
+		spawn pct in caves
 	calc with lines
 		line of sight for vision while moving 
 		stop when see new enemy?

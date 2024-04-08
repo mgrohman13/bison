@@ -37,7 +37,7 @@ namespace ClassLibrary1.Pieces.Players
             this.ResearchLevel = research;
             this.Vision = vision;
             this.Resilience = resilience;
-            this.Killable = killable.ToList().AsReadOnly();
+            this.Killable = CombatTypes.OrderDef(killable);
             this.Attacker = CombatTypes.OrderAtt(attacker);
             this.Movable = movable;
 

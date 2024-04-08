@@ -117,25 +117,25 @@ namespace WinFormsApp1
                         + (killable.Hits.DefenseCur < killable.Hits.DefenseMax ? $"/{killable.Hits.DefenseMax}" : "")
                         + (repairInc > 0 ? $"+{Format(repairInc)}" : "");
 
-                    Defense shield = killable.Defenses.Where(d => d.Type == DefenseType.Shield).FirstOrDefault();
-                    if (shield != null)
-                    {
-                        lbl2.Show();
-                        lblInf2.Show();
-                        lbl2.Text = "Shields";
-                        lblInf2.Text = $"{shield.DefenseCur}"
-                            + (shield.DefenseCur < shield.DefenseMax ? $"/{shield.DefenseMax}" : "")
-                            + (shield.GetRegen() > 0 ? $"+{shield.GetRegen()}" : "");
-                    }
                     Defense armor = killable.Defenses.Where(d => d.Type == DefenseType.Armor).FirstOrDefault();
                     if (armor != null)
                     {
-                        lbl3.Show();
-                        lblInf3.Show();
-                        lbl3.Text = "Armor";
-                        lblInf3.Text = $"{armor.DefenseCur}"
+                        lbl2.Show();
+                        lblInf2.Show();
+                        lbl2.Text = "Armor";
+                        lblInf2.Text = $"{armor.DefenseCur}"
                             + (armor.DefenseCur < armor.DefenseMax ? $"/{armor.DefenseMax}" : "")
                             + (armor.GetRegen() > 0 ? $"+{armor.GetRegen()}" : "");
+                    }
+                    Defense shield = killable.Defenses.Where(d => d.Type == DefenseType.Shield).FirstOrDefault();
+                    if (shield != null)
+                    {
+                        lbl3.Show();
+                        lblInf3.Show();
+                        lbl3.Text = "Shields";
+                        lblInf3.Text = $"{shield.DefenseCur}"
+                            + (shield.DefenseCur < shield.DefenseMax ? $"/{shield.DefenseMax}" : "")
+                            + (shield.GetRegen() > 0 ? $"+{shield.GetRegen()}" : "");
                     }
 
                     lbl4.Show();

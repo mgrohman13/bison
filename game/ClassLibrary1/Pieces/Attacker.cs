@@ -38,14 +38,25 @@ namespace ClassLibrary1.Pieces
         void IAttacker.Upgrade(IEnumerable<Values> values)
         {
             Values[] attacks = values.ToArray();
-            ////fix
-            //if (_attacks.Count != attacks.Length)
-            //    throw new Exception();
+
+            double energy = 0;
+            while (this.Attacks.Count > attacks.Length)
+            {
+                var cur = Game.Rand.SelectValue(this.Attacks);
+                _attacks.Remove(cur);
+
+                energy += Consts.StatValue(cur.AttackCur) * Consts.EnergyPerAttack;
+            }
+            Piece.Side.Spend(Game.Rand.Round(-energy), 0);
+
             for (int a = 0; a < attacks.Length; a++)
-                if (a < _attacks.Count)
-                    _attacks[a].Upgrade(attacks[a]);
+            {
+                var upg = attacks[a];
+                if (a > this.Attacks.Count)
+                    _attacks.Add(new(Piece, upg));
                 else
-                    _attacks.Add(new(Piece, attacks[a]));
+                    _attacks[a].Upgrade(upg);
+            }
         }
 
         bool IAttacker.Fire(IKillable target)

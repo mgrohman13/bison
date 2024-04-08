@@ -20,8 +20,8 @@ namespace ClassLibrary1.Pieces
         //public int ShieldMax { get; }
         //public int ShieldLimit { get; }
         public Defense Hits { get; }
-        public IEnumerable<Defense> Defenses { get; }
-        public IEnumerable<Defense> TotalDefenses => Defenses.Concat(new[] { Hits });
+        public IReadOnlyCollection<Defense> Defenses { get; }
+        public IReadOnlyCollection<Defense> TotalDefenses => new[] { Hits }.Concat(Defenses).ToList().AsReadOnly();
         public double Resilience { get; }
         public bool Defended { get; }
         //public int DefenseCur { get; }

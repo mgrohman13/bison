@@ -86,6 +86,12 @@ namespace ClassLibrary1
         public const int AutoRepair = 1;
         public const double ReplaceRefundPct = .8;
 
+        //public static double? StatValue(double? stat)
+        //{
+        //    if (stat.HasValue)
+        //        return StatValue(stat.Value);
+        //    return null;
+        //}
         public static double StatValue(double stat)
         {
             if (stat < 0) throw new Exception();

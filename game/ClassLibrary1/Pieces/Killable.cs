@@ -17,7 +17,7 @@ namespace ClassLibrary1.Pieces
 
         public Piece Piece => _piece;
         public Defense Hits => _hits;
-        public IEnumerable<Defense> Defenses => _defenses.AsReadOnly();
+        public IReadOnlyCollection<Defense> Defenses => CombatTypes.OrderDef(_defenses);
         public double Resilience => _resilience;
         //public int DefenseCur => Hits.DefenseCur;
         //public int DefenseMax => Hits.DefenseMax;
@@ -37,13 +37,14 @@ namespace ClassLibrary1.Pieces
             : this(piece, defenses.Concat(new[] { hits }), resilience)
         {
         }
-        public Killable(Piece piece, IEnumerable<Values> defenses, double resilience)
+        public Killable(Piece piece, IEnumerable<Values> values, double resilience)
         {
-            Values hits = GetHits(defenses);
+            Values hits = GetHits(values);
 
             this._piece = piece;
             this._hits = new(piece, hits);
-            this._defenses = defenses.Except(new[] { hits }).Select(v => new Defense(piece, v)).ToList();
+            this._defenses = GetOther(values).Select(v => new Defense(piece, v)).ToList();
+
             this._resilience = resilience;
 
             OnDeserialization(this);
@@ -57,22 +58,39 @@ namespace ClassLibrary1.Pieces
         void IKillable.Upgrade(IEnumerable<Values> values, double resilience)
         {
             Values hits = GetHits(values);
-            Values[] defenses = values.Where(d => d.Type != CombatTypes.DefenseType.Hits).ToArray();
-            //if (_defenses.Count != defenses.Length)
-            //    throw new Exception();
+            Values[] defenses = GetOther(values).ToArray();
+
             _hits.Upgrade(hits);
-            for (int a = 0; a < defenses.Length; a++)
-                if (a < _defenses.Count)
-                    _defenses[a].Upgrade(defenses[a]);
+
+            double energy = 0, mass = 0;
+            foreach (var cur in Game.Rand.Iterate(this.Defenses.Where(d1 => !defenses.Any(d2 => d1.Type == d2.Type))))
+            {
+                _defenses.Remove(cur);
+
+                double costMult = CombatTypes.GetRegenCostMult(cur.Type, Piece.HasBehavior<IAttacker>(), out bool isMass);
+                double cost = Consts.StatValue(cur.DefenseCur) * costMult;
+                if (isMass)
+                    mass += cost;
                 else
-                    _defenses.Add(new(Piece, defenses[a]));
+                    energy += cost;
+            }
+            Piece.Side.Spend(Game.Rand.Round(-energy), Game.Rand.Round(-mass));
+
+            foreach (var upg in defenses)
+            {
+                var cur = this.Defenses.Where(d => d.Type == upg.Type).SingleOrDefault();
+                if (cur == null)
+                    _defenses.Add(new(Piece, upg));
+                else
+                    cur.Upgrade(upg);
+            }
+
             _resilience = resilience;
         }
-        private static Values GetHits(IEnumerable<Values> defenses)
-        {
-            return defenses.Where(d => d.Type == CombatTypes.DefenseType.Hits).Single();
-        }
-
+        private static Values GetHits(IEnumerable<Values> values) =>
+            values.Where(d => d.Type == CombatTypes.DefenseType.Hits).Single();
+        private static IEnumerable<Values> GetOther(IEnumerable<Values> values) =>
+            values.Where(d => d.Type != CombatTypes.DefenseType.Hits);
         //void IKillable.Damage(int damage,bool splashDamage)
         //{
         //    Hits.Damage(damage);

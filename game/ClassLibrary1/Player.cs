@@ -97,7 +97,7 @@ namespace ClassLibrary1
             }
         }
 
-        internal bool Spend(int energy, int mass)
+        internal override bool Spend(int energy, int mass)
         {
             bool has = Has(energy, mass);
             if (has)
@@ -138,6 +138,6 @@ namespace ClassLibrary1
             this._mass = Consts.Income(Mass, massInc - massUpk);
 
             return this.Research.AddResearch(researchInc);
-        }
+        } 
     }
 }

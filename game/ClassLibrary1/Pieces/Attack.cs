@@ -44,9 +44,9 @@ namespace ClassLibrary1.Pieces
 
         internal void Upgrade(Values values)
         {
-            double attPct = AttackCur / (double)AttackMax;
+            double attPct = Consts.StatValue(AttackCur) / Consts.StatValue(AttackMax);
             this._values = values;
-            this._attackCur = Game.Rand.Round(AttackMax * attPct);
+            this._attackCur = Game.Rand.Round(Consts.StatValueInverse(Consts.StatValue(AttackMax) * attPct));
         }
 
         internal void Damage()

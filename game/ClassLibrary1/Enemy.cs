@@ -77,7 +77,12 @@ namespace ClassLibrary1
             this._energy -= Game.Rand.Round(_nextAlien.AlienCost());
             Alien.NewAlien(tile, _nextAlien.Killable, _nextAlien.Resilience, _nextAlien.Attacker, _nextAlien.Movable);
             _nextAlien = MechBlueprint.Alien(_research);
-        } 
+        }
+        internal override bool Spend(int energy, int mass)
+        {
+            _energy = Game.Rand.Round(this.Energy - energy - mass * Consts.MechMassDiv);
+            return true;
+        }
 
         private void PlayTurn(Piece piece, double difficulty)
         {
