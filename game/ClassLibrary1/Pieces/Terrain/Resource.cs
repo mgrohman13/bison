@@ -1,4 +1,5 @@
-﻿using MattUtil;
+﻿using ClassLibrary1.Pieces.Players;
+using MattUtil;
 using System;
 using Tile = ClassLibrary1.Map.Tile;
 
@@ -13,17 +14,18 @@ namespace ClassLibrary1.Pieces.Terrain
 
         private double _value;
         public double Value => _value;
+        public double GetValue(Extractor extractor, double valueMult) => Consts.GetDamagedValue(extractor, this.Value * valueMult, 0);
 
         internal double Rounding => _rounding;
 
         internal Resource(Tile tile, double baseValue, double sustainMult)
             : base(null, tile)
         {
-            double value = Game.Rand.GaussianOE(baseValue, Consts.ResourceDev, Consts.ResourceOE);
-            double sustain = Game.Rand.GaussianOE(sustainMult, Consts.ResourceDev, Consts.ResourceOE);
-            sustain /= Math.Pow(value / baseValue, Consts.ResourceSustainValuePow);
-            double distance = Math.Pow((tile.GetDistance(0, 0) + Consts.ResourceDistAdd) / Consts.ResourceDistDiv, Consts.ResourceDistPow);
-            value *= distance;
+            baseValue *= Math.Pow((tile.GetDistance(0, 0) + Consts.ResourceDistAdd) / Consts.ResourceDistDiv, Consts.ResourceDistPow);
+            double value = Game.Rand.GaussianOE(baseValue, Consts.ResourceDev, Consts.ResourceOE, 1.3);
+
+            sustainMult *= Math.Pow(baseValue / value, Consts.ResourceSustainValuePow);
+            double sustain = Game.Rand.GaussianOE(sustainMult, Consts.ResourceDev, Consts.ResourceOE, .039);
 
             this._energyMult = Game.Rand.GaussianOE(1, .065, .021);
             this._massMult = Game.Rand.GaussianOE(1, .039, .013);
@@ -32,13 +34,17 @@ namespace ClassLibrary1.Pieces.Terrain
             this.Sustain = sustain;
         }
 
-        public abstract void GenerateResources(Piece piece, double valueMult, ref double energyInc, ref double energyUpk, ref double massInc, ref double massUpk, ref double researchInc);
+        public void GenerateResources(ref double energyInc, ref double massInc, ref double researchInc) =>
+            GenerateResources(Value, ref energyInc, ref massInc, ref researchInc); //not using valueMult - values will increase when building extractor
+        internal void GenerateResources(Extractor extractor, double valueMult, ref double energyInc, ref double massInc, ref double researchInc) =>
+            GenerateResources(GetValue(extractor, valueMult), ref energyInc, ref massInc, ref researchInc);
+        protected abstract void GenerateResources(double value, ref double energyInc, ref double massInc, ref double researchInc);
 
-        internal void Extract(Piece piece, double sustainMult)
+        internal void Extract(Extractor extractor, double valueMult, double sustainMult)
         {
             sustainMult *= Sustain;
-            double power = Consts.ExtractPower / (Consts.ExtractPower + Math.Pow(sustainMult, Consts.ExtractSustainPow));
-            double extract = Math.Pow(Consts.GetDamagedValue(piece, Value, 0) / sustainMult / Consts.ExtractTurns + 1, power) - 1;
+            double pow = Consts.ExtractPow / (Consts.ExtractPow + Math.Pow(sustainMult, Consts.ExtractSustainPow));
+            double extract = Math.Pow(GetValue(extractor, valueMult) / sustainMult / Consts.ExtractTurns + 1, pow) - 1;
             this._value -= extract;
         }
 
@@ -46,7 +52,7 @@ namespace ClassLibrary1.Pieces.Terrain
         {
             double mult = Math.Sqrt(inc);
             mult = Math.Pow((this.Value + mult) / (inc + mult), .91);
-            mult *= Math.Pow(Sustain, .26);
+            mult *= Math.Pow(Sustain, .26);//.65? Consts
             mult *= costMult;
             energy = MTRandom.Round(baseEnergy * _energyMult * mult, _rounding);
             mass = MTRandom.Round(baseMass * _massMult * mult, _rounding);

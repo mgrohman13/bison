@@ -102,18 +102,134 @@ FEATURES
 	experience
 	power grid
 
-buildings take more dmg somehow?
-	auto repair only work when not attacked?
+increase hive energy (like 10x?)
+increase hive reward
+destroyed extractor chance of resource to disappear when very low value (<1.0)
+express weapon/shiled recharge as percent(??), make configurable per att/def?
+	then can use dmged value
+	incs with sqrt
+	do weapons first, then mayde def
+		repair rate take into account for armor regen?
+	rebalance - e.g. energy weapons charge at 50% when attacking
+constructor build range tied to move/vision
+	cap repoair rate at 1 for calc until resaearch (factory too)
+make artifact research slightly better vs energy extractors
+increase extractor energy costs 2-4x
+	see spreadsheet - maybe metal cost more energy to get mults down 
+show inc/upk breakdown
+	eng break down by att/shield/move/mech/constructor
+	mass break down by building/mech (types??)
+select box follow similar range width rules
+move att/def draw boxes away from thick range lines
+	if cur>0 ensure draw sliver
+negative resources show red (not just inc)
+negative resource punishment?
+when unit selected, slow drawing (range not saved)
+research/overall balance
+	enemies ramp up too much, research too slow
+	reduce cost increase per completed research
+	decrease ReserachFactor?
+UpgDefenseType needs to maintain one of each type
+	generated upg with no def
+upg cur/max pcts should use StatValue
+building hits taper off too much later on?
+enemy dir (+cave) attack weights change over time, not eventually focus one dir
+slow-paint scroll amt shouldnt take effect until 2nd tick so you can tap button once
+dmg hurts saved up move?
+auto repair needs to heal turret armor
+cose use dmged pct for income?
+repair changes getdmg value if happens first
+	do we care...?
+draw bars not use stat value for pct cur/max??
+	maybe related to zoom, e.g. when zoomed out
+	bigger bars when zoomed out
+	clearer colors? darker?
+log splash damage
+stop using mech mass div or use evrywhere??
+	repair cost?
+repair costs too high??
+	not use StatValue scale??
+	mechs fine, only buildings cheaper (anythig without also IAttacker?)
+show total cost in info
+chance to always upgrade movable?
+rand combat rounds slightly
+fighting in factory range op?
+pay back stored energy on death
+weak geneartor buildings for foundations
+small resource spawn chance in cave connections
+enemy speed ramp up a tad too much?
+	at least until allow blocking
+select tile square always draw on top
+blueprint UpgAttackType chance to add/remove attacks
+taking dmg hurt attacks even for non-hits????
+make regen rates part of values?
+explosives too weak?
+	splash damage not tied to initial dmg??
+	do way more damage, they already reload slowly
+	nerf recovery even in range?
+	rethink shield interaction?
+	enemies clump more
+	splash damage to higher values shouldnt be based on difference?
+	does friendly damage
+		melee??
+rebal att/def type costs
+also nerf shields? only regen when not attacked? chance to stop regen?
+	new system use canrecover flag that get changed by diffe evtns? 
+rock-paper-scissors balance?
+reveal map [-250-250] on game end?
+rebal energy att, only +1 when attacking
+Defended == took damage??
+select terrain shouldnt hide log
+places for alieans to repair (hive?)
+	need to be able to pathfind back 
+	store behavior state on enemy pieces for consistnet travel goal
+ok on research copleted screen should refresh resource/income info
+rework turret reasearch tree again? hp too low?
+	need better early game def, better mid game att
+turret more GC?
+draw movement trail on map
+hives accidentally have integer attack ranges
+draw grid first as lines, then overlay with full blocks
+reanme chasm??
+draw chasm as single polygon
+allow aliens to spawn in caves
+	only until explored/hive killed?
+	better pathfinding
+	can spawn within hive range even if visible
+view all mechs on datagrid popup
+show mech # (alien #?) on map
+show collected hive cvount
+info button show stats
+	also build for all types?
+map indicator with incoming attack direction
+buff armor vs energy weapons?
+repair shut off when attacked needs to be pushed out 1 turn
+better move left indicators?
+	indicate when upgradeable
+enemy tareget extractor more often
+ResearchFactor -> 2100
+use terrain to store evaluate value to gradient on paint 
+buildings take more dmg somehow? speed up attacks in general instead?
 speed up attacks
 	rounds = attackcur
     each roll range, draw on tie 
+	50% chance of each attack passing?
+	on att take dmg, 50% of reducing rounds?
+	will make passive defense weaker
 rethink picking defense algorithm, randomize slightly 
 enemy attacks/moves	
 	take into account new mechanics 
 finish directional move/attack blocking
 experience
-scrap research doesnt lower cur?
-	
+assess both CombatTypes.GetRegen flag usage
+	AI needs to know about
+use repair rate for armor repair
+buff range, nerf move, cannot move and shoot raned attack
+	new attack type that you can
+		much less likely for alien spawns 
+nerf camping in factory
+give hives more energy
+
 remove outliers from att/def bar length?
 pull gen/upgrade value constants, research powers into special consts we can see and tweak together
 attack range circle not accurate around corners
@@ -126,6 +242,8 @@ combined power grid, but if separate pieces impose power penalty?
 speed game up somehow?
 randomize tech tree
 alien morale
+alien retreat when shield/weapons down
+alien retreat to repair
 metal types? 
 right click piece info?
 	attack though?? left click?
@@ -147,7 +265,8 @@ metagame system pts
 	-1 to play
 	get for win or lose
 	spend for bonuses? unlocks? start with?
-	beat normal unlocks hard difficulty?
+	beat easy unlocks normal unlocks hard difficulty?
+	unlock more game content, system similar to difficulty that incs separately?
 evaluate use MemoryCache instead of Dictionary?
 fix mirror image painting? may confuse in future?
 building costs get more expensive with upgrade - countered by cost research
@@ -186,12 +305,16 @@ map contiguity
 		after finding final path, if contains override tiles make them permament map features
 		test alg by cutting cave connectors
 show mass/eng ratio on build screen? round mechs to 10? energy to 10? div by 10?
+	income more random?
 minimap
 shroud
 	show last spotted aliens
 	keep alien vision in shroud for 1 turn after move out of vision?
 varaible scroll speed doesnt quite work
 game stats
+show map and log on game end
+flatten tech tree		
+map - occasional caves farther out infinteley??
 		
 EARLY GAME
 mitigate balance of finding resources quicker?
@@ -226,3 +349,5 @@ map
 	continguous
 		force between core, hives, resources (? - ensure generate past gap?)
 	water/islands
+scrap research doesnt lower cur?
+	wait... cur is calced

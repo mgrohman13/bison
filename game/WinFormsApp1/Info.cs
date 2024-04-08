@@ -163,11 +163,9 @@ namespace WinFormsApp1
 
                     if (playerPiece is not Extractor)
                     {
-                        double energyInc, energyUpk, massInc, massUpk, researchInc;
-                        energyInc = energyUpk = massInc = massUpk = researchInc = 0;
-                        playerPiece.GenerateResources(ref energyInc, ref energyUpk, ref massInc, ref massUpk, ref researchInc);
-                        energyInc -= energyUpk;
-                        massInc -= massUpk;
+                        double energyInc, massInc, researchInc;
+                        energyInc = massInc = researchInc = 0;
+                        playerPiece.GetIncome(ref energyInc, ref massInc, ref researchInc);
                         if (energyInc != 0)
                         {
                             lbl7.Show();
@@ -214,14 +212,12 @@ namespace WinFormsApp1
                         lblInf2.Text = string.Format("{0} : {1}", (energy), (mass));
                     }
 
-                    double energyInc, energyUpk, massInc, massUpk, researchInc;
-                    energyInc = energyUpk = massInc = massUpk = researchInc = 0;
+                    double energyInc, massInc, researchInc;
+                    energyInc = massInc = researchInc = 0;
                     if (extractor == null)
-                        resource.GenerateResources(Selected.Piece, 1, ref energyInc, ref energyUpk, ref massInc, ref massUpk, ref researchInc);
+                        resource.GenerateResources(ref energyInc, ref massInc, ref researchInc);
                     else
-                        extractor.GenerateResources(ref energyInc, ref energyUpk, ref massInc, ref massUpk, ref researchInc);
-                    energyInc -= energyUpk;
-                    massInc -= massUpk;
+                        extractor.GetIncome(ref energyInc, ref massInc, ref researchInc);
 
                     if (energyInc != 0)
                     {

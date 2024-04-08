@@ -69,13 +69,13 @@ namespace WinFormsApp1
             IBuilder.IBuildFactory buildFactory = GetBuilder<IBuilder.IBuildFactory>(selected);
             IBuilder.IBuildTurret buildTurret = GetBuilder<IBuilder.IBuildTurret>(selected);
 
-            if (buildConstructor != null)
+            if (buildConstructor != null && selected.Piece == null)
             {
                 Constructor.Cost(Program.Game, out int energy, out int mass);
                 BuildRow row = new(buildConstructor, "Constructor", energy, mass);
                 rows.Add(row);
             }
-            if (buildMech != null)
+            if (buildMech != null && selected.Piece == null)
             {
                 foreach (MechBlueprint blueprint in Program.Game.Player.Research.Blueprints)
                 {

@@ -23,6 +23,7 @@ namespace ClassLibrary1.Pieces
         public IEnumerable<Defense> Defenses { get; }
         public IEnumerable<Defense> TotalDefenses => Defenses.Concat(new[] { Hits });
         public double Resilience { get; }
+        public bool Defended { get; }
         //public int DefenseCur { get; }
         //public int DefenseMax { get; }
         //public double TotalDefenseCur2 { get; }
@@ -91,6 +92,8 @@ namespace ClassLibrary1.Pieces
         {
             internal double RepairCost { get; }
             internal bool AutoRepair { get; }
+
+            bool CanRepair();
         }
     }
 }

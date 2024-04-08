@@ -69,21 +69,21 @@ namespace ClassLibrary1
                     }
             } while (!valid);
 
-            double[] enemyPowers = angles.Select(x => 1 + Game.Rand.OE(1 / 13.0)).ToArray();
+            double[] enemyPows = angles.Select(x => 1 + Game.Rand.OE(1 / 13.0)).ToArray();
             static double Increase(double x) => 1.3 + (x - 1) * 1.69;
-            enemyPowers[0] = Increase(enemyPowers[0]);
-            enemyPowers[1] = Increase(enemyPowers[1]);
-            enemyPowers = enemyPowers.Select(x => x > 2 ? 1 + Math.Sqrt(x - 1) : x).ToArray();
-            enemyPowers[1] = 1 / enemyPowers[1];
+            enemyPows[0] = Increase(enemyPows[0]);
+            enemyPows[1] = Increase(enemyPows[1]);
+            enemyPows = enemyPows.Select(x => x > 2 ? 1 + Math.Sqrt(x - 1) : x).ToArray();
+            enemyPows[1] = 1 / enemyPows[1];
             for (int c = 2; c < numPaths; c++)
                 if (Game.Rand.Bool())
-                    enemyPowers[c] = 1 / enemyPowers[c];
-            Game.Rand.Shuffle(enemyPowers);
+                    enemyPows[c] = 1 / enemyPows[c];
+            Game.Rand.Shuffle(enemyPows);
 
             this._paths = new Path[numPaths];
             for (int d = 0; d < numPaths; d++)
             {
-                double enemyPow = enemyPowers[d];
+                double enemyPow = enemyPows[d];
                 double enemyMult = 1 + Game.Rand.OE(1 / (enemyPow > 1 ? enemyPow : 1 / enemyPow));
                 if (Game.Rand.Bool())
                     enemyMult = 1 / enemyMult;
@@ -161,9 +161,11 @@ namespace ClassLibrary1
                 chances[Game.Rand.SelectValue(chances)]++;
             for (int f = 0; f < hives; f++)
             {
-                Cave cave = Game.Rand.SelectValue(_caves);
+                Cave cave = Game.Rand.SelectValue(chances);
                 if (Game.Rand.Next(13) > 0)
                     chances[cave]--;
+                else
+                    ;
                 Hive.NewHive(SpawnTile(cave.Center, Consts.CaveSize), f);
                 counts.TryGetValue(cave, out int count);
                 counts[cave] = count + 1;
@@ -184,8 +186,7 @@ namespace ClassLibrary1
 
                 cavesLeft--;
                 resources -= spawn;
-                for (int c = 0; c < spawn; c++)
-                    GenResources(new[] { SpawnTile(cave.Center, Consts.CaveSize) }, true);
+                GenResources(Enumerable.Repeat((object)null, spawn).Select(_ => cave.SpawnTile(this)), true);
             }
         }
 
@@ -293,6 +294,11 @@ namespace ClassLibrary1
 
             return _gameBounds;
         }
+        internal void GameOver()
+        {
+            int Inflate(double dir) => Game.Rand.GaussianOEInt(39 * Math.Sqrt(_gameBounds.Width * _gameBounds.Height) / dir, .13, .13) + 1;
+            _gameBounds.Inflate(Inflate(_gameBounds.Width), Inflate(_gameBounds.Height));
+        }
 
         public bool Visible(Point tile)
         {
@@ -303,7 +309,7 @@ namespace ClassLibrary1
             bool visible = _explored.Contains(new(x, y));
             //if (!visible)
             //    visible = _pieces.ContainsKey(new Point(x, y));
-            return Game.TEST_MAP_GEN.HasValue || visible;
+            return Game.TEST_MAP_GEN.HasValue || Game.GameOver || visible;
         }
 
         internal void AddPiece(Piece piece)
@@ -317,24 +323,24 @@ namespace ClassLibrary1
         {
             this._pieces.Remove(new Point(piece.Tile.X, piece.Tile.Y));
         }
-        private void UpdateVision(PlayerPiece piece)
+        private void UpdateVision(PlayerPiece piece) => UpdateVision(piece.Tile, piece.Vision, piece is not Core);
+        internal void UpdateVision(Tile tile, double range, bool explore = true)
         {
             LogEvalTime();
 
-            Tile tile = piece.Tile;
-            foreach (Point p in tile.GetPointsInRangeUnblocked(piece.Vision))
+            foreach (Point p in tile.GetPointsInRangeUnblocked(range))
                 this._explored.Add(p);
 
-            int vision = (int)piece.Vision + 1;
-            int x = Math.Min(_gameBounds.X, piece.Tile.X - vision);
-            int y = Math.Min(_gameBounds.Y, piece.Tile.Y - vision);
-            int right = Math.Max(_gameBounds.Right, piece.Tile.X + vision + 1);
-            int bottom = Math.Max(_gameBounds.Bottom, piece.Tile.Y + vision + 1);
+            int vision = (int)range + 1;
+            int x = Math.Min(_gameBounds.X, tile.X - vision);
+            int y = Math.Min(_gameBounds.Y, tile.Y - vision);
+            int right = Math.Max(_gameBounds.Right, tile.X + vision + 1);
+            int bottom = Math.Max(_gameBounds.Bottom, tile.Y + vision + 1);
 
             _gameBounds = new Rectangle(x, y, right - x, bottom - y);
 
-            if (piece is not Core)
-                Explore(tile, piece.Vision);
+            if (explore)
+                Explore(tile, range);
 
             LogEvalTime();
         }
@@ -410,9 +416,9 @@ namespace ClassLibrary1
             if (resourcePool.Values.Any(v => v == 0))
             {
                 resourcePool[ResourceType.Artifact] += 2;
+                resourcePool[ResourceType.Foundation] += 3;
                 resourcePool[ResourceType.Biomass] += 4;
                 resourcePool[ResourceType.Metal] += 5;
-                resourcePool[ResourceType.Foundation] += 3;
             }
             ResourceType type = Game.Rand.SelectValue(resourcePool);
             if (noFoundation && type == ResourceType.Foundation)
@@ -721,6 +727,10 @@ namespace ClassLibrary1
             private readonly PointD seg1, seg2;
             private readonly double segSize;
 
+            //should handle edge distances better
+            public PointD PathCenter => new((seg1.X + seg2.X) / 2.0, (seg1.Y + seg2.Y) / 2.0);
+            public double PathLength => Math.Sqrt(GetDistSqr(seg1, seg2));
+
             public Cave(PointD center, PointD connectTo, bool connectCave = false)
             {
                 double off2 = connectCave ? Consts.CaveSize : 1.3 * Consts.PathWidth;
@@ -759,6 +769,15 @@ namespace ClassLibrary1
                 var t = ((p.X - v.X) * (w.X - v.X) + (p.Y - v.Y) * (w.Y - v.Y)) / l2;
                 t = Math.Max(0, Math.Min(1, t));
                 return GetDistSqr(p, new(v.X + t * (w.X - v.X), v.Y + t * (w.Y - v.Y)));
+            }
+
+            public Tile SpawnTile(Map map)
+            {
+                bool inPath = Game.Rand.Bool(.169);
+                PointD spawnCenter = inPath ? this.PathCenter : this.Center;
+                Tile spawnTile = map.SpawnTile(spawnCenter, inPath ? this.PathLength / 6.5 : Consts.CaveSize);
+                Debug.WriteLine($"Cave resource ({inPath}): {spawnTile} ({Math.Sqrt(GetDistSqr(spawnCenter, new(spawnTile.X, spawnTile.Y)))})");
+                return spawnTile;
             }
         }
     }

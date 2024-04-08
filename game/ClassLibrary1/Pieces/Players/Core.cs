@@ -62,10 +62,11 @@ namespace ClassLibrary1.Pieces.Players
             }
         }
         bool IKillable.IRepairable.AutoRepair => false;
+        public bool CanRepair() => Consts.CanRepair(Piece);
 
-        public override void GenerateResources(ref double energyInc, ref double energyUpk, ref double massInc, ref double massUpk, ref double researchInc)
+        internal override void GenerateResources(ref double energyInc, ref double massInc, ref double researchInc)
         {
-            base.GenerateResources(ref energyInc, ref energyUpk, ref massInc, ref massUpk, ref researchInc);
+            base.GenerateResources(ref energyInc, ref massInc, ref researchInc);
             energyInc += 350;
             massInc += 100;
             researchInc += 15;
@@ -75,7 +76,6 @@ namespace ClassLibrary1.Pieces.Players
         {
             return "Core";
         }
-
 
         [Serializable]
         private class Values : IUpgradeValues
@@ -91,7 +91,7 @@ namespace ClassLibrary1.Pieces.Players
             public Values()
             {
                 this.energy = this.mass = 2600;
-                this.repair = new(new(7.5), .1);
+                this.repair = new(new(7.5), 1);
 
                 this.vision = -1;
                 this.hits = new(CombatTypes.DefenseType.Hits, -1);
@@ -128,16 +128,16 @@ namespace ClassLibrary1.Pieces.Players
             {
                 this.vision = START_VISION * Math.Pow(researchMult, 1);
 
-                double defAvg = 25 * Math.Pow(researchMult, .5);
-                const double lowPenalty = 5;
+                double defAvg = 13 * Math.Pow(researchMult, .6);
+                const double lowPenalty = 13 / 5.0;
                 if (researchMult < lowPenalty)
                     defAvg *= researchMult / lowPenalty;
                 this.hits = new(DefenseType.Hits, Game.Rand.Round(defAvg));
             }
             private void UpgradeCoreShields(double researchMult)
             {
-                double defAvg = 30 * Math.Pow(researchMult, .8);
-                const double lowPenalty = 3.5;
+                double defAvg = 16.9 * Math.Pow(researchMult, .5);
+                const double lowPenalty = 4;
                 if (researchMult < lowPenalty)
                     defAvg *= researchMult / lowPenalty;
                 this.shield = new(DefenseType.Shield, Game.Rand.Round(defAvg));

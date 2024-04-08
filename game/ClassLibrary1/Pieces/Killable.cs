@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -26,6 +25,8 @@ namespace ClassLibrary1.Pieces
         //public double TotalDefenseMax2 => Consts.SumStats(TotalDefenses.Select(d => d.DefenseCur));
         //public double TotalDefenseCurValue2 => Consts.StatValue(TotalDefenseCur2);
         //public double TotalDefenseMaxValue2 => Consts.StatValue(TotalDefenseMax2);
+
+        public bool Defended => ((IKillable)this).TotalDefenses.Any(d => d.Defended);
         public bool Dead => Hits.Dead;
 
         public Killable(Piece piece, Values hits, double resilience)
@@ -98,6 +99,11 @@ namespace ClassLibrary1.Pieces
             foreach (Defense defense in ((IKillable)this).TotalDefenses)
                 defense.GetUpkeep(ref energyUpk, ref massUpk);
         }
+        void IBehavior.StartTurn()
+        {
+            foreach (Defense defense in Game.Rand.Iterate(((IKillable)this).TotalDefenses))
+                defense.StartTurn();
+        }
         void IBehavior.EndTurn(ref double energyUpk, ref double massUpk)
         {
             foreach (Defense defense in Game.Rand.Iterate(((IKillable)this).TotalDefenses))
@@ -107,11 +113,12 @@ namespace ClassLibrary1.Pieces
         [NonSerialized]
         private Events _event = new();
         public Events Event => _event;
+
         public class Events
         {
             public delegate void DamagedEventHandler(object sender, DamagedEventArgs e);
             public event DamagedEventHandler DamagedEvent;
-            internal void RaiseDamagedEvent(Attack attack, Defense defense)=>
+            internal void RaiseDamagedEvent(Attack attack, Defense defense) =>
                 DamagedEvent?.Invoke(this, new DamagedEventArgs(attack, defense));
         }
         public class DamagedEventArgs
@@ -128,7 +135,7 @@ namespace ClassLibrary1.Pieces
 
         public void OnDeserialization(object sender)
         {
-            _event = new();
+            _event ??= new();
         }
     }
 }

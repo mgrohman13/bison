@@ -24,7 +24,7 @@ namespace ClassLibrary1.Pieces
             this._values = values;
 
             this._moveCur = moveCur;
-            this._moved = false;
+            this._moved = true;
         }
         public T GetBehavior<T>() where T : class, IBehavior
         {
@@ -84,7 +84,7 @@ namespace ClassLibrary1.Pieces
             double moveInc = Consts.IncValueWithMaxLimit(MoveCur, MoveInc, Consts.MoveDev, MoveMax, MoveLimit, Consts.MoveLimitPow, doEndTurn);
             if (doEndTurn)
             {
-                this._moved = false;
+                //this._moved = false;
                 this._moveCur += moveInc;
             }
             return moveInc;
@@ -92,6 +92,10 @@ namespace ClassLibrary1.Pieces
         void IBehavior.GetUpkeep(ref double energyUpk, ref double massUpk)
         {
             EndTurn(false, ref energyUpk);
+        }
+        void IBehavior.StartTurn()
+        {
+            this._moved = false;
         }
         void IBehavior.EndTurn(ref double energyUpk, ref double massUpk)
         {

@@ -10,7 +10,8 @@ namespace ClassLibrary1
     [Serializable]
     public class Game
     {
-        public static readonly int? TEST_MAP_GEN = null;
+        public const int POINTS_TO_WIN = 3;
+        public static readonly int? TEST_MAP_GEN = null;//260;
 
         public static readonly MTRandom Rand;
         static Game()
@@ -26,6 +27,7 @@ namespace ClassLibrary1
 
         private int _turn, _victory;
         public int Turn => _turn;
+        public int Victory => _victory;
 
         public readonly string SavePath;
         private bool _gameOver, _win;
@@ -77,28 +79,34 @@ namespace ClassLibrary1
 
         internal void CollectHive(double cost)
         {
+            cost /= 1.69;
             int energy = Game.Rand.RangeInt(0, Game.Rand.Round(cost));
             int mass = Game.Rand.Round((cost - energy) / Consts.MechMassDiv);
-            Player.Spend(energy, mass);
+            Player.Spend(-energy, -mass);
 
-            if (++_victory >= 2)
+            if (++_victory >= POINTS_TO_WIN)
                 End(true);
         }
         internal void End(bool win = false)
         {
             this._gameOver = true;
             this._win = win;
-            System.IO.File.Delete(SavePath);
+
+            this.Map.GameOver();
+            SaveGame();
         }
 
         public Research.Type? EndTurn()
         {
+            if (this.GameOver)
+                return null;
+
             Research.Type? researched = Player.EndTurn();
             _turn++;
             Enemy.PlayTurn();
+            Player.StartTurn();
             return researched;
         }
-
 
         internal void AddPiece(Piece piece)
         {

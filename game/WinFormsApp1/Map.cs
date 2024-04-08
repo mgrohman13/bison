@@ -35,14 +35,14 @@ namespace WinFormsApp1
         private Dictionary<Pen, List<HashSet<Point>>> ranges;
         private readonly Dictionary<Point, float> attacks = new();
 
-        private float scale
+        private float Scale
         {
             get { return _scale; }
             set
             {
                 if (_scale != value)
                 {
-                    float size = Game.Rand.Round(Math.Max(3, Math.Sqrt(scale) - 1));
+                    float size = Game.Rand.Round(Math.Max(3, Math.Sqrt(Scale) - 1));
                     if (Red?.Width != size)
                     {
                         Red = new(Color.Red, size);
@@ -146,8 +146,9 @@ namespace WinFormsApp1
             this.lblMouse.Text = "";
             if (MouseTile != null)
             {
-                Tile center = Program.Game.Player.Core.Tile;// Program.Game.Map.GetVisibleTile(0, 0);//
-                this.lblMouse.Text = string.Format("({0}, {1})", MouseTile.X - center.X, center.Y - MouseTile.Y);
+                int sign = Game.TEST_MAP_GEN.HasValue ? 1 : -1;
+                Tile center = Game.TEST_MAP_GEN.HasValue ? Program.Game.Map.GetVisibleTile(0, 0) : Program.Game.Player.Core.Tile;
+                this.lblMouse.Text = string.Format("({0}, {1})", MouseTile.X - center.X, sign * (MouseTile.Y - center.Y));
                 if (SelTile != null)// && SelTile.Piece != null && SelTile.Piece.HasBehavior(out IMovable movable))// && movable.MoveCur >= 1)
                 {
                     float distance = (float)MouseTile.GetDistance(SelTile);
@@ -163,7 +164,7 @@ namespace WinFormsApp1
             ClassLibrary1.Map.LogEvalTime();
 
             Rectangle gameRect = Program.Game.Map.GameRect();
-            scale = Math.Min((this.Width - 1 - padding * 2) / gameRect.Width, (this.Height - 1 - padding * 2) / gameRect.Height);
+            Scale = Math.Min((this.Width - 1 - padding * 2) / gameRect.Width, (this.Height - 1 - padding * 2) / gameRect.Height);
             xStart = GetX(gameRect.X);
             yStart = GetY(gameRect.Y);
 
@@ -183,22 +184,22 @@ namespace WinFormsApp1
             Rectangle mapCoords = Rectangle.Inflate(GetMapCoords(), -1, -1);
             if (tile != null && !mapCoords.Contains(tile.X, tile.Y))
             {
-                xStart += GetX(tile.X - mapCoords.Width / 2 - 1) + scale / 2;
-                yStart += GetY(tile.Y - mapCoords.Height / 2 - 1) + scale / 2;
+                xStart += GetX(tile.X - mapCoords.Width / 2 - 1) + Scale / 2;
+                yStart += GetY(tile.Y - mapCoords.Height / 2 - 1) + Scale / 2;
                 this.Invalidate();
                 return true;
             }
             return false;
         }
 
-        ////private readonly float count = 0f, total = 0f;
+        //private readonly float count = 0f, total = 0f;
         private float paintTime;
         protected override void OnPaint(PaintEventArgs e)
         {
             try
             {
-                //watch.Reset();
-                //watch.Start();
+                watch.Reset();
+                watch.Start();
 
                 e.Graphics.Clear(Color.Black);
 
@@ -211,10 +212,10 @@ namespace WinFormsApp1
                 base.OnPaint(e);
                 paintTime = watch.ElapsedTicks * 1000f / Stopwatch.Frequency;
 
-                //Debug.WriteLine("OnPaint: " + paintTime);
-                //watch.Stop();
+                Debug.WriteLine("OnPaint: " + paintTime);
+                watch.Stop();
 
-                //ClassLibrary1.Map.LogEvalTime();
+                ClassLibrary1.Map.LogEvalTime();
             }
             catch (Exception exception)
             {
@@ -249,8 +250,9 @@ namespace WinFormsApp1
             static float? SumAttacks(IAttacker attacker, Func<Attack, int> Stat) => attacker.Attacks.Sum(a => StatValue(Stat(a)));
             static float StatValue(float stat) => (float)Consts.StatValue(stat);
             const float padding = 1.69f;
-            float attackMax = (GetPieces<IAttacker>().Max<IAttacker>(SumAttacksMax) ?? 1) * padding;
-            float defenseMax = (GetPieces<IKillable>().Where(k => k.Piece.HasBehavior<IAttacker>())
+            float attackMax = (GetPieces<IAttacker>().Where(k => k.Piece.HasBehavior<IKillable>() && k.Piece.HasBehavior<IMovable>())
+                .Max<IAttacker>(SumAttacksMax) ?? 1) * padding;
+            float defenseMax = (GetPieces<IKillable>().Where(k => k.Piece.HasBehavior<IAttacker>() && k.Piece.HasBehavior<IMovable>())
                 .Max(k => k.TotalDefenses.Sum(d => (float?)StatValue(d.DefenseMax))) ?? 1) * padding;
             attackMax = defenseMax = Math.Max(attackMax, defenseMax);
 
@@ -258,7 +260,7 @@ namespace WinFormsApp1
                 if (mapCoords.Contains(piece.Tile.X, piece.Tile.Y))
                 {
                     int x = piece.Tile.X, y = piece.Tile.Y;
-                    RectangleF rect = new(GetX(x), GetY(y), scale, scale);
+                    RectangleF rect = new(GetX(x), GetY(y), Scale, Scale);
 
                     const float ellipseInflate = -.13f;
                     RectangleF ellipse = RectangleF.Inflate(rect, rect.Width * ellipseInflate, rect.Height * ellipseInflate);
@@ -270,9 +272,9 @@ namespace WinFormsApp1
                     if (piece is EnemyPiece)
                     {
                         if (piece is Hive)
-                            AddFill(Brushes.Red, rect);
-                        else
                             AddFill(Brushes.IndianRed, rect);
+                        else
+                            AddFill(Brushes.Red, rect);
                     }
                     else if (piece is Mech mech)
                     {
@@ -320,7 +322,7 @@ namespace WinFormsApp1
                         float armorMax = GetValue(DefenseType.Armor, Get);
                         float shieldMax = GetValue(DefenseType.Shield, Get);
                         float GetValue(DefenseType type, Func<Defense, int?> GetStat) =>
-                            killable.TotalDefenses.Where(d => d.Type == type).Sum(a => StatValue(GetStat(a) ?? 0));
+                            killable.TotalDefenses.Where(d => d.Type == type).Sum(a => StatValue(GetStat(a) ?? 0));//StatValue?
 
                         DrawBar(1, new float[] { hitsCur, armorCur, shieldCur }, new float[] { hitsMax, armorMax, shieldMax },
                             new Brush[] { Brushes.DarkGray, Brushes.LightGray, Brushes.SkyBlue, }, barSize, widthTotal);
@@ -342,7 +344,7 @@ namespace WinFormsApp1
                         float armorMax = GetValue(AttackType.Energy, Get);
                         float shieldMax = GetValue(AttackType.Explosive, Get);
                         float GetValue(AttackType type, Func<Attack, int?> GetStat) =>
-                            attacker.Attacks.Where(d => d.Type == type).Sum(a => StatValue(GetStat(a) ?? 0));
+                            attacker.Attacks.Where(d => d.Type == type).Sum(a => StatValue(GetStat(a) ?? 0));//StatValue?
 
                         DrawBar(2, new float[] { hitsCur, armorCur, shieldCur }, new float[] { hitsMax, armorMax, shieldMax },
                             new Brush[] { Brushes.Silver, Brushes.SandyBrown, Brushes.MediumPurple, }, barSize, widthTotal);
@@ -393,7 +395,7 @@ namespace WinFormsApp1
                 for (int b = 0; b < mapCoords.Height; b++)
                 {
                     int y = mapCoords.Y + b;
-                    RectangleF rect = new(GetX(x), GetY(y), scale, scale);
+                    RectangleF rect = new(GetX(x), GetY(y), Scale, Scale);
                     if (Program.Game.Map.Visible(x, y))
                     {
                         Tile tile = Program.Game.Map.GetVisibleTile(x, y);
@@ -409,13 +411,13 @@ namespace WinFormsApp1
 
             if (viewAttacks)// && scale > 16.9f)
             {
-                using Font f = new(FontFamily.GenericMonospace, scale / 3.9f);
+                using Font f = new(FontFamily.GenericMonospace, Scale / 3.9f);
                 foreach (var p in attacks)
                 {
                     int x = p.Key.X, y = p.Key.Y;
                     if (mapCoords.Contains(p.Key.X, p.Key.Y))
                     {
-                        RectangleF rect = new(GetX(x), GetY(y), scale, scale);
+                        RectangleF rect = new(GetX(x), GetY(y), Scale, Scale);
                         float barSize = defHeight * rect.Height;
 
                         float widthTotal = (float)Math.Pow(StatValue(p.Value) / defenseMax, statBarPow);
@@ -466,25 +468,25 @@ namespace WinFormsApp1
             if (SelTile != null)
             {
                 using Pen sel = new(Color.Black, 5f);
-                e.Graphics.DrawRectangle(sel, GetX(SelTile.X), GetY(SelTile.Y), scale, scale);
+                e.Graphics.DrawRectangle(sel, GetX(SelTile.X), GetY(SelTile.Y), Scale, Scale);
             }
 
-            if (viewAttacks && scale > 16.9f)
+            if (viewAttacks && Scale > 16.9f)
             {
-                using Font f = new(FontFamily.GenericMonospace, scale / 3.9f);
+                using Font f = new(FontFamily.GenericMonospace, Scale / 3.9f);
                 foreach (var p in attacks)
                     if (mapCoords.Contains(p.Key.X, p.Key.Y))
                     {
                         string value = p.Value.ToString("0");
                         SizeF size = e.Graphics.MeasureString(value, f);
-                        e.Graphics.DrawString(value, f, Brushes.Red, new PointF(GetX(p.Key.X) + scale - size.Width, GetY(p.Key.Y) + scale - size.Height));
+                        e.Graphics.DrawString(value, f, Brushes.Red, new PointF(GetX(p.Key.X) + Scale - size.Width, GetY(p.Key.Y) + Scale - size.Height));
                     }
             }
             foreach (var p in letters)
             {
-                using Font f = new(FontFamily.GenericMonospace, scale / 2.6f);
+                using Font f = new(FontFamily.GenericMonospace, Scale / 2.6f);
                 SizeF size = e.Graphics.MeasureString(p.Value, f);
-                e.Graphics.DrawString(p.Value, f, Brushes.Black, p.Key.X + (scale - size.Width) / 2f, p.Key.Y);
+                e.Graphics.DrawString(p.Value, f, Brushes.Black, p.Key.X + (Scale - size.Width) / 2f, p.Key.Y);
             }
 
             foreach (IDisposable d in hitsBrushes.Values)
@@ -683,7 +685,7 @@ namespace WinFormsApp1
             HashSet<Point> moveTiles = (attacker.HasBehavior(out IMovable movable) ? movable.Piece.Tile.GetPointsInRange(movable) : new Point[] { new(attacker.Piece.Tile.X, attacker.Piece.Tile.Y) }).ToHashSet();
 
             List<HashSet<Point>> retVal = new();
-            var ar = attacker.Attacks.Where(a => !a.Attacked);
+            var ar = attacker.Attacks.Where(a => a.CanAttack());
             if (attacker.Piece.IsEnemy && ar.Any())
             {
                 HashSet<Point> moveEdge;
@@ -888,7 +890,7 @@ namespace WinFormsApp1
         }
         private float GetCoord(float val, float start)
         {
-            return val * scale - start + padding;
+            return val * Scale - start + padding;
         }
 
         private int GetMapX(float x)
@@ -901,7 +903,7 @@ namespace WinFormsApp1
         }
         private int GetMapCoord(float val, float start)
         {
-            return (int)Math.Floor((start + val - padding) / scale);
+            return (int)Math.Floor((start + val - padding) / Scale);
         }
 
         private Rectangle GetMapCoords()
@@ -952,7 +954,7 @@ namespace WinFormsApp1
         {
             float xs = xStart, ys = yStart;
 
-            float scrollAmt = (float)(scrollSpeed * Math.Sqrt(scale));
+            float scrollAmt = (float)(scrollSpeed * Math.Sqrt(Scale));
             scrollAmt *= (scrollTime + paintTime) / scrollTime;
             scrollAmt = Game.Rand.Gaussian(scrollAmt, .013f);
 
@@ -969,7 +971,7 @@ namespace WinFormsApp1
             Invalidate();
             Map_MouseMove(sender, null);
 
-            //timer.Interval = Math.Max(1, Game.Rand.Round(scrollTime - paintTime));
+            timer.Interval = Math.Max(1, Game.Rand.Round(scrollTime - paintTime));
         }
         public void Map_MouseWheel(object sender, MouseEventArgs e)
         {
@@ -985,38 +987,38 @@ namespace WinFormsApp1
                 anchor = new Point(sel.X, sel.Y);
             else
                 anchor = new Point(GetMapX(Width / 2f), GetMapY(Height / 2f));
-            float selX = GetX(anchor.X) + scale / 2f;
-            float selY = GetY(anchor.Y) + scale / 2f;
+            float selX = GetX(anchor.X) + Scale / 2f;
+            float selY = GetY(anchor.Y) + Scale / 2f;
 
-            this.scale *= mult;
-            if (scale < 3)
-                scale = 3;
-            else if (scale > 169)
-                scale = 169;
+            this.Scale *= mult;
+            if (Scale < 3)
+                Scale = 3;
+            else if (Scale > 169)
+                Scale = 169;
             if (this.CheckBounds(xStart, yStart))
-                this.scale /= mult;
+                this.Scale /= mult;
 
-            xStart += GetX(anchor.X) + scale / 2f - selX;
-            yStart += GetY(anchor.Y) + scale / 2f - selY;
+            xStart += GetX(anchor.X) + Scale / 2f - selX;
+            yStart += GetY(anchor.Y) + Scale / 2f - selY;
 
             this.Invalidate();
         }
         private bool CheckBounds(float xs, float ys)
         {
-            bool retVal = false;
-            Rectangle mapCoords = GetMapCoords();
-            Rectangle gameRect = Program.Game.Map.GameRect();
-            if (mapCoords.Right - 1 <= gameRect.Left || mapCoords.Left >= gameRect.Right - 1)
-            {
-                retVal = true;
-                this.xStart = xs;
-            }
-            if (mapCoords.Bottom - 1 <= gameRect.Top || mapCoords.Top >= gameRect.Bottom - 1)
-            {
-                retVal = true;
-                this.yStart = ys;
-            }
-            return retVal;
+            //bool retVal = false;
+            //Rectangle mapCoords = GetMapCoords();
+            //Rectangle gameRect = Program.Game.Map.GameRect();
+            //if (mapCoords.Right - 1 <= gameRect.Left || mapCoords.Left >= gameRect.Right - 1)
+            //{
+            //    retVal = true;
+            //    this.xStart = xs;
+            //}
+            //if (mapCoords.Bottom - 1 <= gameRect.Top || mapCoords.Top >= gameRect.Bottom - 1)
+            //{
+            //    retVal = true;
+            //    this.yStart = ys;
+            //}
+            return false; // retVal;
         }
 
         private void Map_MouseClick(object sender, MouseEventArgs e)

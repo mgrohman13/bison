@@ -82,6 +82,17 @@ namespace ClassLibrary1.Pieces
             foreach (IBehavior behavior in this.behavior)
                 behavior.GetUpkeep(ref energyUpk, ref massUpk);
         }
+
+        void IBehavior.StartTurn()
+        {
+            StartTurn();
+        }
+        internal virtual void StartTurn()
+        {
+            foreach (IBehavior behavior in Game.Rand.Iterate(behavior))
+                behavior.StartTurn();
+        }
+
         void IBehavior.EndTurn(ref double energyUpk, ref double massUpk)
         {
             EndTurn(ref energyUpk, ref massUpk);

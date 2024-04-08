@@ -112,15 +112,25 @@ namespace ClassLibrary1
             return ((Energy >= energy || energy < 0) && (Mass >= mass || mass < 0));
         }
 
-        public void GetIncome(out double energyInc, out double energyUpk, out double massInc, out double massUpk, out double researchInc)
+        public void GetIncome(out double energyInc, out double massInc, out double researchInc)
         {
-            energyInc = energyUpk = massInc = massUpk = researchInc = 0;
-            foreach (PlayerPiece piece in Pieces)
-                piece.GenerateResources(ref energyInc, ref energyUpk, ref massInc, ref massUpk, ref researchInc);
+            energyInc = massInc = researchInc = 0;
+            foreach (PlayerPiece piece in Game.Rand.Iterate(Pieces))
+                piece.GetIncome(ref energyInc, ref massInc, ref researchInc);
+        }
+        private void GenerateResources(out double energyInc, out double massInc, out double researchInc)
+        {
+            energyInc = massInc = researchInc = 0;
+            foreach (PlayerPiece piece in Game.Rand.Iterate(Pieces))
+                piece.GenerateResources(ref energyInc, ref massInc, ref researchInc);
+        }
+        internal new void StartTurn()
+        {
+            base.StartTurn();
         }
         internal Research.Type? EndTurn()
         {
-            GetIncome(out double energyInc, out double _, out double massInc, out double _, out double researchInc);
+            GenerateResources(out double energyInc, out double massInc, out double researchInc);
 
             base.EndTurn(out double energyUpk, out double massUpk);
 

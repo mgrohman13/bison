@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using ClassLibrary1;
 using ClassLibrary1.Pieces.Players;
 
 namespace WinFormsApp1
@@ -32,6 +33,8 @@ namespace WinFormsApp1
             this.lblFM.Text = fm.ToString();
             this.lblTE.Text = te.ToString();
             this.lblTM.Text = tm.ToString();
+
+            this.txtVictory.Text = $"{Program.Game.Victory}/{Game.POINTS_TO_WIN}";
 
             base.Refresh();
         }

@@ -34,7 +34,7 @@ namespace WinFormsApp1
             // 
             // lblMouse
             // 
-            lblMouse.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
+            lblMouse.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
             lblMouse.BackColor = System.Drawing.Color.White;
             lblMouse.Location = new System.Drawing.Point(0, 526);
             lblMouse.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);

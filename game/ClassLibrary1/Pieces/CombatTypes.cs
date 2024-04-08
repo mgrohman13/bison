@@ -64,7 +64,7 @@ namespace ClassLibrary1.Pieces
             return true;
         }
 
-        internal static int GetRegen(AttackType attackType, bool attacked, bool inBuild) => attackType switch //bool moved,
+        internal static int GetRegen(AttackType attackType, bool moved, bool attacked, bool defended, bool inBuild) => attackType switch
         {
             //reduce with dmg pct?
             AttackType.Kinetic => attacked ? 0 : (inBuild ? 3 : 2),
@@ -72,12 +72,12 @@ namespace ClassLibrary1.Pieces
             AttackType.Explosive => attacked ? 0 : (inBuild ? 3 : 1),
             _ => throw new Exception(),
         };
-        internal static int GetRegen(DefenseType defenseType, bool inRepair) => defenseType switch //, bool moved, bool attacked)
+        internal static int GetRegen(DefenseType defenseType, bool moved, bool attacked, bool defended, bool inRepair) => defenseType switch
         {
             //reduce with dmg pct?
             DefenseType.Hits => 0, //need to fix Hits repair system
             DefenseType.Shield => 1,
-            DefenseType.Armor => inRepair ? 2 : 0,
+            DefenseType.Armor => inRepair ? (defended ? 1 : 2) : 0,
             _ => throw new Exception(),
         };
         internal static double GetRegenCostMult(DefenseType defenseType, out bool mass)

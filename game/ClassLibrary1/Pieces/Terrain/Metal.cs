@@ -21,11 +21,10 @@ namespace ClassLibrary1.Pieces.Terrain
             GetCost(costMult, Consts.MetalMassInc, Consts.MetalExtractorEnergyCost, Consts.MetalExtractorMassCost, out energy, out mass);
         }
 
-        public override void GenerateResources(Piece piece, double valueMult, ref double energyInc, ref double energyUpk, ref double massInc, ref double massUpk, ref double researchInc)
+        protected override void GenerateResources(double value, ref double energyInc, ref double massInc, ref double researchInc)
         {
-            double value = Consts.GetDamagedValue(piece, Value * valueMult, 0);
             massInc += value;
-            energyUpk += value / Consts.MetalEnergyUpkDiv;
+            energyInc -= value / Consts.MetalEnergyUpkDiv;
         }
         public override string GetResourceName()
         {

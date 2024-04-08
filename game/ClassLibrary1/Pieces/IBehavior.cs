@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ClassLibrary1.Pieces
+﻿namespace ClassLibrary1.Pieces
 {
     public interface IBehavior
     {
@@ -17,6 +11,7 @@ namespace ClassLibrary1.Pieces
         public bool HasBehavior<T>(out T behavior) where T : class, IBehavior => (behavior = GetBehavior<T>()) != null;
 
         internal void GetUpkeep(ref double energy, ref double mass);
+        public void StartTurn();
         public void EndTurn(ref double energyUpk, ref double massUpk);
     }
 }

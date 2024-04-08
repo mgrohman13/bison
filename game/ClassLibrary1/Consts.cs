@@ -1,7 +1,5 @@
 ﻿using ClassLibrary1.Pieces;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using DefenseType = ClassLibrary1.Pieces.CombatTypes.DefenseType;
 
 namespace ClassLibrary1
@@ -32,7 +30,7 @@ namespace ClassLibrary1
         public const double DifficultyIncTurns = 65;
         public const double DifficultyEnergyPow = 1.69;
         public const double DifficultyResearchPow = 1.3;
-        public const double DifficultyMoveDirPow = .65;
+        public const double DifficultyMoveDirPow = .65;//.52?
         public const double DistanceMoveDirPow = .39;
 
         public const double HitsIncDev = .065;
@@ -41,11 +39,12 @@ namespace ClassLibrary1
 
         public const double ResourceDistAdd = 21;
         public const double ResourceDistDiv = 52;
-        public const double ResourceDistPow = .39;
+        public const double ResourceDistPow = .39;//too low?
         public const double ResourceSustainValuePow = .169;
         public const double ExtractTurns = 52;
-        public const double ExtractPower = .65 / (1 - .65); // x/(1-x) where x is desired power when sustain=1
-        public const double ExtractSustainPow = .26;
+        public const double ExtractPow = .65 / (1 - .65); // x/(1-x) where x is desired exponent when sustain=1
+        public const double ExtractSustainPow = .26;//.39?
+        public const double ExtractSustainCostPow = .26;
         public const double ResourceDev = .21;
         public const double ResourceOE = .26;
 
@@ -79,12 +78,13 @@ namespace ClassLibrary1
         public const double EnergyPerAttack = .25;
         public const double EnergyPerShield = .5;
         public const double MassPerArmor = .25;
+        //public const double MassPerHP = 1;
 
         public const double MechCostMult = .13;
         //public const double MechStatMult = .13;
         public const double MechMassDiv = 1.69;
 
-        public const double RepairCost = .21;
+        public const double RepairCost = .169;
         //public const double RechargeCost = .169;
         public const double EnergyRepairDiv = 2.1;
         public const double AutoRepair = .65;
@@ -93,19 +93,32 @@ namespace ClassLibrary1
 
         public static double StatValue(double stat)
         {
+            if (stat < 0) throw new Exception();
             return stat * stat + stat;
         }
         public static double StatValueInverse(double value)
         {
+            if (value < 0) throw new Exception();
             return (Math.Sqrt(4 * value + 1) - 1) / 2.0;
         }
-        public static double SumStats(IEnumerable<int> stats)
+        //public static double SumStats(IEnumerable<int> stats)
+        //{
+        //    return SumStats(stats.Select(s => (double)s));
+        //}
+        //public static double SumStats(IEnumerable<double> stats)
+        //{
+        //    return StatValueInverse(stats.Sum(StatValue));
+        //}
+        public static double MoveValue(IMovable.Values? movable)
         {
-            return SumStats(stats.Select(s => (double)s));
-        }
-        public static double SumStats(IEnumerable<double> stats)
-        {
-            return StatValueInverse(stats.Sum(StatValue));
+            double move = 0;
+            if (movable.HasValue)
+            {
+                var m = movable.Value;
+                move = 8 * m.MoveInc / 1.0 + 2 * m.MoveMax / 2.1 + 1 * m.MoveLimit / 3.9;
+            }
+            move /= 8 + 2 + 1;
+            return move;
         }
 
         internal static int Income(double income)
@@ -118,6 +131,9 @@ namespace ClassLibrary1
             return 1 - Math.Pow(1 - pct, mult);
         }
 
+        internal static bool CanRepair(Piece piece) => !(piece.GetBehavior<IMovable>()?.Moved ?? false)
+            && !(piece.GetBehavior<IKillable>()?.Defended ?? false)
+            && !(piece.GetBehavior<IAttacker>()?.Attacked ?? false);
         public static double GetRepairCost(double energy, double mass)
         {
             return (mass + energy / Consts.EnergyRepairDiv) * Consts.RepairCost;
@@ -133,22 +149,21 @@ namespace ClassLibrary1
         }
         private static double GetDamagedValue(Piece piece, double value, double min, bool sqrt)
         {
-            if (piece.HasBehavior(out IKillable killable))
-            {
-                double resilience = killable.Resilience;
-                if (sqrt)
-                    resilience = Math.Sqrt(resilience);
-                return min + (value - min) * Math.Pow(killable.Hits.DefenseCur / (double)killable.Hits.DefenseMax, 1 - resilience);
-
-                //return min + (value - min) * Math.Sqrt(killable.DefenseCur / (double)killable.DefenseMax);
-            }
-            return value;
+            IKillable killable = piece.GetBehavior<IKillable>();
+            //if (piece != null && piece.HasBehavior(out IKillable killable))
+            //{
+            double resilience = killable.Resilience;
+            if (sqrt)
+                resilience = Math.Sqrt(resilience);
+            return min + (value - min) * Math.Pow(killable.Hits.DefenseCur / (double)killable.Hits.DefenseMax, 1 - resilience);
+            //}
+            //return value;
         }
 
-        public static int IncDefense(DefenseType type, int cur, int max, bool inRepair, ref double energyUpk, ref double massUpk)
+        public static int IncDefense(DefenseType type, int cur, int max, bool moved, bool attacked, bool defended, bool inRepair, ref double energyUpk, ref double massUpk)
         {
             int newValue = cur;
-            int regen = CombatTypes.GetRegen(type, inRepair);
+            int regen = CombatTypes.GetRegen(type, moved, attacked, defended, inRepair);
             if (regen > 0)
             {
                 double costMult = CombatTypes.GetRegenCostMult(type, out bool mass);

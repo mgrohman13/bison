@@ -66,6 +66,7 @@ namespace ClassLibrary1.Pieces.Players
             }
         }
         bool IKillable.IRepairable.AutoRepair => false;
+        public bool CanRepair() => Consts.CanRepair(Piece);
 
         internal override void GetUpkeep(ref double energyUpk, ref double massUpk)
         {

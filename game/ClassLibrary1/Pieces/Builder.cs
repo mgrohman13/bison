@@ -42,6 +42,9 @@ namespace ClassLibrary1.Pieces
         void IBehavior.GetUpkeep(ref double energyUpk, ref double massUpk)
         {
         }
+        void IBehavior.StartTurn()
+        {
+        }
         void IBehavior.EndTurn(ref double energyUpk, ref double massUpk)
         {
         }
@@ -85,7 +88,8 @@ namespace ClassLibrary1.Pieces
                 if (piece.HasBehavior(out IAttacker attacker))
                     foreach (var a in attacker.Attacks)
                         ApplyValue(a.AttackCur, CombatTypes.GetStartCur(a.Type, a.AttackMax), Consts.EnergyPerAttack);
-                double mult = (totCur / totStart + 1.0) / 2.0;
+                if (totCur > totStart) throw new Exception();
+                double mult = ((totStart == 0 ? totCur : totCur / totStart) + 1.0) / 2.0;
 
                 mult *= Consts.ReplaceRefundPct * Consts.StatValue(killable.Hits.DefenseCur) / Consts.StatValue(killable.Hits.DefenseMax);
                 double rounding = GetRounding();

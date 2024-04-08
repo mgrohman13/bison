@@ -45,6 +45,11 @@ namespace ClassLibrary1
             this._pieces.Remove(piece);
         }
 
+        protected void StartTurn()
+        {
+            foreach (Piece piece in Game.Rand.Iterate(_pieces))
+                piece.StartTurn();
+        }
         protected void EndTurn(out double energyUpk, out double massUpk)
         {
             energyUpk = massUpk = 0;

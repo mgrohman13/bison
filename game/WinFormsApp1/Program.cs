@@ -70,12 +70,12 @@ namespace WinFormsApp1
             RefreshSelected();
         }
 
-        public static void AutoSave()
+        public static void AutoSave(string suffix)
         {
             if (File.Exists(Game.SavePath))
             {
                 string path = Game.SavePath.Replace("\\", "/");
-                path = path[..path.LastIndexOf("/")] + "/" + "auto_" + (Game.Turn - 1) + ".sav";
+                path = path[..path.LastIndexOf("/")] + "/" + "auto_" + (Game.Turn - 1) + "_" + suffix + ".sav";
                 if (File.Exists(path))
                     File.Delete(path);
                 File.Copy(Game.SavePath, path);
@@ -109,15 +109,16 @@ namespace WinFormsApp1
                 end = MessageBox.Show("Move remaining.  End Turn?", "", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning) == DialogResult.OK;
             if (end)
             {
+                AutoSave("s");
                 Type? researched = Game.EndTurn();
                 if (Game.GameOver)
                 {
-                    MessageBox.Show((Game.Win ? "VICTORY!!!  :)" : "DEFEAT!  :(") + $"{Environment.NewLine}Game over...  {Game.Turn} turns.");
-                    //Game = new Game(savePath);
+                    MessageBox.Show((Game.Win ? "VICTORY!!!  :)" : "DEFEAT!  :(") + $"{Environment.NewLine}Hives Destroyed:{Program.Game.Victory}/{Game.POINTS_TO_WIN}{Environment.NewLine}Game over...  {Game.Turn} turns.");
+                    AutoSave(Game.Win ? "win" : "loss");
                 }
                 else
                 {
-                    AutoSave();
+                    AutoSave("e");
                 }
                 moved.Clear();
                 Program.RefreshChanged();
@@ -233,7 +234,7 @@ namespace WinFormsApp1
                 move |= movable.MoveCur > 1 && movable.MoveCur + movable.MoveInc > movable.MoveMax;// + (movable.MoveLimit - movable.MoveMax > 1 ? 1 : 0);
             if (!move && piece.HasBehavior(out IAttacker attacker))
             {
-                static double GetRange(Attack a) => a.Attacked ? 0 : a.Range;
+                static double GetRange(Attack a) => a.CanAttack() ? a.Range : 0;
                 double maxRange = attacker.Attacks.Max(GetRange);
                 Attack max = Game.Rand.SelectValue(attacker.Attacks.Where(a => GetRange(a) == maxRange));
                 move |= maxRange > 0 && piece.Tile.GetVisibleTilesInRange(max).Any(t => t.Piece != null && t.Piece.HasBehavior<IKillable>() && t.Piece.IsEnemy);

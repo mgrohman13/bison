@@ -23,9 +23,9 @@ namespace ClassLibrary1.Pieces
             private readonly int _moveMax, _moveLimit;
             private readonly double _moveInc;
             public Values(double moveInc, int moveMax, int moveLimit)
-            {
-                if (moveInc <= 0 || moveMax <= 0 || moveLimit <= 0)
-                    moveInc = moveMax = moveLimit = 0;
+            { 
+                if (!(moveInc < moveMax && moveMax < moveLimit)) throw new Exception();
+
                 this._moveInc = moveInc;
                 this._moveMax = moveMax;
                 this._moveLimit = moveLimit;

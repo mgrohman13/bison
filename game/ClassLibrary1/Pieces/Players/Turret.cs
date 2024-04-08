@@ -75,6 +75,7 @@ namespace ClassLibrary1.Pieces.Players
             }
         }
         bool IKillable.IRepairable.AutoRepair => Game.Player.Research.HasType(Research.Type.TurretAutoRepair);
+        public bool CanRepair() => Consts.CanRepair(Piece);
 
         public override string ToString()
         {
@@ -188,7 +189,7 @@ namespace ClassLibrary1.Pieces.Players
             }
             private void UpgradeTurretDefense(double researchMult)
             {
-                researchMult = Math.Pow(researchMult, .6);
+                researchMult = Math.Pow(researchMult, .7);
                 this.vision = 20 * researchMult;
 
                 for (int a = 0; a < MAX_DEFENSES; a++)
@@ -201,7 +202,7 @@ namespace ClassLibrary1.Pieces.Players
                         _ => throw new Exception(),
                     };
 
-                    double devAvg = a switch { 0 => 13, 1 => 7.8, 2 => 16.9, _ => throw new Exception(), };
+                    double devAvg = a switch { 0 => 6.5, 1 => 3.9, 2 => 9.1, _ => throw new Exception(), };
                     devAvg *= researchMult;
                     //dont pow researchMult first
                     //const double lowPenalty = 2.0;
@@ -225,7 +226,7 @@ namespace ClassLibrary1.Pieces.Players
             }
             private void UpgradeTurretAttack(double researchMult)
             {
-                researchMult = Math.Pow(researchMult, .5);
+                researchMult = Math.Pow(researchMult, .6);
                 for (int a = 0; a < MAX_ATTACKS; a++)
                 {
                     AttackType type = a switch
@@ -236,7 +237,7 @@ namespace ClassLibrary1.Pieces.Players
                         _ => throw new Exception(),
                     };
 
-                    double attAvg = a switch { 0 => 13, 1 => 10.4, 2 => 7.8, _ => throw new Exception(), };
+                    double attAvg = a switch { 0 => 6.5, 1 => 5.2, 2 => 3.9, _ => throw new Exception(), };
                     attAvg *= researchMult;
                     //dont pow researchMult first
                     //const double lowPenalty = 2.0;

@@ -12,8 +12,10 @@ namespace ClassLibrary1.Pieces
         private readonly Piece _piece;
         private readonly List<Attack> _attacks;
 
+
         public Piece Piece => _piece;
         public IReadOnlyCollection<Attack> Attacks => CombatTypes.OrderAtt(_attacks);
+        public bool Attacked => Attacks.Any(a => a.Attacked);
 
         //public double TotalAttackCur2 => Consts.SumStats(Attacks.Select(a => a.AttackCur));
         //public double TotalAttackMax2 => Consts.SumStats(Attacks.Select(a => a.AttackMax));
@@ -49,7 +51,9 @@ namespace ClassLibrary1.Pieces
         bool IAttacker.Fire(IKillable target)
         {
             bool fire = (Piece.IsPlayer && target != null && target.Piece.IsEnemy && target.Piece.Tile.Visible);
-            return Fire(fire, target);
+            bool fired = Fire(fire, target);
+            Piece.Tile.Map.Game.SaveGame();
+            return fired;
         }
         bool IAttacker.EnemyFire(IKillable target)
         {
@@ -71,14 +75,16 @@ namespace ClassLibrary1.Pieces
 
         void IBehavior.GetUpkeep(ref double energyUpk, ref double massUpk)
         {
-            //var used = Attacks.Where(a => a.Attacked);
-            //return (used.Sum(a => Math.Pow(a.Damage, Consts.WeaponDamageUpkeepPow)) + used.Count) * Consts.WeaponRechargeUpkeep;
             foreach (Attack attack in Attacks)
                 attack.GetUpkeep(ref energyUpk, ref massUpk);
         }
+        void IBehavior.StartTurn()
+        {
+            foreach (Attack attack in Game.Rand.Iterate(Attacks))
+                attack.StartTurn();
+        }
         void IBehavior.EndTurn(ref double energyUpk, ref double massUpk)
         {
-            ((IBehavior)this).GetUpkeep(ref energyUpk, ref massUpk);
             foreach (Attack attack in Game.Rand.Iterate(Attacks))
                 attack.EndTurn(ref energyUpk, ref massUpk);
         }
@@ -108,7 +114,7 @@ namespace ClassLibrary1.Pieces
 
         public void OnDeserialization(object sender)
         {
-            _event = new();
+            _event ??= new();
         }
     }
 }

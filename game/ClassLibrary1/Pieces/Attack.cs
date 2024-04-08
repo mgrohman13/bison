@@ -20,7 +20,7 @@ namespace ClassLibrary1.Pieces
         private bool _attacked;
 
         public AttackType Type => _values.Type;
-        public bool Attacked => _attacked || AttackCur == 0;
+        public bool Attacked => _attacked;
         //public double Upkeep => _attacked * Consts.WeaponRechargeUpkeep;
         public int AttackCur => _attackCur;
         //public int AttackCur => Consts.GetDamagedValue(Piece, AttackBase, 0);
@@ -55,36 +55,23 @@ namespace ClassLibrary1.Pieces
                 this._attackCur--;
         }
 
-        private bool CapableAttack(Piece target, out IKillable killable)
+        public bool CanAttack() => !Attacked && AttackCur > 0;
+        public IEnumerable<IKillable> GetDefenders(Piece target, Tile attackFrom = null)
         {
-            killable = target.GetBehavior<IKillable>();
-            bool capableAttack = killable != null && Piece.Side != killable.Piece.Side;
-            if (!capableAttack)
-                killable = null;
-            return capableAttack;
-        }
-        private bool CanAttack(Tile attackFrom, Piece target, out IKillable killable)
-        {
-            //check blocks
-            bool canAttack = CapableAttack(target, out killable) && !Attacked && attackFrom.GetDistance(killable.Piece.Tile) <= Range;
-            if (!canAttack)
-                killable = null;
-            return canAttack;
-        }
-        public IEnumerable<IKillable> GetDefenders(Piece target)
-        {
-            return GetDefenders(Piece.Tile, target);
-        }
-        internal IEnumerable<IKillable> GetDefenders(Tile attackFrom, Piece target)
-        {
-            if (!CanAttack(attackFrom, target, out IKillable killable))
-                return Enumerable.Empty<IKillable>();
+            attackFrom ??= Piece.Tile;
+            if (!CanAttack(target, attackFrom))
+            {
+                var adjacent = AdjacentPieces(target).Where(p => CanAttack(p, attackFrom));
+                if (adjacent.Any())
+                    target = Game.Rand.SelectValue(adjacent);
+                else
+                    return Enumerable.Empty<IKillable>();
+            }
 
-            IEnumerable<IKillable> friendly = target.Tile.GetAdjacentTiles()
-                .Select(t => t.Piece)
-                .Where(p => p?.Side == target.Side && p.HasBehavior<IAttacker>())
-                .Select(p => p?.GetBehavior<IKillable>())
-                .Where(k => k != null && !k.Dead);
+            var defenders = AdjacentPieces(target)
+                .Where(p => CanAttack(p, null, false) && p.HasBehavior<IAttacker>())
+                //.Concat(new[] { target })
+                .Select(p => p.GetBehavior<IKillable>());
 
             //int GetMaxDef(IKillable k) => k.GetDefenses(attack).Max(d => d?.DefenseCur) ?? 0;
             //int GetSufficientDef(IKillable k)
@@ -99,15 +86,20 @@ namespace ClassLibrary1.Pieces
             //    .ThenByDescending(GetMaxDef)
             //    .First();
 
-            static int? MaxDef(IKillable k) => k.TotalDefenses.Max(d => d?.DefenseCur);
-            int maxDef = friendly.Max(MaxDef) ?? 0;
-            friendly = friendly.Where(k => k != null && MaxDef(k) >= maxDef);
+            int? maxDef = defenders.Max(MaxDef);
+            defenders = defenders.Where(k => MaxDef(k) >= maxDef).ToHashSet();
+            if (!defenders.Any())
+                defenders = new[] { target.GetBehavior<IKillable>() };
+            return defenders;
 
-            if (!friendly.Any())
-                friendly = new[] { killable };
-            return friendly;
-
+            bool CanAttack(Piece target, Tile attackFrom, bool checkRange = true) => this.CanAttack()
+               && target != null && target.Side != this.Piece.Side
+               && target.HasBehavior(out IKillable killable) && !killable.Dead
+               && (!checkRange || attackFrom.GetDistance(target.Tile) <= this.Range);
+            static IEnumerable<Piece> AdjacentPieces(Piece target) => target.Tile.GetAdjacentTiles().Select(t => t.Piece).Where(p => p?.Side == target.Side);
+            static int? MaxDef(IKillable killable) => killable.TotalDefenses.Max(d => d?.DefenseCur);
         }
+
         internal bool Fire(IKillable target)
         {
             var defenders = GetDefenders(target.Piece);
@@ -127,7 +119,7 @@ namespace ClassLibrary1.Pieces
                     //int att = Game.Rand.RangeInt(0, AttackCur);
                     //int def = Game.Rand.RangeInt(0, defense.DefenseCur);
                     //if (att > def || (att == def && !activeDefense))
-                    double attChance = AttackCur / (AttackCur + defense.DefenseCur);
+                    double attChance = AttackCur / (double)(AttackCur + defense.DefenseCur);
                     if (Game.Rand.Bool(attChance))
                         defense.Damage(this);
                     else if (activeDefense)//&& def < att
@@ -138,7 +130,6 @@ namespace ClassLibrary1.Pieces
                 if (this.Attacked)
                 {
                     Piece.GetBehavior<IAttacker>().RaiseAttackEvent(this, target);
-
                     Piece.Game.Log.LogAttack(this, startAttack, target, startDefense);
                     return true;
                 }
@@ -150,6 +141,10 @@ namespace ClassLibrary1.Pieces
         {
             EndTurn(false, ref energyUpk, ref massUpk);
         }
+        internal void StartTurn()
+        {
+            this._attacked = false;
+        }
         internal void EndTurn(ref double energyUpk, ref double massUpk)
         {
             EndTurn(true, ref energyUpk, ref massUpk);
@@ -160,7 +155,7 @@ namespace ClassLibrary1.Pieces
             if (doEndTurn)
             {
                 this._attackCur = newValue;
-                this._attacked = false;
+                //this._attacked = false;
             }
         }
         public int GetRegen()
@@ -168,9 +163,10 @@ namespace ClassLibrary1.Pieces
             //check blocks
             bool inBuild = Piece.Side.PiecesOfType<IBuilder.IBuildMech>()
                 .Any(r => Piece != r.Piece && Piece.Side == r.Piece.Side && Piece.Tile.GetDistance(r.Piece.Tile) <= r.Range);
-            //bool moved = Piece.HasBehavior(out IMovable movable) && movable.Moved;
+            bool moved = Piece.GetBehavior<IMovable>()?.Moved ?? false;
+            bool defended = Piece.GetBehavior<IKillable>()?.Defended ?? false;
 
-            int regen = CombatTypes.GetRegen(Type, this._attacked, inBuild);
+            int regen = CombatTypes.GetRegen(Type, moved, Attacked, defended, inBuild);
             regen = Math.Min(regen, AttackMax - AttackCur);
             return regen;
         }

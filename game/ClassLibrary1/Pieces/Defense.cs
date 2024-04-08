@@ -12,6 +12,7 @@ namespace ClassLibrary1.Pieces
         private Values _values;
 
         private int _defenseCur;
+        private bool _defended, _resetDefended;
 
         public DefenseType Type => _values.Type;
         public int DefenseCur => _defenseCur;
@@ -19,12 +20,16 @@ namespace ClassLibrary1.Pieces
 
         public bool Dead => _defenseCur < 1;
 
+        public bool Defended => _defended;
+
         internal Defense(Piece piece, Values values)
         {
             this.Piece = piece;
             this._values = values;
 
             this._defenseCur = CombatTypes.GetStartCur(values.Type, values.Defense);
+            this._defended = true;
+            this._resetDefended = false;
         }
         public T GetBehavior<T>() where T : class, IBehavior
         {
@@ -40,6 +45,9 @@ namespace ClassLibrary1.Pieces
 
         internal void Damage(Attack attack)
         {
+            this._defended = true;
+            this._resetDefended = false;
+
             if (CombatTypes.DoSplash(attack.Type, this.Type))
                 foreach (Defense defense in Game.Rand.Iterate(Piece.Tile.GetAdjacentTiles()
                         .Select(t => t?.Piece)
@@ -86,7 +94,6 @@ namespace ClassLibrary1.Pieces
         {
             if (Piece is IKillable.IRepairable repairable && DefenseCur < DefenseMax && CombatTypes.Repair(Type))
             {
-                //??? - needs simpler system
                 hitsInc = GetRepair();
 
                 if (doEndTurn)
@@ -112,28 +119,43 @@ namespace ClassLibrary1.Pieces
                 massCost = 0;
             }
         }
-        internal double GetRepair()
+        internal int GetRepair()
         {
-            double hitsInc = 0;
+            int repairInc = 0;
+            if (Piece is IKillable.IRepairable repairable && repairable.CanRepair())
+                InRepairRange(out repairInc);
+            return repairInc;
+        }
+        private bool InRepairRange(out int repairInc)
+        {
+            repairInc = 0;
             if (Piece is IKillable.IRepairable repairable)
-            {
+                //{
                 //check blocks
-                double[] repairs = Piece.Side.PiecesOfType<IRepair>()
-                  .Where(r => Piece != r.Piece && Piece.Side == r.Piece.Side && Piece.Tile.GetDistance(r.Piece.Tile) <= r.Range)
-                  .Select(r => this.DefenseMax * r.Rate)
-                  .Concat(repairable.AutoRepair ? new double[] { DefenseMax * Consts.AutoRepairPct + Consts.AutoRepair } : Array.Empty<double>())
-                  .OrderByDescending(v => v)
-                  .ToArray();
-                //each additional repairer contributes a reduced amount 
-                for (int a = 0; a < repairs.Length; a++)
-                    hitsInc += repairs[a] / (a + 1.0);
-            }
-            return hitsInc;
+                //double[] repairs =
+
+                repairInc = Piece.Side.PiecesOfType<IRepair>()
+                    .Where(r => Piece != r.Piece && Piece.Side == r.Piece.Side && Piece.Tile.GetDistance(r.Piece.Tile) <= r.Range)
+                    .Select(r => r?.Rate)
+                    .Concat(repairable.AutoRepair ? new int?[] { 1 } : Array.Empty<int?>())//new double[] { DefenseMax * Consts.AutoRepairPct + Consts.AutoRepair } : Array.Empty<double>())
+                    .Max() ?? 0;
+            //.OrderByDescending(v => v)
+            //.ToArray();
+            ////each additional repairer contributes a reduced amount 
+            //for (int a = 0; a < repairs.Length; a++)
+            //    hitsInc += repairs[a] / (a + 1.0);
+            //}
+            return repairInc > 0;
         }
 
         public void GetUpkeep(ref double energyUpk, ref double massUpk)
         {
             EndTurn(false, ref energyUpk, ref massUpk);
+        }
+        internal void StartTurn()
+        {
+            if (this._resetDefended)
+                _defended = false;
         }
         internal void EndTurn(ref double energyUpk, ref double massUpk)
         {
@@ -143,7 +165,10 @@ namespace ClassLibrary1.Pieces
         {
             int newValue = IncDefense(ref energyUpk, ref massUpk);
             if (doEndTurn)
+            {
                 this._defenseCur = newValue;
+                this._resetDefended = true;
+            }
 
             if (CombatTypes.Repair(Type))
             {
@@ -158,8 +183,10 @@ namespace ClassLibrary1.Pieces
         }
         private int IncDefense(ref double energyUpk, ref double massUpk)
         {
-            //bool moved = Piece.HasBehavior(out IMovable movable) && movable.Moved;
-            return Consts.IncDefense(Type, DefenseCur, DefenseMax, GetRepair() > 0, ref energyUpk, ref massUpk);
+            bool moved = Piece.GetBehavior<IMovable>()?.Moved ?? false;
+            bool attacked = Piece.GetBehavior<IAttacker>()?.Attacked ?? false;
+            bool defended = Piece.GetBehavior<IKillable>()?.Defended ?? false;
+            return Consts.IncDefense(Type, DefenseCur, DefenseMax, moved, attacked, defended, InRepairRange(out _), ref energyUpk, ref massUpk);
         }
     }
 }

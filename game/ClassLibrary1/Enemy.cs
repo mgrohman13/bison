@@ -47,6 +47,8 @@ namespace ClassLibrary1
 
             _research.EndTurn(Math.Pow(difficulty, Consts.DifficultyResearchPow));
 
+            //we start turn here so the player sees things in the correct state for the enemy's next moves
+            base.StartTurn();
         }
 
         internal void HiveDamaged(Hive hive, ref double energy, int hits, double hitsPct, double range)
@@ -110,56 +112,74 @@ namespace ClassLibrary1
                     if (attacker != null)
                     {
                         double attackWeight = 1;
-                        foreach (var attack in attacker.Attacks.Where(a => !a.Attacked))
+                        foreach (var attack in attacker.Attacks.Where(a => a.CanAttack()))
                         {
-                            var weights = allTargets.SelectMany(k => attack.GetDefenders(moveTile, k.Piece)).Select(k => GetKillWeight(k, avgHp));
+                            var weights = GetDefenders(attack, moveTile, allTargets).Select(k => GetKillWeight(k, avgHp));
                             if (weights.Any())
                             {
                                 double weight = weights.Max();
                                 attackWeight += 130 * attack.AttackCur * (.13 + Math.Pow(weight * weight * weights.Average(), 1 / 3.0) / avgWeight);
                             }
                         }
-                        result *= attackWeight;
+                        result *= attackWeight;//+=?
                     }
                     return Game.Rand.Round(Math.Pow(1 + 13 * result, .91));
                 });
 
                 Tile moveTo = Game.Rand.SelectValue(moveTiles);
-                bool attackFirst = attacker != null && Game.Rand.Bool(.013);
-                Dictionary<Attack, IEnumerable<IKillable>> newTargets = GetTargets(attacker, moveTo, allTargets);
-                if (!attackFirst && attacker != null)
-                    attackFirst = targets.Keys.Any(a => !newTargets.ContainsKey(a));
-                if (attackFirst)
-                    Fire(attacker, targets, avgHp, avgWeight);
+                var newTargets = targets;
+                if (attacker != null)
+                {
+                    const double rand = .013;
+                    bool attackFirst = Game.Rand.Bool(rand);
+                    newTargets = GetTargets(attacker, moveTo, allTargets);
+                    if (!attackFirst)
+                        attackFirst = targets.Keys.Any(a => !(newTargets.ContainsKey(a) && newTargets[a].Any(k => DoAttack(a, moveTo, k))));
+                    if (attackFirst)// && Game.Rand.Bool(1 - rand))
+                        Fire(attacker, targets, avgHp, avgWeight);
+                }
 
                 if (movable.EnemyMove(moveTo))
                     targets = newTargets;
-                else if (piece.Tile != moveTo)
+                if (piece.Tile != moveTo)
                     ;
             }
 
             if (attacker != null)
                 Fire(attacker, targets, avgHp, avgWeight);
         }
-        private static Dictionary<Attack, IEnumerable<IKillable>> GetTargets(IAttacker attacker, Tile from, IEnumerable<IKillable> allTargets)
+
+        private static Dictionary<Attack, IEnumerable<IKillable>> GetTargets(IAttacker attacker, Tile attackFrom, IEnumerable<IKillable> allTargets)
         {
-            return attacker.Attacks.Where(a => !a.Attacked)
-                .Select(a => new Tuple<Attack, IEnumerable<IKillable>>(a, allTargets.SelectMany(k => a.GetDefenders(from, k.Piece))))
+            return attacker.Attacks.Where(a => a.CanAttack())
+                .Select(a => new Tuple<Attack, IEnumerable<IKillable>>(a, GetDefenders(a, attackFrom, allTargets)))
                 .Where(t => t.Item2.Any())
                 .ToDictionary(t => t.Item1, t => t.Item2);
         }
         private static void Fire(IAttacker attacker, Dictionary<Attack, IEnumerable<IKillable>> targets, double avgHp, double avgWeight)
         {
             Dictionary<IKillable, int> targWeights = targets.Values.SelectMany(v => v).Distinct().ToDictionary(k => k, k => Game.Rand.Round(1 + 13 * GetKillWeight(k, avgHp) / avgWeight));
-            while (attacker.Attacks.Any(a => !a.Attacked && targets.ContainsKey(a)) && targWeights.Any())
+            while (attacker.Attacks.Any(a => a.CanAttack() && targets.ContainsKey(a)) && targWeights.Any())
             {
                 IKillable trg = Game.Rand.SelectValue(targWeights);
                 targWeights.Remove(trg);
-                if (attacker.Attacks.Any(a => a.AttackCur == a.AttackMax || !trg.Piece.HasBehavior<IAttacker>() || a.AttackCur > Game.Rand.Next(trg.TotalDefenses.Max(d => d.DefenseCur))))
-                    if (!attacker.EnemyFire(trg))
-                        ;
+                if (attacker.Attacks.Any(a => DoAttack(a, a.Piece.Tile, trg)))
+                    if (attacker.EnemyFire(trg))
+                    {
+                        //targets = GetTargets();
+                        //Fire();
+                    }
             }
         }
+        private static bool DoAttack(Attack attack, Tile attackFrom, IKillable target)
+        {
+            return attack.AttackCur == attack.AttackMax || (!target.Piece.HasBehavior<IAttacker>() && Game.Rand.Bool())
+                || attack.AttackCur > Game.Rand.Next(GetDefenders(attack, attackFrom, target).SelectMany(k => k.TotalDefenses).Max(d => d?.DefenseCur) ?? 0);
+        }
+        private static IEnumerable<IKillable> GetDefenders(Attack attack, Tile attackFrom, IEnumerable<IKillable> allTargets) =>
+            allTargets.SelectMany(k => GetDefenders(attack, attackFrom, k)).Distinct();
+        private static IEnumerable<IKillable> GetDefenders(Attack attack, Tile attackFrom, IKillable target) =>
+            attack.GetDefenders(target.Piece, attackFrom);//.Concat(new[] { target }).Distinct();
         private static double GetKillWeight(IKillable killable, double avgHp)
         {
             double attacks = 0, repair = 0;

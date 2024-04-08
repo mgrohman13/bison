@@ -55,6 +55,7 @@ namespace ClassLibrary1.Pieces.Players
             }
         }
         bool IKillable.IRepairable.AutoRepair => Game.Player.Research.HasType(Research.Type.ExtractorAutoRepair);
+        public bool CanRepair() => Consts.CanRepair(Piece);
 
         internal override void Die()
         {
@@ -63,17 +64,18 @@ namespace ClassLibrary1.Pieces.Players
             Resource.SetTile(tile);
         }
 
-        public override void GenerateResources(ref double energyInc, ref double energyUpk, ref double massInc, ref double massUpk, ref double researchInc)
+        internal override void GenerateResources(ref double energyInc, ref double massInc, ref double researchInc)
         {
-            base.GenerateResources(ref energyInc, ref energyUpk, ref massInc, ref massUpk, ref researchInc);
-            Resource.GenerateResources(Piece, GetValues(Game).ValueMult, ref energyInc, ref energyUpk, ref massInc, ref massUpk, ref researchInc);
+            base.GenerateResources(ref energyInc, ref massInc, ref researchInc);
+            Resource.GenerateResources(this, GetValues(Game).ValueMult, ref energyInc, ref massInc, ref researchInc);
         }
         internal override void EndTurn(ref double energyUpk, ref double massUpk)
         {
-            double energyInc = 0, massInc = 0, researchInc = 0;
-            GenerateResources(ref energyInc, ref energyUpk, ref massInc, ref massUpk, ref researchInc);
+            Values values = GetValues(Game);
+            Resource.Extract(this, values.ValueMult, values.SustainMult);
+
+            //will end up being slightly cheaper to repair than in GetUpkeep because of extracted resource value
             base.EndTurn(ref energyUpk, ref massUpk);
-            Resource.Extract(Piece, GetValues(Game).SustainMult);
         }
 
         public override string ToString()
@@ -118,8 +120,8 @@ namespace ClassLibrary1.Pieces.Players
             }
             private void UpgradeBuildingHits(double researchMult)
             {
-                double defAvg = 15 * Math.Pow(researchMult, .4);
-                const double lowPenalty = 3;
+                double defAvg = 8 * Math.Pow(researchMult, .5);
+                const double lowPenalty = 8 / 5.0;
                 if (researchMult < lowPenalty)
                     defAvg *= researchMult / lowPenalty;
                 int defense = Game.Rand.Round(defAvg);

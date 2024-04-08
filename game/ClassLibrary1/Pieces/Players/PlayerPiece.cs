@@ -16,9 +16,17 @@ namespace ClassLibrary1.Pieces.Players
             this._vision = vision;
         }
 
-        public virtual void GenerateResources(ref double energyInc, ref double energyUpk, ref double massInc, ref double massUpk, ref double researchInc)
+        public void GetIncome(ref double energyInc, ref double massInc, ref double researchInc)
         {
+            GenerateResources(ref energyInc, ref massInc, ref researchInc);
+
+            double energyUpk = 0, massUpk = 0;
             GetUpkeep(ref energyUpk, ref massUpk);
+            energyInc -= energyUpk;
+            massInc -= massUpk;
+        }
+        internal virtual void GenerateResources(ref double energyInc, ref double massInc, ref double researchInc)
+        {
         }
 
         public double GetRepairInc()

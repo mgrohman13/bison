@@ -1,12 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Diagnostics;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace WinFormsApp1
@@ -35,9 +28,9 @@ namespace WinFormsApp1
 
         public override void Refresh()
         {
-            Program.Game.Player.GetIncome(out double energyInc, out double energyUpk, out double massInc, out double massUpk, out double researchInc);
-            energyInc -= energyUpk;
-            massInc -= massUpk;
+            Program.Game.Player.GetIncome(out double energyInc, out double massInc, out double researchInc);
+            //energyInc -= energyUpk;
+            //massInc -= massUpk; 
             this.lblEnergy.Text = Format(Program.Game.Player.Energy);
             FormatInc(lblEnergyInc, energyInc);
             this.lblMass.Text = Format(Program.Game.Player.Mass);
@@ -51,7 +44,7 @@ namespace WinFormsApp1
         private static void FormatInc(Label label, double inc)
         {
             label.ForeColor = inc >= 0 ? Color.Black : Color.Red;
-            label.Text = string.Format("{0}{1}", inc >= 0 ? "+" : "-", inc.ToString("0.0"));
+            label.Text = string.Format("{0}{1}", inc >= 0 ? "+" : "", inc.ToString("0.0"));
         }
         private static string Format(int value)
         {
