@@ -28,9 +28,10 @@ namespace ClassLibrary1.Pieces.Players
             if (!starter)
                 this._rangeMult = Game.Rand.GaussianOE(values.BuilderRange, .21, .26, 1) / values.BuilderRange;
 
+            IMovable.Values movable = values.GetMovable(_rangeMult, _rounding);
             SetBehavior(
                 new Killable(Piece, values.GetKillable(Game, _defenseType), values.Resilience),
-                new Movable(this, values.GetMovable(_rangeMult, _rounding)),
+                new Movable(this, movable, starter ? movable.MoveMax - movable.MoveInc - 1 : 0),
                 new Builder.BuildExtractor(this, values.GetRepair(Game, _rangeMult, _rounding).Builder));
             Unlock();
         }
@@ -106,7 +107,7 @@ namespace ClassLibrary1.Pieces.Players
             get
             {
                 Cost(Game, out int energy, out int mass);
-                return Consts.GetRepairCost(energy, mass);
+                return Consts.GetRepairCost(this, energy, mass);
             }
         }
         bool IKillable.IRepairable.AutoRepair => false;
@@ -176,17 +177,10 @@ namespace ClassLibrary1.Pieces.Players
             {
                 IRepair.Values repair = this.repair;
                 int rate = Math.Max(1, MTRandom.Round(repairRate / rangeMult, rounding));
-                //alt variability based on move?
-                //if (!game.Player.Research.HasType(Research.Type.ConstructorRepair))
-                //    rate = 1;
-
-                double range = repair.Builder.Range * repairRate / rate;
+                if (!game.Player.Research.HasType(Research.Type.ConstructorRepair))
+                    rate = 1;
+                double range = repair.Builder.Range * repairRate / rate * Math.Sqrt(rangeMult);
                 return new(new(range), rate);
-                //double mult = 1 / Math.Pow(rangeMult, .52);
-                //IRepair.Values repair = this.repair;
-                //double range = repair.Builder.Range * rangeMult;
-                //double rate = repair.Rate * mult;
-                //return new(new(range), rate);
             }
 
             public void Upgrade(Research.Type type, double researchMult)
@@ -213,7 +207,7 @@ namespace ClassLibrary1.Pieces.Players
 
                 IKillable.Values Gen(DefenseType type, double mult)
                 {
-                    double defAvg = 10 * Math.Pow(researchMult, .3) * mult;
+                    double defAvg = 10 * Math.Pow(researchMult, .50) * mult;
                     const double lowPenalty = 10 / 5.0;
                     if (researchMult < lowPenalty)
                         defAvg *= researchMult / lowPenalty;
@@ -225,20 +219,26 @@ namespace ClassLibrary1.Pieces.Players
             {
                 this.vision = START_VISION * Math.Pow(researchMult, .3);
 
-                researchMult = Math.Pow(researchMult, .6);
-                double max = 8 * researchMult;
-                double limit = 15 * researchMult;
+                double mult = 1;
+                const double lowPenalty = 2;
+                if (researchMult < lowPenalty)
+                    mult *= researchMult / lowPenalty;
+
+                researchMult = Math.Pow(researchMult, .3);
+                mult *= researchMult;
+                double max = 16 * mult;
+                double limit = 30 * mult;
                 int moveMax = Game.Rand.Round(max);
                 int moveLimit = Game.Rand.Round(limit);
-                double mult = Math.Pow((max * 2 + limit) / (moveMax * 2 + moveLimit), 1 / 3.9);
-                double moveInc = 3.5 * mult * researchMult;
+                double inc = Math.Pow((max * 2 + limit) / (moveMax * 2 + moveLimit), 1 / 3.9);
+                double moveInc = 7 * inc * mult;
                 this.movable = new(moveInc, moveMax, moveLimit);
             }
             private void UpgradeConstructorRepair(double researchMult)
             {
                 researchMult = Math.Pow(researchMult, .4);
-                double repairRange = 3.5 * researchMult;
-                repairRate = Game.Rand.Round(1.13 * researchMult);// Consts.GetPct(.052, researchMult);
+                double repairRange = 4.0 * researchMult;
+                repairRate = 1.13 * researchMult;
                 this.repair = new(new(repairRange), 1);
             }
         }

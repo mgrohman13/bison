@@ -57,6 +57,11 @@ namespace ClassLibrary1.Pieces
             if (this.behavior.Any(b => behavior.Any(b2 => b.GetType() == b2.GetType())))
                 throw new Exception();
             this.behavior = this.behavior.Concat(behavior).ToList().AsReadOnly();
+
+            if (HasBehavior(out IKillable killable) && killable.Hits == null)
+                throw new Exception();
+            if (HasBehavior(out IAttacker attacker) && !attacker.Attacks.Any())
+                throw new Exception();
         }
 
         internal virtual void Die()

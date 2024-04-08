@@ -134,8 +134,8 @@ namespace ClassLibrary1
 
             base.EndTurn(out double energyUpk, out double massUpk);
 
-            this._energy += Consts.Income(energyInc - energyUpk);
-            this._mass += Consts.Income(massInc - massUpk);
+            this._energy = Consts.Income(Energy, energyInc - energyUpk);
+            this._mass = Consts.Income(Mass, massInc - massUpk);
 
             return this.Research.AddResearch(researchInc);
         }

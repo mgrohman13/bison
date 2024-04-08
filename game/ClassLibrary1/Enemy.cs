@@ -40,7 +40,7 @@ namespace ClassLibrary1
             this._mass = 0;
 
             int spawns = Game.Rand.OEInt(Game.Turn / 13.0);
-            for (int a = 0; a < spawns && NextAlienCost() + 13 < this.Energy; a++)
+            for (int a = 0; a < spawns && _nextAlien.AlienCost() + 13 < this.Energy; a++)
                 SpawnAlien(Game.Map.GetEnemyTile());
 
             Debug.WriteLine($"Enemy energy: {_energy}");
@@ -74,11 +74,10 @@ namespace ClassLibrary1
         }
         private void SpawnAlien(Tile tile)
         {
-            this._energy -= Game.Rand.Round(NextAlienCost());
+            this._energy -= Game.Rand.Round(_nextAlien.AlienCost());
             Alien.NewAlien(tile, _nextAlien.Killable, _nextAlien.Resilience, _nextAlien.Attacker, _nextAlien.Movable);
             _nextAlien = MechBlueprint.Alien(_research);
-        }
-        private double NextAlienCost() => _nextAlien.Energy + _nextAlien.Mass * Consts.MechMassDiv;
+        } 
 
         private void PlayTurn(Piece piece, double difficulty)
         {

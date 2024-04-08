@@ -39,7 +39,7 @@ namespace ClassLibrary1.Pieces
             //private readonly int _numAttacks;
 
             private readonly double _range;//_armorPierce, _shieldPierce, _dev,
-            public Values(AttackType type, int attack) : this(type, attack, Pieces.Attack.MELEE_RANGE) { }
+            //public Values(AttackType type, int attack) : this(type, attack, Pieces.Attack.MELEE_RANGE) { }
             public Values(AttackType type, int attack, double range)//, double _armorPierce, double _shieldPierce, double _dev)
             {
                 this.Type = type;

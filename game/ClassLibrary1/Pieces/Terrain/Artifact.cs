@@ -25,7 +25,7 @@ namespace ClassLibrary1.Pieces.Terrain
         {
             researchInc += value;
             massInc += value / Consts.ArtifactMassIncDiv;
-            energyInc -= value / Consts.ArtifactEnergyUpkDiv;
+            energyInc -= value * Consts.ArtifactEnergyUpkMult;
         }
 
         public override string GetResourceName()

@@ -39,7 +39,7 @@ namespace ClassLibrary1.Pieces
         internal static IReadOnlyCollection<Attack> OrderAtt(IEnumerable<Attack> attacks) =>
             OrderAtt(attacks, a => a.AttackMax, a => a.RangeBase, a => a.Type);
         internal static IReadOnlyCollection<T> OrderAtt<T>(IEnumerable<T> attacks, Func<T, int> AttMax, Func<T, double> Range, Func<T, AttackType> Type) =>
-            attacks.OrderByDescending(AttMax).ThenByDescending(Range).ThenByDescending(Type).ToList().AsReadOnly();
+            Game.Rand.Iterate(attacks).OrderByDescending(AttMax).ThenByDescending(Range).ThenByDescending(Type).ToList().AsReadOnly();
         //internal static object OrderBy(Defense defense) => defense.Type switch
         //{
         //    DefenseType.Hits => 3,
@@ -80,18 +80,24 @@ namespace ClassLibrary1.Pieces
             DefenseType.Armor => inRepair ? (defended ? 1 : 2) : 0,
             _ => throw new Exception(),
         };
-        internal static double GetRegenCostMult(DefenseType defenseType, out bool mass)
+        internal static double GetRegenCostMult(DefenseType defenseType, bool isAttacker, out bool mass)
         {
+            double result;
             switch (defenseType)
             {
                 case DefenseType.Shield:
                     mass = false;
-                    return Consts.EnergyPerShield;
+                    result = Consts.EnergyPerShield;
+                    break;
                 case DefenseType.Armor:
                     mass = true;
-                    return Consts.MassPerArmor;
+                    result = Consts.MassPerArmor;
+                    break;
                 default: throw new Exception();
             };
+            if (!isAttacker)
+                result /= Consts.RegenCostPassiveDiv;
+            return result;
         }
 
         //cheaper armor repair cost?
@@ -107,9 +113,9 @@ namespace ClassLibrary1.Pieces
         };
         internal static double Cost(DefenseType defenseType) => defenseType switch
         {
-            DefenseType.Hits => 1,
-            DefenseType.Shield => .91,
-            DefenseType.Armor => .65,
+            DefenseType.Hits => .78,
+            DefenseType.Shield => 1.3,
+            DefenseType.Armor => .91,
             _ => throw new Exception(),
         };
         internal static double EnergyCostRatio(AttackType attackType) => attackType switch

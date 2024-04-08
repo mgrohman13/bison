@@ -62,7 +62,7 @@ namespace ClassLibrary1.Pieces.Players
         {
             get
             {
-                return Consts.GetRepairCost(Blueprint.Energy, Blueprint.Mass);
+                return Consts.GetRepairCost(this, Blueprint.Energy, Blueprint.Mass);
             }
         }
         bool IKillable.IRepairable.AutoRepair => false;

@@ -51,7 +51,7 @@ namespace ClassLibrary1.Pieces.Players
             get
             {
                 Cost(out int energy, out int mass, Resource);
-                return Consts.GetRepairCost(energy, mass);
+                return Consts.GetRepairCost(this, energy, mass);
             }
         }
         bool IKillable.IRepairable.AutoRepair => Game.Player.Research.HasType(Research.Type.ExtractorAutoRepair);
@@ -120,8 +120,8 @@ namespace ClassLibrary1.Pieces.Players
             }
             private void UpgradeBuildingHits(double researchMult)
             {
-                double defAvg = 8 * Math.Pow(researchMult, .5);
-                const double lowPenalty = 8 / 5.0;
+                double defAvg = 15 * Math.Pow(researchMult, .60);
+                const double lowPenalty = 15 / 5.0;
                 if (researchMult < lowPenalty)
                     defAvg *= researchMult / lowPenalty;
                 int defense = Game.Rand.Round(defAvg);

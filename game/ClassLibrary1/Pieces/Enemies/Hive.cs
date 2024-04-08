@@ -41,9 +41,9 @@ namespace ClassLibrary1.Pieces.Enemies
             double resilience = Consts.GetPct(Game.Rand.GaussianCapped(.26, .26, .013), 1 + hiveIdx);
             IEnumerable<IAttacker.Values> attacks = GenAttacker(hiveIdx);
             double strInc = Math.Pow(1.5, hiveIdx);
-            MechBlueprint.CalcCost(3.9 + strInc, 0, killable, resilience, attacks, null, out double energy, out double mass);
-            double cost = mass * Consts.MechMassDiv + energy;
-            energy = Game.Rand.Gaussian(Consts.EnemyEnergy * (13 + strInc) / 2.1 - cost, .13);
+            MechBlueprint.CalcCost(3.9 + strInc / 1.69, 0, killable, resilience, attacks, null, out double energy, out double mass);
+            double cost = energy + mass * Consts.MechMassDiv;
+            energy = Game.Rand.Gaussian(Consts.EnemyEnergy * (39 + 2.1 * strInc) - cost, .13);
             Debug.WriteLine($"hiveCost #{hiveIdx + 1}: {cost} ({energy})");
 
             Hive obj = new(tile, killable, resilience, attacks, cost, energy);
@@ -88,7 +88,7 @@ namespace ClassLibrary1.Pieces.Enemies
             IKillable.Values hits = new(DefenseType.Hits, Game.Rand.GaussianOEInt(13 + 3.9 * hiveIdx, .13, .13, 10));
 
             DefenseType type = Game.Rand.Bool() ? DefenseType.Shield : DefenseType.Armor;
-            double def = 5.2 + .26 * hiveIdx;
+            double def = 6.5 + .26 * hiveIdx;
             if (type == DefenseType.Armor)
                 def *= 2.1;
             IKillable.Values extra = new(type, Game.Rand.GaussianOEInt(def, .13, .13, 5));
@@ -99,12 +99,12 @@ namespace ClassLibrary1.Pieces.Enemies
         {
             bool flag = Game.Rand.Bool();
 
-            int att = Game.Rand.GaussianOEInt(5.2 + 1.3 * hiveIdx, .13, .13, 5);
-            double range = Game.Rand.GaussianOEInt(16.9 + 2.1 * hiveIdx, .13, .13, 10);
+            int att = Game.Rand.GaussianOEInt(6.5 + 1.3 * hiveIdx, .13, .13, 5);
+            double range = Game.Rand.GaussianOE(16.9 + 2.1 * hiveIdx, .13, .13, 10);
             IAttacker.Values att1 = new(flag ? AttackType.Energy : AttackType.Kinetic, att, range);
 
-            att = Game.Rand.GaussianOEInt(1.3 + 2.1 * hiveIdx, .13, .13, 1);
-            range = Game.Rand.GaussianOEInt(13 + 1.69 * hiveIdx, .13, .13, 10);
+            att = Game.Rand.GaussianOEInt(1.69 + 2.1 * hiveIdx, .13, .13, 1);
+            range = Game.Rand.GaussianOE(13 + 1.69 * hiveIdx, .13, .13, 10);
             IAttacker.Values att2 = new(flag ? AttackType.Kinetic : AttackType.Energy, att, range);
 
             return new[] { att1, att2 };

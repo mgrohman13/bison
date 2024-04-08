@@ -74,7 +74,7 @@ namespace ClassLibrary1.Pieces.Players
             get
             {
                 Cost(Game, out int energy, out int mass);
-                return Consts.GetRepairCost(energy, mass);
+                return Consts.GetRepairCost(this, energy, mass);
             }
         }
         bool IKillable.IRepairable.AutoRepair => Game.Player.Research.HasType(Research.Type.FactoryAutoRepair);
@@ -112,9 +112,8 @@ namespace ClassLibrary1.Pieces.Players
             {
                 IRepair.Values repair = this.repair;
                 int rate = Math.Max(1, MTRandom.Round(repairRate / rangeMult, rounding));
-                //if (!game.Player.Research.HasType(Research.Type.FactoryRepair))
-                //    rate = 1;
-
+                if (!game.Player.Research.HasType(Research.Type.FactoryRepair))
+                    rate = 1;
                 double range = repair.Builder.Range * repairRate / rate;
                 return new(new(range), rate);
             }
@@ -137,20 +136,20 @@ namespace ClassLibrary1.Pieces.Players
             }
             private void UpgradeBuildingHits(double researchMult)
             {
-                double defAvg = 6 * Math.Pow(researchMult, .4);
-                const double lowPenalty = 6 / 5.0;
+                double defAvg = 8 * Math.Pow(researchMult, .55);
+                const double lowPenalty = 8 / 5.0;
                 if (researchMult < lowPenalty)
                     defAvg *= researchMult / lowPenalty;
                 int defense = Game.Rand.Round(defAvg);
-                this.vision = 4 * Math.Pow(researchMult, .8);
+                this.vision = 5 * Math.Pow(researchMult, .8);
                 this.killable = new(DefenseType.Hits, defense);
             }
             private void UpgradeFactoryRepair(double researchMult)
             {
                 researchMult = Math.Pow(researchMult, .6);
                 double repairRange = 6.5 * researchMult;
-                repairRate = 1.13 * researchMult;// Consts.GetPct(..065, researchMult);
-                this.repair = new(new(repairRange), 1);// repairRate);
+                repairRate = 1.13 * researchMult;
+                this.repair = new(new(repairRange), 1);
             }
         }
     }

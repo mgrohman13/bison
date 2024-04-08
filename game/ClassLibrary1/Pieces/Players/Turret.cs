@@ -71,7 +71,7 @@ namespace ClassLibrary1.Pieces.Players
             get
             {
                 Cost(Game, out int energy, out int mass);
-                return Consts.GetRepairCost(energy, mass);
+                return Consts.GetRepairCost(this, energy, mass);
             }
         }
         bool IKillable.IRepairable.AutoRepair => Game.Player.Research.HasType(Research.Type.TurretAutoRepair);
@@ -102,7 +102,7 @@ namespace ClassLibrary1.Pieces.Players
 
                 this.attacks = new IAttacker.Values[MAX_ATTACKS];
                 for (int a = 0; a < MAX_ATTACKS; a++)
-                    attacks[a] = new(AttackType.Kinetic, -1);
+                    attacks[a] = new(AttackType.Kinetic, -1, Attack.MELEE_RANGE);
 
                 UpgradeBuildingCost(1);
                 //UpgradeBuildingHits(1);
@@ -190,7 +190,7 @@ namespace ClassLibrary1.Pieces.Players
             private void UpgradeTurretDefense(double researchMult)
             {
                 researchMult = Math.Pow(researchMult, .7);
-                this.vision = 20 * researchMult;
+                this.vision = 15 * researchMult;
 
                 for (int a = 0; a < MAX_DEFENSES; a++)
                 {

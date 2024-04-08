@@ -17,7 +17,6 @@ namespace ClassLibrary1
         private readonly Dictionary<Type, int> _progress;
         private readonly Dictionary<Type, int> _choices;
 
-        //private int _researchCur;
         public const int MaxChoices = 5;
         private int _numChoices = 3;
         private int _researchLast;
@@ -71,7 +70,6 @@ namespace ClassLibrary1
             this._progress = new() { { _researching, 0 } };
             this._choices = new() { { _researching, 25 } };
 
-            //this._researchCur = 0;
             this._researchLast = 0;
             this._nextAvg = 26;
 
@@ -84,20 +82,17 @@ namespace ClassLibrary1
         }
         internal void Scrap(int amt)
         {
-            //this._researchCur -= amt;
             this._progress[_researching] -= amt;
         }
 
         internal Type? AddResearch(double research)
         {
-            //if (_researchLast + _progress.Values.Sum() != _researchCur)
-            //    throw new Exception();
-
             foreach (Type type in _choices.Keys)
                 _lastSeen[type] = Game.Turn;
 
-            int add = Consts.Income(research);
-            //this._researchCur += add;
+            if (_researching != Type.Mech)
+                research = Consts.Income(research);
+            int add = Game.Rand.Round(research);
             this._progress[_researching] += add;
 
             Type? result = null;
@@ -232,7 +227,7 @@ namespace ClassLibrary1
             else
                 return min + Add();
         }
-        private static double GetNext(double v) => Math.Pow(v * 7.8 + 780, .52);
+        private static double GetNext(double v) => Math.Pow(v * 6.5 + 780, .52);
 
         public bool HasType(Type research)
         {

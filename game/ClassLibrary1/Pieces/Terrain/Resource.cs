@@ -28,7 +28,7 @@ namespace ClassLibrary1.Pieces.Terrain
             double sustain = Game.Rand.GaussianOE(sustainMult, Consts.ResourceDev, Consts.ResourceOE, .039);
 
             this._energyMult = Game.Rand.GaussianOE(1, .065, .021);
-            this._massMult = Game.Rand.GaussianOE(1, .039, .013);
+            this._massMult = Game.Rand.GaussianOE(Math.Sqrt(1 / this._energyMult), .039, .013);
             this._rounding = Game.Rand.NextDouble();
             this._value = value;
             this.Sustain = sustain;
@@ -51,8 +51,8 @@ namespace ClassLibrary1.Pieces.Terrain
         protected void GetCost(double costMult, double inc, double baseEnergy, double baseMass, out int energy, out int mass)
         {
             double mult = Math.Sqrt(inc);
-            mult = Math.Pow((this.Value + mult) / (inc + mult), .91);
-            mult *= Math.Pow(Sustain, .26);//.65? Consts
+            mult = Math.Pow((this.Value + mult) / (inc + mult), Consts.ExtractorCostPow);
+            mult *= Math.Pow(Sustain, Consts.ExtractorSustainCostPow);
             mult *= costMult;
             energy = MTRandom.Round(baseEnergy * _energyMult * mult, _rounding);
             mass = MTRandom.Round(baseMass * _massMult * mult, _rounding);

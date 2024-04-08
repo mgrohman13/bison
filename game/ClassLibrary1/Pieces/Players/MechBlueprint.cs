@@ -42,8 +42,8 @@ namespace ClassLibrary1.Pieces.Players
             this.Movable = movable;
 
             CalcCost(out double energy, out double mass);
-            this.Energy = Game.Rand.Round(energy);
-            this.Mass = Game.Rand.Round(mass);
+            this.Energy = Game.Rand.Round(energy / 10.0) * 10;
+            this.Mass = Game.Rand.Round((mass + (energy - this.Energy) / Consts.MechMassDiv) / 5.0) * 5;
         }
         private void CalcCost(out double energy, out double mass)
         {
@@ -89,6 +89,10 @@ namespace ClassLibrary1.Pieces.Players
         public int TotalCost()
         {
             return Energy + Mass;
+        }
+        public double AlienCost()
+        {
+            return Energy + Mass * Consts.MechMassDiv;
         }
 
         internal static MechBlueprint Alien(IResearch research)
@@ -417,23 +421,21 @@ namespace ClassLibrary1.Pieces.Players
                 int mod = increase ? 1 : -1;
                 int select = Game.Rand.Next(sum);
                 foreach (var k in Game.Rand.Iterate(blueprint.Killable))
-                    if (CanModDef(k))
-                    {
-                        select -= k.Defense;
-                        if (select < 0)
-                            killable.Add(new(k.Type, Math.Max(1, k.Defense + mod)));
-                        else
-                            killable.Add(k);
-                    }
+                {
+                    select -= CanModDef(k) ? k.Defense : 0;
+                    if (select < 0)
+                        killable.Add(new(k.Type, Math.Max(1, k.Defense + mod)));
+                    else
+                        killable.Add(k);
+                }
                 foreach (var a in Game.Rand.Iterate(blueprint.Attacker))
-                    if (CanModAtt(a))
-                    {
-                        select -= a.Attack;
-                        if (select < 0)
-                            attacker.Add(new(a.Type, Math.Max(1, a.Attack + mod)));
-                        else
-                            attacker.Add(a);
-                    }
+                {
+                    select -= CanModAtt(a) ? a.Attack : 0;
+                    if (select < 0)
+                        attacker.Add(new(a.Type, Math.Max(1, a.Attack + mod), a.Range));
+                    else
+                        attacker.Add(a);
+                }
 
                 blueprint = new(blueprintNum, blueprint.UpgradeFrom, blueprint.ResearchLevel, blueprint.Vision, killable, blueprint.Resilience, attacker, blueprint.Movable);
                 return true;
@@ -459,12 +461,12 @@ namespace ClassLibrary1.Pieces.Players
         }
         private static IReadOnlyCollection<IKillable.Values> GenKillable(IResearch research)
         {
-            IKillable.Values hits = GenType(DefenseType.Hits, null, 0.91);
+            IKillable.Values hits = GenType(DefenseType.Hits, null, 1.04);
             List<IKillable.Values> defenses = new() { hits };
             if (research.GetType() == Type.MechShields || research.MakeType(Type.MechShields))
                 defenses.Add(GenType(DefenseType.Shield, Type.MechShields, 0.65));
             if (research.GetType() == Type.MechArmor || research.MakeType(Type.MechArmor))
-                defenses.Add(GenType(DefenseType.Armor, Type.MechArmor, 1.04));
+                defenses.Add(GenType(DefenseType.Armor, Type.MechArmor, 0.91));
             return defenses.AsReadOnly();
 
             IKillable.Values GenType(DefenseType type, Type? additionalResearch, double mult)
@@ -483,11 +485,13 @@ namespace ClassLibrary1.Pieces.Players
                 return new(type, defense);
             }
         }
-        private static double NumAtts(IResearch research) => 1.3 * research.GetMult(Type.MechAttack, .3);
+        private static double NumAtts(IResearch research) => 1.13 * research.GetMult(Type.MechAttack, .3);
 
         private static IReadOnlyCollection<IAttacker.Values> GenAttacker(IResearch research)
         {
             int numAttacks = research.GetType() == Type.Mech ? 1 : Game.Rand.GaussianOEInt(NumAtts(research), .26, .13, 1);
+            if (numAttacks < 1)
+                numAttacks = 1;
             List<IAttacker.Values> attacks = new(numAttacks);
 
             HashSet<AttackType> used = new();
@@ -567,7 +571,7 @@ namespace ClassLibrary1.Pieces.Players
                 rangeAvg = range;
                 if (ranged)
                 {
-                    rangeAvg = 5.2;
+                    rangeAvg = 6.5;
                     double dev = .39, oe = .104;
                     ModValues(researchType == Type.MechRange, 2.1, ref rangeAvg, ref dev, ref oe);
                     rangeAvg *= research.GetMult(Type.MechRange, .6);
@@ -595,10 +599,10 @@ namespace ClassLibrary1.Pieces.Players
 
         private static IMovable.Values GenMovable(IResearch research)
         {
-            double avg = 9.1, dev = .13, oe = .21;
+            double avg = 6.5, dev = .13, oe = .21;
 
             double researchMult = research.GetMult(Type.MechMove, 1);
-            const double lowPenalty = 4.5;
+            const double lowPenalty = 3;
             if (researchMult < lowPenalty)
                 avg *= researchMult / lowPenalty;
 

@@ -97,7 +97,7 @@ namespace ClassLibrary1.Pieces
                 hitsInc = GetRepair();
 
                 if (doEndTurn)
-                    hitsInc = Game.Rand.GaussianCappedInt(hitsInc, Consts.HitsIncDev);
+                    hitsInc = Game.Rand.Round(hitsInc);// Game.Rand.GaussianCappedInt(hitsInc, Consts.HitsIncDev);
 
                 hitsInc = Math.Min(hitsInc, DefenseMax - DefenseCur);
 
@@ -119,32 +119,34 @@ namespace ClassLibrary1.Pieces
                 massCost = 0;
             }
         }
-        internal int GetRepair()
+        internal double GetRepair()
         {
-            int repairInc = 0;
+            double repairInc = 0;
             if (Piece is IKillable.IRepairable repairable && repairable.CanRepair())
                 InRepairRange(out repairInc);
             return repairInc;
         }
-        private bool InRepairRange(out int repairInc)
+        private bool InRepairRange(out double repairInc)
         {
             repairInc = 0;
             if (Piece is IKillable.IRepairable repairable)
-                //{
+            {
                 //check blocks
-                //double[] repairs =
-
-                repairInc = Piece.Side.PiecesOfType<IRepair>()
-                    .Where(r => Piece != r.Piece && Piece.Side == r.Piece.Side && Piece.Tile.GetDistance(r.Piece.Tile) <= r.Range)
-                    .Select(r => r?.Rate)
-                    .Concat(repairable.AutoRepair ? new int?[] { 1 } : Array.Empty<int?>())//new double[] { DefenseMax * Consts.AutoRepairPct + Consts.AutoRepair } : Array.Empty<double>())
-                    .Max() ?? 0;
-            //.OrderByDescending(v => v)
-            //.ToArray();
-            ////each additional repairer contributes a reduced amount 
-            //for (int a = 0; a < repairs.Length; a++)
-            //    hitsInc += repairs[a] / (a + 1.0);
-            //}
+                int[] repairs =
+                //repairInc = 
+                    Piece.Side.PiecesOfType<IRepair>()
+                        .Where(r => Piece != r.Piece && Piece.Side == r.Piece.Side && Piece.Tile.GetDistance(r.Piece.Tile) <= r.Range)
+                        .Select(r => r?.Rate)
+                        .Concat(repairable.AutoRepair ? new int?[] { Consts.AutoRepair } : Array.Empty<int?>())
+                        //.Max() ?? 0;
+                        .Where(v => v.HasValue)
+                        .Select(v => v.Value)
+                        .OrderByDescending(v => v)
+                        .ToArray();
+                //each additional repairer contributes a reduced amount 
+                for (int a = 0; a < repairs.Length; a++)
+                    repairInc += repairs[a] / (a + 1.0);
+            }
             return repairInc > 0;
         }
 
@@ -186,7 +188,8 @@ namespace ClassLibrary1.Pieces
             bool moved = Piece.GetBehavior<IMovable>()?.Moved ?? false;
             bool attacked = Piece.GetBehavior<IAttacker>()?.Attacked ?? false;
             bool defended = Piece.GetBehavior<IKillable>()?.Defended ?? false;
-            return Consts.IncDefense(Type, DefenseCur, DefenseMax, moved, attacked, defended, InRepairRange(out _), ref energyUpk, ref massUpk);
+            return Consts.IncDefense(Type, Piece.HasBehavior<IAttacker>(), DefenseCur, DefenseMax, 
+                moved, attacked, defended, InRepairRange(out _), ref energyUpk, ref massUpk);
         }
     }
 }

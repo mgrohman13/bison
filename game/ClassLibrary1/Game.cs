@@ -11,7 +11,7 @@ namespace ClassLibrary1
     public class Game
     {
         public const int POINTS_TO_WIN = 3;
-        public static readonly int? TEST_MAP_GEN = null;//260;
+        public static readonly int? TEST_MAP_GEN = null;// 260;
 
         public static readonly MTRandom Rand;
         static Game()
@@ -80,8 +80,8 @@ namespace ClassLibrary1
         internal void CollectHive(double cost)
         {
             cost /= 1.69;
-            int energy = Game.Rand.RangeInt(0, Game.Rand.Round(cost));
-            int mass = Game.Rand.Round((cost - energy) / Consts.MechMassDiv);
+            int mass = Game.Rand.RangeInt(0, Game.Rand.Round(cost / Consts.MechMassDiv - 1.3));
+            int energy = Game.Rand.Round(cost - mass * Consts.MechMassDiv);
             Player.Spend(-energy, -mass);
 
             if (++_victory >= POINTS_TO_WIN)

@@ -109,7 +109,7 @@ namespace WinFormsApp1
                 end = MessageBox.Show("Move remaining.  End Turn?", "", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning) == DialogResult.OK;
             if (end)
             {
-                AutoSave("s");
+                AutoSave("e ");
                 Type? researched = Game.EndTurn();
                 if (Game.GameOver)
                 {
@@ -118,13 +118,14 @@ namespace WinFormsApp1
                 }
                 else
                 {
-                    AutoSave("e");
+                    AutoSave("s");
                 }
                 moved.Clear();
                 Program.RefreshChanged();
 
                 if (researched.HasValue)
-                    ResearchForm.ShowForm();
+                    if (ResearchForm.ShowForm())
+                        Program.RefreshChanged();
             }
         }
 

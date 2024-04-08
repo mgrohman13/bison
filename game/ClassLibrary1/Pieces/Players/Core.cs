@@ -58,7 +58,7 @@ namespace ClassLibrary1.Pieces.Players
         {
             get
             {
-                return Consts.GetRepairCost(GetValues(Game).Energy, GetValues(Game).Mass);
+                return Consts.GetRepairCost(this, GetValues(Game).Energy, GetValues(Game).Mass);
             }
         }
         bool IKillable.IRepairable.AutoRepair => false;
@@ -90,8 +90,8 @@ namespace ClassLibrary1.Pieces.Players
 
             public Values()
             {
-                this.energy = this.mass = 2600;
-                this.repair = new(new(7.5), 1);
+                this.energy = this.mass = 1300;
+                this.repair = new(new(8.5), 1);
 
                 this.vision = -1;
                 this.hits = new(CombatTypes.DefenseType.Hits, -1);
@@ -128,7 +128,7 @@ namespace ClassLibrary1.Pieces.Players
             {
                 this.vision = START_VISION * Math.Pow(researchMult, 1);
 
-                double defAvg = 13 * Math.Pow(researchMult, .6);
+                double defAvg = 13 * Math.Pow(researchMult, .65);
                 const double lowPenalty = 13 / 5.0;
                 if (researchMult < lowPenalty)
                     defAvg *= researchMult / lowPenalty;
@@ -136,7 +136,7 @@ namespace ClassLibrary1.Pieces.Players
             }
             private void UpgradeCoreShields(double researchMult)
             {
-                double defAvg = 16.9 * Math.Pow(researchMult, .5);
+                double defAvg = 16.9 * Math.Pow(researchMult, .6);
                 const double lowPenalty = 4;
                 if (researchMult < lowPenalty)
                     defAvg *= researchMult / lowPenalty;
