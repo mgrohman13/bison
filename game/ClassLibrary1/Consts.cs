@@ -150,37 +150,27 @@ namespace ClassLibrary1
             double costMult = piece.HasBehavior<IAttacker>() ? Consts.RepairCost : Consts.PassiveRepairCost;
             return (mass + energy / Consts.EnergyRepairDiv) * costMult;
         }
-        //public static double GetRechargeCost(double energy, double mass)
-        //{
-        //    return energy * Consts.RechargeCost;
-        //}
 
-        public static double GetDamagedValue(Piece piece, double value, double min)
-        {
-            return GetDamagedValue(piece, value, min, false);
-        }
+        public static double GetDamagedValue(Piece piece, double value, double min) =>
+            GetDamagedValue(piece, value, min, false);
         private static double GetDamagedValue(Piece piece, double value, double min, bool sqrt)
         {
             IKillable killable = piece.GetBehavior<IKillable>();
-            //if (piece != null && piece.HasBehavior(out IKillable killable))
-            //{
             double resilience = killable.Resilience;
             if (sqrt)
                 resilience = Math.Sqrt(resilience);
             return min + (value - min) * Math.Pow(killable.Hits.DefenseCur / (double)killable.Hits.DefenseMax, 1 - resilience);
-            //}
-            //return value;
         }
 
-        public static int IncDefense(DefenseType type, bool isAttacker, int cur, int max, bool moved, bool attacked, bool defended, bool inRepair, ref double energyUpk, ref double massUpk)
+        public static double IncDefense(bool doEndTurn, DefenseType type, bool isAttacker, int cur, int max, double repairAmt, ref double energyUpk, ref double massUpk)
         {
-            int newValue = cur;
-            int regen = CombatTypes.GetRegen(type, moved, attacked, defended, inRepair);
+            double newValue = cur;
+            double regen = CombatTypes.GetRegen(type, repairAmt);
             if (regen > 0)
             {
                 double costMult = CombatTypes.GetRegenCostMult(type, isAttacker, out bool mass);
                 double upkeep = 0;
-                newValue = IncStatValue(cur, max, regen, costMult, ref upkeep);
+                newValue = IncStatValue(doEndTurn, cur, max, regen, costMult, ref upkeep); 
                 if (mass)
                     massUpk += upkeep;
                 else
@@ -188,12 +178,14 @@ namespace ClassLibrary1
             }
             return newValue;
         }
-        public static int IncStatValue(int cur, int max, int regen, double upkeepRate, ref double upkeep)
+        public static double IncStatValue(bool doEndTurn, int cur, int max, double regen, double upkeepRate, ref double upkeep)
         {
-            int newValue = cur;
+            double newValue = cur;
             if (cur < max)
             {
                 newValue = Math.Min(max, cur + regen);
+                if (doEndTurn)
+                    newValue = Game.Rand.Round(newValue);
                 double cost = StatValue(newValue) - StatValue(cur);
                 cost *= upkeepRate;
                 upkeep += cost;

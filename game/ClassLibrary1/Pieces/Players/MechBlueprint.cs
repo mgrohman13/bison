@@ -54,8 +54,8 @@ namespace ClassLibrary1.Pieces.Players
             IEnumerable<IAttacker.Values> attacker, IMovable.Values? movable, out double energy, out double mass)
         {
             const double attPow = 1.13;
-            double AttCost(IAttacker.Values a) => Consts.StatValue(a.Attack) * CombatTypes.Cost(a.Type)
-                * Math.Sqrt((a.Range + 2.1) / (Attack.MELEE_RANGE + 2.1));
+            double AttCost(IAttacker.Values a) => Consts.StatValue(a.Attack) * Math.Sqrt(a.Reload / CombatTypes.ReloadAvg(a.Attack))
+                * CombatTypes.Cost(a.Type) * Math.Sqrt((a.Range + 2.1) / (Attack.MELEE_RANGE + 2.1));
             double DefCost(IKillable.Values d) => Consts.StatValue(d.Defense) * CombatTypes.Cost(d.Type);
 
             double r = Math.Pow(Math.Pow(resilience, Math.Log(3) / Math.Log(2)) * 1.5 + 0.5, .39);
@@ -520,13 +520,7 @@ namespace ClassLibrary1.Pieces.Players
                 attAvg *= researchMult;
 
                 //modify for attack type
-                attAvg *= type switch
-                {
-                    AttackType.Kinetic => 1.3,
-                    AttackType.Energy => 1.04,
-                    AttackType.Explosive => 0.91,
-                    _ => throw new Exception()
-                };
+                attAvg *= CombatTypes.GetDamageMult(type);
 
                 //modify for multiple attacks and range
                 attAvg = 1 + (attAvg - 1) * Math.Sqrt(rangeAvg / range / numAttacks);

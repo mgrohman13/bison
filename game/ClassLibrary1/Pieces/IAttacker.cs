@@ -35,7 +35,7 @@ namespace ClassLibrary1.Pieces
         public readonly struct Values
         {
             public readonly AttackType Type;
-            private readonly int _attack;
+            private readonly int _attack, _reload;
             //private readonly int _numAttacks;
 
             private readonly double _range;//_armorPierce, _shieldPierce, _dev,
@@ -52,9 +52,11 @@ namespace ClassLibrary1.Pieces
                 this._range = range;
                 //if (Dev < .0052)
                 //    this._dev = 0;
+                this._reload = CombatTypes.GetReloadBase(type, attack);//, range);
             }
-            public double Range => _range;
             public int Attack => _attack;
+            public double Range => _range;
+            public int Reload => _reload;
             //public double ArmorPierce => _armorPierce;
             //public double ShieldPierce => _shieldPierce;
             //public double Dev => _dev;

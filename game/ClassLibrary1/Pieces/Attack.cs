@@ -21,17 +21,14 @@ namespace ClassLibrary1.Pieces
 
         public AttackType Type => _values.Type;
         public bool Attacked => _attacked;
-        //public double Upkeep => _attacked * Consts.WeaponRechargeUpkeep;
         public int AttackCur => _attackCur;
-        //public int AttackCur => Consts.GetDamagedValue(Piece, AttackBase, 0);
         public int AttackMax => _values.Attack;
-        //public double ArmorPierce => _values.ArmorPierce;
-        //public double ShieldPierce => _values.ShieldPierce;
-        //public double Dev => _values.Dev;
-        public double Range => RangeBase;
-        public double RangeBase => Consts.GetDamagedValue(Piece, _values.Range, MELEE_RANGE);
+        public double Range => Consts.GetDamagedValue(Piece, RangeBase, MELEE_RANGE);
+        public double RangeBase => _values.Range;
 
-        public double Rounds => Math.Sqrt(AttackCur);// AttackCur;// Math.Sqrt(AttackCur);
+        public double Reload =>
+            CombatTypes.GetReload(this, Attacked, Piece.HasBehavior(out IKillable killable) ? killable.Hits.GetRepair() : 0);
+        public int ReloadBase => _values.Reload;
 
         internal Attack(Piece piece, Values values)
         {
@@ -106,29 +103,34 @@ namespace ClassLibrary1.Pieces
             if (defenders.Any())
             {
                 target = Game.Rand.SelectValue(defenders);
-
-                int startAttack = this.AttackCur;
-                Dictionary<Defense, int> startDefense = target.TotalDefenses.ToDictionary(d => d, d => d.DefenseCur);
-
-                int rounds = Game.Rand.Round(Rounds);
-                for (int a = 0; a < rounds && AttackCur > 0 && !target.Dead; a++)
+                bool DoAtt() => this.AttackCur > 0 && !target.Dead;
+                if (DoAtt())
                 {
-                    Defense defense = Game.Rand.Iterate(target.TotalDefenses.Where(d => !d.Dead)).OrderBy(CombatTypes.CompareDef).First();
-                    bool activeDefense = target.HasBehavior<IAttacker>();
+                    int startAttack = this.AttackCur;
+                    Dictionary<Defense, int> startDefense = target.TotalDefenses.ToDictionary(d => d, d => d.DefenseCur);
 
-                    //int att = Game.Rand.RangeInt(0, AttackCur);
-                    //int def = Game.Rand.RangeInt(0, defense.DefenseCur);
-                    //if (att > def || (att == def && !activeDefense))
-                    double attChance = AttackCur / (double)(AttackCur + defense.DefenseCur);
-                    if (Game.Rand.Bool(attChance))
-                        defense.Damage(this);
-                    else if (activeDefense)//&& def < att
-                        this._attackCur--;
+                    int rounds = this.AttackCur;
+                    for (int a = 0; a < rounds && DoAtt(); a++)
+                        if (Game.Rand.Bool())
+                        {
+                            Defense defense = Game.Rand.Iterate(target.TotalDefenses.Where(d => !d.Dead)).OrderBy(CombatTypes.CompareDef).First();
+                            bool activeDefense = target.HasBehavior<IAttacker>();
+
+                            if (Game.Rand.Next(AttackCur + defense.DefenseCur) < AttackCur)
+                            {
+                                defense.Damage(this);
+                            }
+                            else
+                            {
+                                if (activeDefense)
+                                    this._attackCur--;
+                                if (Game.Rand.Bool())
+                                    rounds--;
+                            }
+                        }
+
                     this._attacked = true;
-                }
 
-                if (this.Attacked)
-                {
                     Piece.GetBehavior<IAttacker>().RaiseAttackEvent(this, target);
                     Piece.Game.Log.LogAttack(this, startAttack, target, startDefense);
                     return true;
@@ -151,24 +153,25 @@ namespace ClassLibrary1.Pieces
         }
         private void EndTurn(bool doEndTurn, ref double energyUpk, ref double massUpk)
         {
-            int newValue = Consts.IncStatValue(AttackCur, AttackMax, GetRegen(), Consts.EnergyPerAttack, ref energyUpk);
+            double newValue = Consts.IncStatValue(doEndTurn, AttackCur, AttackMax, Reload, Consts.EnergyPerAttack, ref energyUpk);
             if (doEndTurn)
             {
-                this._attackCur = newValue;
-                //this._attacked = false;
+                if (newValue != (int)newValue)
+                    throw new Exception();
+                this._attackCur = (int)newValue;
             }
         }
-        public int GetRegen()
-        {
-            //check blocks
-            bool inBuild = Piece.Side.PiecesOfType<IBuilder.IBuildMech>()
-                .Any(r => Piece != r.Piece && Piece.Side == r.Piece.Side && Piece.Tile.GetDistance(r.Piece.Tile) <= r.Range);
-            bool moved = Piece.GetBehavior<IMovable>()?.Moved ?? false;
-            bool defended = Piece.GetBehavior<IKillable>()?.Defended ?? false;
+        //public int GetRegen()
+        //{
+        //    //check blocks
+        //    bool inBuild = Piece.Side.PiecesOfType<IBuilder.IBuildMech>()
+        //        .Any(r => Piece != r.Piece && Piece.Side == r.Piece.Side && Piece.Tile.GetDistance(r.Piece.Tile) <= r.Range);
+        //    bool moved = Piece.GetBehavior<IMovable>()?.Moved ?? false;
+        //    bool defended = Piece.GetBehavior<IKillable>()?.Defended ?? false;
 
-            int regen = CombatTypes.GetRegen(Type, moved, Attacked, defended, inBuild);
-            regen = Math.Min(regen, AttackMax - AttackCur);
-            return regen;
-        }
+        //    int regen = CombatTypes.GetRegen(Type, moved, Attacked, defended, inBuild);
+        //    regen = Math.Min(regen, AttackMax - AttackCur);
+        //    return regen;
+        //}
     }
 }

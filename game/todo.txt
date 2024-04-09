@@ -93,45 +93,14 @@ FEATURES
 	experience
 	power grid
 
-armor/hp repair rate the same, just cost diff
-auto repair needs to heal turret armor
-express weapon/shield recharge as percent(??), make configurable per att/def?
-	then can use dmged value
-	incs with sqrt
-	do weapons first, then mayde def
-		repair rate take into account for armor regen?
-	rebalance - e.g. energy weapons charge at 50% when attacking
-show inc/upk breakdown
-	eng break down by att/shield/move/mech/constructor
-	mass break down by building/mech (types??)
-select box follow similar range width rules
-move att/def draw boxes away from thick range lines
-	if cur>0 ensure draw sliver
-negative resources show red (not just inc)
-negative resource punishment?
-when unit selected, slow drawing (range not saved)
-upg cur/max pcts should use StatValue
+rethink picking defense algorithm, randomize slightly 
+assess both CombatTypes.GetRegen flag usage
+	AI needs to know about
+	Defended == took damage??
 enemy dir (+cave) attack weights change over time, not eventually focus one dir
-slow-paint scroll amt shouldnt take effect until 2nd tick so you can tap button once
-dmg hurts saved up move?
+make shield regen variable, reduce with dmg pct
 dmg on any def can hurt att??
-core use dmged pct for income??
-	need quicker repair if so
-	or really high resilience??
-draw bars not use stat value for pct cur/max??
-	maybe related to zoom, e.g. when zoomed out
-	bigger bars when zoomed out
-	clearer colors? darker?
-log splash damage
-show total cost in info
-rand combat rounds slightly
-fighting in factory range op?
-nerf camping in factory
-pay back stored energy on death
-weak geneartor buildings for foundations
-select tile square always draw on top
 taking dmg hurt attacks even for non-hits????
-make regen rates part of values?
 explosives too weak?
 	splash damage not tied to initial dmg??
 	do way more damage, they already reload slowly
@@ -141,54 +110,71 @@ explosives too weak?
 	splash damage to higher values shouldnt be based on difference?
 	does friendly damage
 		melee??
+buff armor vs energy weapons?
 rebal att/def type costs
 also nerf shields? only regen when not attacked? chance to stop regen?
 	new system use canrecover flag that get changed by diffe evtns? 
 rock-paper-scissors balance?
-save log to file on game end
-rebal energy att, only +1 when attacking
-Defended == took damage??
-select terrain shouldnt hide log
-places for aliens to repair (hive?)
-	need to be able to pathfind back 
-	store behavior state on enemy pieces for consistnet travel goal
 rework turret research tree again? hp too low?
 	need better early game def, better mid game att
 turret more GC?
-draw movement trail on map
-draw grid first as lines, then overlay with full blocks
-rename chasm??
-draw chasm as single polygon
+pay back stored energy on death
 allow aliens to spawn in caves
 	only until explored/hive killed?
 	better pathfinding
 	can spawn within hive range even if visible
+alien path spawning continually change ratios over time, not just mult/exponent
+alien morale
+alien retreat when shield/weapons down
+alien retreat to repair
+places for aliens to repair (hive?)
+	need to be able to pathfind back 
+	store behavior state on enemy pieces for consistnet travel goal
+enemy target extractor more often
+enemy attacks/moves	
+	take into account new mechanics 
+move CombatTypes.GetReloadBase out of IAttacker.Values
+
+show inc/upk breakdown
+	eng break down by att/shield/move/mech/constructor
+	mass break down by building/mech (types??)
+select box follow similar range width rules
+move att/def draw boxes away from thick range lines
+	if cur>0 ensure draw sliver
+negative resources show red (not just inc)
+negative resource punishment?
+when unit selected, slow drawing (range not saved)
+slow-paint scroll amt shouldnt take effect until 2nd tick so you can tap button once
+core use dmged pct for income??
+	need quicker repair if so
+	or really high resilience??
+draw bars not use stat value for pct cur/max??
+	maybe related to zoom, e.g. when zoomed out
+	bigger bars when zoomed out
+	clearer colors? darker?
+log splash damage
+show total cost in info
+weak geneartor buildings for foundations
+select tile square always draw on top
+save log to file on game end
+select terrain shouldnt hide log
+draw movement trail on map
+draw grid first as lines, then overlay with full blocks
+rename chasm??
+draw chasm as single polygon
 view all mechs on datagrid popup
 show mech # (alien #?) on map
 show collected hive count on main screen?
 info button show stats
 	also build for all types?
 map indicator with incoming attack direction
-buff armor vs energy weapons?
 better move left indicators?
 	indicate when upgradeable
-enemy target extractor more often
 use terrain to store evaluate value to gradient on paint 
-speed up attacks
-	rounds = attackcur
-    each roll range, draw on tie 
-	50% chance of each attack passing?
-	on att take dmg, 50% of reducing rounds?
-	will make passive defense weaker
-rethink picking defense algorithm, randomize slightly 
-enemy attacks/moves	
-	take into account new mechanics 
 finish directional move/attack blocking
 experience
-assess both CombatTypes.GetRegen flag usage
-	AI needs to know about
 use range atack OR move and melee
-cannot move and shoot raned attack
+cannot move and shoot ranged attack
 	new attack type that you can
 		much less likely for alien spawns 
 remove outliers from att/def bar length?
@@ -201,9 +187,6 @@ combined power grid, but if separate pieces impose power penalty?
 	moving slower takes less energy?
 speed game up somehow?
 randomize tech tree
-alien morale
-alien retreat when shield/weapons down
-alien retreat to repair
 metal types? 
 right click piece info?
 	attack though?? left click?
@@ -227,13 +210,15 @@ metagame system pts
 	spend for bonuses? unlocks? start with?
 	beat easy unlocks normal unlocks hard difficulty?
 	unlock more game content, system similar to difficulty that incs separately?
-evaluate use MemoryCache instead of Dictionary?
+Evaluate use MemoryCache instead of Dictionary?
 fix mirror image painting? may confuse in future?
 building costs get more expensive with upgrade - countered by cost research
 replace func tell you cost even if you cant afford
 disband mech
 	turn off power?
 	recycle?
+building upkeep?
+	disband/disable option
 log colors for weapon/def types?
 	better log readability in general
 partial attacks?
@@ -249,8 +234,6 @@ after attack select to alien who actually defended
 fix build/repair/upgrade weirdness?
 	remove some research?
 	or clear up with colors?
-building upkeep?
-	disband/disable option
 map contiguity
 	instead, dont have walls limit move?
 		two diff kinds of walls? block and not block?
@@ -262,15 +245,15 @@ map contiguity
 		increase pathfinding move value slightly every step??
 		after finding final path, if contains override tiles make them permament map features
 		test alg by cutting cave connectors
-show mass/eng ratio on build screen? round mechs to 10? energy to 10? div by 10?
-	income more random?
+show mass/eng ratio on build screen?  
 minimap
 shroud
 	show last spotted aliens
 	keep alien vision in shroud for 1 turn after move out of vision?
 varaible scroll speed doesnt quite work
 game stats
-flatten tech tree		
+flatten tech tree	
+		randomize
 map - occasional caves farther out infinteley??
 refactor Consts.MechMassDiv - only apply in one spot?
 		
@@ -284,7 +267,6 @@ constructor better vision? quicker new constructors?
 	???
 	constructor outrun too many early aliens?
 hardcoded initial scout mech?
-things a little too defensive?
 caves
 	start with hive, mid-level units that dont move
 		careful with long range killing early explorers?

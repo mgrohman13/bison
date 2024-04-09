@@ -240,7 +240,7 @@ namespace WinFormsApp1
             public string Weapons => Blueprint == null ? null : FormatAtt(a => a.Type.ToString());
             public string Range => Blueprint == null ? null :
                 FormatAtt(a => a.Range > ClassLibrary1.Pieces.Attack.MELEE_RANGE ? a.Range.ToString("0.0") : "0");
-            public string Attack => Blueprint == null ? null : FormatAtt(a => a.Attack.ToString());
+            public string Attack => Blueprint == null ? null : FormatAtt(a => a.Attack.ToString() + (a.Reload > 1 ? $"(+{a.Reload})" : ""));
             public int? Defense => FormatDef(DefenseType.Hits);
             public int? Shield => FormatDef(DefenseType.Shield);
             public int? Armor => FormatDef(DefenseType.Armor);

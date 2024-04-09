@@ -115,7 +115,7 @@ namespace WinFormsApp1
 
                     lblInf1.Text = $"{killable.Hits.DefenseCur}"
                         + (killable.Hits.DefenseCur < killable.Hits.DefenseMax ? $"/{killable.Hits.DefenseMax}" : "")
-                        + (repairInc > 0 ? $"+{Format(repairInc)}" : "");
+                        + (repairInc > 0 ? $"+{FormatUsuallyInt(repairInc)}" : "");
 
                     Defense armor = killable.Defenses.Where(d => d.Type == DefenseType.Armor).FirstOrDefault();
                     if (armor != null)
@@ -125,7 +125,7 @@ namespace WinFormsApp1
                         lbl2.Text = "Armor";
                         lblInf2.Text = $"{armor.DefenseCur}"
                             + (armor.DefenseCur < armor.DefenseMax ? $"/{armor.DefenseMax}" : "")
-                            + (armor.GetRegen() > 0 ? $"+{armor.GetRegen()}" : "");
+                            + (armor.GetRegen() > 0 ? $"+{FormatUsuallyInt(armor.GetRegen())}" : "");
                     }
                     Defense shield = killable.Defenses.Where(d => d.Type == DefenseType.Shield).FirstOrDefault();
                     if (shield != null)
@@ -257,13 +257,13 @@ namespace WinFormsApp1
                     {
                         a.Type,
                         Range = a.Range > Attack.MELEE_RANGE ?
-                            $"{a.Range:0.0}" + (a.Range.ToString("0.0") != a.RangeBase.ToString("0.0") ? $"/{a.RangeBase:0.0}" : "") : "0",
-                        Attack = $"{a.AttackCur}" + (a.AttackCur < a.AttackMax ? $"/{a.AttackMax}" + (a.GetRegen() > 0 ? $" +{a.GetRegen()}" : "") : ""),
-                        a.Rounds,
+                            $"{a.Range:0.0}" + (a.Range.ToString("0.0") != a.RangeBase.ToString("0.0") ? $" / {a.RangeBase:0.0}" : "") : "0",
+                        Attack = $"{a.AttackCur}" + (a.AttackCur < a.AttackMax ? $" / {a.AttackMax}" : ""),
+                        Reload = $"+{FormatUsuallyInt(a.Reload)}" + (FormatUsuallyInt(a.Reload) != a.ReloadBase.ToString() ? $" / {a.ReloadBase}" : ""),
                     }).ToList();
                     dgvAttacks.Columns["Type"].Visible = attacker.Attacks.Any(a => a.Type != AttackType.Kinetic);
                     dgvAttacks.Columns["Range"].Visible = attacker.Attacks.Any(a => a.Range > Attack.MELEE_RANGE);
-                    dgvAttacks.Columns["Rounds"].DefaultCellStyle.Format = "0.0";
+                    //dgvAttacks.Columns["Rounds"].DefaultCellStyle.Format = "0.0";
 
                     //foreach (DataGridViewColumn c in dgvAttacks.Columns)
                     //    c.Visible = false;
@@ -334,6 +334,15 @@ namespace WinFormsApp1
 
             EnableLogScroll();
         }
+        public static string FormatUsuallyInt(double value)
+        {
+            const string decimals = ".0";
+            string format = value.ToString("0" + decimals);
+            if (format.EndsWith(decimals))
+                format = value.ToString("0");
+            return format;
+        }
+
         private static string CheckBase(double orig, double actual)
         {
             return CheckBase(orig, actual, Format);

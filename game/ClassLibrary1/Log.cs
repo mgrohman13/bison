@@ -3,7 +3,6 @@ using ClassLibrary1.Pieces.Players;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using DefenseType = ClassLibrary1.Pieces.CombatTypes.DefenseType;
 
 namespace ClassLibrary1
 {
@@ -90,13 +89,14 @@ namespace ClassLibrary1
                 this.Killed = target.Dead;
 
                 this.Attack = new(startAttack, attack.AttackCur, attack.AttackMax);
-                this.Defense = target.TotalDefenses.OrderBy(d => d.Type switch
-                {
-                    DefenseType.Hits => 1,
-                    DefenseType.Shield => 2,
-                    DefenseType.Armor => 3,
-                    _ => throw new Exception(),
-                }).Select(d => new Stat(startDefense[d], d.DefenseCur, d.DefenseMax)).ToArray();
+                this.Defense = target.TotalDefenses.Select(d => new Stat(startDefense[d], d.DefenseCur, d.DefenseMax)).ToArray();
+                //.OrderBy(d => d.Type switch
+                //{
+                //    DefenseType.Hits => 1,
+                //    DefenseType.Shield => 2,
+                //    DefenseType.Armor => 3,
+                //    _ => throw new Exception(),
+                //})
             }
 
             public int CompareTo(object obj)

@@ -24,6 +24,31 @@ namespace ClassLibrary1.Pieces
         internal static int GetStartCur(DefenseType type, int defense) =>
             type == DefenseType.Shield ? 0 : defense;
 
+        internal static double GetDamageMult(AttackType type) => type switch
+        {
+            AttackType.Kinetic => .91,
+            AttackType.Energy => 1,
+            AttackType.Explosive => 1.3,
+            _ => throw new Exception()
+        };
+        internal static int GetReloadBase(AttackType attackType, int attack)
+        {
+            double avg = ReloadAvg(attack) - 1;
+            avg *= attackType switch
+            {
+                AttackType.Kinetic => 1.69,
+                AttackType.Energy => 1,
+                AttackType.Explosive => .65,
+                _ => throw new Exception(),
+            };
+            avg++;
+
+            int lowerCap = 1;
+            int upperCap = Math.Max(attack - 1, lowerCap);
+            return Math.Min(Math.Max(lowerCap, Game.Rand.GaussianInt(avg, .13)), upperCap);
+        }
+        internal static double ReloadAvg(int attack) => Math.Sqrt(attack);
+
         internal static object CompareDef(Defense defense)
         {
             int value = defense.DefenseCur;
@@ -48,20 +73,6 @@ namespace ClassLibrary1.Pieces
         private static IReadOnlyCollection<T> OrderDef<T>(IEnumerable<T> killable, Func<T, DefenseType> Type) =>
             Game.Rand.Iterate(killable).OrderBy(Type).ToList().AsReadOnly();
 
-        //internal static object OrderBy(Defense defense) => defense.Type switch
-        //{
-        //    DefenseType.Hits => 3,
-        //    DefenseType.Shield => 1,
-        //    DefenseType.Armor => 2,
-        //    _ => throw new Exception(),
-        //};
-        //internal static DefenseType? SkipsDefense(AttackType attackType) => attackType switch
-        //{
-        //    AttackType.Kinetic => null,
-        //    AttackType.Energy => null,// DefenseType.Shield,
-        //    AttackType.Explosive => null,// DefenseType.Armor, //???
-        //    _ => throw new Exception(),
-        //}; 
         internal static bool DoSplash(AttackType type, DefenseType defenseType) => type == AttackType.Explosive;
         internal static bool SplashAgainst(Defense defense)
         {
@@ -72,20 +83,21 @@ namespace ClassLibrary1.Pieces
             return true;
         }
 
-        internal static int GetRegen(AttackType attackType, bool moved, bool attacked, bool defended, bool inBuild) => attackType switch
+        internal static double GetReload(Attack attack, bool attacked, double repairAmt)
         {
-            //reduce with dmg pct?
-            AttackType.Kinetic => attacked ? 0 : (inBuild ? 3 : 2),
-            AttackType.Energy => attacked ? 2 : 3,
-            AttackType.Explosive => attacked ? 0 : (inBuild ? 3 : 1),
-            _ => throw new Exception(),
-        };
-        internal static int GetRegen(DefenseType defenseType, bool moved, bool attacked, bool defended, bool inRepair) => defenseType switch
+            double reload = attack.Type switch
+            {
+                AttackType.Kinetic or AttackType.Explosive => attacked ? 0 : attack.ReloadBase + repairAmt,
+                AttackType.Energy => attack.ReloadBase + (attacked ? 0 : 1),
+                _ => throw new Exception(),
+            };
+            return Consts.GetDamagedValue(attack.Piece, reload, 0);
+        }
+        internal static double GetRegen(DefenseType defenseType, double repairAmt) => defenseType switch
         {
-            //reduce with dmg pct?
-            DefenseType.Hits => 0, //need to fix Hits repair system
-            DefenseType.Shield => 1,
-            DefenseType.Armor => inRepair ? (defended ? 1 : 2) : 0,
+            DefenseType.Hits => 0,
+            DefenseType.Shield => 1, //make variable, reduce with dmg pct
+            DefenseType.Armor => repairAmt,
             _ => throw new Exception(),
         };
         internal static double GetRegenCostMult(DefenseType defenseType, bool isAttacker, out bool mass)
@@ -107,23 +119,21 @@ namespace ClassLibrary1.Pieces
                 result /= Consts.RegenCostPassiveDiv;
             return result;
         }
-
-        //cheaper armor repair cost?
         internal static bool Repair(DefenseType defenseType) =>
             defenseType == DefenseType.Hits;
 
         internal static double Cost(AttackType attackType) => attackType switch
         {
-            AttackType.Kinetic => .91,
-            AttackType.Energy => 1,
-            AttackType.Explosive => 1.3,
+            AttackType.Kinetic => .78,
+            AttackType.Energy => 1.3,
+            AttackType.Explosive => 1,
             _ => throw new Exception(),
         };
         internal static double Cost(DefenseType defenseType) => defenseType switch
         {
             DefenseType.Hits => .78,
             DefenseType.Shield => 1.3,
-            DefenseType.Armor => .91,
+            DefenseType.Armor => 1,
             _ => throw new Exception(),
         };
         internal static double EnergyCostRatio(AttackType attackType) => attackType switch
