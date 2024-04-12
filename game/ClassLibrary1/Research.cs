@@ -58,7 +58,7 @@ namespace ClassLibrary1
                 return result;
             throw new Exception();
         }
-        public IReadOnlyCollection<MechBlueprint> Blueprints => _blueprints.ToList().AsReadOnly();
+        public IReadOnlyList<MechBlueprint> Blueprints => _blueprints.ToList().AsReadOnly();
 
         public Research(Game Game)
         {
@@ -227,7 +227,7 @@ namespace ClassLibrary1
             else
                 return min + Add();
         }
-        private static double GetNext(double v) => Math.Pow(v * 6.5 + 780, .52);
+        private static double GetNext(double v) => Math.Pow(v * 7.8 + 780, .52);
 
         public bool HasType(Type research)
         {
@@ -316,52 +316,59 @@ namespace ClassLibrary1
         public static readonly Type[] UpgradeOnly = new Type[] { Type.ConstructorCost, Type.ConstructorMove,
             Type.TurretRange, Type.TurretAttack, Type.TurretDefense, Type.BuildingCost,
             Type.BuildingDefense, Type.ResearchChoices, Type.ExtractorValue, };
+        //public static readonly Dictionary<Type, Type[,]> Dependencies = new()
+        //{
+        //    { Type.Mech, new Type[,] { } },
+        //    { Type.CoreShields, new Type[,]          { { Type.Mech, Type.Mech }, { Type.CoreShields, Type.CoreShields }, } },
+        //    { Type.Constructor, new Type[,]          { { Type.CoreShields, }, } },
+        //    { Type.Turret, new Type[,]               { { Type.Constructor, }, } },
+        //    { Type.Factory, new Type[,]              { { Type.Constructor, }, } },
         public static readonly Dictionary<Type, Type[]> Dependencies = new()
         {
             { Type.Mech, Array.Empty<Type>() },
             { Type.CoreShields, new Type[]          { Type.Mech, } },
+            { Type.Turret, new Type[]               { Type.CoreShields, } },
             { Type.Constructor, new Type[]          { Type.CoreShields, } },
-            { Type.Turret, new Type[]               { Type.Constructor, } },
             { Type.Factory, new Type[]              { Type.Constructor, } },
 
-            { Type.MechShields, new Type[]          { Type.Mech, } },
-            { Type.MechVision, new Type[]           { Type.Mech, Type.MechShields, } },
-            { Type.MechMove, new Type[]             { Type.Mech, Type.MechVision, } },
+            { Type.MechVision, new Type[]           { Type.Mech, } },
+            { Type.MechShields, new Type[]          { Type.Mech, Type.MechVision, } },
+            { Type.MechMove, new Type[]             { Type.Mech, Type.MechShields, } },
             { Type.MechDefense, new Type[]          { Type.Mech, Type.MechShields, } },
             { Type.MechArmor, new Type[]            { Type.Mech, Type.MechDefense, } },
             { Type.MechResilience, new Type[]       { Type.Mech, Type.MechMove, Type.MechArmor } },
-            { Type.MechAttack, new Type[]           { Type.Mech, Type.MechShields, } },
+            { Type.MechAttack, new Type[]           { Type.Mech, Type.MechVision, } },
             { Type.MechRange, new Type[]            { Type.Mech, Type.MechAttack, } },
             { Type.MechEnergyWeapons, new Type[]    { Type.Mech, Type.MechAttack, } },
             { Type.MechLasers, new Type[]           { Type.Mech, Type.MechRange, Type.MechEnergyWeapons, } },
             { Type.MechExplosives, new Type[]       { Type.Mech, Type.MechRange, Type.MechResilience, } },
 
-            { Type.ConstructorDefense, new Type[]   { Type.Constructor, Type.MechShields, Type.MechArmor, } }, //remove armor dependency, if armor not researched only allow shield type?
-            { Type.ConstructorCost, new Type[]      { Type.Constructor, Type.Factory, } },
-            { Type.ConstructorMove, new Type[]      { Type.Constructor, Type.ConstructorCost, Type.MechVision, Type.MechMove, } },
-            { Type.ConstructorRepair, new Type[]    { Type.Constructor, Type.ConstructorMove, Type.ConstructorDefense, Type.FactoryConstructor, Type.FabricateMass, } }, // end
-            
-            { Type.TurretRange, new Type[]          { Type.Turret, Type.MechEnergyWeapons, Type.MechRange, } },
-            { Type.TurretLasers, new Type[]         { Type.Turret, Type.MechLasers, } },
-            { Type.TurretExplosives, new Type[]     { Type.Turret, Type.MechExplosives } },
-            { Type.TurretAttack, new Type[]         { Type.Turret, Type.TurretRange, Type.TurretLasers, Type.TurretExplosives, Type.MechAttack, } }, // end
-            { Type.TurretShields, new Type[]        { Type.Turret, Type.BuildingDefense, Type.CoreShields, } },
-            { Type.TurretArmor, new Type[]          { Type.Turret, Type.BuildingDefense, Type.MechArmor, } },
-            { Type.TurretAutoRepair, new Type[]     { Type.Turret, Type.BuildingDefense, Type.FactoryAutoRepair, } },
-            { Type.TurretDefense, new Type[]        { Type.Turret, Type.BuildingDefense, Type.TurretShields, Type.TurretArmor, Type.TurretAutoRepair, Type.MechDefense, } }, // end
+            { Type.TurretAttack, new Type[]         { Type.Turret, Type.MechAttack, } }, // delay
+            { Type.TurretLasers, new Type[]         { Type.Turret, Type.TurretAttack, Type.MechLasers, } }, // end
+            { Type.TurretRange, new Type[]          { Type.Turret, Type.TurretAttack, Type.MechRange, } },
+            { Type.TurretExplosives, new Type[]     { Type.Turret, Type.TurretRange, Type.MechExplosives } }, // end
+            { Type.TurretDefense, new Type[]        { Type.Turret, } }, // quick
+            { Type.TurretArmor, new Type[]          { Type.Turret, Type.TurretDefense, Type.MechArmor, } }, // end
+            { Type.TurretShields, new Type[]        { Type.Turret, Type.MechShields, } },
+            { Type.TurretAutoRepair, new Type[]     { Type.Turret, Type.TurretShields, Type.FactoryAutoRepair, } }, // end
 
-            { Type.FactoryRepair, new Type[]        { Type.Factory, Type.BuildingCost, } },
-            { Type.FactoryConstructor, new Type[]   { Type.Factory, Type.FactoryRepair, Type.BuildingDefense, Type.ConstructorDefense, } },
+            { Type.ConstructorCost, new Type[]      { Type.Constructor, } }, // quick
+            { Type.ConstructorDefense, new Type[]   { Type.Constructor, Type.MechShields, Type.MechArmor, } },
+            { Type.ConstructorMove, new Type[]      { Type.Constructor, Type.ConstructorDefense, Type.MechVision, Type.MechMove, } }, // end
+            { Type.ConstructorRepair, new Type[]    { Type.Constructor, Type.FactoryConstructor, Type.FabricateMass, } }, // end
+
+            { Type.FactoryRepair, new Type[]        { Type.Factory, } },
+            { Type.FactoryConstructor, new Type[]   { Type.Factory, Type.FactoryRepair, Type.ConstructorCost, } },
             { Type.FactoryAutoRepair, new Type[]    { Type.Factory, Type.FactoryRepair, Type.ExtractorAutoRepair, } },
 
-            { Type.BuildingCost, new Type[]         { Type.CoreShields, } },
-            { Type.ExtractorAutoRepair, new Type[]  { Type.BuildingCost, } },
-            { Type.BuildingDefense, new Type[]      { Type.BuildingCost, Type.Turret, Type.MechDefense, } },
-            { Type.ResearchChoices, new Type[]      { Type.BuildingDefense, } },
-            { Type.BurnMass, new Type[]             { Type.ResearchChoices, } },
-            { Type.ScrapResearch, new Type[]        { Type.ResearchChoices, } },
-            { Type.FabricateMass, new Type[]        { Type.BurnMass, Type.ScrapResearch, } },
-            { Type.ExtractorValue, new Type[]       { Type.FabricateMass, Type.ExtractorAutoRepair, Type.MechResilience, } }, // end
+            { Type.BuildingCost, new Type[]         { Type.Turret, } }, // delay
+            { Type.ResearchChoices, new Type[]      { Type.BuildingCost, } },
+            { Type.BuildingDefense, new Type[]      { Type.TurretDefense } }, // quick
+            { Type.ExtractorValue, new Type[]       { Type.ResearchChoices, Type.BuildingDefense, } }, // end
+            { Type.ExtractorAutoRepair, new Type[]  { Type.Factory, } },
+            { Type.BurnMass, new Type[]             { Type.ExtractorAutoRepair, } },
+            { Type.ScrapResearch, new Type[]        { Type.ExtractorAutoRepair, } },
+            { Type.FabricateMass, new Type[]        { Type.BurnMass, Type.ScrapResearch, } }, 
             
             //Type.BuildingResilience - not extractor??
             // Constructor resilience ?
@@ -376,8 +383,8 @@ namespace ClassLibrary1
             CoreShields = 100,
             Mech = 169,
             Constructor = 200,
-            Factory = 250,
-            Turret = 300,
+            Turret = 250,
+            Factory = 300,
 
             MechEnergyWeapons = 102,
             MechShields = 105,
@@ -391,32 +398,32 @@ namespace ClassLibrary1
             MechArmor = 146,
             MechExplosives = 149,
 
-            ConstructorDefense = 190,
-            ConstructorCost = 240,
-            ConstructorMove = 290,
-            ConstructorRepair = 330, // end
+            TurretDefense = 110, // quick
+            TurretShields = 120,
+            TurretLasers = 130, // end
+            TurretRange = 140,
+            TurretArmor = 150, // end
+            TurretExplosives = 160, // end
+            TurretAttack = 170, // delay
+            TurretAutoRepair = 245, // end
 
-            TurretShields = 110,
-            TurretLasers = 120,
-            TurretRange = 130,
-            TurretArmor = 140,
-            TurretDefense = 150, // end
-            TurretAttack = 160, // end
-            TurretExplosives = 170,
-            TurretAutoRepair = 205,
+            ConstructorCost = 180, // quick
+            ConstructorDefense = 190, //key
+            ConstructorMove = 330, // end
+            ConstructorRepair = 350, // end
 
-            FactoryRepair = 180,
-            FactoryAutoRepair = 285,
-            FactoryConstructor = 340,
+            FactoryAutoRepair = 205,
+            FactoryRepair = 240, //key
+            FactoryConstructor = 290, //key
 
-            BuildingDefense = 115,
+            BuildingDefense = 115, // quick
             FabricateMass = 125,
             ScrapResearch = 145,
             ResearchChoices = 155,
             BurnMass = 165,
-            BuildingCost = 175,
-            ExtractorAutoRepair = 245,
-            ExtractorValue = 350, // end             
+            BuildingCost = 175, // delay
+            ExtractorAutoRepair = 285, //key
+            ExtractorValue = 340, // end   
         }
     }
 }
