@@ -65,10 +65,14 @@ namespace ClassLibrary1
             if (this.Energy > 0 && Game.Rand.Bool(hitsPct / Math.Sqrt(hits)))
             {
                 Tile tile;
-                int RandCoord(double coord) => Game.Rand.Round(coord + Game.Rand.Gaussian(Math.Sqrt(range) + Attack.MELEE_RANGE));
+                int RandCoord(double coord) => Game.Rand.Round(coord + Game.Rand.Gaussian(range / 1.69 + Attack.MIN_RANGED));
                 do
                     tile = Game.Map.GetTile(RandCoord(hive.Tile.X), RandCoord(hive.Tile.Y));
                 while (tile == null || tile.Piece != null);
+
+                while ((_nextAlien.Movable.MoveInc + _nextAlien.Movable.MoveMax) / 2.0 < Game.Map.GetMinSpawnMove(tile))
+                    _nextAlien = MechBlueprint.Alien(_research);
+
                 SpawnAlien(tile);
             }
         }

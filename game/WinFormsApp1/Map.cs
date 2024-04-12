@@ -314,17 +314,17 @@ namespace WinFormsApp1
                         widthTotal *= rect.Width;
 
                         Func<Defense, int?> Get = d => d.DefenseCur;
-                        float hitsCur = GetValue(DefenseType.Hits, Get);
-                        float armorCur = GetValue(DefenseType.Armor, Get);
-                        float shieldCur = GetValue(DefenseType.Shield, Get);
+                        float cur1 = GetValue(DefenseType.Hits, Get);
+                        float cur2 = GetValue(DefenseType.Armor, Get);
+                        float cur3 = GetValue(DefenseType.Shield, Get);
                         Get = d => d.DefenseMax;
-                        float hitsMax = GetValue(DefenseType.Hits, Get);
-                        float armorMax = GetValue(DefenseType.Armor, Get);
-                        float shieldMax = GetValue(DefenseType.Shield, Get);
+                        float max1 = GetValue(DefenseType.Hits, Get);
+                        float max2 = GetValue(DefenseType.Armor, Get);
+                        float max3 = GetValue(DefenseType.Shield, Get);
                         float GetValue(DefenseType type, Func<Defense, int?> GetStat) =>
                             killable.TotalDefenses.Where(d => d.Type == type).Sum(a => StatValue(GetStat(a) ?? 0));//StatValue?
 
-                        DrawBar(1, new float[] { hitsCur, armorCur, shieldCur }, new float[] { hitsMax, armorMax, shieldMax },
+                        DrawBar(1, new float[] { cur1, cur2, cur3 }, new float[] { max1, max2, max3 },
                             new Brush[] { Brushes.DarkGray, Brushes.LightGray, Brushes.SkyBlue, }, barSize, widthTotal);
                     }
                     if (piece != null && piece.HasBehavior(out IAttacker attacker))
@@ -336,17 +336,17 @@ namespace WinFormsApp1
                         widthTotal *= rect.Width;
 
                         Func<Attack, int?> Get = a => a.AttackCur;
-                        float hitsCur = GetValue(AttackType.Kinetic, Get);
-                        float armorCur = GetValue(AttackType.Energy, Get);
-                        float shieldCur = GetValue(AttackType.Explosive, Get);
+                        float cur1 = GetValue(AttackType.Kinetic, Get);
+                        float cur2 = GetValue(AttackType.Energy, Get);
+                        float cur3 = GetValue(AttackType.Explosive, Get);
                         Get = a => a.AttackMax;
-                        float hitsMax = GetValue(AttackType.Kinetic, Get);
-                        float armorMax = GetValue(AttackType.Energy, Get);
-                        float shieldMax = GetValue(AttackType.Explosive, Get);
+                        float max1 = GetValue(AttackType.Kinetic, Get);
+                        float max2 = GetValue(AttackType.Energy, Get);
+                        float max3 = GetValue(AttackType.Explosive, Get);
                         float GetValue(AttackType type, Func<Attack, int?> GetStat) =>
                             attacker.Attacks.Where(d => d.Type == type).Sum(a => StatValue(GetStat(a) ?? 0));//StatValue?
 
-                        DrawBar(2, new float[] { hitsCur, armorCur, shieldCur }, new float[] { hitsMax, armorMax, shieldMax },
+                        DrawBar(2, new float[] { cur1, cur2, cur3 }, new float[] { max1, max2, max3 },
                             new Brush[] { Brushes.Silver, Brushes.SandyBrown, Brushes.MediumPurple, }, barSize, widthTotal);
                     }
 
@@ -389,18 +389,25 @@ namespace WinFormsApp1
                     //}
                 }
 
-            for (int a = 0; a < mapCoords.Width; a++)
+            for (int b = 0; b < mapCoords.Width; b++)
             {
-                int x = mapCoords.X + a;
-                for (int b = 0; b < mapCoords.Height; b++)
+                int x = mapCoords.X + b;
+                for (int c = 0; c < mapCoords.Height; c++)
                 {
-                    int y = mapCoords.Y + b;
+                    int y = mapCoords.Y + c;
                     RectangleF rect = new(GetX(x), GetY(y), Scale, Scale);
                     if (Program.Game.Map.Visible(x, y))
                     {
                         Tile tile = Program.Game.Map.GetVisibleTile(x, y);
-                        if (tile?.Terrain != null)
-                            AddFill(Brushes.SaddleBrown, rect);
+                        Terrain terrain = tile?.Terrain;
+                        if (terrain != null)
+                        {
+                            int color = 130;
+                            if (terrain is Block block)
+                                color = Game.Rand.Round(color * block.Value);
+                            //Color.Brown
+                            AddFill(new SolidBrush(Color.FromArgb(100, color, 26)), rect);
+                        }
                         else if (tile != null)
                             rectangles.Add(rect);
                         else if (!Game.TEST_MAP_GEN.HasValue)
@@ -460,6 +467,16 @@ namespace WinFormsApp1
                     e.Graphics.FillRectangles(p.Key, p.Value.ToArray());
             foreach (var p in polygons)
                 e.Graphics.FillPolygon(Brushes.Black, p);
+
+
+            foreach (var path in Program.Game.Map.savedPathing)
+                for (int d = 1; d < path.Count; d++)
+                {
+                    PointF GetCenter(Point p) => new(GetX(p.X) + Scale / 2f, GetY(p.Y) + Scale / 2f);
+                    var p1 = GetCenter(path[d - 1]);
+                    var p2 = GetCenter(path[d]);
+                    e.Graphics.DrawLine(new Pen(Color.DarkGreen, 2f), p1.X, p1.Y, p2.X, p2.Y);
+                }
 
             if (rects.Length > 0)
                 e.Graphics.DrawRectangles(Pens.Black, rects);

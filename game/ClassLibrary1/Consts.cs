@@ -16,6 +16,7 @@ namespace ClassLibrary1
         public const double CaveDistanceOE = .169;
         public const double CaveMinDist = 65;
         public const double CaveSize = 13;
+        public const double CavePathSize = 2.6;
         public const double CaveDistPow = 1.13;
 
         public const double ResourceAvgDist = 16.9;
@@ -159,7 +160,8 @@ namespace ClassLibrary1
             double resilience = killable.Resilience;
             if (sqrt)
                 resilience = Math.Sqrt(resilience);
-            return min + (value - min) * Math.Pow(killable.Hits.DefenseCur / (double)killable.Hits.DefenseMax, 1 - resilience);
+            return min + (value - min)
+                * Math.Pow(StatValue(killable.Hits.DefenseCur) / StatValue(killable.Hits.DefenseMax), 1 - resilience);
         }
 
         public static double IncDefense(bool doEndTurn, DefenseType type, bool isAttacker, int cur, int max, double repairAmt, ref double energyUpk, ref double massUpk)
@@ -170,7 +172,7 @@ namespace ClassLibrary1
             {
                 double costMult = CombatTypes.GetRegenCostMult(type, isAttacker, out bool mass);
                 double upkeep = 0;
-                newValue = IncStatValue(doEndTurn, cur, max, regen, costMult, ref upkeep); 
+                newValue = IncStatValue(doEndTurn, cur, max, regen, costMult, ref upkeep);
                 if (mass)
                     massUpk += upkeep;
                 else
@@ -213,8 +215,6 @@ namespace ClassLibrary1
 
                     cur = extra;
                 }
-
-                //Debug.WriteLine(cur);
             }
             return cur - start;
         }

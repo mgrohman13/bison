@@ -11,7 +11,7 @@ namespace ClassLibrary1
     public class Game
     {
         public const int POINTS_TO_WIN = 3;
-        public static readonly int? TEST_MAP_GEN = null;// 260;
+        public static readonly int? TEST_MAP_GEN = 260;// 260;
 
         public static readonly MTRandom Rand;
         static Game()
@@ -65,8 +65,7 @@ namespace ClassLibrary1
             Player.CreateCore(constructor);
             Constructor.NewConstructor(Map.GetTile(Player.Core.Tile.X + constructor.X, Player.Core.Tile.Y + constructor.Y), true);
 
-            Map.GenerateStartResources();
-            Map.SpawnHives();
+            Map.NewGame();
         }
 
         internal int GetPieceNum(Type type)
@@ -103,8 +102,10 @@ namespace ClassLibrary1
 
             Research.Type? researched = Player.EndTurn();
             _turn++;
+            Map.PlayTurn(Turn);
             Enemy.PlayTurn();
             Player.StartTurn();
+
             return researched;
         }
 

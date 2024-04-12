@@ -64,15 +64,15 @@ namespace ClassLibrary1.Pieces.Enemies
 
         private void Attacker_AttackEvent(object sender, Attacker.AttackEventArgs e)
         {
-            Tile.Map.UpdateVision(this.Tile, Math.Sqrt(attacker.Attacks.Sum(a => a.Range)));
+            Tile.Map.UpdateVision(this.Tile, Math.Sqrt(attacker.Attacks.Sum(a => a.Range) + Attack.MELEE_RANGE));
         }
         private void Killable_DamagedEvent(object sender, Killable.DamagedEventArgs e)
         {
             double cur = killable.TotalDefenses.Sum(d => Consts.StatValue(d.DefenseCur));
             double max = killable.TotalDefenses.Sum(d => Consts.StatValue(d.DefenseMax));
-            double range = attacker.Attacks.Max(a => a.Range);
-            ((Enemy)Side).HiveDamaged(this, ref energy, killable.Hits.DefenseCur, cur / max, range);
+            ((Enemy)Side).HiveDamaged(this, ref energy, killable.Hits.DefenseCur, cur / max, MaxRange);
         }
+        public double MaxRange => attacker.Attacks.Max(a => a.Range);
 
         internal override void Die()
         {
