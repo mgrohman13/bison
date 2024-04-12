@@ -1,6 +1,7 @@
 ﻿using ClassLibrary1.Pieces;
 using ClassLibrary1.Pieces.Enemies;
 using ClassLibrary1.Pieces.Players;
+using MattUtil;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -41,7 +42,7 @@ namespace ClassLibrary1
 
             int spawns = Game.Rand.OEInt(Game.Turn / 13.0);
             for (int a = 0; a < spawns && _nextAlien.AlienCost() + 13 < this.Energy; a++)
-                SpawnAlien(Game.Map.GetEnemyTile());
+                SpawnAlien(() => Game.Map.GetEnemyTile(Alien.GetPathFindingMovement(_nextAlien.Movable)));
 
             Debug.WriteLine($"Enemy energy: {_energy}");
 
@@ -64,27 +65,43 @@ namespace ClassLibrary1
 
             if (this.Energy > 0 && Game.Rand.Bool(hitsPct / Math.Sqrt(hits)))
             {
-                Tile tile;
-                int RandCoord(double coord) => Game.Rand.Round(coord + Game.Rand.Gaussian(range / 1.69 + Attack.MIN_RANGED));
-                do
-                    tile = Game.Map.GetTile(RandCoord(hive.Tile.X), RandCoord(hive.Tile.Y));
-                while (tile == null || tile.Piece != null);
+                SpawnAlien(() =>
+                {
+                    Tile tile;
+                    int RandCoord(double coord) => Game.Rand.Round(coord + Game.Rand.Gaussian(range / 1.69 + Attack.MIN_RANGED));
+                    do
+                        tile = Game.Map.GetTile(RandCoord(hive.Tile.X), RandCoord(hive.Tile.Y));
+                    while (tile == null || tile.Piece != null);
 
-                while ((_nextAlien.Movable.MoveInc + _nextAlien.Movable.MoveMax) / 2.0 < Game.Map.GetMinSpawnMove(tile))
-                    _nextAlien = MechBlueprint.Alien(_research);
+                    while (Alien.GetPathFindingMovement(_nextAlien.Movable) < Game.Map.GetMinSpawnMove(tile))
+                        this._nextAlien = MechBlueprint.Alien(_research);
 
-                SpawnAlien(tile);
+                    return tile;
+                });
             }
         }
-        private void SpawnAlien(Tile tile)
+
+        private void SpawnAlien(Func<Tile> GetTile)
         {
+            Tile tile;
+            List<Point> path;
+            while (true)
+            {
+                tile = GetTile();
+                path = tile.Map.PathFind(tile, Alien.GetPathFindingMovement(_nextAlien.Movable), blocked => !blocked.Any());
+                if (path == null)
+                    this._nextAlien = MechBlueprint.Alien(_research);
+                else
+                    break;
+            }
+
             this._energy -= Game.Rand.Round(_nextAlien.AlienCost());
-            Alien.NewAlien(tile, _nextAlien.Killable, _nextAlien.Resilience, _nextAlien.Attacker, _nextAlien.Movable);
-            _nextAlien = MechBlueprint.Alien(_research);
+            Alien.NewAlien(tile, path, _nextAlien.Killable, _nextAlien.Resilience, _nextAlien.Attacker, _nextAlien.Movable);
+            this._nextAlien = MechBlueprint.Alien(_research);
         }
         internal override bool Spend(int energy, int mass)
         {
-            _energy = Game.Rand.Round(this.Energy - energy - mass * Consts.MechMassDiv);
+            this._energy = Game.Rand.Round(this.Energy - energy - mass * Consts.MechMassDiv);
             return true;
         }
 

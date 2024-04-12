@@ -135,7 +135,7 @@ namespace ClassLibrary1.Map
             GenerateStartResources();
 
             foreach (var cave in Game.Rand.Iterate(_caves))
-                cave.PathFind(this, Game.Player.Core.Tile);
+                cave.PathFind(this);//, Game.Player.Core.Tile);
         }
         private void GenerateStartResources()
         {
@@ -175,8 +175,6 @@ namespace ClassLibrary1.Map
                 Cave cave = Game.Rand.SelectValue(chances);
                 if (Game.Rand.Next(13) > 0)
                     chances[cave]--;
-                else
-                    ;
                 Tile tile = SpawnTile(cave.Center, Consts.CaveSize, true);
                 cave.AddHive(Hive.NewHive(tile, f));
                 counts.TryGetValue(cave, out int count);
@@ -398,7 +396,7 @@ namespace ClassLibrary1.Map
             bool hiveRange = isEnemy && tile.Map._pieces.OfType<Hive>().Any(h => tile.GetDistance(h.Tile) <= h.MaxRange);
             Core core = tile.Map.Game.Player.Core;
             bool coreRange = core != null && tile.GetDistance(core.Tile) <= core.GetBehavior<IRepair>().Range;
-            bool invalid = visible && !hiveRange || tile.Piece != null || coreRange;
+            bool invalid = (visible && !hiveRange) || tile.Piece != null || coreRange;
             if (!invalid)
                 Debug.WriteLine("InvalidStartTile: " + tile);
             return invalid;
@@ -457,9 +455,13 @@ namespace ClassLibrary1.Map
             Cave cave = _caves.OrderBy(c => GetDistSqr(new(tile.X, tile.Y), c.Center)).First();
             return cave.MinSpawnMove;
         }
-        internal Tile GetEnemyTile()
+        internal Tile GetEnemyTile(double enemyMove)
         {
-            IEnemySpawn spawn = Game.Rand.SelectValue(_paths.Concat<IEnemySpawn>(_caves).ToDictionary(k => k, v => v.SpawnChance(Game.Turn)));
+            var choices = _paths.Concat<IEnemySpawn>(_caves).ToDictionary(k => k, v => v.SpawnChance(Game.Turn, enemyMove));
+            foreach (var choice in choices)
+                Debug.WriteLine($"choice - {choice.Key}: {choice.Value}");
+            IEnemySpawn spawn = Game.Rand.SelectValue(choices);
+            Debug.WriteLine($"GetEnemyTile: {spawn}");
             return spawn.SpawnTile(this, true, 1.69);
         }
 
@@ -493,9 +495,82 @@ namespace ClassLibrary1.Map
         private static double PointLineDistance(double a, double b, double c, Point point) =>
             (a * point.X + b * point.Y + c) / Math.Sqrt(a * a + b * b);
 
-        private void ForcePath(HashSet<Point> blocked)
+        public readonly Dictionary<Point, FoundPath> FoundPaths = new();
+        public List<Point> PathFind(Tile from, double movement, Func<HashSet<Point>, bool> Accept)//, Tile to
         {
-            if (blocked.Any())
+            Tile to = Game.Player.Core.Tile;
+
+            //soo much overhead...
+
+            Point fromP = new(from.X, from.Y);
+            Point toP = new(to.X, to.Y);
+            if (from.Equals(to))
+                return new() { fromP, toP, };
+            if (FoundPaths.TryGetValue(fromP, out FoundPath found) && found.Movement <= movement)
+                return found.CompletePath(fromP).ToList();
+
+            //cache tiles and penalties at each point so we maintain reference equality and consistent penalties
+            Dictionary<Point, Tuple<Tile, double>> cache = new() {
+                { fromP, Tuple.Create(from, 0.0) },
+                { toP, Tuple.Create(to, 0.0) },
+            };
+
+            HashSet<Tile> known = FoundPaths.Keys.Where(k => FoundPaths[k].Movement <= movement).Select(p => GetTile(p.X, p.Y)).ToHashSet();
+            foreach (Tile tile in known)
+                cache[new(tile.X, tile.Y)] = Tuple.Create(tile, 0.0);
+
+            var path = TBSUtil.PathFind(Game.Rand, from, to, known, p1 =>
+                    p1.GetAllPointsInRange(movement).Where(p =>
+                    {
+                        var tile = GetTile(p);
+                        var piece = tile?.Piece;
+                        return tile == from || tile == to || piece is null || piece is Terrain || piece.HasBehavior<IMovable>();
+                    }).Select(p2 =>
+                    {
+                        double dist = p1.GetDistance(p2);
+                        if (!cache.TryGetValue(p2, out Tuple<Tile, double> tuple))
+                        {
+                            Tile tile = GetTile(p2.X, p2.Y);
+
+                            //the map is infinite, so to avoid pathfinding forever we impose a penalty on blocked terrain instead of blocking tiles entirely
+                            double penalty = 0;
+                            if (tile == null)
+                            {
+                                penalty = Game.Rand.Gaussian((Consts.PathWidth + movement) * Consts.PathWidth, .039);
+                            }
+                            else if (tile.Piece is Block block)
+                            {
+                                double mult = .5 + 4 * (.5 - block.Value); //ranges from 0.5 - 1.5
+                                mult *= mult; //ranges from 0.25 - 2.25
+                                penalty = Game.Rand.Gaussian((Consts.PathWidth + movement) * mult, .039);
+                            }
+                            if (penalty > 0 && !Game.TEST_MAP_GEN.HasValue && Visible(p2))
+                                penalty *= Consts.PathWidth;
+
+                            tile ??= NewTile(this, p2.X, p2.Y, t => null);
+                            tuple = Tuple.Create(tile, penalty);
+                            cache.Add(p2, tuple);
+                        }
+                        return Tuple.Create(tuple.Item1, dist + tuple.Item2);
+                    }),
+                    (p1, p2) => p1.GetDistance(p2))
+                .Select(t => new Point(t.X, t.Y)).ToList();
+
+            HashSet<Point> blocked = new();
+            foreach (var p in path)
+            {
+                Tile tile = GetTile(p);
+                if (tile == null || tile.Piece is Terrain)
+                    blocked.Add(p);
+            }
+
+            foreach (var p in blocked)
+                if (!Game.TEST_MAP_GEN.HasValue && Visible(p))
+                    Debug.WriteLine($"Path through visible tile {p}");
+
+            if (Accept(blocked))
+            {
+                //clear any blocked terrain we pathed through 
                 clearTerrain.UnionWith(blocked.SelectMany(p =>
                 {
                     List<Point> list = new() { p };
@@ -508,71 +583,25 @@ namespace ClassLibrary1.Map
                     }
                     return list;
                 }));
-        }
 
-        //internal List<Point> PathFindForce(Tile from, Tile to, double move)
-        //{
-        //    return PathFindForce(from, to, move, out _);
-        //}
-        //internal List<Point> PathFindForce(Tile from, Tile to, double move, out HashSet<Point> blocked)
-        //{
-        //    var path = PathFind(from, to, move, out blocked);
-        //    ForcePath(blocked);
-        //    return path;
-        //}
-        public List<List<Point>> savedPathing = new();
-        public List<Point> PathFind(Tile from, Tile to, double move, out HashSet<Point> blocked)
-        {
-            blocked = new();
-            Dictionary<Point, Tuple<Tile, double>> cache = new() {
-                { new(from.X, from.Y), Tuple.Create(from, 0.0) },
-                { new(to.X, to.Y), Tuple.Create(to, 0.0) },
-            };
+                FoundPath target = null;
+                Point final = path[^1];
+                if (final != new Point(to.X, to.Y))
+                    target = FoundPaths[final];
+                FoundPath foundPath = new(path, target, movement);
+                for (int a = 0; a < path.Count - 1; a++)
+                {
+                    FoundPaths.TryGetValue(path[a], out FoundPath old);
+                    if (foundPath.Movement < (old?.Movement ?? double.MaxValue))
+                        FoundPaths[path[a]] = foundPath;//should join together so that faster aliens can switch over to faster path
+                }
+                if (target != null)
+                    path.AddRange(target.CompletePath(final));
 
-            var path = TBSUtil.PathFind(Game.Rand, from, to, p1 =>
-                    p1.GetAllPointsInRange(move).Select(p2 =>
-                    {
-                        double dist = p1.GetDistance(p2);
-                        if (!cache.TryGetValue(p2, out Tuple<Tile, double> tuple))
-                        {
-                            Tile tile = GetTile(p2.X, p2.Y);
-
-                            //the map is infinite, so to avoid pathfinding forever we impose a penalty on blocked terrain instead of blocking tiles entirely
-                            double penalty = 0;
-                            if (tile == null)
-                                penalty = Game.Rand.Gaussian((Consts.PathWidth + move) * Consts.PathWidth, .039);
-                            else if (tile.Piece is Block block)
-                            {
-                                double mult = .5 + 4 * (.5 - block.Value); //ranges from 0.5 - 1.5
-                                penalty = Game.Rand.Gaussian((Consts.PathWidth + move) * mult * mult, .039);
-                            }
-                            if (penalty > 0 && !Game.TEST_MAP_GEN.HasValue && Visible(p2))
-                                penalty *= Consts.PathWidth;
-
-                            tile ??= NewTile(this, p2.X, p2.Y, t => null);
-                            tuple = Tuple.Create(tile, penalty);
-                            cache.Add(p2, tuple);
-                        }
-                        return Tuple.Create(tuple.Item1, dist + tuple.Item2);
-                    }).Where(t =>
-                    {
-                        var tile = t.Item1;
-                        var piece = tile?.Piece;
-                        return tile == from || tile == to || piece is null || piece is Terrain || piece.HasBehavior<IMovable>();
-                    }),
-                    (p1, p2) => p1.GetDistance(p2))
-                .Select(t => new Point(t.X, t.Y)).ToList();
-
-            foreach (var p in path)
-            {
-                Tile tile = GetTile(p);
-                if (tile == null || tile.Piece is Terrain)
-                    blocked.Add(p);
+                return path;
             }
 
-            savedPathing.Add(path);
-
-            return path;
+            return null;
         }
 
         private static Func<Map, int, int, Func<Tile, Terrain>, Tile> NewTile;

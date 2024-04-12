@@ -1,4 +1,5 @@
 ﻿using ClassLibrary1.Pieces.Enemies;
+using ClassLibrary1.Pieces.Players;
 using ClassLibrary1.Pieces.Terrain;
 using MattUtil;
 using System;
@@ -9,7 +10,7 @@ using Point = MattUtil.Point;
 
 namespace ClassLibrary1.Map
 {
-    public partial class Map 
+    public partial class Map
     {
         [Serializable]
         private class Cave : IEnemySpawn
@@ -26,15 +27,15 @@ namespace ClassLibrary1.Map
             private bool explored;//, spawned;
 
             private double minSpawnMove = double.NaN;
-            private List<Point> pathToCore = new();
+            //private List<Point> pathToCore = null;
 
             //PathCenter should handle edge distances better (e.g. segment on other side of cave/path)
             public PointD PathCenter => new((seg1.X + seg2.X) / 2.0, (seg1.Y + seg2.Y) / 2.0);
             public double PathLength => Math.Sqrt(GetDistSqr(seg1, seg2));
 
             public double MinSpawnMove => minSpawnMove;
-            public Point PathFindStart => pathToCore.First();
-            public IReadOnlyList<Point> PathToCore => pathToCore.AsReadOnly();
+            //public Point PathFindStart => pathToCore.First();
+            //public IReadOnlyList<Point> PathToCore => pathToCore.AsReadOnly();
 
             public Cave(PointD center, PointD connectTo, bool connectCave = false)
             {
@@ -85,49 +86,48 @@ namespace ClassLibrary1.Map
             {
                 hives.Add(hive);
             }
-            public void PathFind(Map map, Tile to)
+            public void PathFind(Map map)//, Tile to)
             {
-                minSpawnMove = 1;
-
+                this.minSpawnMove = 1;
+                List<Point> path;
                 while (true)
                 {
                     Tile from = map.SpawnTile(Center, Math.Sqrt(2), true);
-                    pathToCore = map.PathFind(from, to, minSpawnMove, out HashSet<Point> blocked);
-
-                    double penalty = 1;
-                    foreach (var p in blocked)
+                    path = map.PathFind(from, minSpawnMove, blocked => //, to
                     {
-                        Tile tile = map.GetTile(p);
-                        double div = 1;
-                        if (tile == null)
-                            div = 1 + Consts.CaveSize * Consts.CaveSize;
-                        else if (tile.Piece is Terrain)
-                            div = 1 + Consts.CaveSize / minSpawnMove;
-                        if (div > 1)
+                        if (minSpawnMove > Constructor.BASE_MOVE_MAX)
+                            return true;
+                        double penalty = 1;
+                        foreach (var p in blocked)
                         {
-                            penalty += div;
+                            Tile tile = map.GetTile(p);
+                            double div = 1;
+                            if (tile == null)
+                                div = 1 + Consts.CaveSize * Consts.CaveSize;
+                            else if (tile.Piece is Terrain)
+                                div = 1 + Consts.CaveSize / minSpawnMove;
+                            if (div > 1)
+                                penalty += div;
                         }
-                    }
-
-                    if (Game.Rand.Bool(1 / penalty))
-                    {
-                        map.ForcePath(blocked);
+                        return Game.Rand.Bool(1 / penalty);
+                    });
+                    if (path == null)
+                        this.minSpawnMove += Math.Sqrt(1 + minSpawnMove) - 1 + Game.Rand.OE();
+                    else
                         break;
-                    }
-
-                    minSpawnMove += Math.Sqrt(1 + minSpawnMove) - 1 + Game.Rand.OE();
                 }
+                //this.pathToCore = path;
             }
 
             public void Turn(int turn)
             {
                 spawn.Turn(turn);
             }
-            public int SpawnChance(int turn, double? enemyMove = null)
+            public int SpawnChance(int turn, double? enemyMove)
             {
-                if (enemyMove.HasValue && enemyMove.Value > minSpawnMove)
+                if (enemyMove.HasValue && enemyMove.Value < minSpawnMove)
                     return 0;
-                if (hives.Any(h => !h.Dead) || !explored)// && spawned)
+                if (!explored || hives.Any(h => !h.Dead))// && spawned)
                     return Game.Rand.Round(spawn.Chance * Math.Sqrt(2.1 + hives.Count));
                 return 0;
             }
@@ -142,6 +142,11 @@ namespace ClassLibrary1.Map
                 if (!isEnemy)
                     Debug.WriteLine($"Cave resource ({inPath}): {tile} ({Math.Sqrt(GetDistSqr(spawnCenter, new(tile.X, tile.Y)))})");
                 return tile;
+            }
+
+            public override string ToString()
+            {
+                return "Cave " + Center;
             }
         }
     }

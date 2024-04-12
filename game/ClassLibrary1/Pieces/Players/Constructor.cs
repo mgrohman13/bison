@@ -11,7 +11,7 @@ namespace ClassLibrary1.Pieces.Players
     [Serializable]
     public class Constructor : PlayerPiece, IKillable.IRepairable
     {
-        public const double START_VISION = 7.5;
+        public const double MOVE_LOW_PENALTY = 2, BASE_VISION = 7.5, BASE_MOVE_MAX = 8 * MOVE_LOW_PENALTY;
 
         private bool _canUpgrade;
         private readonly bool _defenseType;
@@ -218,20 +218,20 @@ namespace ClassLibrary1.Pieces.Players
             }
             private void UpgradeConstructorMove(double researchMult)
             {
-                this.vision = START_VISION * Math.Pow(researchMult, Constructor_Vision);
+                this.vision = BASE_VISION * Math.Pow(researchMult, Constructor_Vision);
 
+                //const double lowPenalty = MOVE_LOW_PENALTY;
                 double moveMult = 1;
-                const double lowPenalty = 2;
-                if (researchMult < lowPenalty)
-                    moveMult *= researchMult / lowPenalty;
+                if (researchMult < MOVE_LOW_PENALTY)
+                    moveMult *= researchMult / MOVE_LOW_PENALTY;
 
                 moveMult *= Math.Pow(researchMult, Constructor_Move);
-                double max = 16 * moveMult;
-                double limit = 30 * moveMult;
+                double max = BASE_MOVE_MAX * moveMult;
+                double limit = 15 * MOVE_LOW_PENALTY * moveMult;
                 int moveMax = Game.Rand.Round(max);
                 int moveLimit = Game.Rand.Round(limit);
                 double inc = Math.Pow((max * 2 + limit) / (moveMax * 2 + moveLimit), 1 / 3.9);
-                double moveInc = 7 * inc * moveMult;
+                double moveInc = 3.5 * MOVE_LOW_PENALTY * inc * moveMult;
                 this.movable = new(moveInc, moveMax, moveLimit);
             }
             private void UpgradeConstructorRepair(double researchMult)

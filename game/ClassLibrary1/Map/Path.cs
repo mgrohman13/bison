@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace ClassLibrary1.Map
 {
-    public partial class Map 
+    public partial class Map
     {
 
         [Serializable]
@@ -114,12 +114,17 @@ namespace ClassLibrary1.Map
             {
                 spawn.Turn(turn);
             }
-            public int SpawnChance(int turn, double? enemyMove = null)
+            public int SpawnChance(int turn, double? enemyMove)
             {
                 return spawn.Chance * 3;
             }
-            public Tile SpawnTile(Map map, bool isEnemy, double deviationMult = 1)
+            public Tile SpawnTile(Map map, bool isEnemy, double deviationMult)
                 => map.SpawnTile(GetPoint(Angle, ExploredDist), Consts.PathWidth * deviationMult, isEnemy);
+
+            public override string ToString()
+            {
+                return "Path " + (float)Angle;
+            }
         }
     }
 }

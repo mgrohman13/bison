@@ -105,19 +105,12 @@ explosives too weak?
 		could be 50% at one, go to 100% from there - kind of a nerf though
 	does friendly damage?
 		melee??
+make shield regen variable, reduce with dmg pct
 tie shield regen to StatValue (so regen more when lower)
 	regen rate lowered by hppct/resilience efficiency
 	only regen when not attacked?? regen less?? chance to stop regen?? specific att types??
 		new system use canrecover flag that get changed by diffe evtns? 
 pay back stored energy on death
-pathfinding for aliens in caves
-alien path spawning continually change ratios over time, not just mult/exponent
-alien morale
-alien retreat when shield/weapons down
-alien retreat to repair
-places for aliens to repair (hive?)
-	need to be able to pathfind back 
-	store behavior state on enemy pieces for consistnet travel goal
 enemy target extractor more often
 enemy attacks/moves	
 	take into account new mechanics 
@@ -125,25 +118,30 @@ enemy attacks/moves
 	run away to charge shields
 	go to hive to repair hits/armor
 		must stay still to heal
-
-all pathfinding operations build up list of known paths
-	pathfind to closest other path??
-		Dictionary<Point,List<Point>> of known paths
-		look up in every pathfinding step, if encountered, stop pf and pathfind rest of the way with list
-	use paths as heat map for alien moves?
-	problem - what about movement??
-		for each PF operation, only look at lists rated for this movement speed or slower
-	build up too many paths over time? duplicate paths with diff speeds??
-use pathfinding
-	ensure all spawned pieces are reachable
-	AI use to move 
-		find closest point on path
-		path find to next point after closest
-		use as heat map? random moves?
-			heat map created based on dist to trg
 move CombatTypes.GetReloadBase out of IAttacker.Values
-make shield regen variable, reduce with dmg pct
 
+map contiguity / pathfinding / alien behavior
+	ensure all spawns/resources can reach core with X move
+		constructors need to be able to reach resources
+			just keep constructor limit very high and not worry about it for now?
+	store behavior state on enemy pieces for consistent goal/pathing
+	morale?
+		retreat when shield/weapons down
+		retreat to repair
+		research to be able to see?
+	places for aliens to repair (hive?)
+		need to be able to pathfind to something besides core 
+			could add core and hives as separate pathfind targets with same structure
+				any way to share??
+	do enemy pathfinding in background during player turn?	
+	build up too many paths over time? duplicate paths with diff speeds??
+	alin moves  
+		find closest point on path
+			path find to next point after closest			
+		OR use as heat map? random moves?
+			heat map created based on dist to trg?
+			
+hardcoded references to .5, .25 terrain cuttoffs			
 movement - long term
 	start with just inc, lose all at turn end
 	reserach "battery" or "booster" 
@@ -249,14 +247,6 @@ after attack select to alien who actually defended
 fix build/repair/upgrade weirdness?
 	remove some research?
 	or clear up with colors?
-map contiguity
-	constructors need to be able to reach...
-	ensure spawns/resources can reach core with X move
-	pathfind from point to center using some random move value
-		every X attempts, add a terrain override tile somewhere reachable by one of closest points touched so far
-		increase pathfinding move value slightly every step??
-		after finding final path, if contains override tiles make them permament map features
-		test alg by cutting cave connectors
 show mass/eng ratio on build screen?  
 minimap
 shroud

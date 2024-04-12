@@ -35,7 +35,7 @@ namespace WinFormsApp1
         private Dictionary<Pen, List<HashSet<Point>>> ranges;
         private readonly Dictionary<Point, float> attacks = new();
 
-        private float Scale
+        private new float Scale
         {
             get { return _scale; }
             set
@@ -275,6 +275,13 @@ namespace WinFormsApp1
                             AddFill(Brushes.IndianRed, rect);
                         else
                             AddFill(Brushes.Red, rect);
+                        if (piece is Alien alien && alien.LastMove != null)
+                        {
+                            PointF GetCenter(Tile p) => new(GetX(p.X) + Scale / 2f, GetY(p.Y) + Scale / 2f);
+                            var p1 = GetCenter(alien.Tile);
+                            var p2 = GetCenter(alien.LastMove);
+                            lines.Add(new(p1, p2));
+                        }
                     }
                     else if (piece is Mech mech)
                     {
@@ -402,11 +409,11 @@ namespace WinFormsApp1
                         Terrain terrain = tile?.Terrain;
                         if (terrain != null)
                         {
-                            int color = 130;
+                            int color = 169;
                             if (terrain is Block block)
                                 color = Game.Rand.Round(color * block.Value);
                             //Color.Brown
-                            AddFill(new SolidBrush(Color.FromArgb(100, color, 26)), rect);
+                            AddFill(new SolidBrush(Color.FromArgb(130, color, 26)), rect);
                         }
                         else if (tile != null)
                             rectangles.Add(rect);
@@ -469,14 +476,17 @@ namespace WinFormsApp1
                 e.Graphics.FillPolygon(Brushes.Black, p);
 
 
-            foreach (var path in Program.Game.Map.savedPathing)
-                for (int d = 1; d < path.Count; d++)
-                {
-                    PointF GetCenter(Point p) => new(GetX(p.X) + Scale / 2f, GetY(p.Y) + Scale / 2f);
-                    var p1 = GetCenter(path[d - 1]);
-                    var p2 = GetCenter(path[d]);
-                    e.Graphics.DrawLine(new Pen(Color.DarkGreen, 2f), p1.X, p1.Y, p2.X, p2.Y);
-                }
+            //foreach (var found in Program.Game.Map.FoundPaths.Values.Distinct())
+            //{
+            //    var path = found.Path;
+            //    for (int d = 1; d < path.Count; d++)
+            //    {
+            //        PointF GetCenter(Point p) => new(GetX(p.X) + Scale / 2f, GetY(p.Y) + Scale / 2f);
+            //        var p1 = GetCenter(path[d - 1]);
+            //        var p2 = GetCenter(path[d]);
+            //        e.Graphics.DrawLine(new Pen(Color.DarkGreen, 2f), p1.X, p1.Y, p2.X, p2.Y);
+            //    }
+            //}
 
             if (rects.Length > 0)
                 e.Graphics.DrawRectangles(Pens.Black, rects);
@@ -1022,20 +1032,20 @@ namespace WinFormsApp1
         }
         private bool CheckBounds(float xs, float ys)
         {
-            //bool retVal = false;
-            //Rectangle mapCoords = GetMapCoords();
-            //Rectangle gameRect = Program.Game.Map.GameRect();
-            //if (mapCoords.Right - 1 <= gameRect.Left || mapCoords.Left >= gameRect.Right - 1)
-            //{
-            //    retVal = true;
-            //    this.xStart = xs;
-            //}
-            //if (mapCoords.Bottom - 1 <= gameRect.Top || mapCoords.Top >= gameRect.Bottom - 1)
-            //{
-            //    retVal = true;
-            //    this.yStart = ys;
-            //}
-            return false; // retVal;
+            bool retVal = false;
+            Rectangle mapCoords = GetMapCoords();
+            Rectangle gameRect = Program.Game.Map.GameRect();
+            if (mapCoords.Right - 1 <= gameRect.Left || mapCoords.Left >= gameRect.Right - 1)
+            {
+                retVal = true;
+                this.xStart = xs;
+            }
+            if (mapCoords.Bottom - 1 <= gameRect.Top || mapCoords.Top >= gameRect.Bottom - 1)
+            {
+                retVal = true;
+                this.yStart = ys;
+            }
+            return retVal;
         }
 
         private void Map_MouseClick(object sender, MouseEventArgs e)

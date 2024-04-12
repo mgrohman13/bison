@@ -15,7 +15,7 @@ namespace ClassLibrary1.Pieces.Terrain
 
         public override string ToString()
         {
-            return "NH₃";
+            return $"NH₃ - {4 * (.5 - Value):P0}";
         }
     }
 }
