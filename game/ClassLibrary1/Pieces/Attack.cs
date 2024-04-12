@@ -53,7 +53,7 @@ namespace ClassLibrary1.Pieces
         }
 
         public bool CanAttack() => !Attacked && AttackCur > 0;
-        public IEnumerable<IKillable> GetDefenders(Piece target, Tile attackFrom = null)
+        public IEnumerable<IKillable> GetDefenders(Piece target, Tile attackFrom = null)//Dictionary<IKillable, int>
         {
             attackFrom ??= Piece.Tile;
             if (!CanAttack(target, attackFrom))
@@ -90,9 +90,9 @@ namespace ClassLibrary1.Pieces
             return defenders;
 
             bool CanAttack(Piece target, Tile attackFrom, bool checkRange = true) => this.CanAttack()
-               && target != null && target.Side != this.Piece.Side
-               && target.HasBehavior(out IKillable killable) && !killable.Dead
-               && (!checkRange || attackFrom.GetDistance(target.Tile) <= this.Range);
+                && target != null && target.Side != this.Piece.Side
+                && target.HasBehavior(out IKillable killable) && !killable.Dead
+                && (!checkRange || attackFrom.GetDistance(target.Tile) <= this.Range);
             static IEnumerable<Piece> AdjacentPieces(Piece target) => target.Tile.GetAdjacentTiles().Select(t => t.Piece).Where(p => p?.Side == target.Side);
             static int? MaxDef(IKillable killable) => killable.TotalDefenses.Max(d => d?.DefenseCur);
         }
@@ -106,6 +106,7 @@ namespace ClassLibrary1.Pieces
                 bool DoAtt() => this.AttackCur > 0 && !target.Dead;
                 if (DoAtt())
                 {
+                    target.OnAttacked();
                     int startAttack = this.AttackCur;
                     Dictionary<Defense, int> startDefense = target.TotalDefenses.ToDictionary(d => d, d => d.DefenseCur);
 
@@ -161,17 +162,5 @@ namespace ClassLibrary1.Pieces
                 this._attackCur = (int)newValue;
             }
         }
-        //public int GetRegen()
-        //{
-        //    //check blocks
-        //    bool inBuild = Piece.Side.PiecesOfType<IBuilder.IBuildMech>()
-        //        .Any(r => Piece != r.Piece && Piece.Side == r.Piece.Side && Piece.Tile.GetDistance(r.Piece.Tile) <= r.Range);
-        //    bool moved = Piece.GetBehavior<IMovable>()?.Moved ?? false;
-        //    bool defended = Piece.GetBehavior<IKillable>()?.Defended ?? false;
-
-        //    int regen = CombatTypes.GetRegen(Type, moved, Attacked, defended, inBuild);
-        //    regen = Math.Min(regen, AttackMax - AttackCur);
-        //    return regen;
-        //}
     }
 }

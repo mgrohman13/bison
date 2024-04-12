@@ -1,5 +1,6 @@
 ﻿using ClassLibrary1.Pieces.Terrain;
 using System;
+using static ClassLibrary1.ResearchExponents;
 using DefenseType = ClassLibrary1.Pieces.CombatTypes.DefenseType;
 using Tile = ClassLibrary1.Map.Tile;
 
@@ -116,24 +117,24 @@ namespace ClassLibrary1.Pieces.Players
             }
             private void UpgradeBuildingCost(double researchMult)
             {
-                this.costMult = 1 / Math.Pow(researchMult, .6);
+                this.costMult = 1 / Math.Pow(researchMult, Extractor_Cost);
             }
             private void UpgradeBuildingHits(double researchMult)
             {
-                double defAvg = 15 * Math.Pow(researchMult, .60);
-                const double lowPenalty = 15 / 5.0;
+                double defAvg = 13 * Math.Pow(researchMult, Extractor_Defense);
+                const double lowPenalty = 13 / 5.0;
                 if (researchMult < lowPenalty)
                     defAvg *= researchMult / lowPenalty;
                 int defense = Game.Rand.Round(defAvg);
-                this.vision = 5 * Math.Pow(researchMult, .7);
+                this.vision = 5 * Math.Pow(researchMult, Extractor_Vision);
                 this.killable = new(DefenseType.Hits, defense);
             }
             private void UpgradeExtractorValue(double researchMult)
             {
-                this.resilience = Consts.GetPct(resilienceBase, Math.Pow(researchMult, .4));
+                this.resilience = Consts.GetPct(resilienceBase, Math.Pow(researchMult, Extractor_Resilience));
 
-                this.valueMult = Math.Pow(researchMult, .5);
-                this.sustainMult = Math.Pow(researchMult, .3);
+                this.valueMult = Math.Pow(researchMult, Extractor_Value);
+                this.sustainMult = Math.Pow(researchMult, Extractor_Sustain);
                 this.killable = new(DefenseType.Hits, killable.Defense);
             }
         }

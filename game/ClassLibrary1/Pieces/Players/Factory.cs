@@ -1,6 +1,7 @@
 ﻿using ClassLibrary1.Pieces.Terrain;
 using MattUtil;
 using System;
+using static ClassLibrary1.ResearchExponents;
 using DefenseType = ClassLibrary1.Pieces.CombatTypes.DefenseType;
 using Tile = ClassLibrary1.Map.Tile;
 
@@ -129,26 +130,26 @@ namespace ClassLibrary1.Pieces.Players
             }
             private void UpgradeBuildingCost(double researchMult)
             {
-                researchMult = Math.Pow(researchMult, .3);
+                double costMult = Math.Pow(researchMult, Factory_Cost);
                 hitRound = Game.Rand.NextDouble();
-                this.energy = MTRandom.Round(1750 / researchMult, hitRound);
-                this.mass = MTRandom.Round(500 / researchMult, hitRound);
+                this.energy = MTRandom.Round(1750 / costMult, hitRound);
+                this.mass = MTRandom.Round(500 / costMult, hitRound);
             }
             private void UpgradeBuildingHits(double researchMult)
             {
-                double defAvg = 8 * Math.Pow(researchMult, .55);
+                double defAvg = 8;
                 const double lowPenalty = 8 / 5.0;
                 if (researchMult < lowPenalty)
                     defAvg *= researchMult / lowPenalty;
-                int defense = Game.Rand.Round(defAvg);
-                this.vision = 5 * Math.Pow(researchMult, .8);
+                int defense = Game.Rand.Round(defAvg * Math.Pow(researchMult, Factory_Defense));
+                this.vision = 5 * Math.Pow(researchMult, Factory_Vision);
                 this.killable = new(DefenseType.Hits, defense);
             }
             private void UpgradeFactoryRepair(double researchMult)
             {
-                researchMult = Math.Pow(researchMult, .6);
-                double repairRange = 6.5 * researchMult;
-                repairRate = 1.13 * researchMult;
+                double repairMult = Math.Pow(researchMult, Factory_Repair);
+                double repairRange = 6.5 * repairMult;
+                repairRate = 1.13 * repairMult;
                 this.repair = new(new(repairRange), 1);
             }
         }

@@ -13,7 +13,7 @@ namespace ClassLibrary1.Pieces
         public readonly int PieceNum;
 
         Piece IBehavior.Piece => this;
-        protected IReadOnlyCollection<IBehavior> behavior = Array.Empty<IBehavior>();
+        protected IReadOnlyList<IBehavior> behavior = Array.Empty<IBehavior>();
 
         private Tile _tile;
 

@@ -14,7 +14,7 @@ namespace ClassLibrary1.Pieces
 
 
         public Piece Piece => _piece;
-        public IReadOnlyCollection<Attack> Attacks => CombatTypes.OrderAtt(_attacks);
+        public IReadOnlyList<Attack> Attacks => CombatTypes.OrderAtt(_attacks);
         public bool Attacked => Attacks.Any(a => a.Attacked);
 
         //public double TotalAttackCur2 => Consts.SumStats(Attacks.Select(a => a.AttackCur));

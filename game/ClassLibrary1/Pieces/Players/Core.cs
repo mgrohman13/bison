@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using static ClassLibrary1.ResearchExponents;
 using DefenseType = ClassLibrary1.Pieces.CombatTypes.DefenseType;
 using Tile = ClassLibrary1.Map.Tile;
 
@@ -126,21 +127,21 @@ namespace ClassLibrary1.Pieces.Players
             }
             private void UpgradeBuildingHits(double researchMult)
             {
-                this.vision = START_VISION * Math.Pow(researchMult, 1);
+                this.vision = START_VISION * Math.Pow(researchMult, Core_Vision);
 
-                double defAvg = 13 * Math.Pow(researchMult, .65);
-                const double lowPenalty = 13 / 5.0;
+                double defAvg = 11 * Math.Pow(researchMult, Core_Defense);
+                const double lowPenalty = 11 / 10.0;
                 if (researchMult < lowPenalty)
                     defAvg *= researchMult / lowPenalty;
                 this.hits = new(DefenseType.Hits, Game.Rand.Round(defAvg));
             }
             private void UpgradeCoreShields(double researchMult)
             {
-                double defAvg = 16.9 * Math.Pow(researchMult, .6);
+                double shieldAvg = 16.9 * Math.Pow(researchMult, Core_Shields);
                 const double lowPenalty = 4;
                 if (researchMult < lowPenalty)
-                    defAvg *= researchMult / lowPenalty;
-                this.shield = new(DefenseType.Shield, Game.Rand.Round(defAvg));
+                    shieldAvg *= researchMult / lowPenalty;
+                this.shield = new(DefenseType.Shield, Game.Rand.Round(shieldAvg));
             }
         }
     }

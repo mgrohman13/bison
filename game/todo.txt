@@ -67,7 +67,6 @@ GAMEPLAY
 FEATURES
 	enemy hive
 		protected by turrets
-		spawn pct in caves
 	calc with lines
 		line of sight for vision while moving 
 		stop when see new enemy?
@@ -93,36 +92,25 @@ FEATURES
 	experience
 	power grid
 
+rebalance resilience values after statvalue change
+better "lowPenalty" ramp up logic
 rethink picking defense algorithm, randomize slightly 
-assess both CombatTypes.GetRegen flag usage
-	AI needs to know about
-	Defended == took damage??
-enemy dir (+cave) attack weights change over time, not eventually focus one dir
-make shield regen variable, reduce with dmg pct
 dmg on any def can hurt att??
 taking dmg hurt attacks even for non-hits????
 explosives too weak?
 	splash damage not tied to initial dmg??
-	do way more damage, they already reload slowly
-	nerf recovery even in range?
 	rethink shield interaction?
 	enemies clump more
 	splash damage to higher values shouldnt be based on difference?
-	does friendly damage
+		could be 50% at one, go to 100% from there - kind of a nerf though
+	does friendly damage?
 		melee??
-buff armor vs energy weapons?
-rebal att/def type costs
-also nerf shields? only regen when not attacked? chance to stop regen?
-	new system use canrecover flag that get changed by diffe evtns? 
-rock-paper-scissors balance?
-rework turret research tree again? hp too low?
-	need better early game def, better mid game att
-turret more GC?
+tie shield regen to StatValue (so regen more when lower)
+	regen rate lowered by hppct/resilience efficiency
+	only regen when not attacked?? regen less?? chance to stop regen?? specific att types??
+		new system use canrecover flag that get changed by diffe evtns? 
 pay back stored energy on death
-allow aliens to spawn in caves
-	only until explored/hive killed?
-	better pathfinding
-	can spawn within hive range even if visible
+pathfinding for aliens in caves
 alien path spawning continually change ratios over time, not just mult/exponent
 alien morale
 alien retreat when shield/weapons down
@@ -133,8 +121,35 @@ places for aliens to repair (hive?)
 enemy target extractor more often
 enemy attacks/moves	
 	take into account new mechanics 
-move CombatTypes.GetReloadBase out of IAttacker.Values
+	not attack to recharge weapon
+	run away to charge shields
+	go to hive to repair hits/armor
+		must stay still to heal
 
+all pathfinding operations build up list of known paths
+	pathfind to closest other path??
+		Dictionary<Point,List<Point>> of known paths
+		look up in every pathfinding step, if encountered, stop pf and pathfind rest of the way with list
+	use paths as heat map for alien moves?
+	problem - what about movement??
+		for each PF operation, only look at lists rated for this movement speed or slower
+	build up too many paths over time? duplicate paths with diff speeds??
+use pathfinding
+	ensure all spawned pieces are reachable
+	AI use to move 
+		find closest point on path
+		path find to next point after closest
+		use as heat map? random moves?
+			heat map created based on dist to trg
+move CombatTypes.GetReloadBase out of IAttacker.Values
+make shield regen variable, reduce with dmg pct
+
+movement - long term
+	start with just inc, lose all at turn end
+	reserach "battery" or "booster" 
+		gives a max value to save up to
+		actual limit is always 2x max? no seperate variable?
+move Map inner classes to partial class files
 show inc/upk breakdown
 	eng break down by att/shield/move/mech/constructor
 	mass break down by building/mech (types??)
@@ -235,11 +250,8 @@ fix build/repair/upgrade weirdness?
 	remove some research?
 	or clear up with colors?
 map contiguity
-	instead, dont have walls limit move?
-		two diff kinds of walls? block and not block?
-		ensure spawns can reach core with move
-		ensure hive points have gaps "close enough"
-	use pathfinding to enforce? convert blocks
+	constructors need to be able to reach...
+	ensure spawns/resources can reach core with X move
 	pathfind from point to center using some random move value
 		every X attempts, add a terrain override tile somewhere reachable by one of closest points touched so far
 		increase pathfinding move value slightly every step??

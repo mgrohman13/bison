@@ -3,6 +3,7 @@ using MattUtil;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static ClassLibrary1.ResearchExponents;
 using AttackType = ClassLibrary1.Pieces.CombatTypes.AttackType;
 using DefenseType = ClassLibrary1.Pieces.CombatTypes.DefenseType;
 using Tile = ClassLibrary1.Map.Tile;
@@ -182,15 +183,14 @@ namespace ClassLibrary1.Pieces.Players
             }
             private void UpgradeBuildingCost(double researchMult)
             {
-                researchMult = Math.Pow(researchMult, .4);
+                double costMult = Math.Pow(researchMult, Turret_Cost);
                 rounding = Game.Rand.NextDouble();
-                this.energy = MTRandom.Round(1000 / researchMult, rounding);
-                this.mass = MTRandom.Round(1750 / researchMult, rounding);
+                this.energy = MTRandom.Round(1000 / costMult, rounding);
+                this.mass = MTRandom.Round(1750 / costMult, rounding);
             }
             private void UpgradeTurretDefense(double researchMult)
             {
-                researchMult = Math.Pow(researchMult, .7);
-                this.vision = 15 * researchMult;
+                this.vision = 12.5 * Math.Pow(researchMult, Turret_Vision);
 
                 for (int a = 0; a < MAX_DEFENSES; a++)
                 {
@@ -202,31 +202,32 @@ namespace ClassLibrary1.Pieces.Players
                         _ => throw new Exception(),
                     };
 
-                    double devAvg = a switch { 0 => 6.5, 1 => 3.9, 2 => 9.1, _ => throw new Exception(), };
-                    devAvg *= researchMult;
-                    //dont pow researchMult first
-                    //const double lowPenalty = 2.0;
-                    //if (researchMult < lowPenalty)
-                    //    attAvg *= researchMult / lowPenalty;
+                    double defAvg = a switch { 0 => 12.5, 1 => 7.8, 2 => 10.4, _ => throw new Exception(), };
+                    const double lowPenalty = 1.5;
+                    if (researchMult < lowPenalty)
+                        defAvg *= researchMult / lowPenalty;
+                    defAvg *= Math.Pow(researchMult, Turret_Defense);
 
-                    int defense = Game.Rand.Round(devAvg);
+                    int defense = Game.Rand.Round(defAvg);
                     defenses[a] = new(type, defense);
                 }
             }
             private void UpgradeTurretRange(double researchMult)
             {
-                researchMult = Math.Pow(researchMult, .7);
                 for (int a = 0; a < MAX_ATTACKS; a++)
                 {
-                    double range = a switch { 0 => 16.9, 1 => 9.1, 2 => 10.4, _ => throw new Exception(), };
-                    range *= researchMult;
+                    double range = a switch { 0 => 16.9, 1 => 7.5, 2 => 13, _ => throw new Exception(), };
+                    const double lowPenalty = 2.1;
+                    if (researchMult < lowPenalty)
+                        range *= researchMult / lowPenalty;
+                    range *= Math.Pow(researchMult, Turret_Range);
+
                     IAttacker.Values attack = attacks[a];
                     attacks[a] = new(attack.Type, attack.Attack, range);
                 }
             }
             private void UpgradeTurretAttack(double researchMult)
             {
-                researchMult = Math.Pow(researchMult, .6);
                 for (int a = 0; a < MAX_ATTACKS; a++)
                 {
                     AttackType type = a switch
@@ -237,12 +238,11 @@ namespace ClassLibrary1.Pieces.Players
                         _ => throw new Exception(),
                     };
 
-                    double attAvg = a switch { 0 => 6.5, 1 => 5.2, 2 => 3.9, _ => throw new Exception(), };
-                    attAvg *= researchMult;
-                    //dont pow researchMult first
-                    //const double lowPenalty = 2.0;
-                    //if (researchMult < lowPenalty)
-                    //    attAvg *= researchMult / lowPenalty;
+                    double attAvg = a switch { 0 => 9.1, 1 => 6.5, 2 => 10, _ => throw new Exception(), };
+                    const double lowPenalty = 1.69;
+                    if (researchMult < lowPenalty)
+                        attAvg *= researchMult / lowPenalty;
+                    attAvg *= Math.Pow(researchMult, Turret_Attack);
 
                     int attack = Game.Rand.Round(attAvg);
                     attacks[a] = new(type, attack, attacks[a].Range);

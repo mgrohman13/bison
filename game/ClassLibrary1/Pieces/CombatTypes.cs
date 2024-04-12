@@ -60,26 +60,24 @@ namespace ClassLibrary1.Pieces
             return -value;
         }
 
-        internal static IReadOnlyCollection<IAttacker.Values> OrderAtt(IEnumerable<IAttacker.Values> attacks) =>
+        internal static IReadOnlyList<IAttacker.Values> OrderAtt(IEnumerable<IAttacker.Values> attacks) =>
             OrderAtt(attacks, a => a.Attack, a => a.Range, a => a.Type);
-        internal static IReadOnlyCollection<Attack> OrderAtt(IEnumerable<Attack> attacks) =>
+        internal static IReadOnlyList<Attack> OrderAtt(IEnumerable<Attack> attacks) =>
             OrderAtt(attacks, a => a.AttackMax, a => a.RangeBase, a => a.Type);
-        private static IReadOnlyCollection<T> OrderAtt<T>(IEnumerable<T> attacks, Func<T, int> AttMax, Func<T, double> Range, Func<T, AttackType> Type) =>
+        private static IReadOnlyList<T> OrderAtt<T>(IEnumerable<T> attacks, Func<T, int> AttMax, Func<T, double> Range, Func<T, AttackType> Type) =>
             Game.Rand.Iterate(attacks).OrderByDescending(AttMax).ThenByDescending(Range).ThenBy(Type).ToList().AsReadOnly();
-        internal static IReadOnlyCollection<IKillable.Values> OrderDef(IEnumerable<IKillable.Values> killable) =>
+        internal static IReadOnlyList<IKillable.Values> OrderDef(IEnumerable<IKillable.Values> killable) =>
             OrderDef(killable, d => d.Type);
-        internal static IReadOnlyCollection<Defense> OrderDef(IEnumerable<Defense> killable) =>
+        internal static IReadOnlyList<Defense> OrderDef(IEnumerable<Defense> killable) =>
             OrderDef(killable, d => d.Type);
-        private static IReadOnlyCollection<T> OrderDef<T>(IEnumerable<T> killable, Func<T, DefenseType> Type) =>
+        private static IReadOnlyList<T> OrderDef<T>(IEnumerable<T> killable, Func<T, DefenseType> Type) =>
             Game.Rand.Iterate(killable).OrderBy(Type).ToList().AsReadOnly();
 
-        internal static bool DoSplash(AttackType type, DefenseType defenseType) => type == AttackType.Explosive;
+        internal static bool DoSplash(AttackType type) => type == AttackType.Explosive;
         internal static bool SplashAgainst(Defense defense)
         {
-            if (defense.Type == DefenseType.Shield)
-                return true;
-            if (defense.Piece.GetBehavior<IKillable>().TotalDefenses.Any(d => d.Type == DefenseType.Shield && !d.Dead))
-                return false;
+            if (defense.Type == DefenseType.Hits)
+                return defense.Piece.GetBehavior<IKillable>().TotalDefenses.Any(d => d.Type == DefenseType.Armor && !d.Dead);
             return true;
         }
 

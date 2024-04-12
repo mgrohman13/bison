@@ -12,7 +12,6 @@ namespace ClassLibrary1.Pieces
         private Values _values;
 
         private int _defenseCur;
-        private bool _defended, _resetDefended;
 
         public DefenseType Type => _values.Type;
         public int DefenseCur => _defenseCur;
@@ -20,16 +19,12 @@ namespace ClassLibrary1.Pieces
 
         public bool Dead => _defenseCur < 1;
 
-        public bool Defended => _defended;
-
         internal Defense(Piece piece, Values values)
         {
             this.Piece = piece;
             this._values = values;
 
             this._defenseCur = CombatTypes.GetStartCur(values.Type, values.Defense);
-            this._defended = true;
-            this._resetDefended = false;
         }
         public T GetBehavior<T>() where T : class, IBehavior
         {
@@ -45,10 +40,7 @@ namespace ClassLibrary1.Pieces
 
         internal void Damage(Attack attack)
         {
-            this._defended = true;
-            this._resetDefended = false;
-
-            if (CombatTypes.DoSplash(attack.Type, this.Type))
+            if (CombatTypes.DoSplash(attack.Type))
                 foreach (Defense defense in Game.Rand.Iterate(Piece.Tile.GetAdjacentTiles()
                         .Select(t => t?.Piece)
                         .Where(p => p?.Side != attack.Piece.Side)
@@ -95,10 +87,8 @@ namespace ClassLibrary1.Pieces
             if (Piece is IKillable.IRepairable repairable && DefenseCur < DefenseMax && CombatTypes.Repair(Type))
             {
                 hitsInc = GetRepair();
-
                 if (doEndTurn)
-                    hitsInc = Game.Rand.Round(hitsInc);// Game.Rand.GaussianCappedInt(hitsInc, Consts.HitsIncDev);
-
+                    hitsInc = Game.Rand.Round(hitsInc);
                 hitsInc = Math.Min(hitsInc, DefenseMax - DefenseCur);
 
                 double valCur = Consts.StatValue(DefenseCur);
@@ -146,8 +136,6 @@ namespace ClassLibrary1.Pieces
         }
         internal void StartTurn()
         {
-            if (this._resetDefended)
-                _defended = false;
         }
         internal void EndTurn(ref double energyUpk, ref double massUpk)
         {
@@ -161,8 +149,6 @@ namespace ClassLibrary1.Pieces
                 if (newValue != (int)newValue)
                     throw new Exception();
                 this._defenseCur = (int)newValue;
-
-                this._resetDefended = true;
             }
 
             if (CombatTypes.Repair(Type))
@@ -178,9 +164,6 @@ namespace ClassLibrary1.Pieces
         }
         private double IncDefense(bool doEndTurn, ref double energyUpk, ref double massUpk)
         {
-            bool moved = Piece.GetBehavior<IMovable>()?.Moved ?? false;
-            bool attacked = Piece.GetBehavior<IAttacker>()?.Attacked ?? false;
-            bool defended = Piece.GetBehavior<IKillable>()?.Defended ?? false;
             return Consts.IncDefense(doEndTurn, Type, Piece.HasBehavior<IAttacker>(), DefenseCur, DefenseMax, GetRepair(), ref energyUpk, ref massUpk);
         }
     }

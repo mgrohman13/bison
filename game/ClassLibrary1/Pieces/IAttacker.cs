@@ -7,7 +7,7 @@ namespace ClassLibrary1.Pieces
 {
     public interface IAttacker : IBehavior
     {
-        public IReadOnlyCollection<Attack> Attacks { get; }
+        public IReadOnlyList<Attack> Attacks { get; }
         public bool Attacked { get; }
 
         //public bool Attacked => Attacks.Any(a => a.Attacked);

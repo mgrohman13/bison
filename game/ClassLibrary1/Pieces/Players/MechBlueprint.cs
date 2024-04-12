@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using static ClassLibrary1.ResearchExponents;
 using AttackType = ClassLibrary1.Pieces.CombatTypes.AttackType;
 using DefenseType = ClassLibrary1.Pieces.CombatTypes.DefenseType;
 using Type = ClassLibrary1.Research.Type;
@@ -19,8 +20,8 @@ namespace ClassLibrary1.Pieces.Players
         public readonly int ResearchLevel;
         public readonly double Vision;
         public readonly double Resilience;
-        public readonly IReadOnlyCollection<IKillable.Values> Killable;
-        public readonly IReadOnlyCollection<IAttacker.Values> Attacker;
+        public readonly IReadOnlyList<IKillable.Values> Killable;
+        public readonly IReadOnlyList<IAttacker.Values> Attacker;
         public readonly IMovable.Values Movable;
 
         private MechBlueprint(int blueprintNum, MechBlueprint upgrade, int research, double vision,
@@ -143,8 +144,8 @@ namespace ClassLibrary1.Pieces.Players
         {
             double vision = GenVision(research);
             double resilience = GenResilience(research);
-            IReadOnlyCollection<IKillable.Values> killable = GenKillable(research);
-            IReadOnlyCollection<IAttacker.Values> attacker = GenAttacker(research);
+            IReadOnlyList<IKillable.Values> killable = GenKillable(research);
+            IReadOnlyList<IAttacker.Values> attacker = GenAttacker(research);
             IMovable.Values movable = GenMovable(research);
             return new(blueprintNum, null, research.GetLevel(), vision, killable, resilience, attacker, movable);
         }
@@ -397,11 +398,16 @@ namespace ClassLibrary1.Pieces.Players
                 }
             }
 
+            int oldCost = blueprint.TotalCost();
             bool canKeep = true;
             while (blueprint.TotalCost() < minTotal && (canKeep &= ModStat(true))) ;
             while (blueprint.TotalCost() > maxTotal && (canKeep &= ModStat(false))) ;
 
-            if ((!canKeep || research.GetType() == Type.Mech || Game.Rand.Bool()) && (blueprint.TotalCost() < minTotal || blueprint.TotalCost() > maxTotal))
+            int newCost = blueprint.TotalCost();
+            if (oldCost != newCost)
+                Debug.WriteLine($"blueprint ({blueprint.BlueprintNum}) {oldCost} -> {newCost}");
+
+            if ((!canKeep || research.GetType() == Type.Mech || Game.Rand.Bool()) && (newCost < minTotal || newCost > maxTotal))
                 blueprint = GenBlueprint(upgrade, research, blueprintNum);
 
             return blueprint;
@@ -450,16 +456,16 @@ namespace ClassLibrary1.Pieces.Players
             double avg = 5.2, dev = .39, oe = .091;
             ModValues(research.GetType() == Type.MechVision, 2.1, ref avg, ref dev, ref oe);
             double vision = Game.Rand.GaussianOE(avg, dev, oe, 1);
-            vision *= research.GetMult(Type.MechVision, .5);
+            vision *= research.GetMult(Type.MechVision, Blueprint_Vision);
             return vision;
         }
         private static double GenResilience(IResearch research)
         {
             bool isResilience = research.GetType() == Type.MechResilience;
             return Consts.GetPct(Game.Rand.GaussianCapped(.39, .091, .169),
-                Math.Pow(research.GetMult(Type.MechResilience, 1) + (isResilience ? .52 : 0), isResilience ? .5 : .2));
+                Math.Pow(research.GetMult(Type.MechResilience, Blueprint_Resilience) + (isResilience ? .52 : 0), isResilience ? .5 : .2));
         }
-        private static IReadOnlyCollection<IKillable.Values> GenKillable(IResearch research)
+        private static IReadOnlyList<IKillable.Values> GenKillable(IResearch research)
         {
             IKillable.Values hits = GenType(DefenseType.Hits, null, 1.04);
             List<IKillable.Values> defenses = new() { hits };
@@ -476,18 +482,17 @@ namespace ClassLibrary1.Pieces.Players
                 if (additionalResearch.HasValue)
                     ModValues(research.GetType() == additionalResearch, 1.69, ref avg, ref dev, ref oe);
 
-                const double defResearchPow = .7;
-                double researchMult = research.GetMult(Type.MechDefense, defResearchPow);
+                double researchMult = research.GetMult(Type.MechDefense, Blueprint_Defense);
                 if (additionalResearch.HasValue)
-                    researchMult = Math.Sqrt(researchMult) * research.GetMult(additionalResearch.Value, defResearchPow / 2.0);
+                    researchMult = Math.Sqrt(researchMult) * research.GetMult(additionalResearch.Value, Blueprint_Defense / 2.0);
 
                 int defense = Game.Rand.GaussianOEInt(2.6 + avg * mult * researchMult, dev, oe, 1);
                 return new(type, defense);
             }
         }
-        private static double NumAtts(IResearch research) => 1.13 * research.GetMult(Type.MechAttack, .3);
+        private static double NumAtts(IResearch research) => 1.13 * research.GetMult(Type.MechAttack, Blueprint_Attacks_Count);
 
-        private static IReadOnlyCollection<IAttacker.Values> GenAttacker(IResearch research)
+        private static IReadOnlyList<IAttacker.Values> GenAttacker(IResearch research)
         {
             int numAttacks = research.GetType() == Type.Mech ? 1 : Game.Rand.GaussianOEInt(NumAtts(research), .26, .13, 1);
             if (numAttacks < 1)
@@ -515,7 +520,7 @@ namespace ClassLibrary1.Pieces.Players
                 //modify for research totals
                 double researchMult = 1;
                 foreach (var item in apply)
-                    researchMult *= research.GetMult(item, .8);
+                    researchMult *= research.GetMult(item, Blueprint_Attack);
                 researchMult = Math.Pow(researchMult, 1.0 / apply.Count);
                 attAvg *= researchMult;
 
@@ -568,7 +573,7 @@ namespace ClassLibrary1.Pieces.Players
                     rangeAvg = 6.5;
                     double dev = .39, oe = .104;
                     ModValues(researchType == Type.MechRange, 2.1, ref rangeAvg, ref dev, ref oe);
-                    rangeAvg *= research.GetMult(Type.MechRange, .6);
+                    rangeAvg *= research.GetMult(Type.MechRange, Blueprint_Range);
                     range = Game.Rand.GaussianOE(rangeAvg, dev, oe, Attack.MIN_RANGED);
                 }
                 return range;
@@ -596,13 +601,13 @@ namespace ClassLibrary1.Pieces.Players
             double avg = 6.5, dev = .13, oe = .21;
 
             double researchMult = research.GetMult(Type.MechMove, 1);
-            const double lowPenalty = 3;
+            const double lowPenalty = 2.5;
             if (researchMult < lowPenalty)
                 avg *= researchMult / lowPenalty;
 
             ModValues(research.GetType() == Type.MechMove, 1.69, ref avg, ref dev, ref oe);
 
-            double move = Game.Rand.GaussianOE(1 + avg * research.GetMult(Type.MechMove, .4), dev, oe, 1);
+            double move = Game.Rand.GaussianOE(1 + avg * research.GetMult(Type.MechMove, Blueprint_Move), dev, oe, 1);
             int max = Game.Rand.GaussianOEInt(1 + move * 2, dev * 2.6, oe * 1.3, (int)move + 1);
             int limit = Game.Rand.GaussianOEInt(1 + move + max, dev * 2.6, oe * 2.6, max + 1);
 

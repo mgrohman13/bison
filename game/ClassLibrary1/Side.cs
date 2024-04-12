@@ -22,7 +22,7 @@ namespace ClassLibrary1
         internal int Mass => _mass;
 
         public Game Game => _game;
-        internal IReadOnlyCollection<Piece> Pieces => _pieces;
+        internal IReadOnlyList<Piece> Pieces => _pieces;
         internal IEnumerable<T> PiecesOfType<T>() where T : class, IBehavior
         {
             return Pieces.Select(p => p.GetBehavior<T>()).Where(b => b != null);

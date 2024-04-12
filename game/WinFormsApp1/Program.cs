@@ -113,7 +113,7 @@ namespace WinFormsApp1
                 Type? researched = Game.EndTurn();
                 if (Game.GameOver)
                 {
-                    MessageBox.Show((Game.Win ? "VICTORY!!!  :)" : "DEFEAT!  :(") + $"{Environment.NewLine}Hives Destroyed:{Program.Game.Victory}/{Game.POINTS_TO_WIN}{Environment.NewLine}Game over...  {Game.Turn} turns.");
+                    MessageBox.Show((Game.Win ? "VICTORY!!!  :)" : "DEFEAT!  :(") + $"{Environment.NewLine}Hives Destroyed: {Program.Game.Victory}/{Game.POINTS_TO_WIN}{Environment.NewLine}Game over...  {Game.Turn} turns.");
                     AutoSave(Game.Win ? "win" : "loss");
                 }
                 else

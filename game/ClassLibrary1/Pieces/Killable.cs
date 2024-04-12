@@ -14,19 +14,19 @@ namespace ClassLibrary1.Pieces
         private readonly List<Defense> _defenses;
 
         private double _resilience;
+        private bool _defended, _resetDefended;
 
         public Piece Piece => _piece;
         public Defense Hits => _hits;
-        public IReadOnlyCollection<Defense> Defenses => CombatTypes.OrderDef(_defenses);
+        public IReadOnlyList<Defense> Defenses => CombatTypes.OrderDef(_defenses);
         public double Resilience => _resilience;
-        //public int DefenseCur => Hits.DefenseCur;
-        //public int DefenseMax => Hits.DefenseMax;
-        //public double TotalDefenseCur2 => Consts.SumStats(TotalDefenses.Select(d => d.DefenseCur));
-        //public double TotalDefenseMax2 => Consts.SumStats(TotalDefenses.Select(d => d.DefenseCur));
-        //public double TotalDefenseCurValue2 => Consts.StatValue(TotalDefenseCur2);
-        //public double TotalDefenseMaxValue2 => Consts.StatValue(TotalDefenseMax2);
 
-        public bool Defended => ((IKillable)this).TotalDefenses.Any(d => d.Defended);
+        //public int HitsCur => Hits.DefenseCur;
+        //public int HitsMax => Hits.DefenseMax;
+        //public double TotalDefenseCur => Consts.SumStats(TotalDefenses.Select(d => d.DefenseCur));
+        //public double TotalDefenseMax => Consts.SumStats(TotalDefenses.Select(d => d.DefenseCur)); 
+
+        public bool Defended => _defended;
         public bool Dead => Hits.Dead;
 
         public Killable(Piece piece, Values hits, double resilience)
@@ -46,6 +46,8 @@ namespace ClassLibrary1.Pieces
             this._defenses = GetOther(values).Select(v => new Defense(piece, v)).ToList();
 
             this._resilience = resilience;
+            this._defended = true;
+            this._resetDefended = false;
 
             OnDeserialization(this);
         }
@@ -91,27 +93,18 @@ namespace ClassLibrary1.Pieces
             values.Where(d => d.Type == CombatTypes.DefenseType.Hits).Single();
         private static IEnumerable<Values> GetOther(IEnumerable<Values> values) =>
             values.Where(d => d.Type != CombatTypes.DefenseType.Hits);
-        //void IKillable.Damage(int damage,bool splashDamage)
-        //{
-        //    Hits.Damage(damage);
-        //}
+
+        void IKillable.OnAttacked()
+        {
+            this._defended = true;
+            this._resetDefended = false;
+        }
 
         void IKillable.GetHitsRepair(out double hitsInc, out double massCost)
         {
             Hits.Repair(false, out hitsInc, out massCost);
-        }
+        } 
 
-        //public double GetInc()
-        //{
-        //    return IncShield(false);
-        //}
-        //private double IncShield(bool doEndTurn)
-        //{
-        //    double shieldInc = Consts.IncValueWithMaxLimit(ShieldCur, ShieldInc, Consts.HitsIncDev, ShieldMax, ShieldLimit, Consts.ShieldLimitPow, doEndTurn);
-        //    if (doEndTurn)
-        //        this._shieldCur += shieldInc;
-        //    return shieldInc;
-        //}
         void IBehavior.GetUpkeep(ref double energyUpk, ref double massUpk)
         {
             foreach (Defense defense in ((IKillable)this).TotalDefenses)
@@ -121,11 +114,16 @@ namespace ClassLibrary1.Pieces
         {
             foreach (Defense defense in Game.Rand.Iterate(((IKillable)this).TotalDefenses))
                 defense.StartTurn();
+
+            if (this._resetDefended)
+                _defended = false;
         }
         void IBehavior.EndTurn(ref double energyUpk, ref double massUpk)
         {
             foreach (Defense defense in Game.Rand.Iterate(((IKillable)this).TotalDefenses))
                 defense.EndTurn(ref energyUpk, ref massUpk);
+
+            this._resetDefended = true;
         }
 
         [NonSerialized]

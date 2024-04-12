@@ -15,7 +15,7 @@ namespace ClassLibrary1
         public readonly Research Research;
         private readonly IEnumerable<IUpgradeValues> upgradeValues;
 
-        new public IReadOnlyCollection<Piece> Pieces => base.Pieces;
+        new public IReadOnlyList<Piece> Pieces => base.Pieces;
         new public IEnumerable<T> PiecesOfType<T>() where T : class, IBehavior
         {
             return base.PiecesOfType<T>();
