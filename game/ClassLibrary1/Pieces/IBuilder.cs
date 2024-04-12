@@ -1,7 +1,7 @@
 ﻿using ClassLibrary1.Pieces.Players;
 using ClassLibrary1.Pieces.Terrain;
 using System;
-using Tile = ClassLibrary1.Map.Tile;
+using Tile = ClassLibrary1.Map.Map.Tile;
 
 namespace ClassLibrary1.Pieces
 {

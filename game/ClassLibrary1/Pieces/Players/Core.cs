@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using static ClassLibrary1.ResearchExponents;
 using DefenseType = ClassLibrary1.Pieces.CombatTypes.DefenseType;
-using Tile = ClassLibrary1.Map.Tile;
+using Tile = ClassLibrary1.Map.Map.Tile;
 
 namespace ClassLibrary1.Pieces.Players
 {

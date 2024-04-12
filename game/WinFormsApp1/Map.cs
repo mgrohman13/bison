@@ -14,7 +14,7 @@ using AttackType = ClassLibrary1.Pieces.CombatTypes.AttackType;
 using DefenseType = ClassLibrary1.Pieces.CombatTypes.DefenseType;
 using DPoint = System.Drawing.Point;
 using Point = MattUtil.Point;
-using Tile = ClassLibrary1.Map.Tile;
+using Tile = ClassLibrary1.Map.Map.Tile;
 
 namespace WinFormsApp1
 {
@@ -161,7 +161,7 @@ namespace WinFormsApp1
 
         private void Map_Load(object sender, EventArgs e)
         {
-            ClassLibrary1.Map.LogEvalTime();
+            ClassLibrary1.Map.Map.LogEvalTime();
 
             Rectangle gameRect = Program.Game.Map.GameRect();
             Scale = Math.Min((this.Width - 1 - padding * 2) / gameRect.Width, (this.Height - 1 - padding * 2) / gameRect.Height);
@@ -172,7 +172,7 @@ namespace WinFormsApp1
 
             lblMouse.Location = new DPoint(0, this.ClientSize.Height - lblMouse.Height);
 
-            ClassLibrary1.Map.LogEvalTime();
+            ClassLibrary1.Map.Map.LogEvalTime();
         }
 
         public bool Center()
@@ -215,7 +215,7 @@ namespace WinFormsApp1
                 Debug.WriteLine("OnPaint: " + paintTime);
                 watch.Stop();
 
-                ClassLibrary1.Map.LogEvalTime();
+                ClassLibrary1.Map.Map.LogEvalTime();
             }
             catch (Exception exception)
             {

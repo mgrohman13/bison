@@ -8,7 +8,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
-using Tile = ClassLibrary1.Map.Tile;
+using Tile = ClassLibrary1.Map.Map.Tile;
 using Type = ClassLibrary1.Research.Type;
 
 namespace WinFormsApp1

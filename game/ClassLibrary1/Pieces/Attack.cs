@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using AttackType = ClassLibrary1.Pieces.CombatTypes.AttackType;
-using Tile = ClassLibrary1.Map.Tile;
+using Tile = ClassLibrary1.Map.Map.Tile;
 using Values = ClassLibrary1.Pieces.IAttacker.Values;
 
 namespace ClassLibrary1.Pieces

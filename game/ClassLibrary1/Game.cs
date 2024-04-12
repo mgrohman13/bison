@@ -20,7 +20,7 @@ namespace ClassLibrary1
             Rand.StartTick();
         }
 
-        public readonly Map Map;
+        public readonly ClassLibrary1.Map.Map Map;
         public readonly Player Player;
         public readonly Enemy Enemy;
         public readonly Log Log;

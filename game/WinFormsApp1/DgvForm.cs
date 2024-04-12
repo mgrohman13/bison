@@ -9,7 +9,7 @@ using System.Linq;
 using System.Windows.Forms;
 using AttackType = ClassLibrary1.Pieces.CombatTypes.AttackType;
 using DefenseType = ClassLibrary1.Pieces.CombatTypes.DefenseType;
-using Tile = ClassLibrary1.Map.Tile;
+using Tile = ClassLibrary1.Map.Map.Tile;
 
 namespace WinFormsApp1
 {
