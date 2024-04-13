@@ -792,7 +792,7 @@ namespace WinFormsApp1
 
         private void BtnSave_Click(object sender, EventArgs e)
         {
-            Program.Game.SaveGame();
+            Program.SaveGame();
         }
 
         private void BtnResearch_Click(object sender, EventArgs e)

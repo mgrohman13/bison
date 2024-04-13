@@ -7,7 +7,7 @@ using Point = MattUtil.Point;
 
 namespace ClassLibrary1.Map
 {
-    public partial class Map 
+    public partial class Map
     {
         [Serializable]
         public class Tile
@@ -16,17 +16,18 @@ namespace ClassLibrary1.Map
             public readonly int X, Y;
             private Terrain _terrain;
             public Terrain Terrain => _terrain;
-            public Piece Piece => Map.GetPiece(X, Y) ?? Terrain;
-            public bool Visible => Map.Visible(X, Y);
+            public Piece Piece => Map.GetPiece(Location) ?? Terrain;
+            public bool Visible => Map.Visible(Location);
+            public Point Location => new(X, Y);
 
             static Tile()
             {
-                NewTile = (map, x, y, GetTerrain) =>
-               {
-                   Tile tile = new(map, x, y);
-                   tile._terrain = GetTerrain(tile);
-                   return tile;
-               };
+                NewTile = (map, p, GetTerrain) =>
+                {
+                    Tile tile = new(map, p.X, p.Y);
+                    tile._terrain = GetTerrain(tile);
+                    return tile;
+                };
             }
             private Tile(Map map, int x, int y)
             {
@@ -69,7 +70,7 @@ namespace ClassLibrary1.Map
             public IEnumerable<Point> GetPointsInRange(IMovable movable, double move) => GetPointsInRange(move, false, movable.Piece);
             public IEnumerable<Point> GetPointsInRange(IBuilder builder) => GetPointsInRange(builder.Range, true, null);
             public IEnumerable<Point> GetPointsInRange(Attack attack) => GetPointsInRange(attack.Range, true, attack.Piece);
-            private IEnumerable<Point> GetPointsInRange(double range, bool blockMap, Piece blockFor) => GetPointsInRange(Map, new Point(X, Y), range, blockMap, blockFor);
+            private IEnumerable<Point> GetPointsInRange(double range, bool blockMap, Piece blockFor) => GetPointsInRange(Map, Location, range, blockMap, blockFor);
             private static IEnumerable<Point> GetPointsInRange(Map map, Point point, double range, bool blockMap, Piece blockFor)
             {
                 //Dictionary<Point, double> block = new();
@@ -131,7 +132,7 @@ namespace ClassLibrary1.Map
             public override bool Equals(object obj)
             {
                 Tile other = obj as Tile;
-                return other != null && X == other.X && Y == other.Y;
+                return other != null && this.X == other.X && this.Y == other.Y;
             }
 
             public override int GetHashCode()

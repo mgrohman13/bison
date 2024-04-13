@@ -92,33 +92,17 @@ FEATURES
 	experience
 	power grid
 
-rebalance resilience values after statvalue change
-better "lowPenalty" ramp up logic
-rethink picking defense algorithm, randomize slightly 
-dmg on any def can hurt att??
-taking dmg hurt attacks even for non-hits????
-explosives too weak?
-	splash damage not tied to initial dmg??
-	rethink shield interaction?
-	enemies clump more
-	splash damage to higher values shouldnt be based on difference?
-		could be 50% at one, go to 100% from there - kind of a nerf though
-	does friendly damage?
-		melee??
-make shield regen variable, reduce with dmg pct
-tie shield regen to StatValue (so regen more when lower)
-	regen rate lowered by hppct/resilience efficiency
-	only regen when not attacked?? regen less?? chance to stop regen?? specific att types??
-		new system use canrecover flag that get changed by diffe evtns? 
-pay back stored energy on death
-enemy target extractor more often
+move + range attack?
+	for perf...
+move CombatTypes.GetReloadBase out of IAttacker.Values
+implement pathfinding for player!
 enemy attacks/moves	
+	use pathfinding
+	target extractor more often
 	take into account new mechanics 
 	not attack to recharge weapon
 	run away to charge shields
-	go to hive to repair hits/armor
-		must stay still to heal
-move CombatTypes.GetReloadBase out of IAttacker.Values
+	if enemy unit in calced move+attack range, path towards it??
 
 map contiguity / pathfinding / alien behavior
 	ensure all spawns/resources can reach core with X move
@@ -135,12 +119,34 @@ map contiguity / pathfinding / alien behavior
 				any way to share??
 	do enemy pathfinding in background during player turn?	
 	build up too many paths over time? duplicate paths with diff speeds??
-	alin moves  
+	alien moves  
 		find closest point on path
 			path find to next point after closest			
 		OR use as heat map? random moves?
 			heat map created based on dist to trg?
-			
+
+TEST_MAP_GEN poorly designed, have to reference it everywhere we use visible 
+tie shield regen to StatValue (so regen more when lower)
+	regen rate lowered by hppct/resilience efficiency
+	only regen when not attacked?? regen less?? chance to stop regen?? specific att types??
+		new system use canrecover flag that get changed by diffe evtns? 
+	make shield regen variable
+		reduce with dmg pct?
+explosives too weak?
+	dmg on any def can hurt att??
+	taking dmg hurt attacks even for non-hits????
+	splash damage not tied to initial dmg??
+	rethink shield interaction?
+	enemies clump more
+	splash damage to higher values shouldnt be based on difference?
+		could be 50% at one, go to 100% from there - kind of a nerf though
+	does friendly damage?
+		melee??
+pay back stored energy on death
+make shield regen variable
+	reduce with dmg pct?
+better "lowPenalty" ramp up logic
+rebalance resilience - remove / 2.0 from GetDamagedValue		
 hardcoded references to .5, .25 terrain cuttoffs			
 movement - long term
 	start with just inc, lose all at turn end
@@ -229,6 +235,11 @@ building costs get more expensive with upgrade - countered by cost research
 replace func tell you cost even if you cant afford
 disband mech
 	turn off power?
+	put on patrol/scout/etc mode for reduced power?
+		careful not to make too good
+		or dont allow rapid enable/disable 
+			they take turn first
+			cost one extra turn to flip on / off
 	recycle?
 building upkeep?
 	disband/disable option

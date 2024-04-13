@@ -121,8 +121,8 @@ namespace ClassLibrary1.Pieces.Players
             }
             private void UpgradeBuildingHits(double researchMult)
             {
-                double defAvg = 13 * Math.Pow(researchMult, Extractor_Defense);
-                const double lowPenalty = 13 / 5.0;
+                double defAvg = 12 * Math.Pow(researchMult, Extractor_Defense);
+                const double lowPenalty = 12 / 5.0;
                 if (researchMult < lowPenalty)
                     defAvg *= researchMult / lowPenalty;
                 int defense = Game.Rand.Round(defAvg);

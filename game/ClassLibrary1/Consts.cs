@@ -161,7 +161,7 @@ namespace ClassLibrary1
             if (sqrt)
                 resilience = Math.Sqrt(resilience);
             return min + (value - min)
-                * Math.Pow(StatValue(killable.Hits.DefenseCur) / StatValue(killable.Hits.DefenseMax), 1 - resilience);
+                * Math.Pow(StatValue(killable.Hits.DefenseCur) / StatValue(killable.Hits.DefenseMax), (1 - resilience) / 2.0);
         }
 
         public static double IncDefense(bool doEndTurn, DefenseType type, bool isAttacker, int cur, int max, double repairAmt, ref double energyUpk, ref double massUpk)

@@ -20,10 +20,13 @@ namespace WinFormsApp1
         public static Main Form;
         public static DgvForm DgvForm;
 
-        private readonly static HashSet<PlayerPiece> moved = new();
-        private readonly static HashSet<MechBlueprint> notifyOff = new();
+        private static UIData data = new();
 
-        public static bool NotifyConstructor { get; set; } = true;
+        public static bool NotifyConstructor
+        {
+            get { return data.NotifyConstructor; }
+            set { data.NotifyConstructor = value; }
+        }
 
         public static string savePath;
 
@@ -55,7 +58,7 @@ namespace WinFormsApp1
 
             Application.Run(Form);
 
-            Game.SaveGame();
+            Program.SaveGame();
         }
 
         public static void RefreshSelected()
@@ -80,8 +83,13 @@ namespace WinFormsApp1
                     File.Delete(path);
                 File.Copy(Game.SavePath, path);
             }
-            Game.SaveGame();
         }
+
+        public static void SaveGame()
+        {
+            Game.SaveGame(data);
+        }
+
         public static void LoadGame()
         {
             if (File.Exists("savepath.txt"))
@@ -97,7 +105,7 @@ namespace WinFormsApp1
             savePath += "game.sav";
 
             if (File.Exists(savePath) && !Game.TEST_MAP_GEN.HasValue)
-                Game = Game.LoadGame(savePath);
+                Game = Game.LoadGame(savePath, out data);
             else
                 Game = new Game(savePath);
         }
@@ -120,7 +128,7 @@ namespace WinFormsApp1
                 {
                     AutoSave("s");
                 }
-                moved.Clear();
+                data.moved.Clear();
                 Program.RefreshChanged();
 
                 if (researched.HasValue)
@@ -132,11 +140,11 @@ namespace WinFormsApp1
         public static void Hold()
         {
             if (Form.MapMain.SelTile != null && Form.MapMain.SelTile.Piece is PlayerPiece playerPiece)
-                if (moved.Contains(playerPiece))
-                    moved.Remove(playerPiece);
+                if (data.moved.Contains(playerPiece))
+                    data.moved.Remove(playerPiece);
                 else
                 {
-                    moved.Add(playerPiece);
+                    data.moved.Add(playerPiece);
                     Next(true);
                 }
         }
@@ -197,7 +205,7 @@ namespace WinFormsApp1
         }
         public static bool MoveLeft(Piece piece)
         {
-            if (moved.Contains(piece))
+            if (data.moved.Contains(piece))
                 return false;
 
             bool move = false;
@@ -247,13 +255,27 @@ namespace WinFormsApp1
         internal static void SetNotify(MechBlueprint blueprint, bool value)
         {
             if (value)
-                notifyOff.Remove(blueprint);
+                data.notifyOff.Remove(blueprint);
             else
-                notifyOff.Add(blueprint);
+                data.notifyOff.Add(blueprint);
         }
         internal static bool GetNotify(MechBlueprint blueprint)
         {
-            return !notifyOff.Contains(blueprint);
+            return !data.notifyOff.Contains(blueprint);
+        }
+
+        [Serializable]
+        private class UIData // : ISerializable
+        {
+            public readonly HashSet<PlayerPiece> moved = new();
+            public readonly HashSet<MechBlueprint> notifyOff = new();
+
+            public bool NotifyConstructor = true;
+
+            //public void GetObjectData(SerializationInfo info, StreamingContext context)
+            //{
+            //    throw new NotImplementedException();
+            //}
         }
     }
 }

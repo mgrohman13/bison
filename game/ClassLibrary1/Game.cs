@@ -11,7 +11,7 @@ namespace ClassLibrary1
     public class Game
     {
         public const int POINTS_TO_WIN = 3;
-        public static readonly int? TEST_MAP_GEN = null;// 260;
+        public static readonly int? TEST_MAP_GEN = 260;// 260;
 
         public static readonly MTRandom Rand;
         static Game()
@@ -129,14 +129,21 @@ namespace ClassLibrary1
                 Enemy.RemovePiece(enemyPiece);
         }
 
+        private object additionalData;
+        public void SaveGame(object data)
+        {
+            this.additionalData = data;
+            SaveGame();
+        }
         public void SaveGame()
         {
             TBSUtil.SaveGame(this, SavePath);
         }
-        public static Game LoadGame(string filePath)
+        public static Game LoadGame<T>(string filePath, out T data) // where T : ISerializable
         {
             Game game = TBSUtil.LoadGame<Game>(filePath);
             game.OnDeserialization();
+            data = (T)game.additionalData;
             return game;
         }
         private void OnDeserialization()

@@ -530,7 +530,17 @@ namespace ClassLibrary1.Pieces.Players
                 //modify for multiple attacks and range
                 attAvg = 1 + (attAvg - 1) * Math.Sqrt(rangeAvg / range / numAttacks);
 
-                int attack = Game.Rand.GaussianOEInt(attAvg, dev, oe, 1);
+                int cap = 1;
+                if (researchType == Type.MechRange)
+                {
+                    const int rangedAtt = 3;
+                    attAvg += rangedAtt;
+                    cap += rangedAtt;
+                }
+
+                int attack = cap;
+                if (attAvg > cap)
+                    attack = Game.Rand.GaussianOEInt(attAvg, dev, oe, cap);
                 attacks.Add(new(type, attack, range));
             }
             return attacks.AsReadOnly();
@@ -601,7 +611,7 @@ namespace ClassLibrary1.Pieces.Players
             double avg = 6.5, dev = .13, oe = .21;
 
             double researchMult = research.GetMult(Type.MechMove, 1);
-            const double lowPenalty = 2.5;
+            const double lowPenalty = 2.6;
             if (researchMult < lowPenalty)
                 avg *= researchMult / lowPenalty;
 

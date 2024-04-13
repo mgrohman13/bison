@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ClassLibrary1.Pieces.Players;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -49,16 +50,44 @@ namespace ClassLibrary1.Pieces
         }
         internal static double ReloadAvg(int attack) => Math.Sqrt(attack);
 
-        internal static object CompareDef(Defense defense)
+        internal static int GetDefenceChance(Defense defense)
         {
-            int value = defense.DefenseCur;
-            int higher = defense.Piece.GetBehavior<IKillable>().TotalDefenses.Max(d => d.DefenseCur) + 1;
-            if (defense.Type == DefenseType.Hits)
-                value -= higher;
-            else if (defense.Type == DefenseType.Shield && defense.DefenseCur == defense.DefenseMax)
-                value += higher;
-            return -value;
+            if (defense.DefenseCur == 0)
+                return 0;
+
+            //var totalDefenses = defense.Piece.GetBehavior<IKillable>().TotalDefenses;
+            bool hits = defense.Type == DefenseType.Hits;
+            double offset = hits ? .5 : 0;
+            double cur = Consts.StatValue(defense.DefenseCur - offset);
+            double pct = cur / Consts.StatValue(defense.DefenseMax - offset);
+
+            double chance = cur;
+            if (defense.Piece is Core)
+                chance = 0;
+            //if (!hits)
+            //    chance /= Math.Sqrt(pct);
+            switch (defense.Type)
+            {
+                case DefenseType.Hits:
+                    chance /= 4.0;
+                    break;
+                case DefenseType.Shield:
+                    double mult = (1 + pct);
+                    chance *= mult * mult;
+                    break;
+            }
+            return Game.Rand.Round(1 + chance);
         }
+        //internal static object CompareDef(Defense defense)
+        //{
+        //    int value = defense.DefenseCur;
+        //    int higher = defense.Piece.GetBehavior<IKillable>().TotalDefenses.Max(d => d.DefenseCur) + 1;
+        //    if (defense.Type == DefenseType.Hits)
+        //        value -= higher;
+        //    else if (defense.Type == DefenseType.Shield && defense.DefenseCur == defense.DefenseMax)
+        //        value += higher;
+        //    return -value;
+        //}
 
         internal static IReadOnlyList<IAttacker.Values> OrderAtt(IEnumerable<IAttacker.Values> attacks) =>
             OrderAtt(attacks, a => a.Attack, a => a.Range, a => a.Type);
@@ -76,7 +105,7 @@ namespace ClassLibrary1.Pieces
         internal static bool DoSplash(AttackType type) => type == AttackType.Explosive;
         internal static bool SplashAgainst(Defense defense)
         {
-            if (defense.Type == DefenseType.Hits)
+            if (defense.Type == DefenseType.Hits && Game.Rand.Bool())
                 return defense.Piece.GetBehavior<IKillable>().TotalDefenses.Any(d => d.Type == DefenseType.Armor && !d.Dead);
             return true;
         }

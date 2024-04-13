@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Data;
 using System.Linq;
 using DefenseType = ClassLibrary1.Pieces.CombatTypes.DefenseType;
 using Values = ClassLibrary1.Pieces.IKillable.Values;
@@ -47,40 +48,50 @@ namespace ClassLibrary1.Pieces
                         .Select(p => p?.GetBehavior<IKillable>())
                         .Where(k => k != null && !k.Dead)
                         .SelectMany(k => k.TotalDefenses)))
-                    if (defense != this && CombatTypes.SplashAgainst(defense) && DoAdditionalDmg(defense.Piece, defense.DefenseCur))
-                        defense.Damage();
+                    if (defense != this && CombatTypes.SplashAgainst(defense))
+                        defense.Damage(GetAdditionalDmg(defense.Piece, defense.DefenseCur));
 
-            Damage();
+            Damage(1);
 
             Piece.GetBehavior<IKillable>().RaiseDamagedEvent(attack, this);
         }
-        private void Damage()
+        private void Damage(int damage)
         {
-            if (Type == DefenseType.Hits && Piece.HasBehavior(out IAttacker attacker))
-                foreach (Attack attack in Game.Rand.Iterate(attacker.Attacks))
-                    if (DoAdditionalDmg(attack.Piece, attack.AttackCur))
-                        attack.Damage();
+            for (int a = 0; a < damage; a++)
+            {
+                if (Type == DefenseType.Hits && Piece.HasBehavior(out IAttacker attacker))
+                    foreach (Attack attack in Game.Rand.Iterate(attacker.Attacks))
+                        attack.Damage(GetAdditionalDmg(null, attack.AttackCur));//null to do reduced damage
 
-            if (!this.Dead)
-                this._defenseCur--;
+                if (!this.Dead)
+                    this._defenseCur--;
 
-            if (Type == DefenseType.Hits && this.Dead)
-                Piece.Die();
+                if (Type == DefenseType.Hits && this.Dead)
+                    Piece.Die();
+            }
         }
-        private bool DoAdditionalDmg(Piece piece, int cur)
+        private int GetAdditionalDmg(Piece piece, int cur)
         {
-            double dmgChance = 0;
-            if (cur > 0)
-                if (cur > DefenseCur)
-                    dmgChance = DmgValue(this.DefenseCur) / (double)DmgValue(cur);
-                else
-                    dmgChance = (cur + 1) / (double)(this.DefenseCur + 2);
+            double dmgValue = Consts.StatValue(this.DefenseCur);
+            double trgValue = Consts.StatValue(cur);
+            double avg = trgValue / dmgValue;
             if (piece != this.Piece)
-                dmgChance /= 2;
-            return Game.Rand.Bool(dmgChance);
+                avg /= 2.0;
+            avg = Math.Sqrt(avg);
+            return Game.Rand.GaussianCappedInt(avg, .26);
+
+            //double dmgChance = 0;
+            //if (cur > 0)
+            //    if (cur > DefenseCur)
+            //        dmgChance = DmgValue(this.DefenseCur) / (double)DmgValue(cur);
+            //    else
+            //        dmgChance = (cur + 1) / (double)(this.DefenseCur + 2);
+            //if (piece != this.Piece)
+            //    dmgChance /= 2;
+            //return Game.Rand.Bool(dmgChance);
         }
 
-        private static double DmgValue(int cur) => Consts.StatValue(cur) - Consts.StatValue(cur - 1);
+        //private static double DmgValue(int cur) => Consts.StatValue(cur) - Consts.StatValue(cur - 1);
 
         internal void Repair(bool doEndTurn, out double hitsInc, out double massCost)
         {

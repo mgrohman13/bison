@@ -417,8 +417,8 @@ namespace WinFormsApp1
                         }
                         else if (tile != null)
                             rectangles.Add(rect);
-                        else if (!Game.TEST_MAP_GEN.HasValue)
-                            AddFill(Brushes.DarkGray, rect);
+                        //else if (!Game.TEST_MAP_GEN.HasValue)
+                        //    AddFill(Brushes.DarkGray, rect);
                     }
                 }
             }
@@ -475,18 +475,18 @@ namespace WinFormsApp1
             foreach (var p in polygons)
                 e.Graphics.FillPolygon(Brushes.Black, p);
 
-
-            //foreach (var found in Program.Game.Map.FoundPaths.Values.Distinct())
-            //{
-            //    var path = found.Path;
-            //    for (int d = 1; d < path.Count; d++)
-            //    {
-            //        PointF GetCenter(Point p) => new(GetX(p.X) + Scale / 2f, GetY(p.Y) + Scale / 2f);
-            //        var p1 = GetCenter(path[d - 1]);
-            //        var p2 = GetCenter(path[d]);
-            //        e.Graphics.DrawLine(new Pen(Color.DarkGreen, 2f), p1.X, p1.Y, p2.X, p2.Y);
-            //    }
-            //}
+            if (Game.TEST_MAP_GEN.HasValue)
+                foreach (var found in Program.Game.Map.FoundPaths.Values.Distinct())
+                {
+                    var path = found.Path;
+                    for (int d = 1; d < path.Count; d++)
+                    {
+                        PointF GetCenter(Point p) => new(GetX(p.X) + Scale / 2f, GetY(p.Y) + Scale / 2f);
+                        var p1 = GetCenter(path[d - 1]);
+                        var p2 = GetCenter(path[d]);
+                        e.Graphics.DrawLine(new Pen(Color.DarkGreen, 2f), p1.X, p1.Y, p2.X, p2.Y);
+                    }
+                }
 
             if (rects.Length > 0)
                 e.Graphics.DrawRectangles(Pens.Black, rects);
@@ -1022,7 +1022,7 @@ namespace WinFormsApp1
                 Scale = 3;
             else if (Scale > 169)
                 Scale = 169;
-            if (this.CheckBounds(xStart, yStart))
+            if (this.CheckBounds(xStart, yStart) && mult > 1)
                 this.Scale /= mult;
 
             xStart += GetX(anchor.X) + Scale / 2f - selX;

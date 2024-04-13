@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static ClassLibrary1.Research;
 
 namespace ClassLibrary1
 {
@@ -361,14 +362,14 @@ namespace ClassLibrary1
             { Type.FactoryConstructor, new Type[]   { Type.Factory, Type.FactoryRepair, Type.ConstructorCost, } },
             { Type.FactoryAutoRepair, new Type[]    { Type.Factory, Type.FactoryRepair, Type.ExtractorAutoRepair, } },
 
-            { Type.BuildingCost, new Type[]         { Type.Turret, } }, // delay
-            { Type.ResearchChoices, new Type[]      { Type.BuildingCost, } },
-            { Type.BuildingDefense, new Type[]      { Type.TurretDefense } }, // quick
-            { Type.ExtractorValue, new Type[]       { Type.ResearchChoices, Type.BuildingDefense, } }, // end
-            { Type.ExtractorAutoRepair, new Type[]  { Type.Factory, } },
-            { Type.BurnMass, new Type[]             { Type.ExtractorAutoRepair, } },
-            { Type.ScrapResearch, new Type[]        { Type.ExtractorAutoRepair, } },
-            { Type.FabricateMass, new Type[]        { Type.BurnMass, Type.ScrapResearch, } }, 
+            { Type.BuildingDefense, new Type[]      { Type.Constructor } }, // quick
+            { Type.ExtractorAutoRepair, new Type[]  { Type.BuildingDefense, } },
+            { Type.BuildingCost, new Type[]         { Type.BuildingDefense, Type.ConstructorCost, } },
+            { Type.ResearchChoices, new Type[]      { Type.Turret, } },
+            { Type.ScrapResearch, new Type[]        { Type.ResearchChoices, } },
+            { Type.BurnMass, new Type[]             { Type.Factory, } },
+            { Type.FabricateMass, new Type[]        { Type.ScrapResearch, Type.BurnMass, Type.FactoryAutoRepair, } },
+            { Type.ExtractorValue, new Type[]       { Type.ExtractorAutoRepair, Type.BuildingCost, Type.ScrapResearch, Type.BurnMass, } }, // end
             
             //Type.BuildingResilience - not extractor??
             // Constructor resilience ?
@@ -421,7 +422,7 @@ namespace ClassLibrary1
             ScrapResearch = 145,
             ResearchChoices = 155,
             BurnMass = 165,
-            BuildingCost = 175, // delay
+            BuildingCost = 175,  
             ExtractorAutoRepair = 285, //key
             ExtractorValue = 340, // end   
         }

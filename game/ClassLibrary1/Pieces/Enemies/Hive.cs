@@ -82,9 +82,9 @@ namespace ClassLibrary1.Pieces.Enemies
             Game.CollectHive(cost);
         }
 
-
         private static IEnumerable<IKillable.Values> GenKillable(int hiveIdx)
         {
+            hiveIdx += Game.Rand.Next(3);
             IKillable.Values hits = new(DefenseType.Hits, Game.Rand.GaussianOEInt(13 + 3.9 * hiveIdx, .13, .13, 10));
 
             DefenseType type = Game.Rand.Bool() ? DefenseType.Shield : DefenseType.Armor;
@@ -97,6 +97,7 @@ namespace ClassLibrary1.Pieces.Enemies
         }
         private static IEnumerable<IAttacker.Values> GenAttacker(int hiveIdx)
         {
+            hiveIdx += Game.Rand.Next(3);
             bool flag = Game.Rand.Bool();
 
             int att = Game.Rand.GaussianOEInt(6.5 + 1.3 * hiveIdx, .13, .13, 5);

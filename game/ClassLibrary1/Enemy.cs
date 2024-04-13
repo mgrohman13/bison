@@ -204,7 +204,7 @@ namespace ClassLibrary1
         private static IEnumerable<IKillable> GetDefenders(Attack attack, Tile attackFrom, IEnumerable<IKillable> allTargets) =>
             allTargets.SelectMany(k => GetDefenders(attack, attackFrom, k)).Distinct();
         private static IEnumerable<IKillable> GetDefenders(Attack attack, Tile attackFrom, IKillable target) =>
-            attack.GetDefenders(target.Piece, attackFrom);//.Concat(new[] { target }).Distinct();
+            attack.GetDefenders(target.Piece, attackFrom).Keys;//.Concat(new[] { target }).Distinct();
         private static double GetKillWeight(IKillable killable, double avgHp)
         {
             double attacks = 0, repair = 0;

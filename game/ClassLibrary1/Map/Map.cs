@@ -210,9 +210,9 @@ namespace ClassLibrary1.Map
 
         [NonSerialized]
         private Dictionary<Point, float> evaluateCache;//Tuple<float, float>> evaluateCache;
-        private float Evaluate(int x, int y)//, out float lineDist)
+        private float Evaluate(Point p)//, out float lineDist)
         {
-            Point p = new(x, y);
+            int x = p.X, y = p.Y;
             evaluateCache ??= new();
             if (evaluateCache.TryGetValue(p, out var t))
             {
@@ -238,7 +238,7 @@ namespace ClassLibrary1.Map
                         backMult = Math.Min(1, Consts.PathWidth * Consts.PathWidth / distSqr);
                     }
 
-                    double dist = PointLineDistanceSigned(path, point, new Point(x, y)) * sign;
+                    double dist = PointLineDistanceSigned(path, point, p) * sign;
                     minLineDist = Math.Min(minLineDist, Math.Abs(dist));
                     return 2 / (1 + Math.Pow(Math.E, -.065 * dist)) * backMult;
                 }
@@ -262,30 +262,30 @@ namespace ClassLibrary1.Map
             return distX * distX + distY * distY;
         }
 
-        public Tile GetVisibleTile(Point p)
-        {
-            return GetVisibleTile(p.X, p.Y);
-        }
         public Tile GetVisibleTile(int x, int y)
         {
-            return Visible(x, y) ? GetTile(x, y) : null;
+            return GetVisibleTile(new(x, y));
+        }
+        public Tile GetVisibleTile(Point p)
+        {
+            return Visible(p) ? GetTile(p) : null;
         }
         public IEnumerable<Piece> GetVisiblePieces()
         {
             return _pieces.Values.Where(p => p.Tile.Visible);
         }
 
-        internal Tile GetTile(Point p)
-        {
-            return GetTile(p.X, p.Y);
-        }
         internal Tile GetTile(int x, int y)
+        {
+            return GetTile(new(x, y));
+        }
+        internal Tile GetTile(Point p)
         {
             double terrain = 1;
             bool chasm = false;
-            if (!clearTerrain.Contains(new(x, y)))
+            if (!clearTerrain.Contains(p))
             {
-                terrain = Evaluate(x, y);//, out float lineDist);
+                terrain = Evaluate(p);//, out float lineDist);
                 //also use dist from center?
                 // (5 * terrain * Consts.PathWidth + lineDist) / 2.0 % Consts.PathWidth < 1;
                 if (!chasm && terrain < 1 / 4.0)
@@ -295,12 +295,12 @@ namespace ClassLibrary1.Map
             else
                 ;
 
-            Piece piece = GetPiece(x, y);
-            return piece == null ? NewTile(this, x, y, t => chasm ? new Block(t, terrain) : null) : piece.Tile;
+            Piece piece = GetPiece(p);
+            return piece == null ? NewTile(this, p, t => chasm ? new Block(t, terrain) : null) : piece.Tile;
         }
-        private Piece GetPiece(int x, int y)
+        private Piece GetPiece(Point p)
         {
-            _pieces.TryGetValue(new Point(x, y), out Piece piece);
+            _pieces.TryGetValue(p, out Piece piece);
             return piece;
         }
 
@@ -320,13 +320,13 @@ namespace ClassLibrary1.Map
             _gameBounds.Inflate(Inflate(_gameBounds.Width), Inflate(_gameBounds.Height));
         }
 
-        public bool Visible(Point tile)
-        {
-            return Visible(tile.X, tile.Y);
-        }
         public bool Visible(int x, int y)
         {
-            bool visible = _explored.Contains(new(x, y));
+            return Visible(new(x, y));
+        }
+        public bool Visible(Point tile)
+        {
+            bool visible = _explored.Contains(tile);
             //if (!visible)
             //    visible = _pieces.ContainsKey(new Point(x, y));
             return Game.TEST_MAP_GEN.HasValue || Game.GameOver || visible;
@@ -334,14 +334,14 @@ namespace ClassLibrary1.Map
 
         internal void AddPiece(Piece piece)
         {
-            _pieces.Add(new Point(piece.Tile.X, piece.Tile.Y), piece);
+            _pieces.Add(piece.Tile.Location, piece);
 
             if (piece is PlayerPiece playerPiece)
                 UpdateVision(playerPiece);
         }
         internal void RemovePiece(Piece piece)
         {
-            _pieces.Remove(new Point(piece.Tile.X, piece.Tile.Y));
+            _pieces.Remove(piece.Tile.Location);
         }
         private void UpdateVision(PlayerPiece piece) => UpdateVision(piece.Tile, piece.Vision, piece is not Core);
         internal void UpdateVision(Tile tile, double range, bool explore = true)
@@ -496,14 +496,14 @@ namespace ClassLibrary1.Map
             (a * point.X + b * point.Y + c) / Math.Sqrt(a * a + b * b);
 
         public readonly Dictionary<Point, FoundPath> FoundPaths = new();
-        public List<Point> PathFind(Tile from, double movement, Func<HashSet<Point>, bool> Accept)//, Tile to
+        internal List<Point> PathFind(Tile from, double movement, Func<HashSet<Point>, bool> Accept)//, Tile to
         {
             Tile to = Game.Player.Core.Tile;
 
             //soo much overhead...
 
-            Point fromP = new(from.X, from.Y);
-            Point toP = new(to.X, to.Y);
+            Point fromP = from.Location;
+            Point toP = to.Location;
             if (from.Equals(to))
                 return new() { fromP, toP, };
             if (FoundPaths.TryGetValue(fromP, out FoundPath found) && found.Movement <= movement)
@@ -515,9 +515,9 @@ namespace ClassLibrary1.Map
                 { toP, Tuple.Create(to, 0.0) },
             };
 
-            HashSet<Tile> known = FoundPaths.Keys.Where(k => FoundPaths[k].Movement <= movement).Select(p => GetTile(p.X, p.Y)).ToHashSet();
+            HashSet<Tile> known = FoundPaths.Keys.Where(k => FoundPaths[k].Movement <= movement).Select(GetTile).ToHashSet();
             foreach (Tile tile in known)
-                cache[new(tile.X, tile.Y)] = Tuple.Create(tile, 0.0);
+                cache[tile.Location] = Tuple.Create(tile, 0.0);
 
             var path = TBSUtil.PathFind(Game.Rand, from, to, known, p1 =>
                     p1.GetAllPointsInRange(movement).Where(p =>
@@ -530,7 +530,7 @@ namespace ClassLibrary1.Map
                         double dist = p1.GetDistance(p2);
                         if (!cache.TryGetValue(p2, out Tuple<Tile, double> tuple))
                         {
-                            Tile tile = GetTile(p2.X, p2.Y);
+                            Tile tile = GetTile(p2);
 
                             //the map is infinite, so to avoid pathfinding forever we impose a penalty on blocked terrain instead of blocking tiles entirely
                             double penalty = 0;
@@ -547,14 +547,14 @@ namespace ClassLibrary1.Map
                             if (penalty > 0 && !Game.TEST_MAP_GEN.HasValue && Visible(p2))
                                 penalty *= Consts.PathWidth;
 
-                            tile ??= NewTile(this, p2.X, p2.Y, t => null);
+                            tile ??= NewTile(this, p2, t => null);
                             tuple = Tuple.Create(tile, penalty);
                             cache.Add(p2, tuple);
                         }
                         return Tuple.Create(tuple.Item1, dist + tuple.Item2);
                     }),
                     (p1, p2) => p1.GetDistance(p2))
-                .Select(t => new Point(t.X, t.Y)).ToList();
+                .Select(t => t.Location).ToList();
 
             HashSet<Point> blocked = new();
             foreach (var p in path)
@@ -578,15 +578,15 @@ namespace ClassLibrary1.Map
                     for (int a = 0; a < extra; a++)
                     {
                         Tile tile = Game.Map.GetTile(p.X + Game.Rand.GaussianInt(), p.Y + Game.Rand.GaussianInt());
-                        if (tile != null && tile.Piece is Terrain)
-                            list.Add(new(tile.X, tile.Y));
+                        if (tile != null && tile.Piece is Terrain && (Game.TEST_MAP_GEN.HasValue || !tile.Visible))
+                            list.Add(tile.Location);
                     }
                     return list;
                 }));
 
                 FoundPath target = null;
                 Point final = path[^1];
-                if (final != new Point(to.X, to.Y))
+                if (final != to.Location)
                     target = FoundPaths[final];
                 FoundPath foundPath = new(path, target, movement);
                 for (int a = 0; a < path.Count - 1; a++)
@@ -604,6 +604,6 @@ namespace ClassLibrary1.Map
             return null;
         }
 
-        private static Func<Map, int, int, Func<Tile, Terrain>, Tile> NewTile;
+        private static Func<Map, Point, Func<Tile, Terrain>, Tile> NewTile;
     }
 }

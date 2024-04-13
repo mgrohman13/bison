@@ -220,7 +220,7 @@ namespace ClassLibrary1.Pieces.Players
             {
                 this.vision = BASE_VISION * Math.Pow(researchMult, Constructor_Vision);
 
-                //const double lowPenalty = MOVE_LOW_PENALTY;
+                //const double lowPenalty = MOVE_LOW_PENALTY; // = 2;
                 double moveMult = 1;
                 if (researchMult < MOVE_LOW_PENALTY)
                     moveMult *= researchMult / MOVE_LOW_PENALTY;

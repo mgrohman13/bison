@@ -138,7 +138,7 @@ namespace ClassLibrary1.Pieces.Players
             private void UpgradeCoreShields(double researchMult)
             {
                 double shieldAvg = 16.9 * Math.Pow(researchMult, Core_Shields);
-                const double lowPenalty = 4;
+                const double lowPenalty = 2.5;
                 if (researchMult < lowPenalty)
                     shieldAvg *= researchMult / lowPenalty;
                 this.shield = new(DefenseType.Shield, Game.Rand.Round(shieldAvg));
