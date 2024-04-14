@@ -275,12 +275,18 @@ namespace WinFormsApp1
                             AddFill(Brushes.IndianRed, rect);
                         else
                             AddFill(Brushes.Red, rect);
-                        if (piece is Alien alien && alien.LastMove != null)
+                        if (piece is Alien alien)
                         {
+                            if (alien.LastMove != null)
+                            {
+                                var p1 = GetCenter(alien.Tile);
+                                var p2 = GetCenter(alien.LastMove);
+                                lines.Add(new(p1, p2)); //color
+                            }
+                            if (alien.LastAttacks != null)
+                                foreach (var attack in alien.LastAttacks)
+                                    lines.Add(new(GetCenter(attack.Item1), GetCenter(attack.Item2))); //color
                             PointF GetCenter(Tile p) => new(GetX(p.X) + Scale / 2f, GetY(p.Y) + Scale / 2f);
-                            var p1 = GetCenter(alien.Tile);
-                            var p2 = GetCenter(alien.LastMove);
-                            lines.Add(new(p1, p2));
                         }
                     }
                     else if (piece is Mech mech)
@@ -631,16 +637,20 @@ namespace WinFormsApp1
 
             Rectangle mapCoords = GetMapCoords();
 
+            //mapCoords.Inflate(Game.Rand.Round(-Scale), Game.Rand.Round(-Scale));
+
             //Debug.WriteLine("6 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
 
             List<Pen> dipose = new();
             Dictionary<LineSegment, Tuple<Pen, int>> lines = new();
             foreach (var pair in ranges)
+            {
+                bool edge = (pair.Key.Color == Color.White);
                 foreach (var tiles in pair.Value)
                     foreach (Point t in tiles)
-                        if (mapCoords.Contains(new DPoint(t.X, t.Y)))
+                        if (edge || mapCoords.Contains(new DPoint(t.X, t.Y)))
                         {
-                            bool Show(Point p) => !tiles.Contains(p) && mapCoords.Contains(new DPoint(p.X, p.Y));
+                            bool Show(Point p) => !tiles.Contains(p) && (edge || mapCoords.Contains(new DPoint(p.X, p.Y)));
                             void AddLine(int x1, int y1, int x2, int y2)
                             {
                                 LineSegment l = new(x1, y1, x2, y2);
@@ -668,6 +678,7 @@ namespace WinFormsApp1
                             if (Show(new(t.X, t.Y + 1)))
                                 AddLine(t.X, t.Y + 1, t.X + 1, t.Y + 1);
                         }
+            }
 
             //Debug.WriteLine("7 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
 
@@ -693,7 +704,10 @@ namespace WinFormsApp1
                     if (points.Length > 0)
                     {
                         //calls++;
-                        e.Graphics.DrawLines(p.Key, points);
+                        if (p.Key.Color == Color.White)
+                            e.Graphics.FillPolygon(new SolidBrush(Color.SaddleBrown), points);
+                        else
+                            e.Graphics.DrawLines(p.Key, points);
                     }
                 } while (points.Length > 0);
             //Debug.WriteLine("draws: " + calls);
@@ -1072,6 +1086,7 @@ namespace WinFormsApp1
                     {
                         SelTile = clicked;
                         Program.RefreshChanged();
+                        //Program.SaveGame();
                     }
                 }
                 if (SelTile.Piece.HasBehavior(out IAttacker attacker) && clicked.Piece != null && clicked.Piece.HasBehavior(out IKillable killable))
@@ -1080,6 +1095,7 @@ namespace WinFormsApp1
                     {
                         SelTile = clicked;
                         Program.RefreshChanged();
+                        //Program.SaveGame();
                     }
                 }
             }
