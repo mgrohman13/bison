@@ -124,7 +124,7 @@ namespace ClassLibrary1.Map
             _explored = new();
 
             resourcePool = new() { { ResourceType.Foundation, 1 },
-                { ResourceType.Biomass, 2 }, { ResourceType.Artifact, 3 }, { ResourceType.Metal, 5 }, };
+                { ResourceType.Biomass, 3 }, { ResourceType.Artifact, 3 }, { ResourceType.Metal, 6 }, };
 
             LogEvalTime();
         }
@@ -439,9 +439,9 @@ namespace ClassLibrary1.Map
             if (resourcePool.Values.Any(v => v == 0))
             {
                 resourcePool[ResourceType.Artifact] += 2;
-                resourcePool[ResourceType.Foundation] += 3;
-                resourcePool[ResourceType.Biomass] += 4;
-                resourcePool[ResourceType.Metal] += 5;
+                resourcePool[ResourceType.Foundation] += 4;
+                resourcePool[ResourceType.Biomass] += 5;
+                resourcePool[ResourceType.Metal] += 6;
             }
             ResourceType type = Game.Rand.SelectValue(resourcePool);
             if (noFoundation && type == ResourceType.Foundation)

@@ -41,7 +41,9 @@ namespace ClassLibrary1
         public const double ResourceDistPow = .52;
         public const double ResourceSustainValuePow = .26;
         public const double ExtractTurns = 65;
-        public const double ExtractPow = .78 / (1 - .78); // x/(1-x) where x is desired exponent when sustain=1
+        // ExtractPow=x/(1-x) where x is desired exponent when sustain=1 
+        // inverse: x=ExtractPow/(ExtractPow+1)
+        public const double ExtractPow = 3.5; //x=0.77777777777777777777777777777778
         public const double ExtractSustainPow = .39;
         public const double ExtractorSustainCostPow = .65;
         public const double ResourceDev = .21;
@@ -58,12 +60,12 @@ namespace ClassLibrary1
         public const double ArtifactMassIncDiv = 3;
         public const double ArtifactEnergyUpkMult = 2.5;
 
-        public const double BiomassExtractorEnergyCost = 780;
-        public const double BiomassExtractorMassCost = 650;
-        public const double MetalExtractorEnergyCost = 1170;
-        public const double MetalExtractorMassCost = 390;
-        public const double ArtifactExtractorEnergyCost = 2100;
-        public const double ArtifactExtractorMassCost = 260;
+        public const double BiomassExtractorEnergyCost = 750;
+        public const double BiomassExtractorMassCost = 910;
+        public const double MetalExtractorEnergyCost = 780;
+        public const double MetalExtractorMassCost = 400;
+        public const double ArtifactExtractorEnergyCost = 1690;
+        public const double ArtifactExtractorMassCost = 300;
 
         public const int EnergyForFabricateMass = 10;
         public const int BurnMassForEnergy = 2;
