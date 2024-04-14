@@ -7,7 +7,7 @@ namespace ClassLibrary1.Pieces
     {
         private IRepair.Values _values;
 
-        public int Rate => RateBase;// Consts.GetDamagedValue(Piece, RateBase, 0);
+        public double Rate => Consts.GetDamagedValue(Piece, RateBase, 0);
         public int RateBase => _values.Rate;
 
         public Repair(Piece piece, IRepair.Values repair)

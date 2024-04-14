@@ -52,7 +52,7 @@ namespace ClassLibrary1.Pieces
             for (int a = 0; a < attacks.Length; a++)
             {
                 var upg = attacks[a];
-                if (a > this.Attacks.Count)
+                if (a >= this.Attacks.Count)
                     _attacks.Add(new(Piece, upg));
                 else
                     _attacks[a].Upgrade(upg);

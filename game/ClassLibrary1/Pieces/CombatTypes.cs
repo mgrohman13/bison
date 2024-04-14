@@ -74,6 +74,8 @@ namespace ClassLibrary1.Pieces
                 case DefenseType.Shield:
                     double mult = (1 + pct);
                     chance *= mult * mult;
+                    if (pct >= 1)
+                        chance *= 2;
                     break;
             }
             return Game.Rand.Round(1 + chance);
@@ -153,7 +155,7 @@ namespace ClassLibrary1.Pieces
         {
             AttackType.Kinetic => .78,
             AttackType.Energy => 1.3,
-            AttackType.Explosive => 1,
+            AttackType.Explosive => .91,
             _ => throw new Exception(),
         };
         internal static double Cost(DefenseType defenseType) => defenseType switch

@@ -8,7 +8,7 @@ namespace ClassLibrary1.Pieces
 {
     public interface IRepair : IBuilder
     {
-        public int Rate { get; }
+        public double Rate { get; }
         public int RateBase { get; }
 
         internal void Upgrade(IRepair.Values values);

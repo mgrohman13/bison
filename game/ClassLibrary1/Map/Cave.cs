@@ -55,6 +55,7 @@ namespace ClassLibrary1.Map
 
             public void Explore(Tile tile, double vision)
             {
+                vision++;
                 explored |= GetDistSqr(new(tile.X, tile.Y), Center) < vision * vision;
             }
 
