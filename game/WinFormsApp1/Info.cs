@@ -180,22 +180,35 @@ namespace WinFormsApp1
                             lbl8.Text = "Mass";
                             lblInf8.Text = string.Format("{1}{0}", Format(massInc), massInc < 0 ? "" : "+");
                         }
+                        if (researchInc != 0)
+                        {
+                            lbl9.Show();
+                            lblInf9.Show();
+                            lbl9.Text = "Research";
+                            lblInf9.Text = string.Format("{0}{1}", Format(researchInc), researchInc < 0 ? "" : "+");
+                        }
                     }
                 }
-                if (Selected.Piece.HasBehavior(out IRepair repair))
+                var builder = Selected.Piece.GetBehavior<IBuilder>();
+                var repair = Selected.Piece.GetBehavior<IRepair>();
+                if (repair != null)
                 {
-                    lbl9.Show();
-                    lblInf9.Show();
-                    lbl9.Text = "Repair";
-                    lblInf9.Text = string.Format("{0}{1}", FormatPct(repair.Rate, true), CheckBase(repair.RateBase, repair.Rate, v => FormatPct(v, true)));
+                    lbl10.Text = "Repair";
+                    lblInf10.Text = string.Format("+{0}{1}", FormatUsuallyInt(repair.Rate), CheckBase(repair.RateBase, repair.Rate, v => FormatUsuallyInt(v.Value)));
                 }
-                if (Selected.Piece.HasBehavior(out IBuilder builder))
+                else
+                {
+                    lbl10.Text = null;
+                    lblInf10.Text = null;
+                }
+                if (builder != null)
                 {
                     lbl10.Show();
                     lblInf10.Show();
-                    lbl10.Text = "Range";
-                    lblInf10.Text = string.Format("{0}{1}", Format(builder.Range), CheckBase(builder.RangeBase, builder.Range));
-                }
+                    lbl10.Text ??= "Range";
+                    lblInf10.Text = string.Format(lblInf10.Text  == null ? "{0}{1}" : "{2}, {0}{1}", 
+                        Format(builder.Range), CheckBase(builder.RangeBase, builder.Range), lblInf10.Text);
+                } 
 
                 Resource resource = Selected.Piece as Resource;
                 Extractor extractor = Selected.Piece as Extractor;
