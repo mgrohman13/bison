@@ -4,6 +4,7 @@ using ClassLibrary1.Pieces.Players;
 using MattUtil;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace ClassLibrary1
 {
@@ -106,6 +107,7 @@ namespace ClassLibrary1
             Enemy.PlayTurn();
             Player.StartTurn();
 
+            SaveGame();
             return researched;
         }
 
@@ -135,8 +137,9 @@ namespace ClassLibrary1
             this.additionalData = data;
             SaveGame();
         }
-        public void SaveGame()
+        internal void SaveGame()
         {
+            Debug.WriteLine("SaveGame");
             TBSUtil.SaveGame(this, SavePath);
         }
         public static Game LoadGame<T>(string filePath, out T data) // where T : ISerializable

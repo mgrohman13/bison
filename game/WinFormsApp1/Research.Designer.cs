@@ -60,7 +60,7 @@ namespace WinFormsApp1
             lbxAvailable.Location = new System.Drawing.Point(0, 17);
             lbxAvailable.Margin = new System.Windows.Forms.Padding(2);
             lbxAvailable.Name = "lbxAvailable";
-            lbxAvailable.Size = new System.Drawing.Size(127, 79);
+            lbxAvailable.Size = new System.Drawing.Size(127, 94);
             lbxAvailable.TabIndex = 1;
             lbxAvailable.SelectedValueChanged += LB_SelectedValueChanged;
             lbxAvailable.MouseDoubleClick += LbAvailable_MouseDoubleClick;
@@ -70,10 +70,10 @@ namespace WinFormsApp1
             lbxDone.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
             lbxDone.FormattingEnabled = true;
             lbxDone.ItemHeight = 15;
-            lbxDone.Location = new System.Drawing.Point(0, 113);
+            lbxDone.Location = new System.Drawing.Point(0, 130);
             lbxDone.Margin = new System.Windows.Forms.Padding(2);
             lbxDone.Name = "lbxDone";
-            lbxDone.Size = new System.Drawing.Size(127, 244);
+            lbxDone.Size = new System.Drawing.Size(127, 229);
             lbxDone.TabIndex = 2;
             lbxDone.SelectedValueChanged += LB_SelectedValueChanged;
             // 
@@ -89,7 +89,7 @@ namespace WinFormsApp1
             // 
             // label2
             // 
-            label2.Location = new System.Drawing.Point(0, 96);
+            label2.Location = new System.Drawing.Point(0, 111);
             label2.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             label2.Name = "label2";
             label2.Size = new System.Drawing.Size(126, 15);
@@ -286,7 +286,7 @@ namespace WinFormsApp1
             cbxFilter.UseVisualStyleBackColor = true;
             cbxFilter.CheckedChanged += CBX_CheckedChanged;
             // 
-            // Research
+            // ResearchForm
             // 
             AcceptButton = btnOK;
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -317,7 +317,7 @@ namespace WinFormsApp1
             FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;
             Margin = new System.Windows.Forms.Padding(2);
             MinimumSize = new System.Drawing.Size(425, 376);
-            Name = "Research";
+            Name = "ResearchForm";
             ShowIcon = false;
             Text = "Research";
             Shown += Research_Shown;

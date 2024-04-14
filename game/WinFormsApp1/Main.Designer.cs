@@ -211,6 +211,7 @@ namespace WinFormsApp1
             Margin = new System.Windows.Forms.Padding(2);
             Name = "Main";
             Text = "Form1";
+            FormClosing += Main_FormClosing;
             Shown += Main_Shown;
             KeyDown += Main_KeyDown;
             KeyPress += Main_KeyPress;

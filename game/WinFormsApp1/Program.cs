@@ -57,8 +57,6 @@ namespace WinFormsApp1
             DgvForm = new DgvForm();
 
             Application.Run(Form);
-
-            Program.SaveGame();
         }
 
         public static void RefreshSelected()
@@ -73,12 +71,12 @@ namespace WinFormsApp1
             RefreshSelected();
         }
 
-        public static void AutoSave(string suffix)
+        public static void CopyAutoSave(string suffix)
         {
             if (File.Exists(Game.SavePath))
             {
                 string path = Game.SavePath.Replace("\\", "/");
-                path = path[..path.LastIndexOf("/")] + "/" + "auto_" + (Game.Turn - 1) + "_" + suffix + ".sav";
+                path = path[..path.LastIndexOf("/")] + "/" + "auto_" + Game.Turn + "_" + suffix + ".sav";
                 if (File.Exists(path))
                     File.Delete(path);
                 File.Copy(Game.SavePath, path);
@@ -105,9 +103,14 @@ namespace WinFormsApp1
             savePath += "game.sav";
 
             if (File.Exists(savePath) && !Game.TEST_MAP_GEN.HasValue)
+            {
                 Game = Game.LoadGame(savePath, out data);
+            }
             else
+            {
                 Game = new Game(savePath);
+                SaveGame();
+            }
         }
 
         public static void EndTurn()
@@ -117,16 +120,17 @@ namespace WinFormsApp1
                 end = MessageBox.Show("Move remaining.  End Turn?", "", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning) == DialogResult.OK;
             if (end)
             {
-                AutoSave("e ");
+                SaveGame();
+                CopyAutoSave("e");
                 Type? researched = Game.EndTurn();
                 if (Game.GameOver)
                 {
                     MessageBox.Show((Game.Win ? "VICTORY!!!  :)" : "DEFEAT!  :(") + $"{Environment.NewLine}Hives Destroyed: {Program.Game.Victory}/{Game.POINTS_TO_WIN}{Environment.NewLine}Game over...  {Game.Turn} turns.");
-                    AutoSave(Game.Win ? "win" : "loss");
+                    CopyAutoSave(Game.Win ? "win" : "loss");
                 }
                 else
                 {
-                    AutoSave("s");
+                    CopyAutoSave("s");
                 }
                 data.moved.Clear();
                 Program.RefreshChanged();

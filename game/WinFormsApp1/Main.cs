@@ -87,5 +87,10 @@ namespace WinFormsApp1
         {
             mapMain.Map_MouseWheel(sender, e);
         }
+
+        private void Main_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            Program.SaveGame();
+        }
     }
 }
