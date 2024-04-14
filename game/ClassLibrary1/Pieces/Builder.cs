@@ -93,7 +93,7 @@ namespace ClassLibrary1.Pieces
 
                 mult *= Consts.ReplaceRefundPct * Consts.StatValue(killable.Hits.DefenseCur) / Consts.StatValue(killable.Hits.DefenseMax);
                 double rounding = 1 - GetRounding();
-                energy = MTRandom.Round(newEnergy - energy * mult - addEnergy, rounding);
+                energy = MTRandom.Round(newEnergy - energy * mult - addEnergy, 1 - rounding);
                 mass = MTRandom.Round(newMass - mass * mult, rounding);
 
                 if (Piece.Game.Player.Has(energy, mass))

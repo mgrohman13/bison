@@ -54,7 +54,7 @@ namespace ClassLibrary1.Pieces.Terrain
             mult = Math.Pow((this.Value + mult) / (inc + mult), Consts.ExtractorCostPow);
             mult *= Math.Pow(Sustain, Consts.ExtractorSustainCostPow);
             mult *= costMult;
-            energy = MTRandom.Round(baseEnergy * _energyMult * mult, _rounding);
+            energy = MTRandom.Round(baseEnergy * _energyMult * mult, 1 - _rounding);
             mass = MTRandom.Round(baseMass * _massMult * mult, _rounding);
         }
 
