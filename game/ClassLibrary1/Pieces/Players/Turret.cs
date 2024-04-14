@@ -220,7 +220,7 @@ namespace ClassLibrary1.Pieces.Players
                     if (researchMult < lowPenalty)
                         range *= researchMult / lowPenalty;
                     range *= Math.Pow(researchMult, Turret_Range);
-                    range += 3.9;
+                    range += Attack.MIN_RANGED;
 
                     IAttacker.Values attack = attacks[a];
                     attacks[a] = new(attack.Type, attack.Attack, range);

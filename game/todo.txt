@@ -92,14 +92,9 @@ FEATURES
 	experience
 	power grid
 
-better lines on map for enemy attacks and moves
 move CombatTypes.GetReloadBase out of IAttacker.Values
 	reload values also too high?
 implement pathfinding for player!
-move + range attack?
-	for perf...
-	if enemy unit in calced move+attack range, path towards it??
-	prevet - rebalance around
 enemy attacks/moves	
 	use pathfinding
 	target extractor more often
@@ -108,6 +103,7 @@ enemy attacks/moves
 	run away to charge shields
 	protect each other
 map contiguity / pathfinding / alien behavior
+	if player unit in calced move+attack range, path towards it??
 	ensure all spawns/resources can reach core with X move
 		constructors need to be able to reach resources
 			just keep constructor limit very high and not worry about it for now?
@@ -127,10 +123,11 @@ map contiguity / pathfinding / alien behavior
 			path find to next point after closest			
 		OR use as heat map? random moves?
 			heat map created based on dist to trg?
+prevent moving after attack?
 
+dont serialize Noise, save seed/params instead
 if all weapons hit 0 treat as passive defender??
 	prob not - dont like sudden cutoff
-core display income efficiency? 
 TEST_MAP_GEN poorly designed, have to reference it everywhere we use visible 
 	also shoudnt save map either
 tie shield regen to StatValue (so regen more when lower)??

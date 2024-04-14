@@ -54,9 +54,15 @@ namespace ClassLibrary1.Pieces.Players
         public static void CalcCost(double researchMult, double vision, IEnumerable<IKillable.Values> killable, double resilience,
             IEnumerable<IAttacker.Values> attacker, IMovable.Values? movable, out double energy, out double mass)
         {
+            double move = Consts.MoveValue(movable);
+            double mult = Math.Sqrt(researchMult);
+            move = (move + 2.6) * 26 / mult;
+
             const double attPow = 1.13;
-            double AttCost(IAttacker.Values a) => Consts.StatValue(a.Attack) * Math.Sqrt(a.Reload / CombatTypes.ReloadAvg(a.Attack))
-                * CombatTypes.Cost(a.Type) * Math.Sqrt((a.Range + 2.1) / (Attack.MELEE_RANGE + 2.1));
+            double AttCost(IAttacker.Values a) => Consts.StatValue(a.Attack) * CombatTypes.Cost(a.Type)
+                * Math.Sqrt(a.Reload / CombatTypes.ReloadAvg(a.Attack))
+                * (Math.Sqrt((a.Range + Attack.MIN_RANGED) / (Attack.MELEE_RANGE + Attack.MIN_RANGED))
+                / (a.Range > Attack.MELEE_RANGE ? Math.Sqrt(1 + move) : 1));
             double DefCost(IKillable.Values d) => Consts.StatValue(d.Defense) * CombatTypes.Cost(d.Type);
 
             double r = Math.Pow(Math.Pow(resilience, Math.Log(3) / Math.Log(2)) * 1.5 + 0.5, .39);
@@ -64,9 +70,6 @@ namespace ClassLibrary1.Pieces.Players
             double def = killable.Sum(DefCost) * r / researchMult;
 
             double v = vision;
-            double move = Consts.MoveValue(movable);
-            double mult = Math.Sqrt(researchMult);
-            move = (move + 2.6) * 26 / mult;
             v = (v + 6.5) * 3.9 / mult;
 
             double total = (att + v) * (def + move) * Consts.MechCostMult;
@@ -580,7 +583,7 @@ namespace ClassLibrary1.Pieces.Players
                 rangeAvg = range;
                 if (ranged)
                 {
-                    rangeAvg = 6.5;
+                    rangeAvg = 9.1;
                     double dev = .39, oe = .104;
                     ModValues(researchType == Type.MechRange, 2.1, ref rangeAvg, ref dev, ref oe);
                     rangeAvg *= research.GetMult(Type.MechRange, Blueprint_Range);

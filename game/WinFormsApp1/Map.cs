@@ -4,6 +4,7 @@ using ClassLibrary1.Pieces.Enemies;
 using ClassLibrary1.Pieces.Players;
 using ClassLibrary1.Pieces.Terrain;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
@@ -42,7 +43,7 @@ namespace WinFormsApp1
             {
                 if (_scale != value)
                 {
-                    float size = Game.Rand.Round(Math.Max(3, Math.Sqrt(Scale) - 1));
+                    float size = PenSize;
                     if (Red?.Width != size)
                     {
                         Red = new(Color.Red, size);
@@ -60,6 +61,7 @@ namespace WinFormsApp1
                 _scale = value;
             }
         }
+        public float PenSize => Game.Rand.Round(Math.Max(3, Math.Sqrt(Scale) - 1));
 
         public Tile SelTile
         {
@@ -229,10 +231,17 @@ namespace WinFormsApp1
             List<RectangleF> rectangles = new();
             List<RectangleF> ellipses = new();
             List<PointF[]> polygons = new();
-            List<Tuple<PointF, PointF>> lines = new();
+            Dictionary<Pen, List<Tuple<PointF, PointF>>> lines = new()
+            {
+                { Pens.Black, new() }
+            };
             Dictionary<int, Brush> hitsBrushes = new();
             Dictionary<Brush, List<RectangleF>> fill = new();
             Dictionary<RectangleF, string> letters = new();
+
+            Pen movePen = new Pen(Color.DarkGreen, PenSize);
+            Pen attPen = new Pen(Color.DarkRed, PenSize);
+
             void AddFill(Brush b, RectangleF r)
             {
                 if (!fill.TryGetValue(b, out List<RectangleF> l))
@@ -281,11 +290,15 @@ namespace WinFormsApp1
                             {
                                 var p1 = GetCenter(alien.Tile);
                                 var p2 = GetCenter(alien.LastMove);
-                                lines.Add(new(p1, p2)); //color
+                                lines.TryAdd(movePen, new());
+                                lines[movePen].Add(new(p1, p2)); //color
                             }
                             if (alien.LastAttacks != null)
                                 foreach (var attack in alien.LastAttacks)
-                                    lines.Add(new(GetCenter(attack.Item1), GetCenter(attack.Item2))); //color
+                                {
+                                    lines.TryAdd(attPen, new());
+                                    lines[attPen].Add(new(GetCenter(attack.Item1), GetCenter(attack.Item2))); //color
+                                }
                             PointF GetCenter(Tile p) => new(GetX(p.X) + Scale / 2f, GetY(p.Y) + Scale / 2f);
                         }
                     }
@@ -381,7 +394,7 @@ namespace WinFormsApp1
                                 AddFill(Brushes.White, new(curX, defBar.Y, max - cur, defBar.Height));
                             curX += max - cur;
                             if (a + 1 < curs.Length)
-                                lines.Add(new(new(curX, defBar.Y), new(curX, defBar.Bottom)));
+                                lines[Pens.Black].Add(new(new(curX, defBar.Y), new(curX, defBar.Bottom)));
                         }
                     }
 
@@ -455,7 +468,7 @@ namespace WinFormsApp1
                         else
                         {
                             AddFill(Brushes.LightPink, attBar);
-                            lines.Add(new(new(attBar.Right, attBar.Y), new(attBar.Right, attBar.Bottom)));
+                            lines[Pens.Black].Add(new(new(attBar.Right, attBar.Y), new(attBar.Right, attBar.Bottom)));
                         }
                         //SizeF size = e.Graphics.MeasureString(p.Value, f);
                         //e.Graphics.DrawString(p.Value, f, Brushes.Red, new PointF(GetX(p.Key.X) + scale - size.Width, GetY(p.Key.Y) + scale - size.Height));
@@ -496,8 +509,9 @@ namespace WinFormsApp1
 
             if (rects.Length > 0)
                 e.Graphics.DrawRectangles(Pens.Black, rects);
-            foreach (var t in lines)
-                e.Graphics.DrawLine(Pens.Black, t.Item1.X, t.Item1.Y, t.Item2.X, t.Item2.Y);
+            foreach (var l in lines)
+                foreach (var t in l.Value)
+                    e.Graphics.DrawLine(l.Key, t.Item1.X, t.Item1.Y, t.Item2.X, t.Item2.Y);
             if (SelTile != null)
             {
                 using Pen sel = new(Color.Black, 5f);
@@ -610,10 +624,7 @@ namespace WinFormsApp1
                     //Debug.WriteLine("2 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
 
                     //if ( SelTile.Piece.IsEnemy)
-                    Tile t;
-                    moveTiles = movable.Piece.Tile.GetPointsInRange(movable)
-                        .Where(p => !Program.Game.Map.Visible(p) ? !movable.Piece.IsPlayer : ((t = Program.Game.Map.GetVisibleTile(p)) != null && (t.Piece == null || (t.Piece.Side == movable.Piece.Side && t.Piece.HasBehavior<IMovable>()))))
-                        .ToHashSet();
+                    moveTiles = GetMoveTiles(movable);
                     ranges[Green].Add(moveTiles);
 
                     //Debug.WriteLine("3 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
@@ -721,56 +732,71 @@ namespace WinFormsApp1
 
             //watch.Stop();
         }
+        private static HashSet<Point> GetMoveTiles(IMovable movable)
+        {
+            Tile t;
+            return movable.Piece.Tile.GetPointsInRange(movable)
+                .Where(p => !Program.Game.Map.Visible(p) ? !movable.Piece.IsPlayer
+                    : ((t = Program.Game.Map.GetVisibleTile(p)) != null && (t.Piece == null || (t.Piece.Side == movable.Piece.Side && t.Piece.HasBehavior<IMovable>()))))
+                .ToHashSet();
+        }
+
         private IEnumerable<HashSet<Point>> AddAttacks(IAttacker attacker, Action<IEnumerable<Point>, float> AddAttStr)
         {
-            HashSet<Point> moveTiles = (attacker.HasBehavior(out IMovable movable) ? movable.Piece.Tile.GetPointsInRange(movable) : new Point[] { new(attacker.Piece.Tile.X, attacker.Piece.Tile.Y) }).ToHashSet();
+            Tile tile = attacker.Piece.Tile;
+            HashSet<Point> moveTiles = (attacker.HasBehavior(out IMovable movable)
+                ? GetMoveTiles(movable)
+                : new Point[] { new(tile.X, tile.Y) }.ToHashSet());
 
             List<HashSet<Point>> retVal = new();
             var ar = attacker.Attacks.Where(a => a.CanAttack());
             if (attacker.Piece.IsEnemy && ar.Any())
             {
-                HashSet<Point> moveEdge;
-                if (movable != null)
-                {
-                    moveEdge = new HashSet<Point>(moveTiles.Count);
-                    foreach (Point edge in GetEdge(attacker, moveTiles, movable))
-                        CheckMovable(edge);
-                    void CheckMovable(Point edge)
-                    {
-                        if (moveTiles.Contains(edge) && !moveEdge.Contains(edge))
-                        {
-                            Tile edgeTile = Program.Game.Map.GetVisibleTile(edge);
-                            if (Program.Game.Map.Visible(edge) && (edgeTile == null || (edgeTile.Piece != null
-                                && (SelTile != edgeTile || !SelTile.Piece.IsPlayer || !(SelTile.Piece.HasBehavior(out IMovable selMove) && selMove.MoveCur >= 1))
-                                && (!edgeTile.Piece.IsEnemy || !edgeTile.Piece.HasBehavior<IMovable>()))))
-                            {
-                                moveTiles.Remove(edge);
-                                CheckMovable(new Point(edge.X - 1, edge.Y));
-                                CheckMovable(new Point(edge.X + 1, edge.Y));
-                                CheckMovable(new Point(edge.X, edge.Y - 1));
-                                CheckMovable(new Point(edge.X, edge.Y + 1));
-                            }
-                            else
-                            {
-                                moveEdge.Add(edge);
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    moveEdge = moveTiles;
-                }
+                //HashSet<Point> moveEdge;
+                //if (movable != null)
+                //{
+                //    moveEdge = new HashSet<Point>(moveTiles.Count);
+                //    foreach (Point edge in GetEdge(attacker, moveTiles, movable))
+                //        CheckMovable(edge);
+                //    void CheckMovable(Point edge)
+                //    {
+                //        if (moveTiles.Contains(edge) && !moveEdge.Contains(edge))
+                //        {
+                //            Tile edgeTile = Program.Game.Map.GetVisibleTile(edge);
+                //            if (Program.Game.Map.Visible(edge) && (edgeTile == null || (edgeTile.Piece != null
+                //                && (SelTile != edgeTile || !SelTile.Piece.IsPlayer || !(SelTile.Piece.HasBehavior(out IMovable selMove) && selMove.MoveCur >= 1))
+                //                && (!edgeTile.Piece.IsEnemy || !edgeTile.Piece.HasBehavior<IMovable>()))))
+                //            {
+                //                moveTiles.Remove(edge);
+                //                CheckMovable(new Point(edge.X - 1, edge.Y));
+                //                CheckMovable(new Point(edge.X + 1, edge.Y));
+                //                CheckMovable(new Point(edge.X, edge.Y - 1));
+                //                CheckMovable(new Point(edge.X, edge.Y + 1));
+                //            }
+                //            else
+                //            {
+                //                moveEdge.Add(edge);
+                //            }
+                //        }
+                //    }
+                //}
+                //else
+                //{
+                //    moveEdge = moveTiles;
+                //}
 
-                var points = attacker.Piece.Tile.GetAllPointsInRange((movable?.MoveCur ?? 0) + ar.Max(a => a.Range)).ToArray();
+                double checkRange = Math.Max((movable?.MoveCur ?? 0) + Attack.MELEE_RANGE, ar.Max(a => a.Range));
+                var points = tile.GetAllPointsInRange(checkRange).ToArray();
                 foreach (var a in ar)
                 {
                     List<Point> attPts = new(points.Length);
                     foreach (var point in points)
                         //check blocks
-                        if (moveEdge.Any(mt => Tile.GetDistance(mt.X, mt.Y, point.X, point.Y) <= a.Range))
+                        if (a.Range > Attack.MELEE_RANGE ? tile.GetDistance(point) <= a.Range
+                                //: moveTiles.Any(mt => Tile.GetDistance(mt.X, mt.Y, point.X, point.Y) <= a.Range))
+                                : Program.Game.Map.GetVisibleTile(point)?.GetAllPointsInRange(Attack.MELEE_RANGE).Any(moveTiles.Contains) ?? true)
                             attPts.Add(point);
-                    HashSet<Point> result = attPts.Union(moveTiles.Select(t => new Point(t.X, t.Y))).ToHashSet();
+                    HashSet<Point> result = attPts.ToHashSet();//.Union(moveTiles.Select(t => new Point(t.X, t.Y)))
                     AddAttStr?.Invoke(result, a.AttackCur);
                     retVal.Add(result);
                 }

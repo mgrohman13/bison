@@ -11,7 +11,7 @@ namespace ClassLibrary1.Pieces
     public class Attack
     {
         public const double MELEE_RANGE = 1.5;
-        public const double MIN_RANGED = MELEE_RANGE * 2;
+        public const double MIN_RANGED = MELEE_RANGE * Math.PI;
 
         public readonly Piece Piece;
         private Values _values;
@@ -51,7 +51,8 @@ namespace ClassLibrary1.Pieces
             this._attackCur = Math.Max(0, AttackCur - 1);// damage);
         }
 
-        public bool CanAttack() => !Attacked && AttackCur > 0;
+        public bool CanAttack() => !Attacked && AttackCur > 0
+                && !(Range > MELEE_RANGE && Piece.HasBehavior(out IMovable movable) && movable.Moved);
         public Dictionary<IKillable, int> GetDefenders(Piece target, Tile attackFrom = null)//Dictionary<IKillable, int>
         {
             attackFrom ??= Piece.Tile;
