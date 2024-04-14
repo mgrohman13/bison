@@ -11,7 +11,7 @@ namespace ClassLibrary1.Pieces.Players
     {
         private double _income = 1, _incomeTrg = 1;
 
-        public const double START_VISION = 3;
+        public const double START_VISION = 3, ENERGY = 480;
 
         public Piece Piece => this;
 
@@ -70,7 +70,7 @@ namespace ClassLibrary1.Pieces.Players
         internal override void GenerateResources(ref double energyInc, ref double massInc, ref double researchInc)
         {
             base.GenerateResources(ref energyInc, ref massInc, ref researchInc);
-            energyInc += 480 * _income;
+            energyInc += ENERGY * _income;
             massInc += 115 * _income;
             researchInc += 15 * Math.Sqrt(_income);
         }

@@ -171,7 +171,8 @@ namespace WinFormsApp1
                             lbl7.Show();
                             lblInf7.Show();
                             lbl7.Text = "Energy";
-                            lblInf7.Text = string.Format("{1}{0}", Format(energyInc), energyInc < 0 ? "" : "+");
+                            lblInf7.Text = string.Format("{1}{0}{2}", Format(energyInc), energyInc < 0 ? "" : "+", 
+                                playerPiece is Core core ? $" ({FormatPct(energyInc / Core.ENERGY)})" : "");
                         }
                         if (massInc != 0)
                         {
@@ -185,7 +186,7 @@ namespace WinFormsApp1
                             lbl9.Show();
                             lblInf9.Show();
                             lbl9.Text = "Research";
-                            lblInf9.Text = string.Format("{0}{1}", Format(researchInc), researchInc < 0 ? "" : "+");
+                            lblInf9.Text = string.Format("{1}{0}", Format(researchInc), researchInc < 0 ? "" : "+");
                         }
                     }
                 }
@@ -206,9 +207,9 @@ namespace WinFormsApp1
                     lbl10.Show();
                     lblInf10.Show();
                     lbl10.Text ??= "Range";
-                    lblInf10.Text = string.Format(lblInf10.Text  == null ? "{0}{1}" : "{2}, {0}{1}", 
+                    lblInf10.Text = string.Format(lblInf10.Text == null ? "{0}{1}" : "{2}, {0}{1}",
                         Format(builder.Range), CheckBase(builder.RangeBase, builder.Range), lblInf10.Text);
-                } 
+                }
 
                 Resource resource = Selected.Piece as Resource;
                 Extractor extractor = Selected.Piece as Extractor;
@@ -270,7 +271,7 @@ namespace WinFormsApp1
                     {
                         a.Type,
                         Range = a.Range > Attack.MELEE_RANGE ?
-                            $"{a.Range:0.0}" + (a.Range.ToString("0.0") != a.RangeBase.ToString("0.0") ? $" / {a.RangeBase:0.0}" : "") : "0",
+                            $"{a.Range:0.0}" + (a.Range.ToString("0.0") != a.RangeBase.ToString("0.0") ? $" / {a.RangeBase:0.0}" : "") : "Melee",
                         Attack = $"{a.AttackCur}" + (a.AttackCur < a.AttackMax ? $" / {a.AttackMax}" : ""),
                         Reload = $"+{FormatUsuallyInt(a.Reload)}" + (FormatUsuallyInt(a.Reload) != a.ReloadBase.ToString() ? $" / {a.ReloadBase}" : ""),
                     }).ToList();
