@@ -36,6 +36,7 @@ namespace ClassLibrary1.Pieces
         {
             double defPct = Consts.StatValue(DefenseCur) / Consts.StatValue(DefenseMax);
             this._values = values;
+            //if (Type != DefenseType.Shield) //move to CombatTypes
             this._defenseCur = Game.Rand.Round(Consts.StatValueInverse(Consts.StatValue(DefenseMax) * defPct));
         }
 
@@ -48,50 +49,46 @@ namespace ClassLibrary1.Pieces
                         .Select(p => p?.GetBehavior<IKillable>())
                         .Where(k => k != null && !k.Dead)
                         .SelectMany(k => k.TotalDefenses)))
-                    if (defense != this && CombatTypes.SplashAgainst(defense))
-                        defense.Damage(GetAdditionalDmg(defense.Piece, defense.DefenseCur));
+                    if (defense != this && CombatTypes.SplashAgainst(defense) && DoCollateralDamage(defense.Piece, defense.DefenseCur))
+                        defense.Damage();
 
-            Damage(1);
+            Damage();
 
             Piece.GetBehavior<IKillable>().RaiseDamagedEvent(attack, this);
         }
-        private void Damage(int damage)
+        private void Damage()//int damage)
         {
-            for (int a = 0; a < damage; a++)
-            {
-                if (Type == DefenseType.Hits && Piece.HasBehavior(out IAttacker attacker))
-                    foreach (Attack attack in Game.Rand.Iterate(attacker.Attacks))
-                        attack.Damage(GetAdditionalDmg(null, attack.AttackCur));//null to do reduced damage
+            //for (int a = 0; a < damage; a++)
+            //{
+            if (Type == DefenseType.Hits && Piece.HasBehavior(out IAttacker attacker))
+                foreach (Attack attack in Game.Rand.Iterate(attacker.Attacks))
+                    if (DoCollateralDamage(null, attack.AttackCur))//null to do reduced damage
+                        attack.Damage();
 
-                if (!this.Dead)
-                    this._defenseCur--;
+            if (!this.Dead)
+                this._defenseCur--;
 
-                if (Type == DefenseType.Hits && this.Dead)
-                    Piece.Die();
-            }
+            if (Type == DefenseType.Hits && this.Dead)
+                Piece.Die();
+            //}
         }
-        private int GetAdditionalDmg(Piece piece, int cur)
+        private bool DoCollateralDamage(Piece piece, int defCur)
         {
-            double dmgValue = Consts.StatValue(this.DefenseCur);
-            double trgValue = Consts.StatValue(cur);
-            double avg = trgValue / dmgValue;
+            double dmgVal = this.DefenseCur;
+            double otherVal = defCur;
+            double dmgChance = 0;
+            if (otherVal > 0)
+                if (otherVal > dmgVal)
+                    dmgChance = dmgVal / otherVal;
+                else
+                    dmgChance = (otherVal - .5) / (double)(dmgVal + .5);
+
+            double baseChance = .75;
             if (piece != this.Piece)
-                avg /= 2.0;
-            avg = Math.Sqrt(avg);
-            return Game.Rand.GaussianCappedInt(avg, .26);
+                baseChance = .50;
 
-            //double dmgChance = 0;
-            //if (cur > 0)
-            //    if (cur > DefenseCur)
-            //        dmgChance = DmgValue(this.DefenseCur) / (double)DmgValue(cur);
-            //    else
-            //        dmgChance = (cur + 1) / (double)(this.DefenseCur + 2);
-            //if (piece != this.Piece)
-            //    dmgChance /= 2;
-            //return Game.Rand.Bool(dmgChance);
+            return Game.Rand.Bool(baseChance * dmgChance);
         }
-
-        //private static double DmgValue(int cur) => Consts.StatValue(cur) - Consts.StatValue(cur - 1);
 
         internal void Repair(bool doEndTurn, out double hitsInc, out double massCost)
         {
@@ -126,10 +123,10 @@ namespace ClassLibrary1.Pieces
             if (Piece is IKillable.IRepairable repairable && repairable.CanRepair())
             {
                 //check blocks
-                int[] repairs = Piece.Side.PiecesOfType<IRepair>()
+                double[] repairs = Piece.Side.PiecesOfType<IRepair>()
                     .Where(r => Piece != r.Piece && Piece.Side == r.Piece.Side && Piece.Tile.GetDistance(r.Piece.Tile) <= r.Range)
                     .Select(r => r?.Rate)
-                    .Concat(repairable.AutoRepair ? new int?[] { Consts.AutoRepair } : Array.Empty<int?>())
+                    .Concat(repairable.AutoRepair ? new double?[] { Consts.AutoRepair } : Array.Empty<double?>())
                     .Where(v => v.HasValue)
                     .Select(v => v.Value)
                     .OrderByDescending(v => v)

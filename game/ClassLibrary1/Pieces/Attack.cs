@@ -46,9 +46,9 @@ namespace ClassLibrary1.Pieces
             this._attackCur = Game.Rand.Round(Consts.StatValueInverse(Consts.StatValue(AttackMax) * attPct));
         }
 
-        internal void Damage(int damage)
+        internal void Damage()//int damage)
         {
-            this._attackCur = Math.Max(0, AttackCur - damage);
+            this._attackCur = Math.Max(0, AttackCur - 1);// damage);
         }
 
         public bool CanAttack() => !Attacked && AttackCur > 0;
