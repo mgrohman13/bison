@@ -9,6 +9,8 @@ namespace ClassLibrary1.Pieces.Players
     [Serializable]
     public class Core : PlayerPiece, IKillable.IRepairable
     {
+        private double _income = 1, _incomeTrg = 1;
+
         public const double START_VISION = 3;
 
         public Piece Piece => this;
@@ -68,9 +70,16 @@ namespace ClassLibrary1.Pieces.Players
         internal override void GenerateResources(ref double energyInc, ref double massInc, ref double researchInc)
         {
             base.GenerateResources(ref energyInc, ref massInc, ref researchInc);
-            energyInc += 350;
-            massInc += 100;
-            researchInc += 15;
+            energyInc += 480 * _income;
+            massInc += 115 * _income;
+            researchInc += 15 * Math.Sqrt(_income);
+        }
+        internal override void EndTurn(ref double energyUpk, ref double massUpk)
+        {
+            base.EndTurn(ref energyUpk, ref massUpk);
+            const double factor = .9925;
+            this._incomeTrg *= factor;
+            this._income = Game.Rand.GaussianCapped(Math.Sqrt(_incomeTrg * _income), 1 - factor, _incomeTrg / 2.0);
         }
 
         public override string ToString()

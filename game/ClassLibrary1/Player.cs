@@ -25,7 +25,7 @@ namespace ClassLibrary1
         new public int Mass => base.Mass;
 
         internal Player(Game game)
-            : base(game, 0, 1750)
+            : base(game, 0, 2750)
         {
             this.Research = new(game);
             this.upgradeValues = AppDomain.CurrentDomain.GetAssemblies()
@@ -64,7 +64,7 @@ namespace ClassLibrary1
         {
             foreach (IUpgradeValues values in Game.Rand.Iterate(upgradeValues))
                 values.Upgrade(type, researchMult);
-            foreach (PlayerPiece piece in Game.Rand.Iterate(Pieces).Cast<PlayerPiece>())
+            foreach (PlayerPiece piece in Game.Rand.Iterate(Pieces.Cast<PlayerPiece>()))
                 piece.OnResearch(type);
         }
 
@@ -115,13 +115,13 @@ namespace ClassLibrary1
         public void GetIncome(out double energyInc, out double massInc, out double researchInc)
         {
             energyInc = massInc = researchInc = 0;
-            foreach (PlayerPiece piece in Game.Rand.Iterate(Pieces))
+            foreach (PlayerPiece piece in Game.Rand.Iterate(Pieces.Cast<PlayerPiece>()))
                 piece.GetIncome(ref energyInc, ref massInc, ref researchInc);
         }
         private void GenerateResources(out double energyInc, out double massInc, out double researchInc)
         {
             energyInc = massInc = researchInc = 0;
-            foreach (PlayerPiece piece in Game.Rand.Iterate(Pieces))
+            foreach (PlayerPiece piece in Game.Rand.Iterate(Pieces.Cast<PlayerPiece>()))
                 piece.GenerateResources(ref energyInc, ref massInc, ref researchInc);
         }
         internal new void StartTurn()
@@ -138,6 +138,6 @@ namespace ClassLibrary1
             this._mass = Consts.Income(Mass, massInc - massUpk);
 
             return this.Research.AddResearch(researchInc);
-        } 
+        }
     }
 }
