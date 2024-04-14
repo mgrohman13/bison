@@ -92,18 +92,21 @@ FEATURES
 	experience
 	power grid
 
+better lines on map for enemy attacks and moves
+move CombatTypes.GetReloadBase out of IAttacker.Values
+	reload values also too high?
+implement pathfinding for player!
 move + range attack?
 	for perf...
-move CombatTypes.GetReloadBase out of IAttacker.Values
-implement pathfinding for player!
+	if enemy unit in calced move+attack range, path towards it??
+	prevet - rebalance around
 enemy attacks/moves	
 	use pathfinding
 	target extractor more often
 	take into account new mechanics 
 	not attack to recharge weapon
 	run away to charge shields
-	if enemy unit in calced move+attack range, path towards it??
-
+	protect each other
 map contiguity / pathfinding / alien behavior
 	ensure all spawns/resources can reach core with X move
 		constructors need to be able to reach resources
@@ -125,8 +128,13 @@ map contiguity / pathfinding / alien behavior
 		OR use as heat map? random moves?
 			heat map created based on dist to trg?
 
+if all weapons hit 0 treat as passive defender??
+	prob not - dont like sudden cutoff
+core display income efficiency? 
 TEST_MAP_GEN poorly designed, have to reference it everywhere we use visible 
-tie shield regen to StatValue (so regen more when lower)
+	also shoudnt save map either
+tie shield regen to StatValue (so regen more when lower)??
+	though seems to work neatly with hits defending when shield gets low to let it recover
 	regen rate lowered by hppct/resilience efficiency
 	only regen when not attacked?? regen less?? chance to stop regen?? specific att types??
 		new system use canrecover flag that get changed by diffe evtns? 
@@ -138,10 +146,9 @@ explosives too weak?
 	splash damage not tied to initial dmg??
 	rethink shield interaction?
 	enemies clump more
-	splash damage to higher values shouldnt be based on difference?
-		could be 50% at one, go to 100% from there - kind of a nerf though
 	does friendly damage?
 		melee??
+repair rate use Consts.GetDamagedValue?
 pay back stored energy on death
 make shield regen variable
 	reduce with dmg pct?
