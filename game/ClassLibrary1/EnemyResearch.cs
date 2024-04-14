@@ -41,10 +41,10 @@ namespace ClassLibrary1
             if (_available.Count < Unlocks.Length)
             {
                 double cost = Math.Pow(1.3, _available.Count) * Math.Pow(_available.Count + 1, 1.3) * 1.69;
-                if (_research > cost * Game.Rand.GaussianCapped(2.1, .13))
+                if (_research > Game.Rand.GaussianCapped(cost * 2.1, .13))
                 {
                     _research -= cost;
-                    while (!_available.Add(Game.Rand.SelectValue(Unlocks, t => Unlocks.Length - Array.IndexOf(Unlocks, t)))) ;
+                    while (!_available.Add(Game.Rand.SelectValue(Unlocks, t => Game.Rand.Round(Math.Pow(1 + Unlocks.Length - Array.IndexOf(Unlocks, t), 2.1))))) ;
                 }
             }
         }

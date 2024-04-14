@@ -92,7 +92,7 @@ namespace ClassLibrary1.Pieces.Players
             private const double resilience = .5;
 
             private int energy, mass;
-            private double vision, hitRound, repairRate;
+            private double vision, rounding, repairRate;
             private IKillable.Values killable;
             private IRepair.Values repair;
             public Values()
@@ -108,7 +108,7 @@ namespace ClassLibrary1.Pieces.Players
             public double Vision => vision;
             public IKillable.Values Killable => killable;
             public double BuilderRange => repair.Builder.Range;
-            public double Rounding => hitRound;
+            public double Rounding => rounding;
             public IRepair.Values GetRepair(Game game, double rangeMult, double rounding)
             {
                 IRepair.Values repair = this.repair;
@@ -131,14 +131,14 @@ namespace ClassLibrary1.Pieces.Players
             private void UpgradeBuildingCost(double researchMult)
             {
                 double costMult = Math.Pow(researchMult, Factory_Cost);
-                hitRound = Game.Rand.NextDouble();
-                this.energy = MTRandom.Round(1750 / costMult, hitRound);
-                this.mass = MTRandom.Round(500 / costMult, hitRound);
+                rounding = Game.Rand.NextDouble();
+                this.energy = MTRandom.Round(1750 / costMult, 1 - rounding);
+                this.mass = MTRandom.Round(500 / costMult, rounding);
             }
             private void UpgradeBuildingHits(double researchMult)
             {
-                double defAvg = 8;
-                const double lowPenalty = 8 / 5.0;
+                double defAvg = 9;
+                const double lowPenalty = 9 / 5.0;
                 if (researchMult < lowPenalty)
                     defAvg *= researchMult / lowPenalty;
                 int defense = Game.Rand.Round(defAvg * Math.Pow(researchMult, Factory_Defense));
@@ -147,9 +147,13 @@ namespace ClassLibrary1.Pieces.Players
             }
             private void UpgradeFactoryRepair(double researchMult)
             {
-                double repairMult = Math.Pow(researchMult, Factory_Repair);
-                double repairRange = 6.5 * repairMult;
-                repairRate = 1.13 * repairMult;
+                double repairMult = 1;
+                const double lowPenalty = Math.E;
+                if (researchMult < lowPenalty)
+                    repairMult *= researchMult / lowPenalty;
+                repairMult *= Math.Pow(researchMult, Factory_Repair);
+                double repairRange = 7.8 * Math.Sqrt(repairMult);
+                repairRate = .65 + (1 * repairMult);
                 this.repair = new(new(repairRange), 1);
             }
         }

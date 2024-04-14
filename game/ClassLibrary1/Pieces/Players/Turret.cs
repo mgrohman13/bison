@@ -127,7 +127,7 @@ namespace ClassLibrary1.Pieces.Players
                 {
                     IKillable.Values defense = defenses[a];
                     double mult = a switch { 0 => hitsMult, 1 => shieldMult, 2 => armorMult, _ => throw new Exception() };
-                    int def = Math.Max(1, MTRandom.Round(defense.Defense * mult, rounding));
+                    int def = Math.Max(1, MTRandom.Round(defense.Defense * mult, 1 - rounding));
                     results.Add(new(defense.Type, def));
                 }
 
@@ -144,17 +144,16 @@ namespace ClassLibrary1.Pieces.Players
                 for (int a = 0; a < MAX_ATTACKS; a++)
                 {
                     IAttacker.Values attack = attacks[a];
-                    int att = attack.Attack;
-                    int damage = MTRandom.Round(attack.Attack / rangeMult[a], rounding);
-                    if (damage < 1)
-                        damage = 1;
+                    int att = MTRandom.Round(attack.Attack / rangeMult[a], rounding);
+                    if (att < 1)
+                        att = 1;
                     double range = int.MaxValue;
                     do
                     {
-                        if (range < Attack.MIN_RANGED && damage > 1)
-                            --damage;
-                        range = attack.Range * Math.Pow(attack.Attack / (double)damage, 1.3);
-                    } while (range < Attack.MIN_RANGED && damage > 1);
+                        if (range < Attack.MIN_RANGED && att > 1)
+                            --att;
+                        range = attack.Range * Math.Pow(attack.Attack / (double)att, 1.3);
+                    } while (range < Attack.MIN_RANGED && att > 1);
                     if (range < Attack.MIN_RANGED)
                         range = Attack.MIN_RANGED;
                     results.Add(new(attack.Type, att, range));
@@ -185,7 +184,7 @@ namespace ClassLibrary1.Pieces.Players
             {
                 double costMult = Math.Pow(researchMult, Turret_Cost);
                 rounding = Game.Rand.NextDouble();
-                this.energy = MTRandom.Round(1000 / costMult, rounding);
+                this.energy = MTRandom.Round(1000 / costMult, 1 - rounding);
                 this.mass = MTRandom.Round(1750 / costMult, rounding);
             }
             private void UpgradeTurretDefense(double researchMult)
@@ -217,10 +216,11 @@ namespace ClassLibrary1.Pieces.Players
                 for (int a = 0; a < MAX_ATTACKS; a++)
                 {
                     double range = a switch { 0 => 16.9, 1 => 7.5, 2 => 13, _ => throw new Exception(), };
-                    const double lowPenalty = 2.1;
+                    const double lowPenalty = Math.PI;
                     if (researchMult < lowPenalty)
                         range *= researchMult / lowPenalty;
                     range *= Math.Pow(researchMult, Turret_Range);
+                    range += 3.9;
 
                     IAttacker.Values attack = attacks[a];
                     attacks[a] = new(attack.Type, attack.Attack, range);

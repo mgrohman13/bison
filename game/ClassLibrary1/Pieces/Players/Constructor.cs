@@ -11,7 +11,7 @@ namespace ClassLibrary1.Pieces.Players
     [Serializable]
     public class Constructor : PlayerPiece, IKillable.IRepairable
     {
-        public const double MOVE_LOW_PENALTY = 2, BASE_VISION = 7.5, BASE_MOVE_MAX = 8 * MOVE_LOW_PENALTY;
+        public const double MOVE_LOW_PENALTY = 1.3, BASE_VISION = 7.5, BASE_MOVE_MAX = 8 * MOVE_LOW_PENALTY;
 
         private bool _canUpgrade;
         private readonly bool _defenseType;
@@ -177,7 +177,7 @@ namespace ClassLibrary1.Pieces.Players
             public IRepair.Values GetRepair(Game game, double rangeMult, double rounding)
             {
                 IRepair.Values repair = this.repair;
-                int rate = Math.Max(1, MTRandom.Round(repairRate / rangeMult, rounding));
+                int rate = Math.Max(1, MTRandom.Round(repairRate / rangeMult, 1 - rounding));
                 if (!game.Player.Research.HasType(Research.Type.ConstructorRepair))
                     rate = 1;
                 double range = repair.Builder.Range * repairRate / rate * Math.Sqrt(rangeMult);
@@ -203,13 +203,13 @@ namespace ClassLibrary1.Pieces.Players
             private void UpgradeConstructorDefense(double researchMult)
             {
                 this.hits = Gen(DefenseType.Hits, 1);
-                this.shield = Gen(DefenseType.Shield, 1.3);
-                this.armor = Gen(DefenseType.Armor, 2.1);
+                this.shield = Gen(DefenseType.Shield, 1.23);
+                this.armor = Gen(DefenseType.Armor, 1.69);
 
                 IKillable.Values Gen(DefenseType type, double mult)
                 {
-                    double defAvg = 9 * mult;
-                    const double lowPenalty = 9 / 5.0;
+                    double defAvg = 8 * mult;
+                    const double lowPenalty = 8 / 5.0;
                     if (researchMult < lowPenalty)
                         defAvg *= researchMult / lowPenalty;
                     int defense = Game.Rand.Round(defAvg * Math.Pow(researchMult, Constructor_Defense));
@@ -220,7 +220,7 @@ namespace ClassLibrary1.Pieces.Players
             {
                 this.vision = BASE_VISION * Math.Pow(researchMult, Constructor_Vision);
 
-                //const double lowPenalty = MOVE_LOW_PENALTY; // = 2;
+                //const double lowPenalty = MOVE_LOW_PENALTY; // = 1.3;
                 double moveMult = 1;
                 if (researchMult < MOVE_LOW_PENALTY)
                     moveMult *= researchMult / MOVE_LOW_PENALTY;
@@ -236,9 +236,9 @@ namespace ClassLibrary1.Pieces.Players
             }
             private void UpgradeConstructorRepair(double researchMult)
             {
-                double repairMult = Math.Pow(researchMult, Constructor_Repair);
-                double repairRange = 4.0 * repairMult;
-                repairRate = 1.13 * repairMult;
+                double repairMult = Math.Pow(researchMult, Factory_Repair);
+                double repairRange = 4.0 * Math.Sqrt(repairMult);
+                repairRate = 1 * repairMult;
                 this.repair = new(new(repairRange), 1);
             }
         }

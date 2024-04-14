@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using static ClassLibrary1.Research;
 
 namespace ClassLibrary1
 {
@@ -18,7 +17,7 @@ namespace ClassLibrary1
         private readonly Dictionary<Type, int> _progress;
         private readonly Dictionary<Type, int> _choices;
 
-        public const int MaxChoices = 5;
+        public const int MaxChoices = 6;
         private int _numChoices = 3;
         private int _researchLast;
         private double _nextAvg;
@@ -422,7 +421,7 @@ namespace ClassLibrary1
             ScrapResearch = 145,
             ResearchChoices = 155,
             BurnMass = 165,
-            BuildingCost = 175,  
+            BuildingCost = 175,
             ExtractorAutoRepair = 285, //key
             ExtractorValue = 340, // end   
         }
