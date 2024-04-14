@@ -56,7 +56,8 @@ namespace ClassLibrary1.Pieces
         }
         private bool Replace(bool doReplace, PlayerPiece piece, CostFunc GetNewCost, Func<double> GetRounding, Action NewPiece, bool validateHits, out int energy, out int mass)
         {
-            if (piece != null && Validate(piece.Tile, false) && piece.HasBehavior(out IKillable killable))// && (!validateHits || killable.DefenseCur < killable.DefenseMax))
+            if (piece != null && Validate(piece.Tile, false) && piece.HasBehavior(out IKillable killable)
+                && (!validateHits || killable.Hits.DefenseCur < killable.Hits.DefenseMax))
             {
                 GetNewCost(out int newEnergy, out int newMass);
                 if (piece is Extractor)
@@ -152,7 +153,7 @@ namespace ClassLibrary1.Pieces
                     (out int e, out int m) => Extractor.Cost(out e, out m, extractor.Resource),
                     () => extractor.Resource.Rounding,
                     () => Extractor.NewExtractor(extractor.Resource),
-                    true, out energy, out mass);
+                    false, out energy, out mass); //true
             }
         }
         [Serializable]

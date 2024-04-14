@@ -4,7 +4,6 @@ using ClassLibrary1.Pieces.Enemies;
 using ClassLibrary1.Pieces.Players;
 using ClassLibrary1.Pieces.Terrain;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
@@ -239,8 +238,8 @@ namespace WinFormsApp1
             Dictionary<Brush, List<RectangleF>> fill = new();
             Dictionary<RectangleF, string> letters = new();
 
-            Pen movePen = new Pen(Color.DarkGreen, PenSize);
-            Pen attPen = new Pen(Color.DarkRed, PenSize);
+            Pen movePen = new(Color.DarkGreen, PenSize);
+            Pen attPen = new(Color.DarkRed, PenSize);
 
             void AddFill(Brush b, RectangleF r)
             {
@@ -816,11 +815,11 @@ namespace WinFormsApp1
             return retVal;
         }
 
-        private static IEnumerable<Point> GetEdge(IAttacker attacker, HashSet<Point> moveTiles, IMovable movable)
-        {
-            //check blocks
-            return moveTiles.Where(t => attacker.Piece.Tile.GetDistance(t) > movable.MoveCur - 1);
-        }
+        //private static IEnumerable<Point> GetEdge(IAttacker attacker, HashSet<Point> moveTiles, IMovable movable)
+        //{
+        //    //check blocks
+        //    return moveTiles.Where(t => attacker.Piece.Tile.GetDistance(t) > movable.MoveCur - 1);
+        //}
 
         //private static HashSet<Point> GetPoints(IEnumerable<Tile> ts) => ts.Select(t => new Point(t.X, t.Y)).ToHashSet();
         private static Pen Combine(Pen pen, Tuple<Pen, int> tuple)
