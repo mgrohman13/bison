@@ -241,6 +241,8 @@ namespace WinFormsApp1
             Pen movePen = new(Color.DarkGreen, PenSize);
             Pen attPen = new(Color.DarkRed, PenSize);
 
+            List<List<Point>> paths = new();
+
             void AddFill(Brush b, RectangleF r)
             {
                 if (!fill.TryGetValue(b, out List<RectangleF> l))
@@ -261,7 +263,7 @@ namespace WinFormsApp1
             float attackMax = (GetPieces<IAttacker>().Where(k => k.Piece.HasBehavior<IKillable>() && k.Piece.HasBehavior<IMovable>())
                 .Max<IAttacker>(SumAttacksMax) ?? 1) * padding;
             float defenseMax = (GetPieces<IKillable>().Where(k => k.Piece.HasBehavior<IAttacker>() && k.Piece.HasBehavior<IMovable>())
-                .Max(k => k.TotalDefenses.Sum(d => (float?)StatValue(d.DefenseMax))) ?? 1) * padding;
+                .Max(k => k.Protection.Sum(d => (float?)StatValue(d.DefenseMax))) ?? 1) * padding;
             attackMax = defenseMax = Math.Max(attackMax, defenseMax);
 
             foreach (Piece piece in Program.Game.Map.GetVisiblePieces())
@@ -290,15 +292,30 @@ namespace WinFormsApp1
                                 var p1 = GetCenter(alien.Tile);
                                 var p2 = GetCenter(alien.LastMove);
                                 lines.TryAdd(movePen, new());
-                                lines[movePen].Add(new(p1, p2)); //color
+                                lines[movePen].Add(new(p1, p2));
                             }
                             if (alien.LastAttacks != null)
                                 foreach (var attack in alien.LastAttacks)
                                 {
                                     lines.TryAdd(attPen, new());
-                                    lines[attPen].Add(new(GetCenter(attack.Item1), GetCenter(attack.Item2))); //color
+                                    lines[attPen].Add(new(GetCenter(attack.Item1), GetCenter(attack.Item2)));
                                 }
                             PointF GetCenter(Tile p) => new(GetX(p.X) + Scale / 2f, GetY(p.Y) + Scale / 2f);
+
+                            if (SelTile == alien.Tile)
+                            {
+                                List<Point> path = null;
+                                if (alien.State == EnemyPiece.AIState.Retreat)
+                                    path = (alien.RetreatPath);
+                                else if (alien.State == EnemyPiece.AIState.Rush)
+                                    path = (alien.PathToCore);
+                                if (path != null)
+                                {
+                                    if (path[0] != alien.Tile.Location)
+                                        path.Insert(path.IndexOf(path.OrderBy(p => alien.Tile.GetDistance(p)).First()), alien.Tile.Location);
+                                    paths.Add(path);
+                                }
+                            }
                         }
                     }
                     else if (piece is Mech mech)
@@ -333,7 +350,7 @@ namespace WinFormsApp1
                     {
                         float barSize = defHeight * rect.Height;
                         //statBarPow smaller bars bigger which helps visual clarity 
-                        float widthTotal = (float)Math.Pow(killable.TotalDefenses.Sum(k => StatValue(k.DefenseMax)) / defenseMax, statBarPow);
+                        float widthTotal = (float)Math.Pow(killable.AllDefenses.Sum(k => StatValue(k.DefenseMax)) / defenseMax, statBarPow);
                         if (widthTotal > 1)
                             widthTotal = 1;
                         widthTotal *= rect.Width;
@@ -347,7 +364,7 @@ namespace WinFormsApp1
                         float max2 = GetValue(DefenseType.Armor, Get);
                         float max3 = GetValue(DefenseType.Shield, Get);
                         float GetValue(DefenseType type, Func<Defense, int?> GetStat) =>
-                            killable.TotalDefenses.Where(d => d.Type == type).Sum(a => StatValue(GetStat(a) ?? 0));//StatValue?
+                            killable.AllDefenses.Where(d => d.Type == type).Sum(a => StatValue(GetStat(a) ?? 0));//StatValue?
 
                         DrawBar(1, new float[] { cur1, cur2, cur3 }, new float[] { max1, max2, max3 },
                             new Brush[] { Brushes.DarkGray, Brushes.LightGray, Brushes.SkyBlue, }, barSize, widthTotal);
@@ -382,17 +399,17 @@ namespace WinFormsApp1
                         float curX = defBar.X;
 
                         float total = maxes.Sum();
-                        for (int a = 0; a < curs.Length; a++)
+                        for (int b = 0; b < curs.Length; b++)
                         {
                             float mult = defBar.Width / total;
-                            float cur = curs[a] * mult;
-                            float max = maxes[a] * mult;
-                            AddFill(brushes[a], new(curX, defBar.Y, cur, defBar.Height));
+                            float cur = curs[b] * mult;
+                            float max = maxes[b] * mult;
+                            AddFill(brushes[b], new(curX, defBar.Y, cur, defBar.Height));
                             curX += cur;
                             if (cur < max)
                                 AddFill(Brushes.White, new(curX, defBar.Y, max - cur, defBar.Height));
                             curX += max - cur;
-                            if (a + 1 < curs.Length)
+                            if (b + 1 < curs.Length)
                                 lines[Pens.Black].Add(new(new(curX, defBar.Y), new(curX, defBar.Bottom)));
                         }
                     }
@@ -493,18 +510,18 @@ namespace WinFormsApp1
             foreach (var p in polygons)
                 e.Graphics.FillPolygon(Brushes.Black, p);
 
-            if (Game.TEST_MAP_GEN.HasValue)
-                foreach (var found in Program.Game.Map.FoundPaths.Values.Distinct())
+            var dispPath = Game.TEST_MAP_GEN.HasValue ? Program.Game.Map.FoundPaths.Values.Distinct().Select(f => f.Path) : paths;
+            foreach (var path in dispPath)
+            {
+                //var path = found.Path;
+                for (int d = 1; d < path.Count; d++)
                 {
-                    var path = found.Path;
-                    for (int d = 1; d < path.Count; d++)
-                    {
-                        PointF GetCenter(Point p) => new(GetX(p.X) + Scale / 2f, GetY(p.Y) + Scale / 2f);
-                        var p1 = GetCenter(path[d - 1]);
-                        var p2 = GetCenter(path[d]);
-                        e.Graphics.DrawLine(new Pen(Color.DarkGreen, 2f), p1.X, p1.Y, p2.X, p2.Y);
-                    }
+                    PointF GetCenter(Point p) => new(GetX(p.X) + Scale / 2f, GetY(p.Y) + Scale / 2f);
+                    var p1 = GetCenter(path[d - 1]);
+                    var p2 = GetCenter(path[d]);
+                    e.Graphics.DrawLine(new Pen(Color.Magenta, 2f), p1.X, p1.Y, p2.X, p2.Y);
                 }
+            }
 
             if (rects.Length > 0)
                 e.Graphics.DrawRectangles(Pens.Black, rects);

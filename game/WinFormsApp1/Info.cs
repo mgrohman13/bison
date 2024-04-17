@@ -1,5 +1,6 @@
 ﻿using ClassLibrary1;
 using ClassLibrary1.Pieces;
+using ClassLibrary1.Pieces.Enemies;
 using ClassLibrary1.Pieces.Players;
 using ClassLibrary1.Pieces.Terrain;
 using System;
@@ -117,7 +118,7 @@ namespace WinFormsApp1
                         + (killable.Hits.DefenseCur < killable.Hits.DefenseMax ? $"/{killable.Hits.DefenseMax}" : "")
                         + (repairInc > 0 ? $"+{FormatUsuallyInt(repairInc)}" : "");
 
-                    Defense armor = killable.Defenses.Where(d => d.Type == DefenseType.Armor).FirstOrDefault();
+                    Defense armor = killable.Protection.Where(d => d.Type == DefenseType.Armor).FirstOrDefault();
                     if (armor != null)
                     {
                         lbl2.Show();
@@ -127,7 +128,7 @@ namespace WinFormsApp1
                             + (armor.DefenseCur < armor.DefenseMax ? $"/{armor.DefenseMax}" : "")
                             + (armor.GetRegen() > 0 ? $"+{FormatUsuallyInt(armor.GetRegen())}" : "");
                     }
-                    Defense shield = killable.Defenses.Where(d => d.Type == DefenseType.Shield).FirstOrDefault();
+                    Defense shield = killable.Protection.Where(d => d.Type == DefenseType.Shield).FirstOrDefault();
                     if (shield != null)
                     {
                         lbl3.Show();
@@ -154,6 +155,7 @@ namespace WinFormsApp1
                             Format(movable.MoveCur), (movable.MoveMax), (movable.MoveLimit), Format(movable.GetInc()),
                             CheckBase(movable.MoveIncBase, movable.GetInc()));
                 }
+
                 if (playerPiece != null)
                 {
                     lbl6.Show();
@@ -171,7 +173,7 @@ namespace WinFormsApp1
                             lbl7.Show();
                             lblInf7.Show();
                             lbl7.Text = "Energy";
-                            lblInf7.Text = string.Format("{1}{0}{2}", Format(energyInc), energyInc < 0 ? "" : "+", 
+                            lblInf7.Text = string.Format("{1}{0}{2}", Format(energyInc), energyInc < 0 ? "" : "+",
                                 playerPiece is Core core ? $" ({FormatPct(energyInc / Core.ENERGY)})" : "");
                         }
                         if (massInc != 0)
@@ -190,6 +192,19 @@ namespace WinFormsApp1
                         }
                     }
                 }
+                if (Selected.Piece is Alien alien)
+                {
+                    lbl6.Show();
+                    lblInf6.Show();
+                    lbl6.Text = "Behavior";
+                    lblInf6.Text = alien.State.ToString();
+
+                    lbl7.Show();
+                    lblInf7.Show();
+                    lbl7.Text = "Morale";
+                    lblInf7.Text = FormatPct(alien.Morale);
+                }
+
                 var builder = Selected.Piece.GetBehavior<IBuilder>();
                 var repair = Selected.Piece.GetBehavior<IRepair>();
                 if (repair != null)
