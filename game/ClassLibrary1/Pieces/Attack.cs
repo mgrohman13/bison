@@ -53,12 +53,21 @@ namespace ClassLibrary1.Pieces
 
         public bool CanAttack() => !Attacked && AttackCur > 0
                 && !(Range > MELEE_RANGE && Piece.HasBehavior(out IMovable movable) && movable.Moved);
-        public Dictionary<IKillable, int> GetDefenders(Piece target, Tile attackFrom = null)//Dictionary<IKillable, int>
+        public Dictionary<IKillable, int> GetDefenders(Piece target, Tile attackFrom = null)
         {
             attackFrom ??= Piece.Tile;
-            if (!CanAttack(target, attackFrom))
+            bool movingRangeCheck = attackFrom == Piece.Tile || Range == MELEE_RANGE; //for AI 
+            if (movingRangeCheck && CanAttack())
+                return GetDefenders(Piece.Side, target, t => attackFrom.GetDistance(t.Tile) <= Range);
+            return new();
+        }
+        public static Dictionary<IKillable, int> GetDefenders(Side attacker, Piece target) =>
+            GetDefenders(attacker, target, _ => true);
+        private static Dictionary<IKillable, int> GetDefenders(Side attacker, Piece target, Func<Piece, bool> InRange)
+        {
+            if (!CanAttack(target, true))
             {
-                var adjacent = AdjacentPieces(target).Where(p => CanAttack(p, attackFrom));
+                var adjacent = AdjacentPieces(target).Where(p => CanAttack(p, true));
                 if (adjacent.Any())
                     target = Game.Rand.SelectValue(adjacent);
                 else
@@ -66,40 +75,25 @@ namespace ClassLibrary1.Pieces
             }
 
             var defenders = AdjacentPieces(target)
-                .Where(p => CanAttack(p, null, false) && p.HasBehavior<IAttacker>())
-                //.Concat(new[] { target })
+                .Where(p => CanAttack(p, false) && p.HasBehavior<IAttacker>())
                 .Select(p => p.GetBehavior<IKillable>());
-
-            //int GetMaxDef(IKillable k) => k.GetDefenses(attack).Max(d => d?.DefenseCur) ?? 0;
-            //int GetSufficientDef(IKillable k)
-            //{
-            //    int maxDef = GetMaxDef(k);
-            //    if (maxDef < Math.Ceiling(attack.Rounds))
-            //        maxDef = 0;
-            //    return maxDef;
-            //}
-            //friendly = Game.Rand.Iterate(friendly).OrderByDescending(GetSufficientDef)
-            //    .ThenByDescending(k => k.DefenseCur)
-            //    .ThenByDescending(GetMaxDef)
-            //    .First();
-
-            //int? maxDef = defenders.Max(MaxDef);
-            //defenders = defenders.Where(k => MaxDef(k) >= maxDef).ToHashSet();
 
             if (!defenders.Any())
                 defenders = new[] { target.GetBehavior<IKillable>() };
-            return defenders.ToDictionary(k => k, v => v.TotalDefenses.Max(CombatTypes.GetDefenceChance));
+            return defenders.ToDictionary(k => k, v => v.AllDefenses.Max(CombatTypes.GetDefenceChance));
 
-            bool CanAttack(Piece target, Tile attackFrom, bool checkRange = true) => this.CanAttack()
-                && target != null && target.Side != this.Piece.Side
+            bool CanAttack(Piece target, bool checkRange) => target != null && target.Side != attacker
                 && target.HasBehavior(out IKillable killable) && !killable.Dead
-                && (!checkRange || attackFrom.GetDistance(target.Tile) <= this.Range);
-            static IEnumerable<Piece> AdjacentPieces(Piece target) => target.Tile.GetAdjacentTiles().Select(t => t.Piece).Where(p => p?.Side == target.Side);
-            //static int? MaxDef(IKillable killable) => killable.TotalDefenses.Max(d => d?.DefenseCur);
+                && (!checkRange || InRange(target));
+            static IEnumerable<Piece> AdjacentPieces(Piece target) =>
+                target.Tile?.GetAdjacentTiles().Select(t => t.Piece).Where(p => p?.Side == target.Side)
+                ?? Enumerable.Empty<Piece>();
         }
 
         internal bool Fire(IKillable target)
         {
+            Tile targetTile = target.Piece.Tile;
+
             var defenders = GetDefenders(target.Piece);
             if (defenders.Any())
             {
@@ -109,14 +103,14 @@ namespace ClassLibrary1.Pieces
                 {
                     target.OnAttacked();
                     int startAttack = this.AttackCur;
-                    Dictionary<Defense, int> startDefense = target.TotalDefenses.ToDictionary(d => d, d => d.DefenseCur);
+                    Dictionary<Defense, int> startDefense = target.AllDefenses.ToDictionary(d => d, d => d.DefenseCur);
 
                     int rounds = this.AttackCur;
                     for (int a = 0; a < rounds && DoAtt(); a++)
                         if (a == 0 || Game.Rand.Bool())
                         {
                             //Defense defense = Game.Rand.Iterate(target.TotalDefenses.Where(d => !d.Dead)).OrderBy(CombatTypes.CompareDef).First();
-                            Defense defense = Game.Rand.SelectValue(target.TotalDefenses, CombatTypes.GetDefenceChance);
+                            Defense defense = Game.Rand.SelectValue(target.AllDefenses, CombatTypes.GetDefenceChance);
                             bool activeDefense = target.HasBehavior<IAttacker>();
 
                             if (Game.Rand.Next(AttackCur + defense.DefenseCur) < AttackCur)
@@ -134,7 +128,7 @@ namespace ClassLibrary1.Pieces
 
                     this._attacked = true;
 
-                    Piece.GetBehavior<IAttacker>().RaiseAttackEvent(this, target);
+                    Piece.GetBehavior<IAttacker>().RaiseAttackEvent(this, target, targetTile);
                     Piece.Game.Log.LogAttack(this, startAttack, target, startDefense);
                     return true;
                 }

@@ -110,21 +110,13 @@ namespace ClassLibrary1.Map
                 c = start.Y - a * start.X;
             }
 
-            public void Turn(int turn)
-            {
-                spawn.Turn(turn);
-            }
-            public int SpawnChance(int turn, double? enemyMove)
-            {
-                return spawn.Chance * 3;
-            }
+            public void Turn(int turn) => spawn.Turn(turn);
+            public int SpawnChance(int turn, double? enemyMove) => spawn.Chance * 3;
             public Tile SpawnTile(Map map, bool isEnemy, double deviationMult)
-                => map.SpawnTile(GetPoint(Angle, ExploredDist), Consts.PathWidth * deviationMult, isEnemy);
+                => map.SpawnTile(ExploredPoint(), Consts.PathWidth * deviationMult, isEnemy);
+            public PointD ExploredPoint(double buffer = 0) => GetPoint(Angle, ExploredDist + buffer);
 
-            public override string ToString()
-            {
-                return "Path " + (float)Angle;
-            }
+            public override string ToString() => "Path " + (float)Angle;
         }
     }
 }

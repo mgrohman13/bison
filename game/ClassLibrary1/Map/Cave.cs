@@ -34,6 +34,7 @@ namespace ClassLibrary1.Map
             public double PathLength => Math.Sqrt(GetDistSqr(seg1, seg2));
 
             public double MinSpawnMove => minSpawnMove;
+            public bool Explored => explored;
             //public Point PathFindStart => pathToCore.First();
             //public IReadOnlyList<Point> PathToCore => pathToCore.AsReadOnly();
 

@@ -29,8 +29,8 @@ namespace ClassLibrary1
         public const double DifficultyIncTurns = 78;
         public const double DifficultyEnergyPow = 1.69;
         public const double DifficultyResearchPow = 1.3;
-        public const double DifficultyMoveDirPow = .52;
-        public const double DistanceMoveDirPow = .26;
+        public const double DifficultyAIPow = .52;
+        //public const double DistanceMoveDirPow = .26;
 
         public const double MoveDev = .013;
         public const double MoveLimitPow = 1.3;

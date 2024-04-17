@@ -1,12 +1,7 @@
-﻿using System;
-using System.Diagnostics;
+﻿using ClassLibrary1.Pieces;
+using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
-using MattUtil;
-using ClassLibrary1.Pieces;
-using ClassLibrary1.Pieces.Enemies;
-using ClassLibrary1.Pieces.Players;
 
 namespace ClassLibrary1
 {
@@ -25,7 +20,7 @@ namespace ClassLibrary1
         internal IReadOnlyList<Piece> Pieces => _pieces;
         internal IEnumerable<T> PiecesOfType<T>() where T : class, IBehavior
         {
-            return Pieces.Select(p => p.GetBehavior<T>()).Where(b => b != null);
+            return Pieces.Select(p => p is T t ? t : p.GetBehavior<T>()).Where(b => b != null);
         }
 
         protected Side(Game game, int energy, int mass)

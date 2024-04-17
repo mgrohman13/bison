@@ -18,6 +18,8 @@ namespace ClassLibrary1.Map
         internal static readonly Stopwatch watch = new();
         private static int evalCount = 0;
 
+        private static Func<Map, Point, Func<Tile, Terrain>, Tile> NewTile;
+
         private const double TWO_PI = Math.PI * 2;
         private const double HALF_PI = Math.PI / 2.0;
 
@@ -402,6 +404,23 @@ namespace ClassLibrary1.Map
             return invalid;
         }
 
+        internal Tile FindNonVisibleTile(Tile tile)
+        {
+            Dictionary<PointD, double> dists = new();
+            var point = _paths.Select(p => p.ExploredPoint(Consts.PathWidth))
+                .Concat(_caves.Where(c => !c.Explored).Select(c => c.Center))
+                .OrderBy(p =>
+                {
+                    if (dists.TryAdd(p, Math.Sqrt(GetDistSqr(tile.X, tile.Y, p)) + Game.Rand.OE(Consts.CavePathSize)))
+                        ;
+                    else
+                        ;
+                    return dists[p];
+                })
+                .First();
+            return SpawnTile(point, Consts.PathWidth + Consts.CaveSize, false);
+        }
+
         internal void Explore(Tile tile, double vision)
         {
             if (tile.X != 0 || tile.Y != 0)
@@ -495,45 +514,71 @@ namespace ClassLibrary1.Map
         private static double PointLineDistance(double a, double b, double c, Point point) =>
             (a * point.X + b * point.Y + c) / Math.Sqrt(a * a + b * b);
 
-        public readonly Dictionary<Point, FoundPath> FoundPaths = new();
-        internal List<Point> PathFind(Tile from, double movement, Func<HashSet<Point>, bool> Accept)//, Tile to
+        public readonly Dictionary<Point, FoundPath> FoundPaths = new(); // private, rename
+        internal List<Point> PathFind(Tile from, double movement, Func<HashSet<Point>, bool> Accept)
         {
-            Tile to = Game.Player.Core.Tile;
+            if (FoundPaths.TryGetValue(from.Location, out FoundPath found) && found.Movement <= movement)
+                return found.CompletePath(from.Location).ToList();
 
-            //soo much overhead...
+            HashSet<Point> known = FoundPaths.Keys.Where(k => FoundPaths[k].Movement <= movement).ToHashSet();
 
-            Point fromP = from.Location;
-            Point toP = to.Location;
-            if (from.Equals(to))
-                return new() { fromP, toP, };
-            if (FoundPaths.TryGetValue(fromP, out FoundPath found) && found.Movement <= movement)
-                return found.CompletePath(fromP).ToList();
+            var path = PathFind(from, Game.Player.Core.Tile, movement, _ => 0, known.Contains, Accept);
 
-            //cache tiles and penalties at each point so we maintain reference equality and consistent penalties
-            Dictionary<Point, Tuple<Tile, double>> cache = new() {
-                { fromP, Tuple.Create(from, 0.0) },
-                { toP, Tuple.Create(to, 0.0) },
-            };
+            if (path != null)
+            {
+                FoundPath target = null;
+                Point final = path[^1];
+                if (final != Game.Player.Core.Tile.Location)
+                    target = FoundPaths[final];
+                FoundPath foundPath = new(path, target, movement);
+                for (int a = 0; a < path.Count - 1; a++)
+                {
+                    FoundPaths.TryGetValue(path[a], out FoundPath old);
+                    if (foundPath.Movement < (old?.Movement ?? double.MaxValue))
+                        FoundPaths[path[a]] = foundPath;//should join together so that faster aliens can switch over to faster path
+                }
+                if (target != null)
+                    path.AddRange(target.CompletePath(final));
+            }
 
-            HashSet<Tile> known = FoundPaths.Keys.Where(k => FoundPaths[k].Movement <= movement).Select(GetTile).ToHashSet();
-            foreach (Tile tile in known)
-                cache[tile.Location] = Tuple.Create(tile, 0.0);
+            return path;
+        }
+        internal List<Point> PathFindRetreat(Tile from, Tile to, double movement, double defense, Dictionary<Tile, double> playerAttacks)
+        {
+            var path = PathFind(from, to, movement, p =>
+            {
+                double att = 0;
+                Tile key = GetTile(p);
+                if (key != null)
+                    playerAttacks.TryGetValue(key, out att);
+                return Math.Sqrt((att + 1) / (defense + 1) * Consts.PathWidth);
+            }, p => !Visible(p), _ => true);
+            if (path == null)
+                throw new Exception();
+            return path;
+        }
+        internal List<Point> PathFind(Tile fromTile, Tile toTile, double movement, Func<Point, double> Penalty, Func<Point, bool> Stop, Func<HashSet<Point>, bool> Accept)
+        {
+            Point from = fromTile.Location;
+            Point to = toTile.Location;
+            if (from == to)
+                return new() { from, to, };
 
-            var path = TBSUtil.PathFind(Game.Rand, from, to, known, p1 =>
-                    p1.GetAllPointsInRange(movement).Where(p =>
+            //cache tile penalties at each point so they are consistent 
+            Dictionary<Point, double> cache = new();
+
+            var path = TBSUtil.PathFind(Game.Rand, from, to, Stop, p1 =>
+                    GetTile(p1).GetAllPointsInRange(movement).Where(p =>
                     {
                         var tile = GetTile(p);
                         var piece = tile?.Piece;
-                        return tile == from || tile == to || piece is null || piece is Terrain || piece.HasBehavior<IMovable>();
+                        return tile == null || p == from || p == to || piece is null || piece is Terrain || piece.HasBehavior<IMovable>();
                     }).Select(p2 =>
                     {
-                        double dist = p1.GetDistance(p2);
-                        if (!cache.TryGetValue(p2, out Tuple<Tile, double> tuple))
+                        //the map is infinite, so to avoid pathfinding forever we impose a penalty on blocked terrain instead of blocking tiles entirely
+                        if (!cache.TryGetValue(p2, out double penalty))
                         {
                             Tile tile = GetTile(p2);
-
-                            //the map is infinite, so to avoid pathfinding forever we impose a penalty on blocked terrain instead of blocking tiles entirely
-                            double penalty = 0;
                             if (tile == null)
                             {
                                 penalty = Game.Rand.Gaussian((Consts.PathWidth + movement) * Consts.PathWidth, .039);
@@ -546,15 +591,15 @@ namespace ClassLibrary1.Map
                             }
                             if (penalty > 0 && !Game.TEST_MAP_GEN.HasValue && Visible(p2))
                                 penalty *= Consts.PathWidth;
-
-                            tile ??= NewTile(this, p2, t => null);
-                            tuple = Tuple.Create(tile, penalty);
-                            cache.Add(p2, tuple);
+                            penalty += Penalty(p2);
+                            cache.Add(p2, penalty);
                         }
-                        return Tuple.Create(tuple.Item1, dist + tuple.Item2);
+
+                        double dist = Tile.GetDistance(p1, p2);
+                        return Tuple.Create(p2, dist + penalty);
                     }),
-                    (p1, p2) => p1.GetDistance(p2))
-                .Select(t => t.Location).ToList();
+                    Tile.GetDistance)
+                .ToList();
 
             HashSet<Point> blocked = new();
             foreach (var p in path)
@@ -573,6 +618,8 @@ namespace ClassLibrary1.Map
                 //clear any blocked terrain we pathed through 
                 clearTerrain.UnionWith(blocked.SelectMany(p =>
                 {
+                    if (Visible(p))
+                        ;
                     List<Point> list = new() { p };
                     int extra = Game.Rand.OEInt();
                     for (int a = 0; a < extra; a++)
@@ -583,27 +630,9 @@ namespace ClassLibrary1.Map
                     }
                     return list;
                 }));
-
-                FoundPath target = null;
-                Point final = path[^1];
-                if (final != to.Location)
-                    target = FoundPaths[final];
-                FoundPath foundPath = new(path, target, movement);
-                for (int a = 0; a < path.Count - 1; a++)
-                {
-                    FoundPaths.TryGetValue(path[a], out FoundPath old);
-                    if (foundPath.Movement < (old?.Movement ?? double.MaxValue))
-                        FoundPaths[path[a]] = foundPath;//should join together so that faster aliens can switch over to faster path
-                }
-                if (target != null)
-                    path.AddRange(target.CompletePath(final));
-
-                return path;
             }
 
-            return null;
+            return path;
         }
-
-        private static Func<Map, Point, Func<Tile, Terrain>, Tile> NewTile;
     }
 }

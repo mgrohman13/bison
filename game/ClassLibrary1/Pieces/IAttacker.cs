@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using static ClassLibrary1.Map.Map;
 using static ClassLibrary1.Pieces.Attacker;
 using AttackType = ClassLibrary1.Pieces.CombatTypes.AttackType;
 
@@ -18,7 +19,7 @@ namespace ClassLibrary1.Pieces
 
         void Upgrade(IEnumerable<Values> values);
         public bool Fire(IKillable killable);
-        internal bool EnemyFire(IKillable killable);
+        internal bool EnemyFire(IKillable killable, Attack attack = null);
 
         //public interface IAttack 
         //{ 
@@ -28,7 +29,7 @@ namespace ClassLibrary1.Pieces
         //static
 
         public Events Event { get; }
-        internal void RaiseAttackEvent(Attack attack, IKillable killable);
+        internal void RaiseAttackEvent(Attack attack, IKillable killable, Tile targetTile);
 
 
         [Serializable]

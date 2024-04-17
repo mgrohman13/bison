@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using Tile = ClassLibrary1.Map.Map.Tile;
 using Values = ClassLibrary1.Pieces.IAttacker.Values;
 
 namespace ClassLibrary1.Pieces
@@ -66,16 +67,16 @@ namespace ClassLibrary1.Pieces
             Piece.Tile.Map.Game.SaveGame();
             return fired;
         }
-        bool IAttacker.EnemyFire(IKillable target)
+        bool IAttacker.EnemyFire(IKillable target, Attack attack)
         {
             bool fire = (Piece.IsEnemy && target != null && target.Piece.IsPlayer);
-            return Fire(fire, target);
+            return Fire(fire, target, attack);
         }
-        private bool Fire(bool fire, IKillable target)
+        private bool Fire(bool fire, IKillable target, Attack useAtt = null)
         {
             bool retVal = false;
             if (fire)
-                foreach (Attack attack in Game.Rand.Iterate(Attacks))
+                foreach (Attack attack in (useAtt == null ? Game.Rand.Iterate(Attacks) : new[] { useAtt }))
                 {
                     retVal |= attack.Fire(target);
                     if (target.Dead)
@@ -107,21 +108,24 @@ namespace ClassLibrary1.Pieces
         {
             public delegate void AttackEventHandler(object sender, AttackEventArgs e);
             public event AttackEventHandler AttackEvent;
-            internal void RaiseAttackEvent(Attack attack, IKillable killable) =>
+            internal void RaiseAttackEvent(Attack attack, IKillable killable, Tile targetTile) =>
 
-                AttackEvent?.Invoke(this, new AttackEventArgs(attack, killable));
+                AttackEvent?.Invoke(this, new AttackEventArgs(attack, killable, targetTile));
         }
         public class AttackEventArgs
         {
+            public readonly Tile From, To;
             public readonly Attack Attack;
             public readonly IKillable Killable;
-            public AttackEventArgs(Attack attack, IKillable killable)
+            public AttackEventArgs(Attack attack, IKillable killable, Tile targetTile)
             {
                 this.Attack = attack;
                 this.Killable = killable;
+                this.From = attack.Piece.Tile;
+                this.To = targetTile;
             }
         }
-        void IAttacker.RaiseAttackEvent(Attack attack, IKillable killable) => Event.RaiseAttackEvent(attack, killable);
+        void IAttacker.RaiseAttackEvent(Attack attack, IKillable killable, Tile targetTile) => Event.RaiseAttackEvent(attack, killable, targetTile);
 
         public void OnDeserialization(object sender)
         {

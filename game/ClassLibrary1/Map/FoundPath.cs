@@ -6,7 +6,7 @@ using System.Linq;
 namespace ClassLibrary1.Map
 {
     [Serializable]
-    public class FoundPath
+    public class FoundPath// private 
     {
         public readonly double Movement;
         public readonly IReadOnlyList<Point> Path;

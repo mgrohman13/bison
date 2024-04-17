@@ -57,9 +57,10 @@ namespace ClassLibrary1.Map
                 .Where(Map.Visible).Select(Map.GetTile).Where(t => t != null);
 
             internal IEnumerable<Tile> GetAdjacentTiles() => GetTilesInRange(Attack.MELEE_RANGE, false, null);
-            internal IEnumerable<Tile> GetTilesInRange(IMovable movable) => GetTilesInRange(movable.MoveCur, false, movable.Piece);
-            internal IEnumerable<Tile> GetTilesInRange(IAttacker attacker) => GetTilesInRange(attacker.Attacks.Max(a => a.Range), true, attacker.Piece);
-            internal IEnumerable<Tile> GetTilesInRange(double range, bool blockMap, Piece blockFor) => GetPointsInRange(range, blockMap, blockFor)
+            internal IEnumerable<Tile> GetTilesInRange(IMovable movable, double? cur = null) => GetTilesInRange(cur ?? movable.MoveCur, false, movable.Piece);
+            internal IEnumerable<Tile> GetTilesInRange(IAttacker attacker, double? cur = null) => GetTilesInRange(cur ?? attacker.Attacks.Max(a => a.Range), true, attacker.Piece);
+            internal IEnumerable<Tile> GetTilesInRange(Attack attack) => GetTilesInRange(attack.Range, true, attack.Piece);
+            private IEnumerable<Tile> GetTilesInRange(double range, bool blockMap, Piece blockFor) => GetPointsInRange(range, blockMap, blockFor)
                 .Select(Map.GetTile).Where(t => t != null);
 
             internal IEnumerable<Point> GetPointsInRangeUnblocked(double vision) => GetPointsInRange(vision, false, null);
@@ -88,6 +89,7 @@ namespace ClassLibrary1.Map
                 //    foreach (var p in GetPointsInRangeUnblocked(map, point, range).Where(p => map.GetTile(p) == null))
                 //        AddBlock(p, baseBlock);
                 //if (blockFor != null)
+                ////more efficient implementation?
                 //    foreach (var pair in map._pieces.Where(p => p.Value != blockFor
                 //            && (p.Value.Side != blockFor.Side || !p.Value.HasBehavior<IMovable>())
                 //            && GetDistance(point, p.Key) <= range))

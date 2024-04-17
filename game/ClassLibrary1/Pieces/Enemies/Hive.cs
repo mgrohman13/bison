@@ -17,16 +17,15 @@ namespace ClassLibrary1.Pieces.Enemies
         private readonly IKillable killable;
         private readonly IAttacker attacker;
 
-        private readonly double cost;
+        internal readonly double Cost;
         private double energy;
 
-        public Piece Piece => this;
         public bool Dead => killable.Dead;
 
         private Hive(Tile tile, IEnumerable<IKillable.Values> killable, double resilience, IEnumerable<IAttacker.Values> attacks, double cost, double energy)
-            : base(tile)
+            : base(tile, AIState.Patrol)
         {
-            this.cost = cost + energy;
+            this.Cost = cost + energy;
             this.energy = energy;
 
             this.killable = new Killable(this, killable, resilience);
@@ -68,8 +67,8 @@ namespace ClassLibrary1.Pieces.Enemies
         }
         private void Killable_DamagedEvent(object sender, Killable.DamagedEventArgs e)
         {
-            double cur = killable.TotalDefenses.Sum(d => Consts.StatValue(d.DefenseCur));
-            double max = killable.TotalDefenses.Sum(d => Consts.StatValue(d.DefenseMax));
+            double cur = killable.AllDefenses.Sum(d => Consts.StatValue(d.DefenseCur));
+            double max = killable.AllDefenses.Sum(d => Consts.StatValue(d.DefenseMax));
             ((Enemy)Side).HiveDamaged(this, ref energy, killable.Hits.DefenseCur, cur / max, MaxRange);
         }
         public double MaxRange => attacker.Attacks.Max(a => a.Range);
@@ -79,7 +78,7 @@ namespace ClassLibrary1.Pieces.Enemies
             Tile tile = this.Tile;
             base.Die();
             tile.Map.GenResources(new[] { tile }, true);
-            Game.CollectHive(cost);
+            Game.CollectHive(Cost);
         }
 
         private static IEnumerable<IKillable.Values> GenKillable(int hiveIdx)
