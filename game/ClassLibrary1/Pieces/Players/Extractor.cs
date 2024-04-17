@@ -10,7 +10,6 @@ namespace ClassLibrary1.Pieces.Players
     public class Extractor : PlayerPiece, IKillable.IRepairable
     {
         public readonly Resource Resource;
-        public Piece Piece => this;
 
         public double Sustain => Resource.Sustain * GetValues(Game).SustainMult;
 
@@ -56,7 +55,7 @@ namespace ClassLibrary1.Pieces.Players
             }
         }
         bool IKillable.IRepairable.AutoRepair => Game.Player.Research.HasType(Research.Type.ExtractorAutoRepair);
-        public bool CanRepair() => Consts.CanRepair(Piece);
+        public bool CanRepair() => Consts.CanRepair(this);
 
         internal override void Die()
         {

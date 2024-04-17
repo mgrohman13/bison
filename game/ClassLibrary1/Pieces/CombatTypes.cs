@@ -108,7 +108,7 @@ namespace ClassLibrary1.Pieces
         internal static bool SplashAgainst(Defense defense)
         {
             if (defense.Type == DefenseType.Hits && Game.Rand.Bool())
-                return defense.Piece.GetBehavior<IKillable>().TotalDefenses.Any(d => d.Type == DefenseType.Armor && !d.Dead);
+                return defense.Piece.GetBehavior<IKillable>().Protection.Any(d => d.Type == DefenseType.Armor && !d.Dead);
             return true;
         }
 

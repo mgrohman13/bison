@@ -11,7 +11,6 @@ namespace ClassLibrary1.Pieces.Players
     public class Factory : FoundationPiece, IKillable.IRepairable
     {
         private readonly double _rangeMult, _rounding;
-        public Piece Piece => this;
 
         private Factory(Tile tile, Values values)
             : base(tile, values.Vision)
@@ -79,7 +78,7 @@ namespace ClassLibrary1.Pieces.Players
             }
         }
         bool IKillable.IRepairable.AutoRepair => Game.Player.Research.HasType(Research.Type.FactoryAutoRepair);
-        public bool CanRepair() => Consts.CanRepair(Piece);
+        public bool CanRepair() => Consts.CanRepair(this);
 
         public override string ToString()
         {

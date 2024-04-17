@@ -10,8 +10,8 @@ namespace ClassLibrary1.Pieces
     public interface IKillable : IBehavior
     {
         public Defense Hits { get; }
-        public IReadOnlyList<Defense> Defenses { get; }
-        public IReadOnlyList<Defense> TotalDefenses => new[] { Hits }.Concat(Defenses).ToList().AsReadOnly();
+        public IReadOnlyList<Defense> Protection { get; }
+        public IReadOnlyList<Defense> AllDefenses => new[] { Hits }.Concat(Protection).ToList().AsReadOnly();
         public double Resilience { get; }
         public bool Defended { get; }
 
@@ -24,7 +24,7 @@ namespace ClassLibrary1.Pieces
 
         internal void Upgrade(IEnumerable<Values> defenses, double resilience);
         internal void OnAttacked();
-        internal void GetHitsRepair(out double hitsInc, out double massCost); 
+        internal void GetHitsRepair(out double hitsInc, out double massCost);
 
 
         public Events Event { get; }
@@ -35,15 +35,15 @@ namespace ClassLibrary1.Pieces
         {
             public readonly DefenseType Type;
             private readonly int _defense;
- 
+
             public Values(DefenseType type, int defense)
             {
                 this.Type = type;
                 if (defense < 1)
                     defense = 1;
-                this._defense = defense; 
+                this._defense = defense;
             }
- 
+
             public int Defense => _defense;
         }
 

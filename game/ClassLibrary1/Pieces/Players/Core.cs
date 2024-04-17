@@ -13,8 +13,6 @@ namespace ClassLibrary1.Pieces.Players
 
         public const double START_VISION = 3, ENERGY = 480;
 
-        public Piece Piece => this;
-
         private Core(Tile tile, Values values)
             : base(tile, values.Vision)
         {
@@ -65,7 +63,7 @@ namespace ClassLibrary1.Pieces.Players
             }
         }
         bool IKillable.IRepairable.AutoRepair => false;
-        public bool CanRepair() => Consts.CanRepair(Piece);
+        public bool CanRepair() => Consts.CanRepair(this);
 
         internal override void GenerateResources(ref double energyInc, ref double massInc, ref double researchInc)
         {

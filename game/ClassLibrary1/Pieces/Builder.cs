@@ -84,7 +84,7 @@ namespace ClassLibrary1.Pieces
                     totCur += cur;
                     totStart += start;
                 }
-                foreach (var d in killable.Defenses)
+                foreach (var d in killable.Protection)
                     ApplyValue(d.DefenseCur, CombatTypes.GetStartCur(d.Type, d.DefenseMax), Consts.EnergyPerShield); //assuming EnergyPerShield...
                 if (piece.HasBehavior(out IAttacker attacker))
                     foreach (var a in attacker.Attacks)

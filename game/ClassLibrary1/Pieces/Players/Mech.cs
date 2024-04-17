@@ -7,7 +7,6 @@ namespace ClassLibrary1.Pieces.Players
     [Serializable]
     public class Mech : PlayerPiece, IKillable.IRepairable
     {
-        public Piece Piece => this;
         public MechBlueprint Blueprint { get; private set; }
 
         private Mech(Tile tile, MechBlueprint blueprint)
@@ -66,7 +65,7 @@ namespace ClassLibrary1.Pieces.Players
             }
         }
         bool IKillable.IRepairable.AutoRepair => false;
-        public bool CanRepair() => Consts.CanRepair(Piece);
+        public bool CanRepair() => Consts.CanRepair(this);
 
         internal override void GetUpkeep(ref double energyUpk, ref double massUpk)
         {

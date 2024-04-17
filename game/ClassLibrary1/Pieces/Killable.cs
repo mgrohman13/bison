@@ -18,7 +18,7 @@ namespace ClassLibrary1.Pieces
 
         public Piece Piece => _piece;
         public Defense Hits => _hits;
-        public IReadOnlyList<Defense> Defenses => CombatTypes.OrderDef(_defenses);
+        public IReadOnlyList<Defense> Protection => CombatTypes.OrderDef(_defenses);
         public double Resilience => _resilience;
 
         //public int HitsCur => Hits.DefenseCur;
@@ -65,7 +65,7 @@ namespace ClassLibrary1.Pieces
             _hits.Upgrade(hits);
 
             double energy = 0, mass = 0;
-            foreach (var cur in Game.Rand.Iterate(this.Defenses.Where(d1 => !defenses.Any(d2 => d1.Type == d2.Type))))
+            foreach (var cur in Game.Rand.Iterate(this.Protection.Where(d1 => !defenses.Any(d2 => d1.Type == d2.Type))))
             {
                 _defenses.Remove(cur);
 
@@ -80,7 +80,7 @@ namespace ClassLibrary1.Pieces
 
             foreach (var upg in defenses)
             {
-                var cur = this.Defenses.Where(d => d.Type == upg.Type).SingleOrDefault();
+                var cur = this.Protection.Where(d => d.Type == upg.Type).SingleOrDefault();
                 if (cur == null)
                     _defenses.Add(new(Piece, upg));
                 else
@@ -107,12 +107,12 @@ namespace ClassLibrary1.Pieces
 
         void IBehavior.GetUpkeep(ref double energyUpk, ref double massUpk)
         {
-            foreach (Defense defense in ((IKillable)this).TotalDefenses)
+            foreach (Defense defense in ((IKillable)this).AllDefenses)
                 defense.GetUpkeep(ref energyUpk, ref massUpk);
         }
         void IBehavior.StartTurn()
         {
-            foreach (Defense defense in Game.Rand.Iterate(((IKillable)this).TotalDefenses))
+            foreach (Defense defense in Game.Rand.Iterate(((IKillable)this).AllDefenses))
                 defense.StartTurn();
 
             if (this._resetDefended)
@@ -120,7 +120,7 @@ namespace ClassLibrary1.Pieces
         }
         void IBehavior.EndTurn(ref double energyUpk, ref double massUpk)
         {
-            foreach (Defense defense in Game.Rand.Iterate(((IKillable)this).TotalDefenses))
+            foreach (Defense defense in Game.Rand.Iterate(((IKillable)this).AllDefenses))
                 defense.EndTurn(ref energyUpk, ref massUpk);
 
             this._resetDefended = true;

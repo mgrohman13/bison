@@ -89,7 +89,7 @@ namespace ClassLibrary1
                 this.Killed = target.Dead;
 
                 this.Attack = new(startAttack, attack.AttackCur, attack.AttackMax);
-                this.Defense = target.TotalDefenses.Select(d => new Stat(startDefense[d], d.DefenseCur, d.DefenseMax)).ToArray();
+                this.Defense = target.AllDefenses.Select(d => new Stat(startDefense[d], d.DefenseCur, d.DefenseMax)).ToArray();
                 //.OrderBy(d => d.Type switch
                 //{
                 //    DefenseType.Hits => 1,

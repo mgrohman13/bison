@@ -16,7 +16,6 @@ namespace ClassLibrary1.Pieces.Players
         private bool _canUpgrade;
         private readonly bool _defenseType;
         private readonly double _rangeMult, _rounding;
-        public Piece Piece => this;
 
         private Constructor(Tile tile, Values values, bool starter)
             : base(tile, values.Vision)
@@ -31,7 +30,7 @@ namespace ClassLibrary1.Pieces.Players
 
             IMovable.Values movable = values.GetMovable(_rangeMult, _rounding);
             SetBehavior(
-                new Killable(Piece, values.GetKillable(Game, _defenseType), values.Resilience),
+                new Killable(this, values.GetKillable(Game, _defenseType), values.Resilience),
                 new Movable(this, movable, starter ? movable.MoveMax - movable.MoveInc - 1 : 0),
                 new Builder.BuildExtractor(this, values.GetRepair(Game, _rangeMult, _rounding).Builder));
             Unlock();
@@ -112,7 +111,7 @@ namespace ClassLibrary1.Pieces.Players
             }
         }
         bool IKillable.IRepairable.AutoRepair => false;
-        public bool CanRepair() => Consts.CanRepair(Piece);
+        public bool CanRepair() => Consts.CanRepair(this);
 
         internal override void GetUpkeep(ref double energyUpk, ref double massUpk)
         {

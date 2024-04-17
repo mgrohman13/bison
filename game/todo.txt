@@ -92,39 +92,59 @@ FEATURES
 	experience
 	power grid
 
+aliens not being able to attack target??
+aliens not following path when all else should be equal  
+nerf alien speed/range if successfully fighting better 
+
+rename FoundPaths
+defending passive defense shouldnt be guaranteed?
 move CombatTypes.GetReloadBase out of IAttacker.Values
 	reload values also too high?
+measure enemy move performance with stopwatch
+	expect pathfinding to take the most time but not happen often 
+
 implement pathfinding for player!
-enemy attacks/moves	
-	use pathfinding
+redo GetKillWeight
 	target extractor more often
-	take into account new mechanics 
-	not attack to recharge weapon
-	run away to charge shields
-	protect each other
+	use state?
+
+enemy attacks/moves	
+	smarter about not attacking to recharge weapon
+		always attack if about to die, otherwise favor recharge
+	do they run away to charge shields?
 map contiguity / pathfinding / alien behavior
-	if player unit in calced move+attack range, path towards it??
 	ensure all spawns/resources can reach core with X move
 		constructors need to be able to reach resources
 			just keep constructor limit very high and not worry about it for now?
-	store behavior state on enemy pieces for consistent goal/pathing
-	morale?
-		retreat when shield/weapons down
-		retreat to repair
-		research to be able to see?
-	places for aliens to repair (hive?)
-		need to be able to pathfind to something besides core 
-			could add core and hives as separate pathfind targets with same structure
-				any way to share??
+	morale - research to be able to see?
+	aliens repair at cave/hive(new object?)
+		could add core and repair points as separate pathfind targets with same structure
+			any way to share??
+		spawn killable alien repair points in map paths too? every X distance?
 	do enemy pathfinding in background during player turn?	
 	build up too many paths over time? duplicate paths with diff speeds??
-	alien moves  
-		find closest point on path
-			path find to next point after closest			
-		OR use as heat map? random moves?
-			heat map created based on dist to trg?
-prevent moving after attack?
 
+selectValue with doubles?
+clean up MattUtil pathfinding c/p
+prevent moving after attack???
+notify in UI when clear terrain on visible tile 
+fix black lines from painting rounding with terrain 
+make existing alien reapir cost cheaper with difficulty inc 
+allow player to split attacks
+	checkbox on attack grid for use
+	at turn start, use gets set for all "full" attacks
+change DamagedEvent to targeted at all 
+stop multi-tile move when encounter newly visible enemy/resource
+	select all tiles within sqrt(2)/2 of line (that are within move)
+		pick the least move from start that is within visible of enemy piece
+	also explore vision along full line path
+research aliens
+	kill, research corpse?
+	show info like state and morale 
+random aliens alien auto repair for increased cost
+Tile should just be a struct...?
+	eqaluity always there, stores no real data, piece looks up in collection 
+	no need for a million points?
 dont serialize Noise, save seed/params instead
 if all weapons hit 0 treat as passive defender??
 	prob not - dont like sudden cutoff

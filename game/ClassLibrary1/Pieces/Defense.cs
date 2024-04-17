@@ -48,7 +48,7 @@ namespace ClassLibrary1.Pieces
                         .Where(p => p?.Side != attack.Piece.Side)
                         .Select(p => p?.GetBehavior<IKillable>())
                         .Where(k => k != null && !k.Dead)
-                        .SelectMany(k => k.TotalDefenses)))
+                        .SelectMany(k => k.AllDefenses)))
                     if (defense != this && CombatTypes.SplashAgainst(defense) && DoCollateralDamage(defense.Piece, defense.DefenseCur))
                         defense.Damage();
 
@@ -169,7 +169,7 @@ namespace ClassLibrary1.Pieces
         {
             double energyUpk = 0, massUpk = 0;
             return IncDefense(false, ref energyUpk, ref massUpk) - DefenseCur;
-        }
+        } 
         private double IncDefense(bool doEndTurn, ref double energyUpk, ref double massUpk)
         {
             return Consts.IncDefense(doEndTurn, Type, Piece.HasBehavior<IAttacker>(), DefenseCur, DefenseMax, GetRepair(), ref energyUpk, ref massUpk);

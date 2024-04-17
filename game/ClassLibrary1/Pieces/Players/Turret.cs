@@ -19,8 +19,6 @@ namespace ClassLibrary1.Pieces.Players
         private readonly double _shieldMult, _armorMult, _rounding;
         private readonly double[] _rangeMult = new double[MAX_ATTACKS];
 
-        public Piece Piece => this;
-
         private Turret(Tile tile, Values values)
             : base(tile, values.Vision)
         {
@@ -31,7 +29,7 @@ namespace ClassLibrary1.Pieces.Players
                 this._rangeMult[a] = Game.Rand.GaussianOE(values.AttackRange[a], .21, .26, 1) / values.AttackRange[a];
 
             SetBehavior(
-                new Killable(Piece, values.GetKillable(Game.Player.Research, _shieldMult, _armorMult, _rounding), values.Resilience),
+                new Killable(this, values.GetKillable(Game.Player.Research, _shieldMult, _armorMult, _rounding), values.Resilience),
                 new Attacker(this, values.GetAttacks(Game.Player.Research, _rangeMult, _rounding)));
         }
         internal static Turret NewTurret(Foundation foundation)
@@ -76,7 +74,7 @@ namespace ClassLibrary1.Pieces.Players
             }
         }
         bool IKillable.IRepairable.AutoRepair => Game.Player.Research.HasType(Research.Type.TurretAutoRepair);
-        public bool CanRepair() => Consts.CanRepair(Piece);
+        public bool CanRepair() => Consts.CanRepair(this);
 
         public override string ToString()
         {
