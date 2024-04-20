@@ -18,6 +18,8 @@ namespace ClassLibrary1
 
         public IEnumerable<Piece> VisiblePieces => _pieces.Where(p => p.Tile.Visible);
 
+        public IEnumerable<Tuple<Tile, Tile>> LastAttacks => PiecesOfType<Alien>().SelectMany(a => a.LastAttacks);
+
         internal Enemy(Game game)
             : base(game, Game.Rand.Round(Consts.EnemyStartEnergy), 0)
         {

@@ -1,5 +1,4 @@
-﻿using ClassLibrary1.Pieces.Players;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -62,8 +61,6 @@ namespace ClassLibrary1.Pieces
             double pct = cur / Consts.StatValue(defense.DefenseMax - offset);
 
             double chance = cur;
-            if (defense.Piece is Core)
-                chance = 0;
             //if (!hits)
             //    chance /= Math.Sqrt(pct);
             switch (defense.Type)

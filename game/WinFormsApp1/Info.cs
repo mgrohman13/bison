@@ -173,23 +173,24 @@ namespace WinFormsApp1
                             lbl7.Show();
                             lblInf7.Show();
                             lbl7.Text = "Energy";
-                            lblInf7.Text = string.Format("{1}{0}{2}", Format(energyInc), energyInc < 0 ? "" : "+",
-                                playerPiece is Core core ? $" ({FormatPct(energyInc / Core.ENERGY)})" : "");
+                            lblInf7.Text = FormatInc(energyInc, Consts.CoreEnergy);
                         }
                         if (massInc != 0)
                         {
                             lbl8.Show();
                             lblInf8.Show();
                             lbl8.Text = "Mass";
-                            lblInf8.Text = string.Format("{1}{0}", Format(massInc), massInc < 0 ? "" : "+");
+                            lblInf8.Text = FormatInc(massInc, Consts.CoreMass);
                         }
                         if (researchInc != 0)
                         {
                             lbl9.Show();
                             lblInf9.Show();
                             lbl9.Text = "Research";
-                            lblInf9.Text = string.Format("{1}{0}", Format(researchInc), researchInc < 0 ? "" : "+");
+                            lblInf9.Text = FormatInc(researchInc, Consts.CoreResearch);
                         }
+                        string FormatInc(double inc, double coreValue) =>
+                            string.Format("{1}{0}{2}", Format(inc), inc < 0 ? "" : "+", playerPiece is Core core ? $" ({FormatPct(inc / coreValue)})" : "");
                     }
                 }
                 if (Selected.Piece is Alien alien)
@@ -221,8 +222,10 @@ namespace WinFormsApp1
                 {
                     lbl10.Show();
                     lblInf10.Show();
-                    lbl10.Text ??= "Range";
-                    lblInf10.Text = string.Format(lblInf10.Text == null ? "{0}{1}" : "{2}, {0}{1}",
+                    bool noRepair = (lbl10.Text == null || lbl10.Text.Trim().Length == 0);
+                    if (noRepair)
+                        lbl10.Text = "Range";
+                    lblInf10.Text = string.Format(noRepair ? "{0}{1}" : "{2}, {0}{1}",
                         Format(builder.Range), CheckBase(builder.RangeBase, builder.Range), lblInf10.Text);
                 }
 

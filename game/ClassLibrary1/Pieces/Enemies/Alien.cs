@@ -167,7 +167,7 @@ namespace ClassLibrary1.Pieces.Enemies
             bool SeePath(List<Point> path = null) => (path ?? PathToCore).Any(p => moveTiles.Contains(Game.Map.GetTile(p)));
             bool NeedsRetreatPath() => RetreatPath == null || !RetreatPath.Any() || !SeePath(RetreatPath) || !ValidRetreat(RetreatPath[^1]);
             bool ValidRetreat(Point point) => ValidRetreatTile(Game.Map.GetTile(point));
-            bool ValidRetreatTile(Tile tile) => !tile.Visible && !playerAttacks.ContainsKey(tile);
+            bool ValidRetreatTile(Tile tile) => tile != null && !tile.Visible && !playerAttacks.ContainsKey(tile);
             Tile GetRetreatTo()
             {
                 Tile retreat = null;

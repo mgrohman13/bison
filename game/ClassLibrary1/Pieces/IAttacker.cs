@@ -31,7 +31,6 @@ namespace ClassLibrary1.Pieces
         public Events Event { get; }
         internal void RaiseAttackEvent(Attack attack, IKillable killable, Tile targetTile);
 
-
         [Serializable]
         public readonly struct Values
         {

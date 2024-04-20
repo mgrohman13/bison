@@ -42,7 +42,8 @@ namespace WinFormsApp1
             {
                 if (_scale != value)
                 {
-                    float size = PenSize;
+                    float size = Game.Rand.Round(Math.Max(3, Math.Sqrt(Scale) - 1));
+                    penSize = size;
                     if (Red?.Width != size)
                     {
                         Red = new(Color.Red, size);
@@ -60,7 +61,7 @@ namespace WinFormsApp1
                 _scale = value;
             }
         }
-        public float PenSize => Game.Rand.Round(Math.Max(3, Math.Sqrt(Scale) - 1));
+        private float penSize = 1;
 
         public Tile SelTile
         {
@@ -145,14 +146,24 @@ namespace WinFormsApp1
         private void ShowMouseInfo()
         {
             this.lblMouse.Text = "";
-            if (MouseTile != null)
+            if (lastMouse != null)//MouseTile
             {
-                int sign = Game.TEST_MAP_GEN.HasValue ? 1 : -1;
-                Tile center = Game.TEST_MAP_GEN.HasValue ? Program.Game.Map.GetVisibleTile(0, 0) : Program.Game.Player.Core.Tile;
-                this.lblMouse.Text = string.Format("({0}, {1})", MouseTile.X - center.X, sign * (MouseTile.Y - center.Y));
-                if (SelTile != null)// && SelTile.Piece != null && SelTile.Piece.HasBehavior(out IMovable movable))// && movable.MoveCur >= 1)
+                int sign = 1;
+                Point center = new(0, 0);
+
+                //if (!Game.TEST_MAP_GEN.HasValue)
+                //{
+                //    center = Program.Game.Player.Core.Tile.Location;
+                //    sign = -1;
+                //}
+                Point mousePoint = new(GetMapX(lastMouse.X), GetMapY(lastMouse.Y));
+
+                //Point mousePoint = new(GetMapX(MouseTile.X), GetMapY(MouseTile.Y));
+
+                this.lblMouse.Text = string.Format("({0}, {1})", mousePoint.X - center.X, sign * (mousePoint.Y - center.Y));
+                if (SelTile != null)//&& SelTile.Piece != null && SelTile.Piece.HasBehavior(out IMovable movable))// && movable.MoveCur >= 1)
                 {
-                    float distance = (float)MouseTile.GetDistance(SelTile);
+                    float distance = (float)SelTile.GetDistance(mousePoint);
                     //if (distance <= movable.MoveCur)
                     this.lblMouse.Text = distance.ToString("0.0");
                     this.lblMouse.Refresh();
@@ -238,8 +249,8 @@ namespace WinFormsApp1
             Dictionary<Brush, List<RectangleF>> fill = new();
             Dictionary<RectangleF, string> letters = new();
 
-            Pen movePen = new(Color.DarkGreen, PenSize);
-            Pen attPen = new(Color.DarkRed, PenSize);
+            Pen movePen = new(Color.DarkGreen, penSize);
+            Pen attPen = new(Color.DarkRed, penSize);
 
             List<List<Point>> paths = new();
 
@@ -263,8 +274,14 @@ namespace WinFormsApp1
             float attackMax = (GetPieces<IAttacker>().Where(k => k.Piece.HasBehavior<IKillable>() && k.Piece.HasBehavior<IMovable>())
                 .Max<IAttacker>(SumAttacksMax) ?? 1) * padding;
             float defenseMax = (GetPieces<IKillable>().Where(k => k.Piece.HasBehavior<IAttacker>() && k.Piece.HasBehavior<IMovable>())
-                .Max(k => k.Protection.Sum(d => (float?)StatValue(d.DefenseMax))) ?? 1) * padding;
+                .Max(k => k.AllDefenses.Sum(d => (float?)StatValue(d.DefenseMax))) ?? 1) * padding;
             attackMax = defenseMax = Math.Max(attackMax, defenseMax);
+
+            foreach (var attack in Program.Game.Enemy.LastAttacks)
+            {
+                lines.TryAdd(attPen, new());
+                lines[attPen].Add(new(GetCenter(attack.Item1), GetCenter(attack.Item2)));
+            }
 
             foreach (Piece piece in Program.Game.Map.GetVisiblePieces())
                 if (mapCoords.Contains(piece.Tile.X, piece.Tile.Y))
@@ -294,13 +311,6 @@ namespace WinFormsApp1
                                 lines.TryAdd(movePen, new());
                                 lines[movePen].Add(new(p1, p2));
                             }
-                            if (alien.LastAttacks != null)
-                                foreach (var attack in alien.LastAttacks)
-                                {
-                                    lines.TryAdd(attPen, new());
-                                    lines[attPen].Add(new(GetCenter(attack.Item1), GetCenter(attack.Item2)));
-                                }
-                            PointF GetCenter(Tile p) => new(GetX(p.X) + Scale / 2f, GetY(p.Y) + Scale / 2f);
 
                             if (SelTile == alien.Tile)
                             {
@@ -311,8 +321,8 @@ namespace WinFormsApp1
                                     path = (alien.PathToCore);
                                 if (path != null)
                                 {
-                                    if (path[0] != alien.Tile.Location)
-                                        path.Insert(path.IndexOf(path.OrderBy(p => alien.Tile.GetDistance(p)).First()), alien.Tile.Location);
+                                    //if (path[0] != alien.Tile.Location)
+                                    //    path.Insert(path.IndexOf(path.OrderBy(p => alien.Tile.GetDistance(p)).First()), alien.Tile.Location);
                                     paths.Add(path);
                                 }
                             }
@@ -516,7 +526,6 @@ namespace WinFormsApp1
                 //var path = found.Path;
                 for (int d = 1; d < path.Count; d++)
                 {
-                    PointF GetCenter(Point p) => new(GetX(p.X) + Scale / 2f, GetY(p.Y) + Scale / 2f);
                     var p1 = GetCenter(path[d - 1]);
                     var p2 = GetCenter(path[d]);
                     e.Graphics.DrawLine(new Pen(Color.Magenta, 2f), p1.X, p1.Y, p2.X, p2.Y);
@@ -619,6 +628,8 @@ namespace WinFormsApp1
             //Debug.WriteLine("RefreshRanges: " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
             //watch.Stop();
         }
+        PointF GetCenter(Point p) => new(GetX(p.X) + Scale / 2f, GetY(p.Y) + Scale / 2f);
+        PointF GetCenter(Tile p) => GetCenter(p.Location);
         private void Ranges(PaintEventArgs e)
         {
             //watch.Reset();
@@ -670,6 +681,7 @@ namespace WinFormsApp1
 
             List<Pen> dipose = new();
             Dictionary<LineSegment, Tuple<Pen, int>> lines = new();
+            Dictionary<LineSegment, Tuple<Brush, int>> fill = new();
             foreach (var pair in ranges)
             {
                 bool edge = (pair.Key.Color == Color.White);
@@ -681,7 +693,9 @@ namespace WinFormsApp1
                             void AddLine(int x1, int y1, int x2, int y2)
                             {
                                 LineSegment l = new(x1, y1, x2, y2);
-                                if (lines.TryGetValue(l, out Tuple<Pen, int> oth))
+                                if (edge)
+                                    fill[l] = new(Brushes.SaddleBrown, 0);
+                                else if (lines.TryGetValue(l, out Tuple<Pen, int> oth))
                                 {
                                     Pen combined;
                                     if (pair.Key != oth.Item1)
@@ -720,10 +734,33 @@ namespace WinFormsApp1
                 r.AddSegment(t.Key);
             }
 
+            Dictionary<Brush, Range> fills = new();
+            foreach (var t in fill)
+            {
+                if (!fills.TryGetValue(t.Value.Item1, out Range r))
+                    fills.Add(t.Value.Item1, r = new());
+                r.AddSegment(t.Key);
+            }
+
             //Debug.WriteLine("8 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
 
-            //int calls = 0;
             PointF[] points;
+            foreach (var p in fills)
+                do
+                {
+                    points = p.Value.GetNext(GetX, GetY);
+                    if (points.Length > 0)
+                    {
+                        //calls++;
+                        //if (p.Key.Color == Color.White)
+                        e.Graphics.FillPolygon(p.Key, points);
+                        //else
+                        //    e.Graphics.DrawLines(p.Key, points);
+                    }
+                } while (points.Length > 0);
+
+            //int calls = 0;
+            points = Array.Empty<PointF>();
             foreach (var p in edges)
                 do
                 {
@@ -1004,6 +1041,7 @@ namespace WinFormsApp1
                 lastMouse = e;
             if (e != null)
                 this.MouseTile = Program.Game.Map.GetVisibleTile(GetMapX(e.X), GetMapY(e.Y));
+            ShowMouseInfo();
         }
 
         public void Map_KeyDown(object sender, KeyEventArgs e)

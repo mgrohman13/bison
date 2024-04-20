@@ -66,6 +66,7 @@ namespace ClassLibrary1.Map
             internal IEnumerable<Point> GetPointsInRangeUnblocked(double vision) => GetPointsInRange(vision, false, null);
             internal static IEnumerable<Point> GetPointsInRangeUnblocked(Map map, Point point, double range) => GetPointsInRange(map, point, range, false, null);
 
+            public static IEnumerable<Point> GetAllPointsInRange(Map map, Point point, double range) => GetPointsInRange(map, point, range, false, null);
             public IEnumerable<Point> GetAllPointsInRange(double range) => GetPointsInRange(range, false, null);
             public IEnumerable<Point> GetPointsInRange(IMovable movable) => GetPointsInRange(movable, movable.MoveCur);
             public IEnumerable<Point> GetPointsInRange(IMovable movable, double move) => GetPointsInRange(move, false, movable.Piece);

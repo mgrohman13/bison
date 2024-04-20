@@ -29,6 +29,7 @@ namespace ClassLibrary1.Pieces.Enemies
         {
             foreach (EnemyPiece piece in Side.Pieces.OfType<EnemyPiece>())
                 piece.OnDeath(this);
+            base.Die();
             //Game.CountKill();
         }
 
