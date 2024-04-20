@@ -314,7 +314,15 @@ namespace ClassLibrary1.Map
                 return new Rectangle(-v, -v, v * 2, v * 2);
             }
 
-            return _gameBounds;
+            Rectangle bounds = _gameBounds;
+
+            //int x = Math.Min(_pieces.Keys.Min(p => p.X), bounds.X);//
+            //int y = Math.Min(_pieces.Keys.Min(p => p.Y), bounds.Y);//
+            //int w = Math.Max(_pieces.Keys.Max(p => p.X), bounds.Right) - x + 1;//
+            //int h = Math.Max(_pieces.Keys.Max(p => p.Y), bounds.Bottom) - y + 1;//
+            //bounds = new(x, y, w, h);//
+
+            return bounds;
         }
         internal void GameOver()
         {
@@ -329,8 +337,10 @@ namespace ClassLibrary1.Map
         public bool Visible(Point tile)
         {
             bool visible = _explored.Contains(tile);
-            //if (!visible)
-            //    visible = _pieces.ContainsKey(new Point(x, y));
+
+            //if (!visible)//
+            //    visible = _pieces.TryGetValue(tile, out var p) && p is Alien;//
+
             return Game.TEST_MAP_GEN.HasValue || Game.GameOver || visible;
         }
 
@@ -378,13 +388,13 @@ namespace ClassLibrary1.Map
         }
 
         internal Tile StartTile() => SpawnTile(new(0, 0), Consts.PathWidth + Consts.ResourceAvgDist, false);
-        private Tile SpawnTile(PointD spawnCenter, double deviation, bool isEnemy)
+        private Tile SpawnTile(PointD spawnCenter, double deviation, bool isEnemy, Func<Tile, bool> Valid = null)
         {
             int RandCoord(double coord) => Game.Rand.Round(coord + Game.Rand.Gaussian(deviation));
             Tile tile;
             do
                 tile = GetTile(RandCoord(spawnCenter.X), RandCoord(spawnCenter.Y));
-            while (InvalidStartTile(tile, isEnemy));
+            while ((Valid != null && !Valid(tile)) || InvalidStartTile(tile, isEnemy));
 
             //Debug.WriteLine($"SpawnTile ({Angle:0.00}) {distance:0.0}: {spawnCenter} -> {tile}");
 
@@ -404,7 +414,7 @@ namespace ClassLibrary1.Map
             return invalid;
         }
 
-        internal Tile FindNonVisibleTile(Tile tile)
+        internal Tile FindRetreatTile(Tile tile, Func<Tile, bool> ValidRetreat)
         {
             Dictionary<PointD, double> dists = new();
             var point = _paths.Select(p => p.ExploredPoint(Consts.PathWidth))
@@ -418,7 +428,7 @@ namespace ClassLibrary1.Map
                     return dists[p];
                 })
                 .First();
-            return SpawnTile(point, Consts.PathWidth + Consts.CaveSize, false);
+            return SpawnTile(point, Consts.PathWidth + Consts.CaveSize, false, ValidRetreat);
         }
 
         internal void Explore(Tile tile, double vision)
@@ -552,10 +562,10 @@ namespace ClassLibrary1.Map
                 if (key != null)
                     playerAttacks.TryGetValue(key, out att);
                 return Math.Sqrt((att + 1) / (defense + 1) * Consts.PathWidth);
-            }, p => !Visible(p), _ => true);
-            if (path == null)
-                throw new Exception();
-            return path;
+            },
+            p => !Visible(p) && !playerAttacks.ContainsKey(GetTile(p)),
+            _ => true);
+            return path ?? throw new Exception();
         }
         internal List<Point> PathFind(Tile fromTile, Tile toTile, double movement, Func<Point, double> Penalty, Func<Point, bool> Stop, Func<HashSet<Point>, bool> Accept)
         {
@@ -568,7 +578,7 @@ namespace ClassLibrary1.Map
             Dictionary<Point, double> cache = new();
 
             var path = TBSUtil.PathFind(Game.Rand, from, to, Stop, p1 =>
-                    GetTile(p1).GetAllPointsInRange(movement).Where(p =>
+                    Tile.GetAllPointsInRange(this, p1, movement).Where(p =>
                     {
                         var tile = GetTile(p);
                         var piece = tile?.Piece;
@@ -618,8 +628,8 @@ namespace ClassLibrary1.Map
                 //clear any blocked terrain we pathed through 
                 clearTerrain.UnionWith(blocked.SelectMany(p =>
                 {
-                    if (Visible(p))
-                        ;
+                    if (!Game.TEST_MAP_GEN.HasValue && Visible(p))
+                        Debug.WriteLine($"Cleared terrain on visible tile! {p}");
                     List<Point> list = new() { p };
                     int extra = Game.Rand.OEInt();
                     for (int a = 0; a < extra; a++)

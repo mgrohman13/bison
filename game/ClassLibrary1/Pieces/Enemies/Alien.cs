@@ -74,7 +74,7 @@ namespace ClassLibrary1.Pieces.Enemies
             ((Killable)this.killable).OnDeserialization(this);
             ((Attacker)this.attacker).OnDeserialization(this);
             this.attacker.Event.AttackEvent += Attacker_AttackEvent;
-            this.killable.Event.DamagedEvent += Killable_DamagedEvent; 
+            this.killable.Event.DamagedEvent += Killable_DamagedEvent;
         }
 
         private void Attacker_AttackEvent(object sender, Attacker.AttackEventArgs e)
@@ -120,8 +120,9 @@ namespace ClassLibrary1.Pieces.Enemies
                     state = AIState.Retreat;
                     if (MoraleCheck(1, true))
                         goto case AIState.Fight;
-                    if (RetreatPath == null || !RetreatPath.Any() || Game.Map.GetTile(RetreatPath[^1]).Visible || !SeePath(RetreatPath))
-                        RetreatPath = Game.Map.PathFindRetreat(Tile, GetRetreatTo(), GetPathFindingMovement(), GetCurDefenseValue(), playerAttacks);
+                    if (moveTiles.Any())
+                        if (NeedsRetreatPath())
+                            RetreatPath = Game.Map.PathFindRetreat(Tile, GetRetreatTo(), GetPathFindingMovement(), GetCurDefenseValue(), playerAttacks);
                     break;
                 case AIState.Fight:
                     state = AIState.Fight;
@@ -143,13 +144,14 @@ namespace ClassLibrary1.Pieces.Enemies
                     state = AIState.Rush;
                     if (MoraleCheck(.25, false))
                         goto case AIState.Fight;
-                    if (!SeePath())
-                        if (MoraleCheck(.5, false))
-                            goto case AIState.Fight;
-                        else if (MoraleCheck(.75 / difficulty, true))
-                            PathToCore = Game.Map.PathFind(Tile, GetPathFindingMovement(), _ => true);
-                        else
-                            goto case AIState.Patrol;
+                    if (moveTiles.Any())
+                        if (!SeePath())
+                            if (MoraleCheck(.5, false))
+                                goto case AIState.Fight;
+                            else if (MoraleCheck(.75 / difficulty, true))
+                                PathToCore = Game.Map.PathFind(Tile, GetPathFindingMovement(), _ => true);
+                            else
+                                goto case AIState.Patrol;
                     break;
             }
 
@@ -161,19 +163,22 @@ namespace ClassLibrary1.Pieces.Enemies
             this._state = state;
             return state;
 
-            bool SeePath(List<Point> path = null) => (path ?? PathToCore).Any(p => moveTiles.Contains(Game.Map.GetTile(p)));
             bool PlayerPresent() => targeted || killables.Any() || playerAttacks.ContainsKey(Tile);
+            bool SeePath(List<Point> path = null) => (path ?? PathToCore).Any(p => moveTiles.Contains(Game.Map.GetTile(p)));
+            bool NeedsRetreatPath() => RetreatPath == null || !RetreatPath.Any() || !SeePath(RetreatPath) || !ValidRetreat(RetreatPath[^1]);
+            bool ValidRetreat(Point point) => ValidRetreatTile(Game.Map.GetTile(point));
+            bool ValidRetreatTile(Tile tile) => !tile.Visible && !playerAttacks.ContainsKey(tile);
             Tile GetRetreatTo()
             {
                 Tile retreat = null;
                 if (Game.Rand.Bool())
                 {
-                    retreat = RetreatPath?.Where(p => !Game.Map.GetTile(p).Visible).OrderBy(p => Tile.GetDistance(p)).Select(Game.Map.GetTile).FirstOrDefault();
+                    retreat = RetreatPath?.Where(ValidRetreat).OrderBy(p => Tile.GetDistance(p)).Select(Game.Map.GetTile).FirstOrDefault();
                     if (retreat == null)
                         ;
                 }
                 if (retreat == null)
-                    retreat = Game.Map.FindNonVisibleTile(Tile);
+                    retreat = Game.Map.FindRetreatTile(Tile, ValidRetreatTile);
                 return retreat;
             }
         }
