@@ -93,19 +93,21 @@ FEATURES
 	power grid
 
 no observable instance of aliens protecting each other yet 
+need to hit extractors more when rushing?
+	new state??
 
 fix weights
 	fix anything triggering multiplier - esp MAX
 	repair not high enough? stay in retreat until repaired? only if actively repairing?
 	normalize coreWeight
+	attPct too high due to inclusion of weight?
 	quit using killweight, avoid using raw stat values
 		bring everything down to an fairly consisten level similar to repair 
 		crank up powers, mults at the end
 	OR crank everything up to exp and sqrt end
 	pathWeight maybe looking good rn
-		could be more extreme
-	attPct too high due to inclusion of weight?
-	not staying out of player attacks?
+		could be more extreme??
+	not staying out of player attacks??
 	OR 
 	put all weights in range 0-1 and combine intelligently?
 improve getkillweight
@@ -116,18 +118,15 @@ redo GetKillWeight
 	repair/build numbers??
 	values too high in general?
 	target extractor more often?
-	use state?
+	use more states??
 move CombatTypes.GetReloadBase out of IAttacker.Values
-	every time you get a upgrade it rnadomizes
-		not that bad though...
-	should factor into cost
 	reload values also too high?
 
 enemy attacks/moves	
 	smarter about not attacking to recharge weapon
 		always attack if about to die, otherwise favor recharge
 	do they run away to charge shields?
-	make better about not retreat pathing through player units?
+	make better about not retreat pathing through player units
 map contiguity / pathfinding / alien behavior
 	constructors need to be able to reach resources
 		just keep constructor limit very high and not worry about it for now?
@@ -136,10 +135,8 @@ map contiguity / pathfinding / alien behavior
 			any way to share??
 		spawn killable alien repair points in map paths too? every X distance?
 	do enemy pathfinding in background during player turn?	
-	build up too many paths over time? duplicate paths with diff speeds??
+	builds up too many paths over time - duplicate paths with diff speeds
 
-show used in attacks grid
-	hide column if none used
 need to be able to visualize AI alg on map
 measure enemy move performance with stopwatch
 	expect pathfinding to take the most time but not happen often 
@@ -158,7 +155,7 @@ support a selectValue with doubles?
 clean up MattUtil pathfinding c/p
 notify in UI when clear terrain on visible tile 
 fix black lines from painting rounding with terrain 
-make existing alien repair cost cheaper with difficulty inc 
+make existing alien repair cost cheaper as difficulty incs
 allow player to split attacks
 	checkbox on attack grid for use
 	at turn start, use gets set for all "full" attacks

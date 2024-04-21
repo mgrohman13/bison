@@ -151,14 +151,12 @@ namespace WinFormsApp1
                 int sign = 1;
                 Point center = new(0, 0);
 
-                //if (!Game.TEST_MAP_GEN.HasValue)
-                //{
-                //    center = Program.Game.Player.Core.Tile.Location;
-                //    sign = -1;
-                //}
+                if (!Game.TEST_MAP_GEN.HasValue)
+                {
+                    center = Program.Game.Player.Core.Tile.Location;
+                    sign = -1;
+                }
                 Point mousePoint = new(GetMapX(lastMouse.X), GetMapY(lastMouse.Y));
-
-                //Point mousePoint = new(GetMapX(MouseTile.X), GetMapY(MouseTile.Y));
 
                 this.lblMouse.Text = string.Format("({0}, {1})", mousePoint.X - center.X, sign * (mousePoint.Y - center.Y));
                 if (SelTile != null)//&& SelTile.Piece != null && SelTile.Piece.HasBehavior(out IMovable movable))// && movable.MoveCur >= 1)
@@ -282,6 +280,11 @@ namespace WinFormsApp1
                 lines.TryAdd(attPen, new());
                 lines[attPen].Add(new(GetCenter(attack.Item1), GetCenter(attack.Item2)));
             }
+            foreach (var move in Program.Game.Enemy.LastMoves)
+            {
+                lines.TryAdd(movePen, new());
+                lines[movePen].Add(new(GetCenter(move.Item1), GetCenter(move.Item2)));
+            }
 
             foreach (Piece piece in Program.Game.Map.GetVisiblePieces())
                 if (mapCoords.Contains(piece.Tile.X, piece.Tile.Y))
@@ -302,31 +305,31 @@ namespace WinFormsApp1
                             AddFill(Brushes.IndianRed, rect);
                         else
                             AddFill(Brushes.Red, rect);
-                        if (piece is Alien alien)
-                        {
-                            if (alien.LastMove != null)
-                            {
-                                var p1 = GetCenter(alien.Tile);
-                                var p2 = GetCenter(alien.LastMove);
-                                lines.TryAdd(movePen, new());
-                                lines[movePen].Add(new(p1, p2));
-                            }
+                        //if (piece is Alien alien)
+                        //{
+                        //    if (alien.LastMove != null)
+                        //    {
+                        //        var p1 = GetCenter(alien.Tile);
+                        //        var p2 = GetCenter(alien.LastMove);
+                        //        lines.TryAdd(movePen, new());
+                        //        lines[movePen].Add(new(p1, p2));
+                        //    }
 
-                            //if (SelTile == alien.Tile)
-                            //{
-                            //    List<Point> path = null;
-                            //    if (alien.State == EnemyPiece.AIState.Retreat)
-                            //        path = (alien.RetreatPath);
-                            //    else if (alien.State == EnemyPiece.AIState.Rush)
-                            //        path = (alien.PathToCore);
-                            //    if (path != null)
-                            //    {
-                            //        //if (path[0] != alien.Tile.Location)
-                            //        //    path.Insert(path.IndexOf(path.OrderBy(p => alien.Tile.GetDistance(p)).First()), alien.Tile.Location);
-                            //        paths.Add(path);
-                            //    }
-                            //}
-                        }
+                        //    //if (SelTile == alien.Tile)
+                        //    //{
+                        //    //    List<Point> path = null;
+                        //    //    if (alien.State == EnemyPiece.AIState.Retreat)
+                        //    //        path = (alien.RetreatPath);
+                        //    //    else if (alien.State == EnemyPiece.AIState.Rush)
+                        //    //        path = (alien.PathToCore);
+                        //    //    if (path != null)
+                        //    //    {
+                        //    //        //if (path[0] != alien.Tile.Location)
+                        //    //        //    path.Insert(path.IndexOf(path.OrderBy(p => alien.Tile.GetDistance(p)).First()), alien.Tile.Location);
+                        //    //        paths.Add(path);
+                        //    //    }
+                        //    //}
+                        //}
                     }
                     else if (piece is Mech mech)
                     {

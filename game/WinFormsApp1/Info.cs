@@ -1,6 +1,5 @@
 ﻿using ClassLibrary1;
 using ClassLibrary1.Pieces;
-using ClassLibrary1.Pieces.Enemies;
 using ClassLibrary1.Pieces.Players;
 using ClassLibrary1.Pieces.Terrain;
 using System;
@@ -287,12 +286,14 @@ namespace WinFormsApp1
                     //int idx = 0;
                     dgvAttacks.DataSource = attacker.Attacks.OrderByDescending(a => a.Range).Select(a => new
                     {
+                        Online = a.CanAttack().ToString(),
                         a.Type,
                         Range = a.Range > Attack.MELEE_RANGE ?
                             $"{a.Range:0.0}" + (a.Range.ToString("0.0") != a.RangeBase.ToString("0.0") ? $" / {a.RangeBase:0.0}" : "") : "Melee",
                         Attack = $"{a.AttackCur}" + (a.AttackCur < a.AttackMax ? $" / {a.AttackMax}" : ""),
                         Reload = $"+{FormatUsuallyInt(a.Reload)}" + (FormatUsuallyInt(a.Reload) != a.ReloadBase.ToString() ? $" / {a.ReloadBase}" : ""),
                     }).ToList();
+                    dgvAttacks.Columns["Online"].Visible = attacker.Attacks.Any(a => !a.CanAttack());
                     dgvAttacks.Columns["Type"].Visible = attacker.Attacks.Any(a => a.Type != AttackType.Kinetic);
                     dgvAttacks.Columns["Range"].Visible = attacker.Attacks.Any(a => a.Range > Attack.MELEE_RANGE);
                     //dgvAttacks.Columns["Rounds"].DefaultCellStyle.Format = "0.0";

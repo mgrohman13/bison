@@ -179,7 +179,7 @@ namespace ClassLibrary1.Pieces.Players
                 int rate = Math.Max(1, MTRandom.Round(repairRate / rangeMult, 1 - rounding));
                 if (!game.Player.Research.HasType(Research.Type.ConstructorRepair))
                     rate = 1;
-                double range = repair.Builder.Range * repairRate / rate * Math.Sqrt(rangeMult);
+                double range = repair.Builder.Range * repairRate / rate * Math.Pow(rangeMult, .65);
                 return new(new(range), rate);
             }
 

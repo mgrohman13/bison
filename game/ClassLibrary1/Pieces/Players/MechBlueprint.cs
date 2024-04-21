@@ -54,15 +54,16 @@ namespace ClassLibrary1.Pieces.Players
         public static void CalcCost(double researchMult, double vision, IEnumerable<IKillable.Values> killable, double resilience,
             IEnumerable<IAttacker.Values> attacker, IMovable.Values? movable, out double energy, out double mass)
         {
+            const double moveMult = 26;
             double move = Consts.MoveValue(movable);
             double mult = Math.Sqrt(researchMult);
-            move = (move + 2.6) * 26 / mult;
+            move = (move + 2.6) * moveMult / mult;
 
             const double attPow = 1.13;
             double AttCost(IAttacker.Values a) => Consts.StatValue(a.Attack) * CombatTypes.Cost(a.Type)
                 * Math.Sqrt(a.Reload / CombatTypes.ReloadAvg(a.Attack))
-                * (Math.Sqrt((a.Range + Attack.MIN_RANGED) / (Attack.MELEE_RANGE + Attack.MIN_RANGED))
-                / (a.Range > Attack.MELEE_RANGE ? Math.Sqrt(1 + move) : 1));
+                * Math.Pow((a.Range + Attack.MIN_RANGED) / (Attack.MELEE_RANGE + Attack.MIN_RANGED),
+                    Math.Sqrt(1 + (moveMult + move) / moveMult / moveMult) / 2.0);
             double DefCost(IKillable.Values d) => Consts.StatValue(d.Defense) * CombatTypes.Cost(d.Type);
 
             double r = Math.Pow(Math.Pow(resilience, Math.Log(3) / Math.Log(2)) * 1.5 + 0.5, .39);

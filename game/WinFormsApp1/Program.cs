@@ -150,8 +150,11 @@ namespace WinFormsApp1
                 data.moved.Clear();
 
                 data.AlertResearch = researched.HasValue;
-                if (researched.HasValue && Research.IsMech(researched.Value))
+                if (researched.HasValue && (researched.Value == Type.Mech || Research.IsMech(researched.Value)))
+                {
+                    RefreshChanged();
                     DgvForm.BuilderDialogMech();
+                }
                 ViewedResearch = false;
 
                 RefreshChanged();

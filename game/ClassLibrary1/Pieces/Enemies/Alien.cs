@@ -131,15 +131,13 @@ namespace ClassLibrary1.Pieces.Enemies
                         goto case AIState.Heal;
                     if (MoraleCheck(1, true))
                         goto case AIState.Fight;
-                    if (moveTiles.Any())
-                        if (NeedsRetreatPath())
-                            RetreatPath = Game.Map.PathFindRetreat(Tile, GetRetreatTo(), GetPathFindingMovement(), GetCurDefenseValue(), playerAttacks);
+                    if (moveTiles.Any() && NeedsRetreatPath())
+                        RetreatPath = Game.Map.PathFindRetreat(Tile, GetRetreatTo(), GetPathFindingMovement(), GetCurDefenseValue(), playerAttacks);
                     break;
                 case AIState.Fight:
                     state = AIState.Fight;
-                    if (MoraleCheck(1 / difficulty, true))
-                        if (!PlayerPresent())
-                            goto case AIState.Patrol;
+                    if (MoraleCheck(1 / Math.Sqrt(difficulty), true) && !PlayerPresent())
+                        goto case AIState.Patrol;
                     break;
                 case AIState.Patrol:
                     state = AIState.Patrol;
@@ -154,16 +152,13 @@ namespace ClassLibrary1.Pieces.Enemies
                     break;
                 case AIState.Rush:
                     state = AIState.Rush;
-                    if (MoraleCheck(.25, false))
+                    if (MoraleCheck((PlayerPresent() ? .75 : .25) / difficulty, false))
                         goto case AIState.Fight;
-                    if (moveTiles.Any())
-                        if (!SeePath())
-                            if (MoraleCheck(.5, false))
-                                goto case AIState.Fight;
-                            else if (MoraleCheck(.75 / difficulty, true))
-                                PathToCore = Game.Map.PathFind(Tile, GetPathFindingMovement(), _ => true);
-                            else
-                                goto case AIState.Patrol;
+                    if (moveTiles.Any() && !SeePath())
+                        if (MoraleCheck(.5, true))
+                            PathToCore = Game.Map.PathFind(Tile, GetPathFindingMovement(), _ => true);
+                        else
+                            goto case AIState.Patrol;
                     break;
                 default: throw new Exception();
             }
@@ -178,18 +173,14 @@ namespace ClassLibrary1.Pieces.Enemies
 
             bool PlayerPresent() => targeted || killables.Any() || playerAttacks.ContainsKey(Tile);
             bool SeePath(List<Point> path = null) => (path ?? PathToCore).Any(p => moveTiles.Contains(Game.Map.GetTile(p)));
-            bool NeedsRetreatPath() => RetreatPath == null || !RetreatPath.Any() || !SeePath(RetreatPath) || !ValidRetreat(RetreatPath[^1]);
+            bool NeedsRetreatPath() => RetreatPath == null || !RetreatPath.Any() || !ValidRetreat(RetreatPath[^1]) || !SeePath(RetreatPath);
             bool ValidRetreat(Point point) => ValidRetreatTile(Game.Map.GetTile(point));
             bool ValidRetreatTile(Tile tile) => tile != null && !tile.Visible && !playerAttacks.ContainsKey(tile);
             Tile GetRetreatTo()
             {
                 Tile retreat = null;
                 if (Game.Rand.Bool())
-                {
-                    retreat = RetreatPath?.Where(ValidRetreat).OrderBy(p => Tile.GetDistance(p)).Select(Game.Map.GetTile).FirstOrDefault();
-                    if (retreat == null)
-                        ;
-                }
+                    retreat = Game.Rand.Iterate(RetreatPath?.Where(ValidRetreat)).OrderBy(p => Tile.GetDistance(p)).Select(Game.Map.GetTile).FirstOrDefault();
                 if (retreat == null)
                     retreat = Game.Map.FindRetreatTile(Tile, ValidRetreatTile);
                 return retreat;
@@ -209,7 +200,7 @@ namespace ClassLibrary1.Pieces.Enemies
         {
             base.StartTurn();
 
-            this.lastMove = Tile.Visible ? curMove : null;
+            this.lastMove = curMove != null && (curMove.Visible || Tile.Visible) ? curMove : null;
             this.curMove = Tile;
 
             int remove = lastAttacks.Count - numAtts;

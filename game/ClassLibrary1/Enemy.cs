@@ -19,6 +19,7 @@ namespace ClassLibrary1
         public IEnumerable<Piece> VisiblePieces => _pieces.Where(p => p.Tile.Visible);
 
         public IEnumerable<Tuple<Tile, Tile>> LastAttacks => PiecesOfType<Alien>().SelectMany(a => a.LastAttacks);
+        public IEnumerable<Tuple<Tile, Tile>> LastMoves => PiecesOfType<Alien>().Where(a => a.LastMove != null).Select(a => Tuple.Create(a.Tile, a.LastMove));
 
         internal Enemy(Game game)
             : base(game, Game.Rand.Round(Consts.EnemyStartEnergy), 0)
@@ -122,7 +123,7 @@ namespace ClassLibrary1
             }
             HashSet<EnemyPiece> moved = new();
             foreach (var piece in Game.Rand.Iterate(Pieces.Cast<EnemyPiece>()).OrderBy(p => p is Hive ? 1 : 2))
-                PlayTurn(piece, Math.Pow(difficulty, Consts.DifficultyAIPow), moved, playerAttacks, allTargets, avgHp, avgWeight);
+                allTargets = PlayTurn(piece, Math.Pow(difficulty, Consts.DifficultyAIPow), moved, playerAttacks, allTargets, avgHp, avgWeight);
         }
         private Dictionary<Tile, double> GetPlayerAttacks()
         {
@@ -152,7 +153,7 @@ namespace ClassLibrary1
         private Dictionary<IKillable, Dictionary<IKillable, int>> GetAllTargets() =>
             Game.Player.PiecesOfType<IKillable>().ToDictionary(k => k, k => Attack.GetDefenders(this, k.Piece));
 
-        private static void PlayTurn(EnemyPiece piece, double difficulty, HashSet<EnemyPiece> moved,
+        private static Dictionary<IKillable, Dictionary<IKillable, int>> PlayTurn(EnemyPiece piece, double difficulty, HashSet<EnemyPiece> moved,
             Dictionary<Tile, double> playerAttacks, Dictionary<IKillable, Dictionary<IKillable, int>> allTargets, double avgHp, double avgWeight)
         {
             if (piece.Tile.Visible)
@@ -227,7 +228,7 @@ namespace ClassLibrary1
                 Tile tile = killable.Piece.Tile;
                 bool meleeRange = melee.Any() && tile.GetAdjacentTiles().Any(moveTiles.Contains);
                 double inRange = 1 + SumAttacks(attacks, a => a.Range == Attack.MELEE_RANGE ? meleeRange : tile.GetDistance(piece.Tile) <= a.Range);
-                return Game.Rand.Round(inRange / attValue * GetGroupWeight(killable));
+                return Game.Rand.Round(inRange / (attValue < 1 ? 1 : attValue) * GetGroupWeight(killable));
             }
             double GetGroupWeight(IKillable killable)
             {
@@ -385,23 +386,27 @@ namespace ClassLibrary1
                     if (killPiece != null)
                     {
                         var friendly = moveTile.GetAdjacentTiles().Select(t => (t.Piece?.GetBehavior<IKillable>()))
-                            .Where(k => k != null && k.Piece.Side == piece.Side && k.Piece != piece && moved.Contains(k.Piece)).ToList();
-                        int count = 0;
-                        foreach (var killable in friendly)
+                            .Where(k => k != null && k.Piece.Side == piece.Side && k.Piece != piece && moved.Contains(k.Piece)
+                                && !(piece is Hive && state == EnemyPiece.AIState.Rush)).ToList();
+                        if (friendly.Any())
                         {
-                            var weight = defValue / DefWeight(killable);
-                            if (weight < 1)
-                                if (killable.HasBehavior<IAttacker>())
-                                    weight = 1 / weight;
-                                else
-                                    weight = 1;
-                            defWeight *= weight;
-                            count++;
+                            int count = 0;
+                            foreach (var killable in friendly)
+                            {
+                                var weight = defValue / DefWeight(killable);
+                                if (weight < 1)
+                                    if (killable.HasBehavior<IAttacker>())
+                                        weight = 1 / weight;
+                                    else
+                                        weight = 1;
+                                defWeight *= weight;
+                                count++;
+                            }
+                            defWeight = (1 + Math.Pow(defWeight, 2.0 / count)) * count;
+                            if (friendly.OfType<Hive>().Any())
+                                defWeight *= Math.Sqrt(defWeight);
+                            defWeight = Math.Pow(defWeight, Math.Sqrt(.25 / playerAttWeight));
                         }
-                        defWeight = (1 + Math.Pow(defWeight, 2.0 / count)) * count;
-                        if (friendly.OfType<Hive>().Any())
-                            defWeight *= Math.Sqrt(defWeight);
-                        defWeight = Math.Pow(defWeight, Math.Sqrt(.25 / playerAttWeight));
                     }
 
                     string logWeights = string.Format("attWeight:{1}{0}pathWeight:{2}{0}coreWeight:{3}{0}playerAttWeight:{4}{0}moveWeight:{5}{0}repairWeight:{6}{0}defWeight:{7}",
@@ -566,17 +571,19 @@ namespace ClassLibrary1
                                     playerAttacks[pair.Item1] -= pair.Item2;
                                 foreach (var killable in trgGrp.Keys)
                                     if (killable.Dead)
-                                    {
-                                        allTargets.Remove(killable);
-                                        foreach (var v in allTargets.Values)
-                                            if (v.Remove(killable))
-                                                ;
-                                    }
+                                        //{
+                                        //    allTargets.Remove(killable);
+                                        //    foreach (var v in allTargets.Values)
+                                        //        if (v.Remove(killable))
+                                        //            ;
+                                        //fully re-load all targets since this kill could affect target grouping
+                                        allTargets = piece.Game.Enemy.GetAllTargets();
+                                    //}
                                     else
-                                    {
+                                        //{
                                         foreach (var t in PlayerAttacks(killable.GetBehavior<IAttacker>()))
                                             playerAttacks[t.Item1] += t.Item2;
-                                    }
+                                //}
                                 //unecessary - we never loop through all playerAttacks
                                 //foreach (var pair in trgAttacks)
                                 //    if (playerAttacks[pair.Item1] <= 0)
@@ -585,11 +592,13 @@ namespace ClassLibrary1
                             else if (CanTarget(target))
                             { }
                         }
-                        else if (piece is Alien)
+                        else if (piece is Alien && target != null)
                         { }
                     }
                 }
             }
+
+            return allTargets;
         }
 
         private static IEnumerable<Attack> GetAttacks(IAttacker attacker) =>
@@ -622,7 +631,7 @@ namespace ClassLibrary1
                 double ratio = Math.Sqrt(Consts.EnergyForFabricateMass * Consts.BurnMassForEnergy);
                 mass += e * Consts.MechMassDiv + r / (ratio * Consts.MassForScrapResearch);
             }
-            mass *= avgHp / 39.0;
+            mass *= avgHp / (state == EnemyPiece.AIState.Rush ? 16.9 : 52);
 
             double shieldFactor = 1;
             foreach (var def in killable.AllDefenses)
@@ -633,7 +642,7 @@ namespace ClassLibrary1
                     CombatTypes.DefenseType.Shield => 1.5,
                     _ => 1,
                 };
-                shieldFactor *= Math.Pow(Consts.StatValue(def.DefenseMax + 1) / Consts.StatValue(def.DefenseCur + 1), pow / 2.0);
+                shieldFactor *= Math.Pow(Consts.StatValue(def.DefenseMax + 1) / Consts.StatValue(def.DefenseCur + 1), pow);
             }
             shieldFactor = Math.Pow(shieldFactor, 1.0 / killable.AllDefenses.Count);
 
@@ -645,14 +654,17 @@ namespace ClassLibrary1
                 defMax /= 3.9;
             }
 
-            double gc = (1 + attacks + repair + mass) / defCur;
-            double damagePct = 2 - defCur / (double)defMax;
+            double gc = (1 + attacks + repair + mass) / (1 + defCur);
+            gc *= gc;
+            double damagePct = 2 - defCur / defMax;
+            double trg = killable == target ? 6.5 : 1;
+            if (killable.Piece is Core)
+                if (state == EnemyPiece.AIState.Rush)
+                    trg *= 2.6;
+                else if (state == EnemyPiece.AIState.Fight)
+                    trg /= 2.1;
 
-            double trg = killable == target ? 3.9 : 1;
-            if (state == EnemyPiece.AIState.Rush && killable.Piece is Core)
-                trg *= 2.6;
-
-            return Math.Sqrt((1 + gc * gc * damagePct * shieldFactor) * trg);
+            return Math.Sqrt(shieldFactor * (1 + gc)) * damagePct * trg;
         }
     }
 }

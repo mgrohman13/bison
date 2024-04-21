@@ -128,11 +128,11 @@ namespace ClassLibrary1
             {
                 case Type.MechEnergyWeapons:
                     start = 1;
-                    mult = .65;
+                    mult = 1.3;
                     break;
                 case Type.MechLasers:
                     start = .13;
-                    mult = 1.3;
+                    mult = .65;
                     break;
                 case Type.MechExplosives:
                     start = 0;

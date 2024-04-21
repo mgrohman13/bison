@@ -340,6 +340,7 @@ namespace ClassLibrary1.Map
 
             //if (!visible)//
             //    visible = _pieces.TryGetValue(tile, out var p) && p is Alien;//
+            //visible |= _pieces.ContainsKey(tile);//
 
             return Game.TEST_MAP_GEN.HasValue || Game.GameOver || visible;
         }
@@ -564,7 +565,7 @@ namespace ClassLibrary1.Map
                 return Math.Sqrt((att + 1) / (defense + 1) * Consts.PathWidth);
             },
             p => !Visible(p) && !playerAttacks.ContainsKey(GetTile(p)),
-            _ => true);
+            b => true);
             return path ?? throw new Exception();
         }
         internal List<Point> PathFind(Tile fromTile, Tile toTile, double movement, Func<Point, double> Penalty, Func<Point, bool> Stop, Func<HashSet<Point>, bool> Accept)
