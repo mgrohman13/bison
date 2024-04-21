@@ -97,11 +97,11 @@ namespace ClassLibrary1.Pieces.Players
             {
                 this.defenses = new IKillable.Values[MAX_DEFENSES];
                 for (int a = 0; a < MAX_DEFENSES; a++)
-                    defenses[a] = new(DefenseType.Hits, -1);
+                    defenses[a] = new(DefenseType.Hits, 1);
 
                 this.attacks = new IAttacker.Values[MAX_ATTACKS];
                 for (int a = 0; a < MAX_ATTACKS; a++)
-                    attacks[a] = new(AttackType.Kinetic, -1, Attack.MELEE_RANGE);
+                    attacks[a] = new(AttackType.Kinetic, 1, Attack.MELEE_RANGE);
 
                 UpgradeBuildingCost(1);
                 //UpgradeBuildingHits(1);
@@ -142,19 +142,33 @@ namespace ClassLibrary1.Pieces.Players
                 for (int a = 0; a < MAX_ATTACKS; a++)
                 {
                     IAttacker.Values attack = attacks[a];
-                    int att = MTRandom.Round(attack.Attack / rangeMult[a], rounding);
+                    double baseAtt = attack.Attack;
+                    double baseReload = attack.Reload;
+
+                    int att = MTRandom.Round(baseAtt / rangeMult[a], rounding);
                     if (att < 1)
                         att = 1;
+
                     double range = int.MaxValue;
+                    int reload;
                     do
                     {
                         if (range < Attack.MIN_RANGED && att > 1)
                             --att;
-                        range = attack.Range * Math.Pow(attack.Attack / (double)att, 1.3);
+                        range = attack.Range * Math.Pow(baseAtt / att, 1.3);
+
+                        reload = MTRandom.Round(baseReload * att / baseAtt, 1 - rounding);
+                        if (reload < 1)
+                            reload = 1;
+                        else if (reload > att)
+                            reload = att;
+                        range *= Math.Sqrt(baseReload / reload);
+
                     } while (range < Attack.MIN_RANGED && att > 1);
                     if (range < Attack.MIN_RANGED)
-                        range = Attack.MIN_RANGED;
-                    results.Add(new(attack.Type, att, range));
+                        throw new Exception();
+
+                    results.Add(new(attack.Type, att, range, reload));
                 }
 
                 if (!research.HasType(Research.Type.TurretExplosives))
@@ -200,7 +214,7 @@ namespace ClassLibrary1.Pieces.Players
                     };
 
                     double defAvg = a switch { 0 => 12.5, 1 => 7.8, 2 => 10.4, _ => throw new Exception(), };
-                    const double lowPenalty = 1.5;
+                    const double lowPenalty = 2.1;
                     if (researchMult < lowPenalty)
                         defAvg *= researchMult / lowPenalty;
                     defAvg *= Math.Pow(researchMult, Turret_Defense);
@@ -214,14 +228,14 @@ namespace ClassLibrary1.Pieces.Players
                 for (int a = 0; a < MAX_ATTACKS; a++)
                 {
                     double range = a switch { 0 => 16.9, 1 => 7.5, 2 => 13, _ => throw new Exception(), };
-                    const double lowPenalty = Math.PI;
-                    if (researchMult < lowPenalty)
-                        range *= researchMult / lowPenalty;
+                    //const double lowPenalty = Math.PI;
+                    //if (researchMult < lowPenalty)
+                    //    range *= researchMult / lowPenalty;
                     range *= Math.Pow(researchMult, Turret_Range);
                     range += Attack.MIN_RANGED;
 
                     IAttacker.Values attack = attacks[a];
-                    attacks[a] = new(attack.Type, attack.Attack, range);
+                    attacks[a] = new(attack.Type, attack.Attack, range, attack.Reload);
                 }
             }
             private void UpgradeTurretAttack(double researchMult)
@@ -243,7 +257,12 @@ namespace ClassLibrary1.Pieces.Players
                     attAvg *= Math.Pow(researchMult, Turret_Attack);
 
                     int attack = Game.Rand.Round(attAvg);
-                    attacks[a] = new(type, attack, attacks[a].Range);
+
+                    double range = attacks[a].Range;
+                    int reload = attacks[a].Reload;
+                    attacks[a] = new(type, attack, range);
+                    reload = Math.Max(reload, Game.Rand.Round(1 + (attacks[a].Reload - 1) / 2.0));
+                    attacks[a] = new(type, attack, range, reload);
                 }
             }
         }

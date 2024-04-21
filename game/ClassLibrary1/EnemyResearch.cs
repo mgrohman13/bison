@@ -79,7 +79,7 @@ namespace ClassLibrary1
                     break;
                 case Type.MechEnergyWeapons:
                     start = 1.3;
-                    mult = 0.9;
+                    mult = 1.0;
                     break;
                 case Type.MechLasers:
                     start = 0.7;
@@ -90,11 +90,11 @@ namespace ClassLibrary1
                     break;
                 case Type.MechRange:
                     start = 0.5;
-                    mult = 1.3;
+                    mult = 0.9;
                     break;
                 case Type.MechDefense:
                     start = 0.9;
-                    mult = 1.0;
+                    mult = 1.1;
                     break;
                 case Type.MechShields:
                     start = 1.2;
@@ -105,7 +105,7 @@ namespace ClassLibrary1
                     break;
                 case Type.MechMove:
                     start = 1.4;
-                    mult = 0.5;
+                    mult = 0.5; //.4?
                     break;
                 case Type.MechResilience:
                     mult = 0.4;
@@ -140,11 +140,11 @@ namespace ClassLibrary1
                     break;
                 case Type.MechRange:
                     start = .52;
-                    mult = .91;
+                    mult = .78;
                     break;
                 case Type.MechShields:
                     start = 1.3;
-                    mult = .78;
+                    mult = .91;
                     break;
                 case Type.MechArmor:
                     start = .39;

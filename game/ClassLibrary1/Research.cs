@@ -67,8 +67,8 @@ namespace ClassLibrary1
             this._researching = Type.Mech;
             this._lastSeen = new();
             this._researchedTypes = new();
-            this._progress = new() { { _researching, 0 } };
-            this._choices = new() { { _researching, 25 } };
+            this._progress = new() { { _researching, 20 } };
+            this._choices = new() { { _researching, 50 } };
 
             this._researchLast = 0;
             this._nextAvg = 26;
@@ -227,7 +227,7 @@ namespace ClassLibrary1
             else
                 return min + Add();
         }
-        private static double GetNext(double v) => Math.Pow(v * 7.8 + 780, .52);
+        private static double GetNext(double v) => Math.Pow(v * 5.2 + 1690, .52);
 
         public bool HasType(Type research)
         {

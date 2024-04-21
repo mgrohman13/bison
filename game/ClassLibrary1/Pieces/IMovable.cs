@@ -11,6 +11,7 @@ namespace ClassLibrary1.Pieces
         public int MoveMax { get; }
         public int MoveLimit { get; }
         bool Moved { get; }
+        public bool CanMove { get; }
 
         void Upgrade(Values values);
         public bool Move(Tile to);
@@ -23,7 +24,7 @@ namespace ClassLibrary1.Pieces
             private readonly int _moveMax, _moveLimit;
             private readonly double _moveInc;
             public Values(double moveInc, int moveMax, int moveLimit)
-            { 
+            {
                 if (!(moveInc < moveMax && moveMax < moveLimit)) throw new Exception();
 
                 this._moveInc = moveInc;

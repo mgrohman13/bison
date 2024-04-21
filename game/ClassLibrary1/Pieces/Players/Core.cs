@@ -11,7 +11,7 @@ namespace ClassLibrary1.Pieces.Players
     {
         private double _income = 1, _incomeTrg = 1;
 
-        public const double START_VISION = 3, ENERGY = 480;
+        public const double START_VISION = 3;
 
         private Core(Tile tile, Values values)
             : base(tile, values.Vision)
@@ -68,14 +68,14 @@ namespace ClassLibrary1.Pieces.Players
         internal override void GenerateResources(ref double energyInc, ref double massInc, ref double researchInc)
         {
             base.GenerateResources(ref energyInc, ref massInc, ref researchInc);
-            energyInc += ENERGY * _income;
-            massInc += 115 * _income;
-            researchInc += 15 * Math.Sqrt(_income);
+            energyInc += Consts.CoreEnergy * _income;
+            massInc += Consts.CoreMass * _income * _income;
+            researchInc += Consts.CoreResearch * Math.Sqrt(_income);
         }
         internal override void EndTurn(ref double energyUpk, ref double massUpk)
         {
             base.EndTurn(ref energyUpk, ref massUpk);
-            const double factor = .9925;
+            const double factor = 1 - 1.0 / Consts.CoreExtractTurns;
             this._incomeTrg *= factor;
             this._income = Game.Rand.GaussianCapped(Math.Sqrt(_incomeTrg * _income), 1 - factor, _incomeTrg / 2.0);
         }

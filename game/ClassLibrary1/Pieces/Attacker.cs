@@ -13,10 +13,10 @@ namespace ClassLibrary1.Pieces
         private readonly Piece _piece;
         private readonly List<Attack> _attacks;
 
-
         public Piece Piece => _piece;
         public IReadOnlyList<Attack> Attacks => CombatTypes.OrderAtt(_attacks);
         public bool Attacked => Attacks.Any(a => a.Attacked);
+        bool IAttacker.RestrictMove => Attacks.Any(a => a.RestrictMove);
 
         //public double TotalAttackCur2 => Consts.SumStats(Attacks.Select(a => a.AttackCur));
         //public double TotalAttackMax2 => Consts.SumStats(Attacks.Select(a => a.AttackMax));

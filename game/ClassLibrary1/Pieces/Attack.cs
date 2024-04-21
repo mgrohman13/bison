@@ -17,13 +17,14 @@ namespace ClassLibrary1.Pieces
         private Values _values;
 
         private int _attackCur;
-        private bool _attacked;
+        private bool _attacked, _restrictMove;
 
         public AttackType Type => _values.Type;
+        internal bool RestrictMove => _restrictMove;
         public bool Attacked => _attacked;
         public int AttackCur => _attackCur;
         public int AttackMax => _values.Attack;
-        public double Range => Consts.GetDamagedValue(Piece, RangeBase, MELEE_RANGE);
+        public double Range => RangeBase > MELEE_RANGE ? Consts.GetDamagedValue(Piece, RangeBase, 2) : MELEE_RANGE;
         public double RangeBase => _values.Range;
 
         public double Reload =>
@@ -37,6 +38,7 @@ namespace ClassLibrary1.Pieces
 
             this._attackCur = CombatTypes.GetStartCur(values.Type, values.Attack);
             this._attacked = true;
+            this._restrictMove = false;
         }
 
         internal void Upgrade(Values values)
@@ -127,6 +129,8 @@ namespace ClassLibrary1.Pieces
                         }
 
                     this._attacked = true;
+                    if (Piece.HasBehavior(out IMovable movable) && movable.Moved)
+                        this._restrictMove = true;
 
                     Piece.GetBehavior<IAttacker>().RaiseAttackEvent(this, target, targetTile);
                     Piece.Game.Log.LogAttack(this, startAttack, target, startDefense);
@@ -143,6 +147,7 @@ namespace ClassLibrary1.Pieces
         internal void StartTurn()
         {
             this._attacked = false;
+            this._restrictMove = false;
         }
         internal void EndTurn(ref double energyUpk, ref double massUpk)
         {

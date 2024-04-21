@@ -6,11 +6,11 @@ using System.Linq;
 namespace ClassLibrary1.Map
 {
     [Serializable]
-    public class FoundPath// private 
+    internal class FoundPath// internal 
     {
         public readonly double Movement;
         public readonly IReadOnlyList<Point> Path;
-        public readonly FoundPath Target;
+        private readonly FoundPath Target;
 
         public FoundPath(IEnumerable<Point> path, FoundPath target, double movement)
         {

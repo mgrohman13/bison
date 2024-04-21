@@ -94,7 +94,7 @@ namespace WinFormsApp1
                 {
                     if (SelTile.Piece.HasBehavior(out IBuilder b))
                         range = (float)Math.Max(range, b.Range);
-                    if (SelTile.Piece.HasBehavior(out IMovable m))
+                    if (SelTile.Piece.HasBehavior(out IMovable m) && m.CanMove)
                         range = (float)Math.Max(range, m.MoveCur);
                 }
 
@@ -312,20 +312,20 @@ namespace WinFormsApp1
                                 lines[movePen].Add(new(p1, p2));
                             }
 
-                            if (SelTile == alien.Tile)
-                            {
-                                List<Point> path = null;
-                                if (alien.State == EnemyPiece.AIState.Retreat)
-                                    path = (alien.RetreatPath);
-                                else if (alien.State == EnemyPiece.AIState.Rush)
-                                    path = (alien.PathToCore);
-                                if (path != null)
-                                {
-                                    //if (path[0] != alien.Tile.Location)
-                                    //    path.Insert(path.IndexOf(path.OrderBy(p => alien.Tile.GetDistance(p)).First()), alien.Tile.Location);
-                                    paths.Add(path);
-                                }
-                            }
+                            //if (SelTile == alien.Tile)
+                            //{
+                            //    List<Point> path = null;
+                            //    if (alien.State == EnemyPiece.AIState.Retreat)
+                            //        path = (alien.RetreatPath);
+                            //    else if (alien.State == EnemyPiece.AIState.Rush)
+                            //        path = (alien.PathToCore);
+                            //    if (path != null)
+                            //    {
+                            //        //if (path[0] != alien.Tile.Location)
+                            //        //    path.Insert(path.IndexOf(path.OrderBy(p => alien.Tile.GetDistance(p)).First()), alien.Tile.Location);
+                            //        paths.Add(path);
+                            //    }
+                            //}
                         }
                     }
                     else if (piece is Mech mech)
@@ -520,17 +520,17 @@ namespace WinFormsApp1
             foreach (var p in polygons)
                 e.Graphics.FillPolygon(Brushes.Black, p);
 
-            var dispPath = Game.TEST_MAP_GEN.HasValue ? Program.Game.Map.FoundPaths.Values.Distinct().Select(f => f.Path) : paths;
-            foreach (var path in dispPath)
-            {
-                //var path = found.Path;
-                for (int d = 1; d < path.Count; d++)
-                {
-                    var p1 = GetCenter(path[d - 1]);
-                    var p2 = GetCenter(path[d]);
-                    e.Graphics.DrawLine(new Pen(Color.Magenta, 2f), p1.X, p1.Y, p2.X, p2.Y);
-                }
-            }
+            //var dispPath = Game.TEST_MAP_GEN.HasValue ? Program.Game.Map.CorePaths.Values.Distinct().Select(f => f.Path) : paths;
+            //foreach (var path in dispPath)
+            //{
+            //    //var path = found.Path;
+            //    for (int d = 1; d < path.Count; d++)
+            //    {
+            //        var p1 = GetCenter(path[d - 1]);
+            //        var p2 = GetCenter(path[d]);
+            //        e.Graphics.DrawLine(new Pen(Color.Magenta, 2f), p1.X, p1.Y, p2.X, p2.Y);
+            //    }
+            //}
 
             if (rects.Length > 0)
                 e.Graphics.DrawRectangles(Pens.Black, rects);
@@ -645,7 +645,7 @@ namespace WinFormsApp1
 
                 HashSet<Point> moveTiles = new();
                 IMovable movable = SelTile.Piece?.GetBehavior<IMovable>();
-                if (SelTile.Piece != null && movable != null && movable.MoveCur >= 1)
+                if (SelTile.Piece != null && movable != null && movable.MoveCur >= 1 && movable.CanMove)
                 {
 
                     //Debug.WriteLine("2 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);

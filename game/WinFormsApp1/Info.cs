@@ -193,18 +193,18 @@ namespace WinFormsApp1
                             string.Format("{1}{0}{2}", Format(inc), inc < 0 ? "" : "+", playerPiece is Core core ? $" ({FormatPct(inc / coreValue)})" : "");
                     }
                 }
-                if (Selected.Piece is Alien alien)
-                {
-                    lbl6.Show();
-                    lblInf6.Show();
-                    lbl6.Text = "Behavior";
-                    lblInf6.Text = alien.State.ToString();
+                //if (Selected.Piece is Alien alien)
+                //{
+                //    lbl6.Show();
+                //    lblInf6.Show();
+                //    lbl6.Text = "Behavior";
+                //    lblInf6.Text = alien.State.ToString();
 
-                    lbl7.Show();
-                    lblInf7.Show();
-                    lbl7.Text = "Morale";
-                    lblInf7.Text = FormatPct(alien.Morale);
-                }
+                //    lbl7.Show();
+                //    lblInf7.Show();
+                //    lbl7.Text = "Morale";
+                //    lblInf7.Text = FormatPct(alien.Morale);
+                //}
 
                 var builder = Selected.Piece.GetBehavior<IBuilder>();
                 var repair = Selected.Piece.GetBehavior<IRepair>();

@@ -92,31 +92,45 @@ FEATURES
 	experience
 	power grid
 
-aliens not being able to attack target??
-aliens not following path when all else should be equal  
-nerf alien speed/range if successfully fighting better 
+no observable instance of aliens protecting each other yet 
 
-rename FoundPaths
-defending passive defense shouldnt be guaranteed?
-move CombatTypes.GetReloadBase out of IAttacker.Values
-	reload values also too high?
-measure enemy move performance with stopwatch
-	expect pathfinding to take the most time but not happen often 
-
-implement pathfinding for player!
+fix weights
+	fix anything triggering multiplier - esp MAX
+	repair not high enough? stay in retreat until repaired? only if actively repairing?
+	normalize coreWeight
+	quit using killweight, avoid using raw stat values
+		bring everything down to an fairly consisten level similar to repair 
+		crank up powers, mults at the end
+	OR crank everything up to exp and sqrt end
+	pathWeight maybe looking good rn
+		could be more extreme
+	attPct too high due to inclusion of weight?
+	not staying out of player attacks?
+	OR 
+	put all weights in range 0-1 and combine intelligently?
+improve getkillweight
+	prioritize constructor>factory>extractor>core
+		add another state to weight extractors and even target them down?
+			or have them kill extractors during rush?	
 redo GetKillWeight
-	target extractor more often
+	repair/build numbers??
+	values too high in general?
+	target extractor more often?
 	use state?
+move CombatTypes.GetReloadBase out of IAttacker.Values
+	every time you get a upgrade it rnadomizes
+		not that bad though...
+	should factor into cost
+	reload values also too high?
 
 enemy attacks/moves	
 	smarter about not attacking to recharge weapon
 		always attack if about to die, otherwise favor recharge
 	do they run away to charge shields?
+	make better about not retreat pathing through player units?
 map contiguity / pathfinding / alien behavior
-	ensure all spawns/resources can reach core with X move
-		constructors need to be able to reach resources
-			just keep constructor limit very high and not worry about it for now?
-	morale - research to be able to see?
+	constructors need to be able to reach resources
+		just keep constructor limit very high and not worry about it for now?
 	aliens repair at cave/hive(new object?)
 		could add core and repair points as separate pathfind targets with same structure
 			any way to share??
@@ -124,12 +138,27 @@ map contiguity / pathfinding / alien behavior
 	do enemy pathfinding in background during player turn?	
 	build up too many paths over time? duplicate paths with diff speeds??
 
-selectValue with doubles?
+show used in attacks grid
+	hide column if none used
+need to be able to visualize AI alg on map
+measure enemy move performance with stopwatch
+	expect pathfinding to take the most time but not happen often 
+implement pathfinding for player!
+core efficiency UI confusion with income pct 
+defending passive defense shouldnt be guaranteed?
+research aliens
+	start showing morale, state, path
+	radar to show dots where they are at decent distance
+		better when we get shroud...
+		new structure? addon to turrets with upgrade?
+		upg to show resources,anything else?
+when move hovering for constructor, take original repair range out of ranges
+alien bravery stat?
+support a selectValue with doubles?
 clean up MattUtil pathfinding c/p
-prevent moving after attack???
 notify in UI when clear terrain on visible tile 
 fix black lines from painting rounding with terrain 
-make existing alien reapir cost cheaper with difficulty inc 
+make existing alien repair cost cheaper with difficulty inc 
 allow player to split attacks
 	checkbox on attack grid for use
 	at turn start, use gets set for all "full" attacks
@@ -141,7 +170,8 @@ stop multi-tile move when encounter newly visible enemy/resource
 research aliens
 	kill, research corpse?
 	show info like state and morale 
-random aliens alien auto repair for increased cost
+random aliens alien auto repair for increased cost??
+	if we ever take out auto repair in vision range
 Tile should just be a struct...?
 	eqaluity always there, stores no real data, piece looks up in collection 
 	no need for a million points?

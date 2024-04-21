@@ -26,7 +26,6 @@ namespace ClassLibrary1.Pieces
         internal void OnAttacked();
         internal void GetHitsRepair(out double hitsInc, out double massCost);
 
-
         public Events Event { get; }
         internal void RaiseDamagedEvent(Attack attack, Defense defense);
 

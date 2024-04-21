@@ -185,7 +185,7 @@ namespace ClassLibrary1.Pieces.Players
                                         type = newAttacker.Type;
                                 }
                             }
-                            return new IAttacker.Values(type, att, range);
+                            return UpgAttack(attack, type, att, range);
                         }).ToList();
                         break;
                     case Type.MechRange:
@@ -203,7 +203,7 @@ namespace ClassLibrary1.Pieces.Players
                                 if (Game.Rand.Bool() || CheckTypeRange(attack, newAttacker))
                                     type = newAttacker.Type;
                             }
-                            return new IAttacker.Values(type, att, range);
+                            return UpgAttack(attack, type, att, range);
                         }).ToList();
                         break;
                     case Type.MechExplosives:
@@ -292,7 +292,7 @@ namespace ClassLibrary1.Pieces.Players
                         if (Game.Rand.Bool() || CheckTypeRange(attack, newAttacker))
                             range = newAttacker.Range;
                     }
-                    return new IAttacker.Values(type, att, range);
+                    return UpgAttack(attack, type, att, range);
                 }).ToList();
 
                 double trgAtts = NumAtts(research);
@@ -441,7 +441,7 @@ namespace ClassLibrary1.Pieces.Players
                 {
                     select -= CanModAtt(a) ? a.Attack : 0;
                     if (select < 0)
-                        attacker.Add(new(a.Type, Math.Max(1, a.Attack + mod), a.Range));
+                        attacker.Add(UpgAttack(a, a.Type, Math.Max(1, a.Attack + mod), a.Range));
                     else
                         attacker.Add(a);
                 }
@@ -453,14 +453,19 @@ namespace ClassLibrary1.Pieces.Players
                 bool CanModAtt(IAttacker.Values a) => increase || a.Attack > 1;
             }
         }
+        private static IAttacker.Values UpgAttack(IAttacker.Values oldAttack, AttackType type, int att, double range) =>
+            new(type, att, range, oldAttack.Attack == att ? oldAttack.Reload : null);
 
         private static double GenVision(IResearch research)
         {
-            double avg = 5.2, dev = .39, oe = .091;
-            ModValues(research.GetType() == Type.MechVision, 2.1, ref avg, ref dev, ref oe);
-            double vision = Game.Rand.GaussianOE(avg, dev, oe, 1);
-            vision *= research.GetMult(Type.MechVision, Blueprint_Vision);
-            return vision;
+            const double avgVision = 5.2;
+            double avg = avgVision, dev = .39, oe = .091;
+            bool isVision = research.GetType() == Type.MechVision;
+            ModValues(isVision, 2.1, ref avg, ref dev, ref oe);
+            avg *= research.GetMult(Type.MechVision, Blueprint_Vision);
+            if (isVision)
+                avg += 1.3;
+            return Game.Rand.GaussianOE(avg, dev, oe, isVision ? Game.Rand.Round(Math.Sqrt(avg) + avgVision) : 1);
         }
         private static double GenResilience(IResearch research)
         {
@@ -534,7 +539,8 @@ namespace ClassLibrary1.Pieces.Players
                 attAvg = 1 + (attAvg - 1) * Math.Sqrt(rangeAvg / range / numAttacks);
 
                 int cap = 1;
-                if (researchType == Type.MechRange)
+                if (researchType == Type.MechAttack || researchType == Type.MechEnergyWeapons || researchType == Type.MechExplosives
+                    || researchType == Type.MechLasers || researchType == Type.MechRange)
                 {
                     const int rangedAtt = 3;
                     attAvg += rangedAtt;
@@ -583,7 +589,7 @@ namespace ClassLibrary1.Pieces.Players
                 rangeAvg = range;
                 if (ranged)
                 {
-                    rangeAvg = 9.1;
+                    rangeAvg = 7.8;
                     double dev = .39, oe = .104;
                     ModValues(researchType == Type.MechRange, 2.1, ref rangeAvg, ref dev, ref oe);
                     rangeAvg *= research.GetMult(Type.MechRange, Blueprint_Range);

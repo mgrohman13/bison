@@ -25,7 +25,14 @@ namespace ClassLibrary1.Pieces.Terrain
             double value = Game.Rand.GaussianOE(baseValue, Consts.ResourceDev, Consts.ResourceOE, 1.3);
 
             sustainMult *= Math.Pow(baseValue / value, Consts.ResourceSustainValuePow);
-            double sustain = Game.Rand.GaussianOE(sustainMult, Consts.ResourceDev, Consts.ResourceOE, .039);
+            double sustain = Game.Rand.GaussianOE(sustainMult, Consts.ResourceDev, Consts.ResourceOE, .05);
+            if (Game.Rand.Bool(.13))
+            {
+                double mult = Game.Rand.Next(3) == 0 ? 10 : 20;
+                sustain = Game.Rand.Round(sustain * mult) / mult;
+                const double offset = .01;
+                sustain += Game.Rand.GaussianCapped(offset, 1 / 3.0, offset / 2.0) - offset;
+            }
 
             this._energyMult = Game.Rand.GaussianOE(1, .065, .021);
             this._massMult = Game.Rand.GaussianOE(Math.Sqrt(1 / this._energyMult), .039, .013);

@@ -29,6 +29,8 @@ namespace ClassLibrary1.Pieces
         //static
 
         public Events Event { get; }
+        internal bool RestrictMove { get; }
+
         internal void RaiseAttackEvent(Attack attack, IKillable killable, Tile targetTile);
 
         [Serializable]
@@ -38,28 +40,24 @@ namespace ClassLibrary1.Pieces
             private readonly int _attack, _reload;
             //private readonly int _numAttacks;
 
-            private readonly double _range;//_armorPierce, _shieldPierce, _dev,
+            private readonly double _range;
             //public Values(AttackType type, int attack) : this(type, attack, Pieces.Attack.MELEE_RANGE) { }
-            public Values(AttackType type, int attack, double range)//, double _armorPierce, double _shieldPierce, double _dev)
+            //public Values(AttackType type, int attack, double range)
+            //    : this(type, attack, range, CombatTypes.GetReloadBase(type, attack)) { }
+            public Values(AttackType type, int attack, double range, int? reload = null)
             {
                 this.Type = type;
                 if (attack < 1)
                     attack = 1;
                 this._attack = attack;
-                //this._armorPierce = _armorPierce;
-                //this._shieldPierce = _shieldPierce;
-                //this._dev = _dev;
                 this._range = range;
-                //if (Dev < .0052)
-                //    this._dev = 0;
-                this._reload = CombatTypes.GetReloadBase(type, attack);//, range);
+                this._reload = reload ?? CombatTypes.GetReloadBase(type, attack);
+                if (Attack < 1 || Range < 1 || Reload < 1 || Attack < Reload)
+                    throw new Exception();
             }
             public int Attack => _attack;
             public double Range => _range;
             public int Reload => _reload;
-            //public double ArmorPierce => _armorPierce;
-            //public double ShieldPierce => _shieldPierce;
-            //public double Dev => _dev;
         }
 
     }

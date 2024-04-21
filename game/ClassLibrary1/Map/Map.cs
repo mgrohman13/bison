@@ -524,13 +524,13 @@ namespace ClassLibrary1.Map
         private static double PointLineDistance(double a, double b, double c, Point point) =>
             (a * point.X + b * point.Y + c) / Math.Sqrt(a * a + b * b);
 
-        public readonly Dictionary<Point, FoundPath> FoundPaths = new(); // private, rename
+        private readonly Dictionary<Point, FoundPath> CorePaths = new(); // private, rename
         internal List<Point> PathFind(Tile from, double movement, Func<HashSet<Point>, bool> Accept)
         {
-            if (FoundPaths.TryGetValue(from.Location, out FoundPath found) && found.Movement <= movement)
+            if (CorePaths.TryGetValue(from.Location, out FoundPath found) && found.Movement <= movement)
                 return found.CompletePath(from.Location).ToList();
 
-            HashSet<Point> known = FoundPaths.Keys.Where(k => FoundPaths[k].Movement <= movement).ToHashSet();
+            HashSet<Point> known = CorePaths.Keys.Where(k => CorePaths[k].Movement <= movement).ToHashSet();
 
             var path = PathFind(from, Game.Player.Core.Tile, movement, _ => 0, known.Contains, Accept);
 
@@ -539,13 +539,13 @@ namespace ClassLibrary1.Map
                 FoundPath target = null;
                 Point final = path[^1];
                 if (final != Game.Player.Core.Tile.Location)
-                    target = FoundPaths[final];
+                    target = CorePaths[final];
                 FoundPath foundPath = new(path, target, movement);
                 for (int a = 0; a < path.Count - 1; a++)
                 {
-                    FoundPaths.TryGetValue(path[a], out FoundPath old);
+                    CorePaths.TryGetValue(path[a], out FoundPath old);
                     if (foundPath.Movement < (old?.Movement ?? double.MaxValue))
-                        FoundPaths[path[a]] = foundPath;//should join together so that faster aliens can switch over to faster path
+                        CorePaths[path[a]] = foundPath;//should join together so that faster aliens can switch over to faster path
                 }
                 if (target != null)
                     path.AddRange(target.CompletePath(final));

@@ -10,7 +10,7 @@ namespace ClassLibrary1.Pieces.Enemies
     public abstract class EnemyPiece : Piece
     {
         protected AIState _state;
-        public AIState State => _state;// private - hide behind research
+        private AIState State => _state;// private - hide behind research
 
         internal EnemyPiece(Tile tile, AIState state)
             : base(tile.Map.Game.Enemy, tile)
@@ -37,8 +37,9 @@ namespace ClassLibrary1.Pieces.Enemies
         {
         }
 
-        public enum AIState// internal protected
+        internal protected enum AIState// internal protected
         {
+            Heal,
             Retreat,
             Fight,
             Patrol,

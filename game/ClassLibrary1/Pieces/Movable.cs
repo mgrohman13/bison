@@ -50,17 +50,17 @@ namespace ClassLibrary1.Pieces
 
         bool IMovable.Move(Tile to)
         {
-            bool move = (Piece.IsPlayer && to != null && to.Piece == null && to.Visible);
-            return Move(move, to);
+            bool move = Piece.IsPlayer && to != null && to.Piece == null && to.Visible;
+            return move && Move(to);
         }
         bool IMovable.EnemyMove(Tile to)
         {
-            bool move = (Piece.IsEnemy && to != null && to.Piece == null);
-            return Move(move, to);
+            bool move = Piece.IsEnemy && to != null && to.Piece == null;
+            return move && Move(to);
         }
-        private bool Move(bool Move, Tile to)
+        private bool Move(Tile to)
         {
-            if (Move && Piece.Tile != to)
+            if (Piece.Tile != to && CanMove)
             {
                 //check blocks
                 double dist = Piece.Tile.GetDistance(to);
@@ -74,6 +74,7 @@ namespace ClassLibrary1.Pieces
             }
             return false;
         }
+        public bool CanMove => !(_moved && Piece.HasBehavior(out IAttacker attacker) && attacker.RestrictMove);
 
         public double GetInc()
         {

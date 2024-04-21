@@ -39,6 +39,7 @@ namespace WinFormsApp1
                 Type selected = Form.GetSelected().Value;
                 if (Program.Game.Player.Research.Available.Contains(selected))
                     Program.Game.Player.Research.Researching = selected;
+                Program.ViewedResearch = true;
                 return true;
             }
             return false;

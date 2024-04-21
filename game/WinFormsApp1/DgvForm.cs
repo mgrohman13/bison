@@ -55,6 +55,21 @@ namespace WinFormsApp1
             }
             return false;
         }
+        public void BuilderDialogMech()
+        {
+            this.selected = null;
+            dataGridView1.Hide();
+            rows = new List<BuildRow>();
+            result = null;
+            GetBlueprints(Program.Game.Player.Core.GetBehavior<IBuilder.IBuildMech>());
+            Display();
+            //dataGridView1.Columns["Name"].Visible = false;
+            //dataGridView1.Columns["Upgraded"].Visible = false;
+            dataGridView1.Columns["Build"].Visible = false;
+            //dataGridView1.Columns["Notify"].Visible = false;
+            ShowDialog();
+            //return result;
+        }
         public Piece BuilderDialog(Tile selected)
         {
             this.selected = selected;
@@ -77,11 +92,7 @@ namespace WinFormsApp1
             }
             if (buildMech != null && selected.Piece == null)
             {
-                foreach (MechBlueprint blueprint in Program.Game.Player.Research.Blueprints)
-                {
-                    BuildRow row = new(buildMech, "Mech", blueprint.Energy, blueprint.Mass, blueprint);
-                    rows.Add(row);
-                }
+                GetBlueprints(buildMech);
             }
             if (buildExtractor != null && selected.Piece is Resource resource)
             {
@@ -168,6 +179,14 @@ namespace WinFormsApp1
         {
             //check blocks
             return Program.Game.Player.PiecesOfType<T>().FirstOrDefault(b => selected.GetDistance(b.Piece.Tile) <= b.Range);
+        }
+        public void GetBlueprints(IBuilder.IBuildMech buildMech)
+        {
+            foreach (MechBlueprint blueprint in Program.Game.Player.Research.Blueprints)
+            {
+                BuildRow row = new(buildMech, "Mech", blueprint.Energy, blueprint.Mass, blueprint);
+                rows.Add(row);
+            }
         }
 
         private void DataGridView1_CellClick(object sender, DataGridViewCellEventArgs e)

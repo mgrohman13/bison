@@ -17,11 +17,16 @@ namespace WinFormsApp1
     {
         public static Game Game;
 
-        public static Main Form;
-        public static DgvForm DgvForm;
+        public readonly static Main Form;
+        public readonly static DgvForm DgvForm;
 
         private static UIData data = new();
 
+        public static bool ViewedResearch
+        {
+            get { return data.ViewedResearch; }
+            set { data.ViewedResearch = value; }
+        }
         public static bool NotifyConstructor
         {
             get { return data.NotifyConstructor; }
@@ -29,6 +34,16 @@ namespace WinFormsApp1
         }
 
         public static string savePath;
+
+        static Program()
+        {
+            Application.SetHighDpiMode(HighDpiMode.SystemAware);
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+
+            Form = new Main();
+            DgvForm = new DgvForm();
+        }
 
         [STAThread]
         static void Main()
@@ -47,15 +62,8 @@ namespace WinFormsApp1
             //};
             //for (int a = 1; a < 780; a++)
             //    bp(a);
+
             LoadGame();
-
-            Application.SetHighDpiMode(HighDpiMode.SystemAware);
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-
-            Form = new Main();
-            DgvForm = new DgvForm();
-
             Application.Run(Form);
         }
 
@@ -109,6 +117,7 @@ namespace WinFormsApp1
             else
             {
                 Game = new Game(savePath);
+                data = new();
                 SaveGame();
             }
         }
@@ -120,12 +129,18 @@ namespace WinFormsApp1
                 end = MessageBox.Show("Move remaining.  End Turn?", "", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning) == DialogResult.OK;
             if (end)
             {
+                if (!ViewedResearch && (data.AlertResearch || LikelyResearch()))
+                    if (ResearchForm.ShowForm())
+                        RefreshChanged();
+                    else
+                        return;
+
                 SaveGame();
                 CopyAutoSave("e");
                 Type? researched = Game.EndTurn();
                 if (Game.GameOver)
                 {
-                    MessageBox.Show((Game.Win ? "VICTORY!!!  :)" : "DEFEAT!  :(") + $"{Environment.NewLine}Hives Destroyed: {Program.Game.Victory}/{Game.POINTS_TO_WIN}{Environment.NewLine}Game over...  {Game.Turn} turns.");
+                    MessageBox.Show((Game.Win ? "VICTORY!!!  :)" : "DEFEAT!  :(") + $"{Environment.NewLine}Hives Destroyed: {Game.Victory}/{Game.POINTS_TO_WIN}{Environment.NewLine}Game over...  {Game.Turn} turns.");
                     CopyAutoSave(Game.Win ? "win" : "loss");
                 }
                 else
@@ -133,12 +148,26 @@ namespace WinFormsApp1
                     CopyAutoSave("s");
                 }
                 data.moved.Clear();
-                Program.RefreshChanged();
 
-                if (researched.HasValue)
-                    if (ResearchForm.ShowForm())
-                        Program.RefreshChanged();
+                data.AlertResearch = researched.HasValue;
+                if (researched.HasValue && Research.IsMech(researched.Value))
+                    DgvForm.BuilderDialogMech();
+                ViewedResearch = false;
+
+                RefreshChanged();
             }
+        }
+        private static bool LikelyResearch()
+        {
+            Player player = Game.Player;
+            Research research = player.Research;
+            Type researching = research.Researching;
+            player.GetIncome(out _, out _, out double researchInc);
+            double deviation = Consts.IncomeDev(researchInc);
+            int add = (int)Math.Ceiling(researchInc + deviation * Math.PI);
+            int progress = research.GetProgress(researching);
+            int cost = research.GetCost(researching);
+            return progress + add >= cost;
         }
 
         public static void Hold()
@@ -155,7 +184,7 @@ namespace WinFormsApp1
         public static void Next(bool dir)
         {
             Rectangle gameRect = Game.Map.GameRect();
-            var tiles = Program.Game.Player.Pieces.Where(Program.MoveLeft).Select(p => p.Tile);
+            var tiles = Game.Player.Pieces.Where(MoveLeft).Select(p => p.Tile);
             if (tiles.Any() && Form.MapMain.SelTile != null)
                 tiles = tiles.Concat(new Tile[] { Form.MapMain.SelTile });
             var moveLeft = tiles.Distinct().OrderBy(t =>
@@ -244,7 +273,7 @@ namespace WinFormsApp1
 
             if (!move && piece.HasBehavior(out IMovable movable))
                 //need to support rallying long distances to uncomment this enhancement
-                move |= movable.MoveCur > 1 && movable.MoveCur + movable.MoveInc > movable.MoveMax;// + (movable.MoveLimit - movable.MoveMax > 1 ? 1 : 0);
+                move |= movable.CanMove && movable.MoveCur > 1 && movable.MoveCur + movable.MoveInc > movable.MoveMax;// + (movable.MoveLimit - movable.MoveMax > 1 ? 1 : 0);
             if (!move && piece.HasBehavior(out IAttacker attacker))
             {
                 static double GetRange(Attack a) => a.CanAttack() ? a.Range : 0;
@@ -272,13 +301,16 @@ namespace WinFormsApp1
         private class UIData // : ISerializable
         {
             public readonly HashSet<PlayerPiece> moved = new();
-            public readonly HashSet<MechBlueprint> notifyOff = new();
 
+            public readonly HashSet<MechBlueprint> notifyOff = new();
             public bool NotifyConstructor = true;
+
+            public bool AlertResearch = false;
+            [NonSerialized]
+            public bool ViewedResearch = false;
 
             //public void GetObjectData(SerializationInfo info, StreamingContext context)
             //{
-            //    throw new NotImplementedException();
             //}
         }
     }

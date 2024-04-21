@@ -38,10 +38,10 @@ namespace ClassLibrary1.Pieces.Enemies
         double IRepairable.RepairCost => Consts.GetRepairCost(this, _energy, 0);
         bool IRepairable.AutoRepair => !Tile.Visible;// Game.Rand.Bool(.078);// _autoRepair;
 
-        public List<Point> PathToCore { get; private set; }// private
-        public List<Point> RetreatPath { get; private set; }// private
+        private List<Point> PathToCore { get; set; }// private
+        private List<Point> RetreatPath { get; set; }// private
 
-        public double Morale => _morale;// private - hide behind research
+        private double Morale => _morale;// private - hide behind research
 
         private Alien(Tile tile, List<Point> pathToCore, double energy,
             IEnumerable<Values> killable, double resilience, IEnumerable<IAttacker.Values> attacks, IMovable.Values movable)
@@ -110,14 +110,25 @@ namespace ClassLibrary1.Pieces.Enemies
             out List<Point> path)
         {
             AIState state = base.TurnState(difficulty, playerAttacks, moveTiles, killables, out path);
+            killable.GetHitsRepair(out double hitsInc, out _);
+            var armor = killable.Protection.SingleOrDefault(d => d.Type == CombatTypes.DefenseType.Armor && d.DefenseCur < d.DefenseMax);
+            if (armor != null)
+                hitsInc += armor.GetRegen();
 
             if (MoraleCheck(0, false))
                 state = AIState.Retreat;
 
             switch (state)
             {
+                case AIState.Heal:
+                    state = AIState.Heal;
+                    if (hitsInc <= 0 || PlayerPresent())
+                        goto case AIState.Retreat;
+                    break;
                 case AIState.Retreat:
                     state = AIState.Retreat;
+                    if (hitsInc > 0 && !PlayerPresent())
+                        goto case AIState.Heal;
                     if (MoraleCheck(1, true))
                         goto case AIState.Fight;
                     if (moveTiles.Any())
@@ -136,9 +147,10 @@ namespace ClassLibrary1.Pieces.Enemies
                         goto case AIState.Rush;
                     if (MoraleCheck(.5 / difficulty, true) && SeePath())
                         goto case AIState.Rush;
-                    //if (MoraleCheck(.125, false))
                     if (PlayerPresent())
                         goto case AIState.Fight;
+                    else if (hitsInc > 0)
+                        goto case AIState.Heal;
                     break;
                 case AIState.Rush:
                     state = AIState.Rush;
@@ -153,6 +165,7 @@ namespace ClassLibrary1.Pieces.Enemies
                             else
                                 goto case AIState.Patrol;
                     break;
+                default: throw new Exception();
             }
 
             if (state == AIState.Retreat)

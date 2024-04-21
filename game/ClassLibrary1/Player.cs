@@ -25,7 +25,7 @@ namespace ClassLibrary1
         new public int Mass => base.Mass;
 
         internal Player(Game game)
-            : base(game, 0, 2750)
+            : base(game, 0, 500)
         {
             this.Research = new(game);
             this.upgradeValues = AppDomain.CurrentDomain.GetAssemblies()

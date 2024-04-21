@@ -35,12 +35,16 @@ namespace ClassLibrary1
         public const double MoveDev = .013;
         public const double MoveLimitPow = 1.3;
 
-        public const double ExtractorCostPow = .91;
+        public const double CoreEnergy = 550;
+        public const double CoreMass = 250;
+        public const double CoreResearch = 20;
+        public const double CoreExtractTurns = 91;//0.98901098901098901098901098901099
+
         public const double ResourceDistAdd = 21;
         public const double ResourceDistDiv = 65;
         public const double ResourceDistPow = .52;
         public const double ResourceSustainValuePow = .26;
-        public const double ExtractTurns = 65;
+        public const double ExtractTurns = 65;//0.98461538461538461538461538461538
         // ExtractPow=x/(1-x) where x is desired exponent when sustain=1 
         // inverse: x=ExtractPow/(ExtractPow+1)
         public const double ExtractPow = 3.5; //x=0.77777777777777777777777777777778
@@ -60,6 +64,7 @@ namespace ClassLibrary1
         public const double ArtifactMassIncDiv = 3;
         public const double ArtifactEnergyUpkMult = 2.5;
 
+        public const double ExtractorCostPow = .91;
         public const double BiomassExtractorEnergyCost = 750;
         public const double BiomassExtractorMassCost = 910;
         public const double MetalExtractorEnergyCost = 780;
@@ -74,7 +79,7 @@ namespace ClassLibrary1
         public const double BaseConstructorUpkeep = 5;
         public const double BaseMechUpkeep = 1;
 
-        public const double EnergyPerMove = 1;
+        public const double EnergyPerMove = 1 / 3.0;
         public const double EnergyPerAttack = EnergyPerShield / 2.0;
         public const double EnergyPerShield = .5;
         public const double MassPerArmor = EnergyPerShield / 2.0;
@@ -135,10 +140,8 @@ namespace ClassLibrary1
                 div = 5;
             return Game.Rand.Round(avg / div) * div;
         }
-        internal static double Income(double income)
-        {
-            return income + Game.Rand.Gaussian(.65 + Math.Abs(income) / 65.0);
-        }
+        internal static double Income(double income) => income + Game.Rand.Gaussian(IncomeDev(income));
+        public static double IncomeDev(double income) => .65 + Math.Abs(income) / 65.0;
 
         internal static double GetPct(double pct, double mult)
         {

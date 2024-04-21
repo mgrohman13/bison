@@ -200,6 +200,7 @@ namespace ClassLibrary1
             }
             FilterMoves();
 
+            double attValue = SumAttacks(attacks, _ => true);
             double maxMoveAttRange = (movePiece?.MoveCur ?? 0) + (attacks.Max(a => a?.Range) ?? 0);
             HashSet<IKillable> extendedTargets = allTargets.Keys.Where(k => k.Piece.Tile.GetDistance(piece.Tile) < maxMoveAttRange).SelectMany(k => allTargets[k].Keys).ToHashSet();
 
@@ -225,8 +226,8 @@ namespace ClassLibrary1
             {
                 Tile tile = killable.Piece.Tile;
                 bool meleeRange = melee.Any() && tile.GetAdjacentTiles().Any(moveTiles.Contains);
-                double attValue = 1 + SumAttacks(attacks, a => a.Range == Attack.MELEE_RANGE ? meleeRange : tile.GetDistance(piece.Tile) <= a.Range);
-                return Game.Rand.Round(attValue * GetGroupWeight(killable));
+                double inRange = 1 + SumAttacks(attacks, a => a.Range == Attack.MELEE_RANGE ? meleeRange : tile.GetDistance(piece.Tile) <= a.Range);
+                return Game.Rand.Round(inRange / attValue * GetGroupWeight(killable));
             }
             double GetGroupWeight(IKillable killable)
             {
@@ -235,7 +236,7 @@ namespace ClassLibrary1
             }
 
             Tile moveTo = piece.Tile;
-            if (movePiece != null)
+            if (movePiece != null && state != EnemyPiece.AIState.Heal)
             {
                 List<Tile> pathTiles = new();
                 if (fullPath != null)
@@ -254,7 +255,6 @@ namespace ClassLibrary1
 
                 static IEnumerable<IKillable> MeleeTargets(Tile tile) => tile.GetAdjacentTiles().Select(t => t.Piece?.GetBehavior<IKillable>()).Where(k => k != null && k.Piece.IsPlayer && !k.Dead);//reuse
                 bool hasMeleeTrg = !melee.Any() || MeleeTargets(piece.Tile).Any();
-                double attValue = SumAttacks(attacks, _ => true);
                 double meleeValue = SumAttacks(melee, _ => true);
                 double defValue = 0;
                 if (killPiece != null)
@@ -268,8 +268,10 @@ namespace ClassLibrary1
 
                 Debug.WriteLine(piece);
 
+                double multiplier = 1;
                 //eventually convert to ulong?
-                var dict = moveTiles.ToDictionary(t => t, moveTile =>
+                Dictionary<Tile, int> dict = new();
+                foreach (var moveTile in Game.Rand.Iterate(moveTiles))
                 {
                     double attWeight = 1;
                     if (attValue > 0)
@@ -384,17 +386,26 @@ namespace ClassLibrary1
                     {
                         var friendly = moveTile.GetAdjacentTiles().Select(t => (t.Piece?.GetBehavior<IKillable>()))
                             .Where(k => k != null && k.Piece.Side == piece.Side && k.Piece != piece && moved.Contains(k.Piece)).ToList();
+                        int count = 0;
                         foreach (var killable in friendly)
                         {
                             var weight = defValue / DefWeight(killable);
-                            if (killable.HasBehavior<IAttacker>() && weight < 1)
-                                weight = 1 / weight;
-                            defWeight *= Math.Sqrt(1 + weight);
+                            if (weight < 1)
+                                if (killable.HasBehavior<IAttacker>())
+                                    weight = 1 / weight;
+                                else
+                                    weight = 1;
+                            defWeight *= weight;
+                            count++;
                         }
+                        defWeight = (1 + Math.Pow(defWeight, 2.0 / count)) * count;
                         if (friendly.OfType<Hive>().Any())
                             defWeight *= Math.Sqrt(defWeight);
-                        defWeight = Math.Pow(defWeight, .5 / playerAttWeight);
+                        defWeight = Math.Pow(defWeight, Math.Sqrt(.25 / playerAttWeight));
                     }
+
+                    string logWeights = string.Format("attWeight:{1}{0}pathWeight:{2}{0}coreWeight:{3}{0}playerAttWeight:{4}{0}moveWeight:{5}{0}repairWeight:{6}{0}defWeight:{7}",
+                            Environment.NewLine, attWeight, pathWeight, coreWeight, playerAttWeight, moveWeight, repairWeight, defWeight);
 
                     //double multipliers = 0;
                     void Inc(ref double weight, double pow)
@@ -424,6 +435,7 @@ namespace ClassLibrary1
                             Inc(ref pathWeight, 4);
                             Inc(ref coreWeight, 2);
                             goto case EnemyPiece.AIState.Fight;
+                        default: throw new Exception();
                     }
 
                     double[] weights = new double[] { attWeight, pathWeight, coreWeight, playerAttWeight, moveWeight, repairWeight, defWeight, };
@@ -432,21 +444,55 @@ namespace ClassLibrary1
                     {
                         //if (w != 1)
                         //    multipliers++;
-                        if (double.IsNaN(w) || w < 0)
+                        double weight = w;
+                        if (double.IsNaN(weight) || weight < 0)
                             throw new Exception();
-                        if (w > ushort.MaxValue)
-                            ;
-                        if (w > 1)
-                            result += w;
+
+                        //double slow = (max + short.MaxValue) / 2.0;
+                        //double diff = max - slow;
+                        //if (diff < 0)
+                        //{
+                        //    weight = slow;
+                        //    Debug.WriteLine("Bad weight!");
+                        //}
+                        //else if (weight > slow)
+                        //{
+                        //    weight -= slow;
+                        //    weight = slow + diff * weight / (weight + diff);
+                        //}
+
+                        if (weight > 1)
+                            result += weight;
                         else
-                            div *= w;// * w;
+                            div *= weight;// * w;
                     }
-                    result *= div;// Math.Pow(result, 1.0 / multipliers);
-                    int chance = Game.Rand.Round(1 + moveTiles.Count * result);
+                    result *= div * moveTiles.Count;// Math.Pow(result, 1.0 / multipliers);
+
+                    double min = 1 / Math.Sqrt(moveTiles.Count);
+                    double max = int.MaxValue / (double)(moveTiles.Count * moveTiles.Count);
+                    double oldMult = multiplier;
+                    if (result > max)
+                    {
+                        Debug.WriteLine(state + " tile chance exceeded MAX: " + result);
+                        Debug.WriteLine(logWeights);
+                        multiplier = Math.Min(multiplier, max / result);
+                    }
+                    else if (result < min && multiplier >= 1)
+                    {
+                        Debug.WriteLine(state + " tile chance exceeded MIN: " + result);
+                        multiplier = Math.Max(multiplier, min / result);
+                    }
+                    else if (result < min)
+                        ;
+                    if (oldMult != multiplier)
+                        foreach (var t in dict.Keys.ToList())
+                            dict[t] = Game.Rand.Round(dict[t] * multiplier / oldMult);
+
+                    int chance = Game.Rand.Round(1 + result * multiplier);
                     if (chance < 0)
                         throw new Exception();
-                    return chance;
-                });
+                    dict.Add(moveTile, chance);
+                }
                 moveTo = Game.Rand.SelectValue(dict);
             }
 
@@ -561,10 +607,11 @@ namespace ClassLibrary1
             if (killable.Piece.HasBehavior(out IAttacker attacker))
                 attacks += attacker.Attacks.Sum(a => Consts.StatValue(a.AttackCur)
                     * (Math.Max(a.Range, Attack.MIN_RANGED) + Attack.MIN_RANGED) / Attack.MIN_RANGED / 2.0);
+
             if (killable.Piece.HasBehavior(out IRepair repairs))
-                repair += 26 + avgHp * repairs.Rate * (repairs.Range + 3.9);
+                repair += avgHp * (repairs.Rate + 1) * (repairs.Range + 6.5);
             if (killable.Piece.HasBehavior(out IBuilder builder))
-                repair += 13 + avgHp * (builder.Range + 13) / 130.0;
+                repair += avgHp * (builder.Range + 13) / 3.9;
 
             double mass = 0;
             if (killable.Piece is PlayerPiece playerPiece)
@@ -605,7 +652,7 @@ namespace ClassLibrary1
             if (state == EnemyPiece.AIState.Rush && killable.Piece is Core)
                 trg *= 2.6;
 
-            return Math.Sqrt(1 + gc * gc * damagePct * shieldFactor * trg);
+            return Math.Sqrt((1 + gc * gc * damagePct * shieldFactor) * trg);
         }
     }
 }
