@@ -92,9 +92,23 @@ FEATURES
 	experience
 	power grid
 
+show st dev of income in UI somewhere
+show alien extended range??
+
+reduce energy cost factor for att/def ratio
+increased target weight when likely to kill?
+enemy target core too much early?
+	sqrt income in weight calc?
+	weight research higher?
 no observable instance of aliens protecting each other yet 
 need to hit extractors more when rushing?
 	new state??
+resource more likely to jump to sustain mult when higher 
+remove move limit, make const (at 2x?)
+	make random gaussian thats different every turn? could be fun?
+better handling of fractional repair amts 
+early-mid game not dangerous enough?
+aliens not retreating well? 
 
 fix weights
 	fix anything triggering multiplier - esp MAX
@@ -137,6 +151,12 @@ map contiguity / pathfinding / alien behavior
 	do enemy pathfinding in background during player turn?	
 	builds up too many paths over time - duplicate paths with diff speeds
 
+ranged attack min range???
+	as individual stat???
+make movement path when alien is out of vision ambiquous 
+	(and atts?)
+cap zooming out to map bounds 
+	still bugs in existing limits though...
 need to be able to visualize AI alg on map
 measure enemy move performance with stopwatch
 	expect pathfinding to take the most time but not happen often 
@@ -203,7 +223,7 @@ movement - long term
 	start with just inc, lose all at turn end
 	reserach "battery" or "booster" 
 		gives a max value to save up to
-		actual limit is always 2x max? no seperate variable?
+		actual limit is always 2x (3x?) max? no seperate variable?
 move Map inner classes to partial class files
 show inc/upk breakdown
 	eng break down by att/shield/move/mech/constructor
@@ -351,3 +371,5 @@ map
 		force between core, hives, resources (? - ensure generate past gap?)
 	water/islands
 
+needs name, solidified setting, tutorial/info
+	heisenberg uncertainty principle + quantum computing 
