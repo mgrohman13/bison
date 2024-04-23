@@ -5,6 +5,7 @@ using System.Text;
 
 namespace MattUtil
 {
+    [Serializable]
     public class RandBooleans
     {
         private static MTRandom random = null;

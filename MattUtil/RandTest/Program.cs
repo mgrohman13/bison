@@ -1,14 +1,9 @@
+using MattUtil;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using MattUtil;
-using Ideas;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Diagnostics;
-using System.Drawing;
 using Point = MattUtil.Point;
 
 namespace randTest
@@ -537,11 +532,110 @@ namespace randTest
             //} while (Console.ReadKey(true).KeyChar != 'q');
 
 
-            lotr();
+            //lotr();
+
+
+            newgame();
+            newgame2();
 
 
             Console.ReadKey(true);
             rand.StopTick();
+        }
+
+        private static void newgame2()
+        {
+            Dictionary<Point, double> chance = new();
+
+            const int max = 99;
+
+            for (int def = 1; def <= max; def++)
+                for (int att = 1; att <= max; att++)
+                {
+                    double odds = att / (double)(att + def);
+                    double winWeight = def == 1 ? 1 : chance[new(att, def - 1)];
+                    double loseWeight = att == 1 ? 0 : chance[new(att - 1, def)];
+                    double win = odds * winWeight + (1 - odds) * loseWeight;
+                    chance.Add(new(att, def), win);
+                }
+
+            foreach (var c in chance.Keys.ToArray())
+                if (c.X > c.Y)
+                    chance.Remove(c);
+
+            foreach (var c in chance)
+                Console.WriteLine($"{c.Key.X:00}:{c.Key.Y:00} - {c.Value:E2} ({-Math.Log((1 - c.Value) / c.Value) / Math.Log(c.Key.X / (double)c.Key.Y)})");
+        }
+
+        private static void newgame()
+        {
+            int c = 9999999;
+            const int att = 2, def = 1;
+            const int numAtts = 1, numDefs = 3;
+
+            double wins = 0;
+            //double attLeft = 0, defLeft = 0;
+            //double attsLeft = 0, defsLeft = 0;
+
+            for (int a = 0; a < c; a++)
+            {
+                int attack = att, defense = def;
+                int atts = numAtts, defs = numDefs;
+                while (atts > 0 && defs > 0)
+                {
+                    while (attack > 0 && defense > 0)
+                    {
+                        if (rand.Bool(attack / (double)(attack + defense)))
+                            defense--;
+                        else
+                            attack--;
+                    }
+                    if (attack == 0)
+                    {
+                        atts--;
+                        attack = att;
+                    }
+                    else
+                    {
+                        defs--;
+                        defense = def;
+                    }
+                }
+                if (atts > 0)
+                    wins++;
+                //attLeft += attack;
+                //defLeft += defense;
+            }
+
+            wins /= c;
+
+            Console.WriteLine(wins);
+
+            //Console.WriteLine($"att   {att}");
+            //Console.WriteLine($"def   {def}");
+            //Console.WriteLine();
+
+            //Console.WriteLine($"wins  {wins:P1}");
+            //Console.WriteLine($"start {att / (double)(att + def):P1}");
+            //Console.WriteLine();
+
+            //Console.WriteLine($"ratio {attLeft / defLeft:0.0}");
+            //Console.WriteLine($"start {att / (double)def:0.0}");
+            //Console.WriteLine();
+
+            //Console.WriteLine($"att   {attLeft / c:0.00}");
+            //Console.WriteLine($"def   {defLeft / c:0.00}");
+            //Console.WriteLine();
+
+            //Console.WriteLine($"{Math.Log(attLeft / defLeft)}");
+            //Console.WriteLine($"{Math.Log(att / (double)def)}");
+            //Console.WriteLine($"{Math.Log(attLeft / defLeft) / Math.Log(att / def)}");
+            //Console.WriteLine();
+
+            //Console.WriteLine($"{(1 - wins) / wins}");
+            //Console.WriteLine($"{(att / (double)def)}");
+            //Console.WriteLine($"{-Math.Log((1 - wins) / wins) / Math.Log(att / (double)def)}");
+            //Console.WriteLine();
         }
 
         private static void lotr()

@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Ideas
 {
-    public class RootRandom
+    public class RootRandom 
     {
         private static TrueInt zero = new TrueInt(0), one = new TrueInt(1), two = new TrueInt(2), four = new TrueInt(4);
 

@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Runtime.CompilerServices;
-using System.Runtime.Serialization;
+﻿using MattUtil.RealTimeGame;
+using System;
 
 namespace MattUtil
 {
@@ -11,6 +7,9 @@ namespace MattUtil
     [Serializable]
     public class Noise
     {
+        //[NonSerialized]
+        //public static MTRandom Random;
+
         public readonly double weightPower;
         public readonly double[] divs, offX, offY, rotate;
 
@@ -19,9 +18,11 @@ namespace MattUtil
         [NonSerialized]
         private OpenSimplexNoise[] stepNoise, weightNoise;
 
-        public Noise(MTRandom rand, double min, double max, int steps, double stepDeviation, double weightScale, double weightPower)
+        public Noise(MTRandom rand, double min, double max, int steps, double stepDeviation, double weightScale)//, double weightPower)
         {
-            this.weightPower = weightPower;
+            //Noise.Random = rand;
+
+            this.weightPower = rand.GaussianCapped(steps, stepDeviation, 1);
             divs = new double[steps + 1];
             offX = new double[steps + 1];
             offY = new double[steps + 1];
@@ -36,8 +37,8 @@ namespace MattUtil
                     divs[a] = rand.GaussianCapped(min + (max - min) * weightScale, stepDeviation);
                 else
                     divs[a] = rand.GaussianCapped(cur, stepDeviation);
-                offX[a] = rand.Gaussian(13);
-                offY[a] = rand.Gaussian(13);
+                offX[a] = rand.Gaussian(max);
+                offY[a] = rand.Gaussian(max);
                 rotate[a] = 2 * Math.PI * rand.NextDouble();
                 cur *= step;
             }
