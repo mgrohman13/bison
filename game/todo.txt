@@ -92,6 +92,7 @@ FEATURES
 	experience
 	power grid
 
+stop drawing grid when zoomed out past certain scale
 show st dev of income in UI somewhere
 show alien extended range??
 

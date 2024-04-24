@@ -234,8 +234,10 @@ namespace WinFormsApp1
         }
         private void Tiles(PaintEventArgs e)
         {
-            const float defHeight = .169f, statBarPow = .39f;
+            //move letters up
+            const float defHeight = .26f, statBarPow = .39f;
 
+            List<RectangleF> tileRects = new();
             List<RectangleF> rectangles = new();
             List<RectangleF> ellipses = new();
             List<PointF[]> polygons = new();
@@ -291,6 +293,13 @@ namespace WinFormsApp1
                 {
                     int x = piece.Tile.X, y = piece.Tile.Y;
                     RectangleF rect = new(GetX(x), GetY(y), Scale, Scale);
+
+                    //var r = rect;
+                    if (Scale < 13)
+                    {
+                        rect = RectangleF.Inflate(rect, (13 - Scale) / 2f, (13 - Scale) / 2f);
+                        rectangles.Add(rect);
+                    }
 
                     const float ellipseInflate = -.13f;
                     RectangleF ellipse = RectangleF.Inflate(rect, rect.Width * ellipseInflate, rect.Height * ellipseInflate);
@@ -463,8 +472,8 @@ namespace WinFormsApp1
                             //Color.Brown
                             AddFill(new SolidBrush(Color.FromArgb(130, color, 26)), rect);
                         }
-                        else if (tile != null)
-                            rectangles.Add(rect);
+                        else if (tile != null)// && Scale > 13)
+                            tileRects.Add(rect);
                         //else if (!Game.TEST_MAP_GEN.HasValue)
                         //    AddFill(Brushes.DarkGray, rect);
                     }
@@ -505,19 +514,28 @@ namespace WinFormsApp1
                 }
             }
 
+            //if (Scale < 13)
+            //{
+            //    //fill.
+            //    foreach (var f in fill)
+            //        foreach (var r in f.Value)
+            //            r.Inflate(13, 13);
+            //}
+
             RectangleF[] rects = rectangles.ToArray();
-            if (rects.Length > 0)
-                e.Graphics.FillRectangles(Brushes.White, rects);
+            RectangleF[] allrects = rectangles.Concat(tileRects).ToArray();
+            if (allrects.Length > 0)
+                e.Graphics.FillRectangles(Brushes.White, allrects);
 
             HashSet<Brush> afterBrushes = hitsBrushes.Values.Concat(new[] { Brushes.White,
                 Brushes.DarkGray, Brushes.LightGray, Brushes.SkyBlue, Brushes.Silver, Brushes.SandyBrown , Brushes.MediumPurple,
             }).ToHashSet();
-            foreach (var p in fill)
+            foreach (var p in Game.Rand.Iterate(fill))
                 if (!afterBrushes.Contains(p.Key))
                     e.Graphics.FillRectangles(p.Key, p.Value.ToArray());
             foreach (var ellipse in ellipses)
                 e.Graphics.FillEllipse(Brushes.Blue, ellipse);
-            foreach (var p in fill)
+            foreach (var p in Game.Rand.Iterate(fill))
                 if (afterBrushes.Contains(p.Key))
                     e.Graphics.FillRectangles(p.Key, p.Value.ToArray());
             foreach (var p in polygons)
@@ -535,8 +553,9 @@ namespace WinFormsApp1
             //    }
             //}
 
-            if (rects.Length > 0)
-                e.Graphics.DrawRectangles(Pens.Black, rects);
+            var rs = Scale > 13 ? allrects : rects;
+            if (rs.Length > 0)// && Scale > 13)
+                e.Graphics.DrawRectangles(Pens.Black, rs);
             foreach (var l in lines)
                 foreach (var t in l.Value)
                     e.Graphics.DrawLine(l.Key, t.Item1.X, t.Item1.Y, t.Item2.X, t.Item2.Y);
@@ -557,12 +576,13 @@ namespace WinFormsApp1
                         e.Graphics.DrawString(value, f, Brushes.Red, new PointF(GetX(p.Key.X) + Scale - size.Width, GetY(p.Key.Y) + Scale - size.Height));
                     }
             }
-            foreach (var p in letters)
-            {
-                using Font f = new(FontFamily.GenericMonospace, Scale / 2.6f);
-                SizeF size = e.Graphics.MeasureString(p.Value, f);
-                e.Graphics.DrawString(p.Value, f, Brushes.Black, p.Key.X + (Scale - size.Width) / 2f, p.Key.Y);
-            }
+            if (Scale > 13)
+                foreach (var p in letters)
+                {
+                    using Font f = new(FontFamily.GenericMonospace, Scale / 2.6f);
+                    SizeF size = e.Graphics.MeasureString(p.Value, f);
+                    e.Graphics.DrawString(p.Value, f, Brushes.Black, p.Key.X + (Scale - size.Width) / 2f, p.Key.Y);
+                }
 
             foreach (IDisposable d in hitsBrushes.Values)
                 d.Dispose();
@@ -1115,8 +1135,8 @@ namespace WinFormsApp1
             float selY = GetY(anchor.Y) + Scale / 2f;
 
             this.Scale *= mult;
-            if (Scale < 3)
-                Scale = 3;
+            if (Scale < 1)
+                Scale = 1;
             else if (Scale > 169)
                 Scale = 169;
             if (this.CheckBounds(xStart, yStart) && mult > 1)
