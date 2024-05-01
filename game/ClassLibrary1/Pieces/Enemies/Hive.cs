@@ -63,13 +63,13 @@ namespace ClassLibrary1.Pieces.Enemies
 
         private void Attacker_AttackEvent(object sender, Attacker.AttackEventArgs e)
         {
-            Tile.Map.UpdateVision(this.Tile, Math.Sqrt(attacker.Attacks.Sum(a => a.Range) + Attack.MELEE_RANGE));
+            Tile.Map.UpdateVision(this.Tile, Math.Sqrt(attacker.Attacks.Sum(a => a.Range) + Attack.MELEE_RANGE)); //consolidate with below?
         }
         private void Killable_DamagedEvent(object sender, Killable.DamagedEventArgs e)
         {
             double cur = killable.AllDefenses.Sum(d => Consts.StatValue(d.DefenseCur));
             double max = killable.AllDefenses.Sum(d => Consts.StatValue(d.DefenseMax));
-            ((Enemy)Side).HiveDamaged(this, ref energy, killable.Hits.DefenseCur, cur / max, MaxRange);
+            ((Enemy)Side).HiveDamaged(this, ref energy, killable.Hits.DefenseCur, cur / max, MaxRange); //change MaxRange, pull logic from HiveDamaged
         }
         public double MaxRange => attacker.Attacks.Max(a => a.Range);
 

@@ -67,13 +67,14 @@ namespace ClassLibrary1
                 xfer = Game.Rand.GaussianInt(energy * hitsPct, 1);
             this._energy += xfer;
             energy -= xfer;
+            Debug.WriteLine($"Enemy energy: {_energy} ({(xfer > 0 ? "+" : "")}{xfer})");
 
             if (this.Energy > 0 && Game.Rand.Bool(hitsPct / Math.Sqrt(hits)))
             {
                 SpawnAlien(() =>
                 {
                     Tile tile;
-                    int RandCoord(double coord) => Game.Rand.Round(coord + Game.Rand.Gaussian(range / 1.69 + Attack.MIN_RANGED));
+                    int RandCoord(double coord) => Game.Rand.Round(coord + Game.Rand.Gaussian(range / 1.69 + Attack.MIN_RANGED)); //push up to caller
                     do
                         tile = Game.Map.GetTile(RandCoord(hive.Tile.X), RandCoord(hive.Tile.Y));
                     while (tile == null || tile.Piece != null);
@@ -228,7 +229,7 @@ namespace ClassLibrary1
                 Tile tile = killable.Piece.Tile;
                 bool meleeRange = melee.Any() && tile.GetAdjacentTiles().Any(moveTiles.Contains);
                 double inRange = 1 + SumAttacks(attacks, a => a.Range == Attack.MELEE_RANGE ? meleeRange : tile.GetDistance(piece.Tile) <= a.Range);
-                return Game.Rand.Round(inRange / (attValue < 1 ? 1 : attValue) * GetGroupWeight(killable));
+                return Game.Rand.Round(1 + inRange / (attValue < 1 ? 1 : attValue) * GetGroupWeight(killable));
             }
             double GetGroupWeight(IKillable killable)
             {

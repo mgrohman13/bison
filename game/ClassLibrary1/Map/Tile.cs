@@ -1,5 +1,6 @@
 ﻿using ClassLibrary1.Pieces;
 using ClassLibrary1.Pieces.Terrain;
+using MattUtil;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -75,20 +76,34 @@ namespace ClassLibrary1.Map
             private IEnumerable<Point> GetPointsInRange(double range, bool blockMap, Piece blockFor) => GetPointsInRange(Map, Location, range, blockMap, blockFor);
             private static IEnumerable<Point> GetPointsInRange(Map map, Point point, double range, bool blockMap, Piece blockFor)
             {
-                //Dictionary<Point, double> block = new();
+                int max = (int)range + 1;
+                foreach (Point p in Game.Rand.Iterate(-max, max, -max, max))
+                {
+                    int x = point.X + p.X;
+                    int y = point.Y + p.Y;
+                    double distance = GetDistance(point.X, point.Y, x, y);
+                    if (distance <= range)
+                    {
+                        yield return new(x, y);
+                    }
+                }
+            }
+            public static IEnumerable<Point> GetPointsInRangeBlocked(Map map, Point point, double range)//, bool blockMap, Piece blockFor)
+            {
+                Dictionary<Point, double> block = new();
 
-                //double sqrtTwo = Math.Sqrt(2);
-                //double baseBlock = .5 + (sqrtTwo / 2.0 - .5) / 2.0;
+                double sqrtTwo = Math.Sqrt(2);
+                double baseBlock = .5 + (sqrtTwo / 2.0 - .5) / 2.0;
                 //double enemyBlock = 1 + (sqrtTwo - 1) / 2.0;
-                //void AddBlock(Point b, double blockRange)
-                //{
-                //    block.TryGetValue(b, out double range);
-                //    range = Math.Max(range, blockRange);
-                //    block[b] = range;
-                //}
+                void AddBlock(Point b, double blockRange)
+                {
+                    block.TryGetValue(b, out double range);
+                    range = Math.Max(range, blockRange);
+                    block[b] = range;
+                }
                 //if (blockMap)
-                //    foreach (var p in GetPointsInRangeUnblocked(map, point, range).Where(p => map.GetTile(p) == null))
-                //        AddBlock(p, baseBlock);
+                foreach (var p in GetPointsInRangeUnblocked(map, point, range).Where(p => map.GetTile(p) == null))
+                    AddBlock(p, baseBlock);
                 //if (blockFor != null)
                 ////more efficient implementation?
                 //    foreach (var pair in map._pieces.Where(p => p.Value != blockFor
@@ -104,23 +119,23 @@ namespace ClassLibrary1.Map
                     double distance = GetDistance(point.X, point.Y, x, y);
                     if (distance <= range)
                     {
-                        //if (!block.Any(p => GetDistance(point, p.Key) < distance
-                        //       && Dist(point, new(x, y), p.Key) < p.Value
-                        //       && (GetAngleDiff(GetAngle(p.Key.X - point.X, p.Key.Y - point.Y), GetAngle(x - point.X, y - point.Y)) < HALF_PI)))
-                        yield return new(x, y);
+                        if (!block.Any(p => GetDistance(point, p.Key) < distance
+                               && Dist(point, new(x, y), p.Key) < p.Value
+                               && (GetAngleDiff(GetAngle(p.Key.X - point.X, p.Key.Y - point.Y), GetAngle(x - point.X, y - point.Y)) < HALF_PI)))
+                            yield return new(x, y);
                     }
                 }
-                //static double Dist(PointD segment1, PointD segment2, Point point)
-                //{
-                //    if (segment2.X == segment1.X)
-                //        return Math.Abs(point.X - segment1.X);
+                static double Dist(Point segment1, PointD segment2, Point point)
+                {
+                    if (segment2.X == segment1.X)
+                        return Math.Abs(point.X - segment1.X);
 
-                //    //merge with CalcLine?
-                //    double a = (segment2.Y - segment1.Y) / (segment2.X - segment1.X);
-                //    double b = -1;
-                //    double c = segment1.Y - a * segment1.X;
-                //    return PointLineDistanceAbs(a, b, c, point);
-                //}
+                    //merge with CalcLine?
+                    double a = (segment2.Y - segment1.Y) / (segment2.X - segment1.X);
+                    double b = -1;
+                    double c = segment1.Y - a * segment1.X;
+                    return PointLineDistanceAbs(a, b, c, point);
+                }
             }
 
             public static bool operator !=(Tile a, Tile b)

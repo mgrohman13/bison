@@ -6,8 +6,19 @@ namespace ClassLibrary1.Pieces.Players
     [Serializable]
     public abstract class PlayerPiece : Piece
     {
-        protected double _vision;
-        public double Vision => Consts.GetDamagedValue(this, VisionBase, 0);
+        private double _vision;
+        public double Vision
+        {
+            get
+            {
+                return Consts.GetDamagedValue(this, VisionBase, 0);
+            }
+            protected set
+            {
+                this._vision = value;
+                Game.Map.UpdateVision(this);
+            }
+        }
         public double VisionBase => _vision;
 
         internal PlayerPiece(Tile tile, double vision)

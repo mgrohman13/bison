@@ -92,11 +92,86 @@ FEATURES
 	experience
 	power grid
 
-stop drawing grid when zoomed out past certain scale
+retreat pathing likes to clear tiles to avoid player attacks
+	retreat should never clear
+		avoid infinite loop??	
+	Cleared terrain on visible tile! (-146,-132)
+	+		fromTile	{(-80, -122)}	ClassLibrary1.Map.Map.Tile
+	+		toTile	{(-700, -114)}	ClassLibrary1.Map.Map.Tile
+	
+default show attacks to on?
+if splash only procs on hit, always must do proportional dmg?
+	otherwise 1 shield is worse than 0 for defender? (if def very high)
+wide lines cover part of att/def bars
+check terrain override on game end
+you can use terrain overrides to know about hidden areas
+	decrease evaluate for surrounding somehow??
+insane ranges??
+	make move,range exponentially expensive??
+reduce base extractor reslilience?
+if you cant afford to build, quick button to trade for it?
+multiple turret blueprints like mechs?
+info - escape key close
+short range attacks weaker than melle if move is higher than range
+if hive not scouted and visible alien appears, do something?
+resources more likely to round when higher?
+alines not healing?
+explore souroundings on upgrade
+dont completely guarantee artifact per hive?
+walls
+	terrain where walls are unbuildable?
+	requires move blocking
+visual indicator for enemy range vs. melee attacks?
+make turret energy attack longest range?
+show hive attacks on map too
+building cost OP?
+	mostly regarding extractors
+	upgs to reduce repair costs? other upkeep??
+	lock extra extractor resources (biomass research, artifact mass) behind research??
+alien morale shoudnt recover until healed?
+	just exaggerate morale recovery penalty?
+exploring path should bump up spawn chance
+	add some amount to chance that drops when enemy spawned?
+make researches with progress less likely to appear?
+	only taper off high progress, not lowish values?
+	or make it have 0 effect and get rid of research-micro mechanic?
+		alt would need to fix so you dont get punished by having too much research to micro?
+show pathfinding on game over
+move letter on mechs up
+show alien numbers on map?
+better drawing when zoomed out
+	popups on mouse over?
+	range lines too thicc?
+	stop drawing bars in enemy range
+		use colors to show str?
+	blend rectangles?
+	make enlarged units selectable 
 show st dev of income in UI somewhere
+	along with upkeep breakdown?
 show alien extended range??
+enter target amount on trade screen
+prevent turrets attacking hives??
+	resistant to raned attacks in general?
+		broader range resistant def type?
+		only if outside hive range???
+		hives get massive def increase until they attack? or get hit with melee??		
+once yous tart attacking hives, no/few spawns elsewhere??
+rethink extractor value again??
+first research of late techs is insane
+	extractor value, constructor repair
+	calc some min offset for mults based on avg cost of path to get there?
+	show pct increase (eventually show something more concrete for certain ones??)
+decrease dist mult for artifacts, but mult for near caves?
+	reduce artifact oe?
+	reduce research on bigger biomass?
+limit some upgrades? 
+	move, range, build cost?
+	find otehr ways to counter?
+researchmult back to 2600?
 
 reduce energy cost factor for att/def ratio
+	slightly increase mech mass cost pct overall 
+		later but not early??
 increased target weight when likely to kill?
 enemy target core too much early?
 	sqrt income in weight calc?
@@ -104,6 +179,9 @@ enemy target core too much early?
 no observable instance of aliens protecting each other yet 
 need to hit extractors more when rushing?
 	new state??
+		hive should always prioritize mechs over extractors
+	less often when in fight?
+	when morale higher, kill defenceless buildings, as drops, kill mechs
 resource more likely to jump to sustain mult when higher 
 remove move limit, make const (at 2x?)
 	make random gaussian thats different every turn? could be fun?
@@ -127,7 +205,10 @@ fix weights
 	put all weights in range 0-1 and combine intelligently?
 improve getkillweight
 	prioritize constructor>factory>extractor>core
-		add another state to weight extractors and even target them down?
+		add another state to attack extractors 
+			weight higher 
+			path to nearest
+				any near defenceless target? so incl constructor, factory
 			or have them kill extractors during rush?	
 redo GetKillWeight
 	repair/build numbers??
@@ -152,6 +233,12 @@ map contiguity / pathfinding / alien behavior
 	do enemy pathfinding in background during player turn?	
 	builds up too many paths over time - duplicate paths with diff speeds
 
+fix center
+	make core always 0,0, actual center is randed offset from there
+move annoyances
+	retroactive apply pythagoras?
+		only if no new vision, nothing done in between moves
+	vision gaps?
 ranged attack min range???
 	as individual stat???
 make movement path when alien is out of vision ambiquous 

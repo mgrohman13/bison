@@ -77,6 +77,9 @@ namespace ClassLibrary1.Pieces.Players
 
             //Debug.WriteLine($"total: {total}");
 
+
+            //swap so its more type driven and less ratio driven
+
             double energyPct = Math.Sqrt(att / (att + def));
             energyPct *= Math.Sqrt(move / (move + v));
 
@@ -136,11 +139,35 @@ namespace ClassLibrary1.Pieces.Players
         private static MechBlueprint GenBlueprint(MechBlueprint upgrade, IResearch research, int blueprintNum)
         {
             MechBlueprint blueprint;
-            if (upgrade == null)
-                blueprint = CheckCost(NewBlueprint(research, blueprintNum), upgrade, research, blueprintNum);
-            else do
-                    blueprint = CheckCost(UpgradeBlueprint(upgrade, research, blueprintNum), upgrade, research, blueprintNum);
-                while (!UpgradeValid(blueprint, upgrade, research));
+
+            bool valid = false;
+            do
+            {
+                if (upgrade == null)
+                    blueprint = CheckCost(NewBlueprint(research, blueprintNum), upgrade, research, blueprintNum);
+                else do
+                        blueprint = CheckCost(UpgradeBlueprint(upgrade, research, blueprintNum), upgrade, research, blueprintNum);
+                    while (!UpgradeValid(blueprint, upgrade, research));
+
+                valid = research.GetType() switch
+                {
+                    //Type.Mech =>,
+                    Type.MechEnergyWeapons => blueprint.Attacker.Any(a => a.Type == AttackType.Energy && a.Range == Attack.MELEE_RANGE),
+                    Type.MechShields => blueprint.Killable.Any(k => k.Type == DefenseType.Shield),
+                    //Type.MechResilience =>,
+                    //Type.MechVision =>,
+                    Type.MechAttack => blueprint.Attacker.Max(a => a.Attack) >= blueprint.Killable.Max(k => k.Defense),
+                    Type.MechDefense => blueprint.Attacker.Max(a => a.Attack) <= blueprint.Killable.Max(k => k.Defense),
+                    Type.MechLasers => blueprint.Attacker.Any(a => a.Type == AttackType.Energy && a.Range > Attack.MELEE_RANGE),
+                    //Type.MechMove =>,
+                    Type.MechRange => blueprint.Attacker.Any(a => a.Range > Attack.MELEE_RANGE),
+                    Type.MechArmor => blueprint.Killable.Any(k => k.Type == DefenseType.Armor),
+                    Type.MechExplosives => blueprint.Attacker.Any(a => a.Type == AttackType.Explosive),
+                    _ => true,
+                };
+            }
+            while (!valid);
+
             return blueprint;
         }
 
@@ -390,6 +417,7 @@ namespace ClassLibrary1.Pieces.Players
                 maxTotal = research.GetMaxCost();
                 if (upgrade != null)
                 {
+                    //avg??
                     minTotal = Math.Max(minTotal, Game.Rand.Round(upgrade.TotalCost() * 0.65));
                     maxTotal = Math.Min(maxTotal, Game.Rand.Round(upgrade.TotalCost() * 1.69));
                 }
@@ -398,7 +426,10 @@ namespace ClassLibrary1.Pieces.Players
                     const double minDev = .13;
                     minTotal = Game.Rand.GaussianCappedInt(minTotal, minDev);
                     const double maxDev = .21, maxOE = .169;
-                    maxTotal = Game.Rand.GaussianOEInt(maxTotal, maxDev, maxOE, minTotal);
+                    if (maxTotal > minTotal)
+                        maxTotal = Game.Rand.GaussianOEInt(maxTotal, maxDev, maxOE, minTotal);
+                    else
+                        maxTotal = Game.Rand.Round(minTotal * Game.Rand.Range(1, 1 + Game.Rand.Weighted(.13)));
                 }
             }
 
@@ -591,7 +622,7 @@ namespace ClassLibrary1.Pieces.Players
                 if (ranged)
                 {
                     rangeAvg = 7.8;
-                    double dev = .39, oe = .104;
+                    double dev = .39, oe = .104; //less oe?
                     ModValues(researchType == Type.MechRange, 2.1, ref rangeAvg, ref dev, ref oe);
                     rangeAvg *= research.GetMult(Type.MechRange, Blueprint_Range);
                     range = Game.Rand.GaussianOE(rangeAvg, dev, oe, Attack.MIN_RANGED);
@@ -618,7 +649,7 @@ namespace ClassLibrary1.Pieces.Players
 
         private static IMovable.Values GenMovable(IResearch research)
         {
-            double avg = 6.5, dev = .13, oe = .21;
+            double avg = 6.5, dev = .13, oe = .21;  //much less oe?
 
             double researchMult = research.GetMult(Type.MechMove, 1);
             const double lowPenalty = 2.6;

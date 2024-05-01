@@ -39,10 +39,10 @@ namespace WinFormsApp1
             lblMouse.Location = new System.Drawing.Point(0, 526);
             lblMouse.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             lblMouse.Name = "lblMouse";
-            lblMouse.Size = new System.Drawing.Size(65, 15);
+            lblMouse.Size = new System.Drawing.Size(76, 15);
             lblMouse.TabIndex = 0;
-            lblMouse.Text = "(-222,-222)";
-            lblMouse.TextAlign = System.Drawing.ContentAlignment.BottomRight;
+            lblMouse.Text = "(-2222,-2222)";
+            lblMouse.TextAlign = System.Drawing.ContentAlignment.BottomLeft;
             // 
             // Map
             // 

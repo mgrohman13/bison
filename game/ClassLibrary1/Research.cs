@@ -179,6 +179,7 @@ namespace ClassLibrary1
                     mult *= upgMult;
                 }
 
+                //?
                 int progress = GetProgress(type);
                 double progressMult = (nextAvg + progress) / nextAvg;
                 mult *= progressMult * progressMult;

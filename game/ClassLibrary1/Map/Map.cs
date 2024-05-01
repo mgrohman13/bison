@@ -250,8 +250,13 @@ namespace ClassLibrary1.Map
             }
             mult += _caves.Max(c => c.GetMult(x, y));
 
+            double eval = noise.Evaluate(x, y);
+            double dist = Tile.GetDistance(p, new(0, 0));
+            mult += (Consts.CaveDistance / dist / dist / Math.Abs(eval - .5));
+            //mult++;
+
             //lineDist = (float)minLineDist;
-            float value = (float)(noise.Evaluate(x, y) * mult);
+            float value = (float)(eval * mult);
             evaluateCache.Add(p, value);// new(value, lineDist));
 
             watch.Stop();
@@ -290,9 +295,11 @@ namespace ClassLibrary1.Map
                 terrain = Evaluate(p);//, out float lineDist);
                 //also use dist from center?
                 // (5 * terrain * Consts.PathWidth + lineDist) / 2.0 % Consts.PathWidth < 1;
-                if (!chasm && terrain < 1 / 4.0)
+                //double dist = Tile.GetDistance(p, new(0, 0));
+                bool clear = false;// Math.Abs(noise.Evaluate(p.X, p.Y) - .5) < Consts.CaveDistance / dist / dist;
+                if (!chasm && !clear && terrain < 1 / 4.0)
                     return null;
-                chasm |= terrain < 1 / 2.0;
+                chasm |= !clear && terrain < 1 / 2.0;
             }
             else
                 ;
@@ -356,12 +363,19 @@ namespace ClassLibrary1.Map
         {
             _pieces.Remove(piece.Tile.Location);
         }
-        private void UpdateVision(PlayerPiece piece) => UpdateVision(piece.Tile, piece.Vision, piece is not Core);
-        internal void UpdateVision(Tile tile, double range, bool explore = true)
+
+        internal void UpdateVision(PlayerPiece piece) => UpdateVision(piece, piece.Tile, piece.Tile);
+        internal void UpdateVision(PlayerPiece piece, Tile from, Tile to)
+        {
+            //piece is not Core
+            UpdateVision(from, piece.Vision);
+            UpdateVision(to, piece.Vision);
+        }
+        internal void UpdateVision(Tile tile, double range)//, bool explore = true)
         {
             LogEvalTime();
 
-            foreach (Point p in tile.GetPointsInRangeUnblocked(range))
+            foreach (Point p in Tile.GetPointsInRangeBlocked(this, tile.Location, range))
                 _explored.Add(p);
 
             int vision = (int)range + 1;
@@ -372,11 +386,12 @@ namespace ClassLibrary1.Map
 
             _gameBounds = new Rectangle(x, y, right - x, bottom - y);
 
-            if (explore)
-                Explore(tile, range);
+            //if (explore)
+            Explore(tile, range);
 
             LogEvalTime();
         }
+
         public static void LogEvalTime()
         {
             if (evalCount > 0)
@@ -520,8 +535,8 @@ namespace ClassLibrary1.Map
                 dist *= -1;
             return dist;
         }
-        //private static double PointLineDistanceAbs(double a, double b, double c, Point point) =>
-        //    Math.Abs(PointLineDistance(a, b, c, point));
+        private static double PointLineDistanceAbs(double a, double b, double c, Point point) =>
+            Math.Abs(PointLineDistance(a, b, c, point));
         private static double PointLineDistance(double a, double b, double c, Point point) =>
             (a * point.X + b * point.Y + c) / Math.Sqrt(a * a + b * b);
 

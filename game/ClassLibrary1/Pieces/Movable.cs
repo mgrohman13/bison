@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ClassLibrary1.Pieces.Players;
+using System;
 using Tile = ClassLibrary1.Map.Map.Tile;
 
 namespace ClassLibrary1.Pieces
@@ -50,8 +51,12 @@ namespace ClassLibrary1.Pieces
 
         bool IMovable.Move(Tile to)
         {
+            Tile from = Piece.Tile;
             bool move = Piece.IsPlayer && to != null && to.Piece == null && to.Visible;
-            return move && Move(to);
+            move &= Move(to);
+            if (move)
+                Piece.Game.Map.UpdateVision(Piece as PlayerPiece, from, to);
+            return move;
         }
         bool IMovable.EnemyMove(Tile to)
         {
