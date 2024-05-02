@@ -10,18 +10,19 @@ namespace ClassLibrary1
         public const double PathWidth = 16.9;
         public const double PathWidthDev = .13;
         public const double PathWidthMin = 9.1;
+        public const double FeatureDist = 169;
 
-        public const double CaveDistance = 130;
+        public const double CaveDistance = 210;
         public const double CaveDistanceDev = .13;
         public const double CaveDistanceOE = .169;
-        public const double CaveMinDist = 65;
+        public const double CaveMinDist = 91;
         public const double CaveSize = 13;
         public const double CavePathSize = 2.6;
         public const double CaveDistPow = 1.13;
 
         public const double ResourceAvgDist = 16.9;
 
-        public const double ResearchFactor = 2100;
+        public const double ResearchFactor = 2600;
 
         public const double EnemyStartEnergy = 6500;
         public const double EnemyEnergy = 390;
@@ -55,7 +56,8 @@ namespace ClassLibrary1
 
         public const double BiomassEnergyInc = 117;
         public const double BiomassSustain = .78;
-        public const double BiomassResearchIncDiv = 50;
+        public const double BiomassResearchDiv = 8;
+        public const double BiomassResearchPow = .39;
         public const double MetalMassInc = 52;
         public const double MetalSustain = 1.17;
         public const double MetalEnergyUpkDiv = 4;

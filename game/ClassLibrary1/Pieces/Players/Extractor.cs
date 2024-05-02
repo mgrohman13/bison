@@ -38,7 +38,7 @@ namespace ClassLibrary1.Pieces.Players
         {
             Values values = GetValues(Game);
 
-            this._vision = values.Vision;
+            this.Vision = values.Vision;
             GetBehavior<IKillable>().Upgrade(new[] { values.Killable }, values.Resilience);
         }
         private static Values GetValues(Game game)

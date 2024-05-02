@@ -820,7 +820,7 @@ namespace WinFormsApp1
 
         public void BtnViewAtt_Click(object sender, EventArgs e)
         {
-            Program.Form.MapMain.ViewAttacks = !Program.Form.MapMain.ViewAttacks;
+            Program.Form.MapMain.ToggleViewAttacks();
         }
 
         private void BtnSave_Click(object sender, EventArgs e)

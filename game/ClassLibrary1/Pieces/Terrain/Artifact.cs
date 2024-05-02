@@ -7,7 +7,7 @@ namespace ClassLibrary1.Pieces.Terrain
     public class Artifact : Resource
     {
         private Artifact(Tile tile)
-            : base(tile, Consts.ArtifactResearchInc, Consts.ArtifactSustain)
+            : base(tile, Consts.ArtifactResearchInc, Consts.ArtifactSustain, true)
         {
         }
         internal static Artifact NewArtifact(Tile tile)

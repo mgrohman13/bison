@@ -24,7 +24,7 @@ namespace WinFormsApp1
 
         private float xStart, yStart, _scale;
         private Tile _selected, _moused;
-        private bool viewAttacks;
+        private bool viewAttacks = true;
 
         private readonly Timer timer;
         private readonly Stopwatch watch = new();
@@ -42,9 +42,9 @@ namespace WinFormsApp1
             {
                 if (_scale != value)
                 {
-                    float size = Game.Rand.Round(Math.Max(1, Math.Sqrt(Scale) - 1));
+                    float size = Game.Rand.Round(Math.Max(1, Math.Sqrt(value) - 1));
                     penSize = size;
-                    if (Red?.Width != size)
+                    if ((Red?.Width ?? -1) != size)
                     {
                         Red = new(Color.Red, size);
                         Green = new(Color.Green, size);
@@ -61,7 +61,7 @@ namespace WinFormsApp1
                 _scale = value;
             }
         }
-        private float penSize = 1;
+        private float penSize = 4;
 
         public Tile SelTile
         {
@@ -109,7 +109,7 @@ namespace WinFormsApp1
                 }
             }
         }
-        public bool ViewAttacks
+        private bool ViewAttacks
         {
             get { return viewAttacks; }
             set
@@ -120,6 +120,10 @@ namespace WinFormsApp1
                     RefreshRanges();
                 }
             }
+        }
+        internal void ToggleViewAttacks()
+        {
+            ViewAttacks = !ViewAttacks;
         }
 
         public Map()
@@ -174,7 +178,7 @@ namespace WinFormsApp1
             ClassLibrary1.Map.Map.LogEvalTime();
 
             Rectangle gameRect = Program.Game.Map.GameRect();
-            Scale = Math.Min((this.Width - 1 - padding * 2) / gameRect.Width, (this.Height - 1 - padding * 2) / gameRect.Height);
+            Scale = Math.Min((this.Width - 1 - padding * 2) / (float)gameRect.Width, (this.Height - 1 - padding * 2) / (float)gameRect.Height);
             xStart = GetX(gameRect.X);
             yStart = GetY(gameRect.Y);
 
@@ -235,7 +239,7 @@ namespace WinFormsApp1
         private void Tiles(PaintEventArgs e)
         {
             //move letters up
-            const float defHeight = .26f, statBarPow = 1;// .39f;
+            const float defHeight = .26f;//, statBarPow = 1;// .39f;
 
             List<RectangleF> tileRects = new();
             List<RectangleF> rectangles = new();
@@ -468,9 +472,9 @@ namespace WinFormsApp1
                         Terrain terrain = tile?.Terrain;
                         if (terrain != null)
                         {
-                            int color = 169;
+                            int color = 260;
                             if (terrain is Block block)
-                                color = Game.Rand.Round(color * block.Value);
+                                color = Game.Rand.Round(color * (.75 - block.Value) - 21);
                             //Color.Brown
                             AddFill(new SolidBrush(Color.FromArgb(130, color, 26)), rect);
                         }
@@ -544,17 +548,17 @@ namespace WinFormsApp1
             foreach (var p in polygons)
                 e.Graphics.FillPolygon(Brushes.Black, p);
 
-            //var dispPath = Game.TEST_MAP_GEN.HasValue ? Program.Game.Map.CorePaths.Values.Distinct().Select(f => f.Path) : paths;
-            //foreach (var path in dispPath)
-            //{
-            //    //var path = found.Path;
-            //    for (int d = 1; d < path.Count; d++)
-            //    {
-            //        var p1 = GetCenter(path[d - 1]);
-            //        var p2 = GetCenter(path[d]);
-            //        e.Graphics.DrawLine(new Pen(Color.Magenta, 2f), p1.X, p1.Y, p2.X, p2.Y);
-            //    }
-            //}
+            if (Program.Game.Map.EnemyPaths != null)
+                foreach (var path in Program.Game.Map.EnemyPaths.Values.Distinct().Select(f => f.Path))
+                {
+                    //var path = found.Path;
+                    for (int d = 1; d < path.Count; d++)
+                    {
+                        var p1 = GetCenter(path[d - 1]);
+                        var p2 = GetCenter(path[d]);
+                        e.Graphics.DrawLine(new Pen(Color.Magenta, 2f), p1.X, p1.Y, p2.X, p2.Y);
+                    }
+                }
 
             var rs = Scale > scaleCutoff ? allrects : rects;
             if (rs.Length > 0)// && Scale > scaleCutoff)
@@ -564,7 +568,7 @@ namespace WinFormsApp1
                     e.Graphics.DrawLine(l.Key, t.Item1.X, t.Item1.Y, t.Item2.X, t.Item2.Y);
             if (SelTile != null)
             {
-                using Pen sel = new(Color.Black, 5f);
+                using Pen sel = new(Color.Black, penSize + 2);
                 e.Graphics.DrawRectangle(sel, GetX(SelTile.X), GetY(SelTile.Y), Scale, Scale);
             }
 

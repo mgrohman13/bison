@@ -94,7 +94,7 @@ namespace ClassLibrary1
             while (true)
             {
                 tile = GetTile();
-                path = tile.Map.PathFind(tile, Alien.GetPathFindingMovement(_nextAlien.Movable), blocked => !blocked.Any());
+                path = tile.Map.PathFindCore(tile, Alien.GetPathFindingMovement(_nextAlien.Movable), blocked => !blocked.Any());
                 if (path == null)
                     this._nextAlien = MechBlueprint.Alien(_research);
                 else

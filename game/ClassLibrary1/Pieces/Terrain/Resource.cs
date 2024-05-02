@@ -18,11 +18,16 @@ namespace ClassLibrary1.Pieces.Terrain
 
         internal double Rounding => _rounding;
 
-        internal Resource(Tile tile, double baseValue, double sustainMult)
+        internal Resource(Tile tile, double baseValue, double sustainMult, bool limit = false)
             : base(null, tile)
         {
-            baseValue *= Math.Pow((tile.GetDistance(0, 0) + Consts.ResourceDistAdd) / Consts.ResourceDistDiv, Consts.ResourceDistPow);
-            double value = Game.Rand.GaussianOE(baseValue, Consts.ResourceDev, Consts.ResourceOE, 1.3);
+            double distMult = Math.Pow((tile.GetDistance(0, 0) + Consts.ResourceDistAdd) / Consts.ResourceDistDiv, Consts.ResourceDistPow);
+            if (limit)
+                distMult = Math.Sqrt(distMult);
+            double oeDiv = limit ? Math.Sqrt(baseValue) : 1;
+
+            baseValue *= distMult;
+            double value = Game.Rand.GaussianOE(baseValue, Consts.ResourceDev, Consts.ResourceOE / oeDiv, 1.3);
 
             sustainMult *= Math.Pow(baseValue / value, Consts.ResourceSustainValuePow);
             double sustain = Game.Rand.GaussianOE(sustainMult, Consts.ResourceDev, Consts.ResourceOE, .05);

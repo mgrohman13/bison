@@ -43,7 +43,7 @@ namespace ClassLibrary1.Pieces.Players
             Unlock();
             Values values = GetValues(Game);
 
-            this._vision = values.Vision;
+            this.Vision = values.Vision;
             GetBehavior<IKillable>().Upgrade(new[] { values.Killable }, values.Resilience);
             if (HasBehavior(out IRepair repair))
                 repair.Upgrade(values.GetRepair(Game, _rangeMult, _rounding));

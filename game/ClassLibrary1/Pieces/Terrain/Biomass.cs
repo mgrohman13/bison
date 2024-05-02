@@ -24,7 +24,7 @@ namespace ClassLibrary1.Pieces.Terrain
         protected override void GenerateResources(double value, ref double energyInc, ref double massInc, ref double researchInc)
         {
             energyInc += value;
-            researchInc += value / Consts.BiomassResearchIncDiv;
+            researchInc += Math.Pow(value / Consts.BiomassResearchDiv + 1, Consts.BiomassResearchPow) - 1;
         }
         public override string GetResourceName()
         {

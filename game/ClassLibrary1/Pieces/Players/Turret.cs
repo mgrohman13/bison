@@ -52,7 +52,7 @@ namespace ClassLibrary1.Pieces.Players
         {
             Values values = GetValues(Game);
 
-            this._vision = values.Vision;
+            this.Vision = values.Vision;
             GetBehavior<IKillable>().Upgrade(values.GetKillable(Game.Player.Research, _shieldMult, _armorMult, _rounding), values.Resilience);
             GetBehavior<IAttacker>().Upgrade(values.GetAttacks(Game.Player.Research, _rangeMult, _rounding));
         }
@@ -213,8 +213,8 @@ namespace ClassLibrary1.Pieces.Players
                         _ => throw new Exception(),
                     };
 
-                    double defAvg = a switch { 0 => 12.5, 1 => 7.8, 2 => 10.4, _ => throw new Exception(), };
-                    const double lowPenalty = 2.1;
+                    double defAvg = a switch { 0 => 13, 1 => 7, 2 => 10, _ => throw new Exception(), };
+                    const double lowPenalty = 1.2;
                     if (researchMult < lowPenalty)
                         defAvg *= researchMult / lowPenalty;
                     defAvg *= Math.Pow(researchMult, Turret_Defense);
@@ -227,10 +227,10 @@ namespace ClassLibrary1.Pieces.Players
             {
                 for (int a = 0; a < MAX_ATTACKS; a++)
                 {
-                    double range = a switch { 0 => 16.9, 1 => 7.5, 2 => 13, _ => throw new Exception(), };
-                    //const double lowPenalty = Math.PI;
-                    //if (researchMult < lowPenalty)
-                    //    range *= researchMult / lowPenalty;
+                    double range = a switch { 0 => 12, 1 => 16, 2 => 8, _ => throw new Exception(), };
+                    const double lowPenalty = 1.4;
+                    if (researchMult < lowPenalty)
+                        range *= researchMult / lowPenalty;
                     range *= Math.Pow(researchMult, Turret_Range);
                     range += Attack.MIN_RANGED;
 
@@ -250,7 +250,7 @@ namespace ClassLibrary1.Pieces.Players
                         _ => throw new Exception(),
                     };
 
-                    double attAvg = a switch { 0 => 9.1, 1 => 6.5, 2 => 10, _ => throw new Exception(), };
+                    double attAvg = a switch { 0 => 9, 1 => 4, 2 => 11, _ => throw new Exception(), };
                     const double lowPenalty = 1.69;
                     if (researchMult < lowPenalty)
                         attAvg *= researchMult / lowPenalty;

@@ -48,7 +48,13 @@ namespace ClassLibrary1.Pieces.Enemies
             Hive obj = new(tile, killable, resilience, attacks, cost, energy);
             tile.Map.Game.AddPiece(obj);
 
-            Artifact.NewArtifact(Game.Rand.SelectValue(tile.GetTilesInRange(obj.attacker).Where(t => t.Piece == null)));
+            Tile resourceSpawn = Game.Rand.SelectValue(tile.GetTilesInRange(obj.attacker).Where(t => t.Piece == null));
+            if (Game.Rand.Bool())
+                Artifact.NewArtifact(resourceSpawn);
+            else if (Game.Rand.Bool())
+                Biomass.NewBiomass(resourceSpawn);
+            else if (Game.Rand.Bool())
+                Metal.NewMetal(resourceSpawn);
 
             return obj;
         }

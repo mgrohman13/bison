@@ -92,51 +92,48 @@ FEATURES
 	experience
 	power grid
 
-retreat pathing likes to clear tiles to avoid player attacks
-	retreat should never clear
-		avoid infinite loop??	
-	Cleared terrain on visible tile! (-146,-132)
-	+		fromTile	{(-80, -122)}	ClassLibrary1.Map.Map.Tile
-	+		toTile	{(-700, -114)}	ClassLibrary1.Map.Map.Tile
-	
-default show attacks to on?
-if splash only procs on hit, always must do proportional dmg?
-	otherwise 1 shield is worse than 0 for defender? (if def very high)
-wide lines cover part of att/def bars
-check terrain override on game end
-you can use terrain overrides to know about hidden areas
-	decrease evaluate for surrounding somehow??
-insane ranges??
-	make move,range exponentially expensive??
-reduce base extractor reslilience?
-if you cant afford to build, quick button to trade for it?
-multiple turret blueprints like mechs?
-info - escape key close
-short range attacks weaker than melle if move is higher than range
-if hive not scouted and visible alien appears, do something?
-resources more likely to round when higher?
-alines not healing?
-explore souroundings on upgrade
-dont completely guarantee artifact per hive?
-walls
-	terrain where walls are unbuildable?
-	requires move blocking
-visual indicator for enemy range vs. melee attacks?
-make turret energy attack longest range?
-show hive attacks on map too
-building cost OP?
-	mostly regarding extractors
-	upgs to reduce repair costs? other upkeep??
-	lock extra extractor resources (biomass research, artifact mass) behind research??
-alien morale shoudnt recover until healed?
-	just exaggerate morale recovery penalty?
 exploring path should bump up spawn chance
 	add some amount to chance that drops when enemy spawned?
+once you start attacking hives, no/few spawns elsewhere??
+early-mid game not dangerous enough?
+implement pathfinding for player!
+show hive attacks on map too
+reduce energy cost factor for att/def ratio
+	slightly increase mech mass cost pct overall 
+		later but not early??
+increased target weight when likely to kill?
+enemy target core too much early?
+	sqrt income in weight calc?
+	weight research higher?
+need to hit extractors more when rushing?
+	new state??
+		hive should always prioritize mechs over extractors
+	less often when in fight?
+	when morale higher, kill defenceless buildings, as drops, kill mechs
+	
+first research of late techs is insane
+	extractor value, constructor repair
+	calc some min offset for mults based on avg cost of path to get there?
+	show pct increase (eventually show something more concrete for certain ones??)
+prevent turrets attacking hives??
+	resistant to raned attacks in general?
+		broader range resistant def type?
+		only if outside hive range???
+		hives get massive def increase until they attack? or get hit with melee??		
 make researches with progress less likely to appear?
 	only taper off high progress, not lowish values?
 	or make it have 0 effect and get rid of research-micro mechanic?
 		alt would need to fix so you dont get punished by having too much research to micro?
-show pathfinding on game over
+artifacts value mult for near caves?
+
+research upgs show bonus - exact where can e.g. core shields	
+draw null tiles behind everything else
+wide lines cover part of att/def bars
+if you cant afford to build, quick button to trade for it
+info - escape key close
+if hive not scouted and visible alien appears, do something?
+resources more likely to round when higher?
+visual indicator for enemy range vs. melee attacks?
 move letter on mechs up
 show alien numbers on map?
 better drawing when zoomed out
@@ -150,43 +147,17 @@ show st dev of income in UI somewhere
 	along with upkeep breakdown?
 show alien extended range??
 enter target amount on trade screen
-prevent turrets attacking hives??
-	resistant to raned attacks in general?
-		broader range resistant def type?
-		only if outside hive range???
-		hives get massive def increase until they attack? or get hit with melee??		
-once yous tart attacking hives, no/few spawns elsewhere??
-rethink extractor value again??
-first research of late techs is insane
-	extractor value, constructor repair
-	calc some min offset for mults based on avg cost of path to get there?
-	show pct increase (eventually show something more concrete for certain ones??)
-decrease dist mult for artifacts, but mult for near caves?
-	reduce artifact oe?
-	reduce research on bigger biomass?
 limit some upgrades? 
 	move, range, build cost?
 	find otehr ways to counter?
-researchmult back to 2600?
 
-reduce energy cost factor for att/def ratio
-	slightly increase mech mass cost pct overall 
-		later but not early??
-increased target weight when likely to kill?
-enemy target core too much early?
-	sqrt income in weight calc?
-	weight research higher?
-no observable instance of aliens protecting each other yet 
-need to hit extractors more when rushing?
-	new state??
-		hive should always prioritize mechs over extractors
-	less often when in fight?
-	when morale higher, kill defenceless buildings, as drops, kill mechs
+walls
+	terrain where walls are unbuildable?
+	requires move blocking
 resource more likely to jump to sustain mult when higher 
 remove move limit, make const (at 2x?)
 	make random gaussian thats different every turn? could be fun?
 better handling of fractional repair amts 
-early-mid game not dangerous enough?
 aliens not retreating well? 
 
 fix weights
@@ -233,22 +204,22 @@ map contiguity / pathfinding / alien behavior
 	do enemy pathfinding in background during player turn?	
 	builds up too many paths over time - duplicate paths with diff speeds
 
+lock extra extractor resources (biomass research, artifact mass) behind research??
+upgs to reduce repair costs? other upkeep??
+multiple turret blueprints like mechs?
+after attack select alien who actually defended
+	log splash damage
 fix center
 	make core always 0,0, actual center is randed offset from there
-move annoyances
-	retroactive apply pythagoras?
-		only if no new vision, nothing done in between moves
-	vision gaps?
 ranged attack min range???
 	as individual stat???
-make movement path when alien is out of vision ambiquous 
+make movement path when alien is out of vision ambiguous 
 	(and atts?)
 cap zooming out to map bounds 
 	still bugs in existing limits though...
 need to be able to visualize AI alg on map
 measure enemy move performance with stopwatch
 	expect pathfinding to take the most time but not happen often 
-implement pathfinding for player!
 core efficiency UI confusion with income pct 
 defending passive defense shouldnt be guaranteed?
 research aliens
@@ -268,10 +239,6 @@ allow player to split attacks
 	checkbox on attack grid for use
 	at turn start, use gets set for all "full" attacks
 change DamagedEvent to targeted at all 
-stop multi-tile move when encounter newly visible enemy/resource
-	select all tiles within sqrt(2)/2 of line (that are within move)
-		pick the least move from start that is within visible of enemy piece
-	also explore vision along full line path
 research aliens
 	kill, research corpse?
 	show info like state and morale 
@@ -281,26 +248,18 @@ Tile should just be a struct...?
 	eqaluity always there, stores no real data, piece looks up in collection 
 	no need for a million points?
 dont serialize Noise, save seed/params instead
-if all weapons hit 0 treat as passive defender??
-	prob not - dont like sudden cutoff
 TEST_MAP_GEN poorly designed, have to reference it everywhere we use visible 
 	also shoudnt save map either
 tie shield regen to StatValue (so regen more when lower)??
-	though seems to work neatly with hits defending when shield gets low to let it recover
+	make shield regen variable
+		reduce with dmg pct?
 	regen rate lowered by hppct/resilience efficiency
 	only regen when not attacked?? regen less?? chance to stop regen?? specific att types??
 		new system use canrecover flag that get changed by diffe evtns? 
-	make shield regen variable
-		reduce with dmg pct?
-explosives too weak?
-	dmg on any def can hurt att??
-	taking dmg hurt attacks even for non-hits????
+explosives 
 	splash damage not tied to initial dmg??
-	rethink shield interaction?
-	enemies clump more
 	does friendly damage?
-		melee??
-repair rate use Consts.GetDamagedValue?
+	melee??
 pay back stored energy on death
 make shield regen variable
 	reduce with dmg pct?
@@ -312,20 +271,15 @@ movement - long term
 	reserach "battery" or "booster" 
 		gives a max value to save up to
 		actual limit is always 2x (3x?) max? no seperate variable?
-move Map inner classes to partial class files
 show inc/upk breakdown
 	eng break down by att/shield/move/mech/constructor
 	mass break down by building/mech (types??)
-select box follow similar range width rules
 move att/def draw boxes away from thick range lines
 	if cur>0 ensure draw sliver
 negative resources show red (not just inc)
 negative resource punishment?
 when unit selected, slow drawing (range not saved)
 slow-paint scroll amt shouldnt take effect until 2nd tick so you can tap button once
-core use dmged pct for income??
-	need quicker repair if so
-	or really high resilience??
 draw bars not use stat value for pct cur/max??
 	maybe related to zoom, e.g. when zoomed out
 	bigger bars when zoomed out
@@ -338,23 +292,18 @@ save log to file on game end
 select terrain shouldnt hide log
 draw movement trail on map
 draw grid first as lines, then overlay with full blocks
-rename chasm??
-draw chasm as single polygon
 view all mechs on datagrid popup
 show mech # (alien #?) on map
 show collected hive count on main screen?
+	+cur research?
 info button show stats
 	also build for all types?
-map indicator with incoming attack direction
 better move left indicators?
 	indicate when upgradeable
-use terrain to store evaluate value to gradient on paint 
 finish directional move/attack blocking
 experience
-use range atack OR move and melee
-cannot move and shoot ranged attack
-	new attack type that you can
-		much less likely for alien spawns 
+new ranged attack type that you can move and then shoot
+	much less likely for alien spawns? impossible??
 remove outliers from att/def bar length?
 pull gen/upgrade value constants, research powers into special consts we can see and tweak together
 attack range circle not accurate around corners
@@ -363,6 +312,8 @@ combined power grid, but if separate pieces impose power penalty?
 	batteries - building/mechs
 		excess power convert to research
 	moving slower takes less energy?
+research
+	exponential tiers - first excess power, then mining, etc.
 speed game up somehow?
 randomize tech tree
 metal types? 
@@ -374,9 +325,6 @@ use tooltips?
 animations
 	all attacks
 	enemy moves
-research
-	upgs show amt - exact where can e.g. core shields
-	exponential tiers - first excess power, then mining, etc.
 true fractal noise... build on smaller with larger as map grows?
 	how not retroactively affect explored??
 alien types
@@ -407,13 +355,10 @@ log colors for weapon/def types?
 partial attacks?
 	use specific attack
 	rounds?
-occasional moves take long
-	generating resources?
 more show attack options 
 	hide diff parts
 	e.g. lines only option 
 notify cboxes that arent supported
-after attack select to alien who actually defended
 fix build/repair/upgrade weirdness?
 	remove some research?
 	or clear up with colors?
@@ -424,8 +369,7 @@ shroud
 	keep alien vision in shroud for 1 turn after move out of vision?
 varaible scroll speed doesnt quite work
 game stats
-flatten tech tree	
-		randomize
+randomize tech tree	
 map - occasional caves farther out infinteley??
 refactor Consts.MechMassDiv - only apply in one spot?
 		
@@ -438,26 +382,19 @@ constructor better vision? quicker new constructors?
 	move?
 	???
 	constructor outrun too many early aliens?
-hardcoded initial scout mech?
 caves
 	start with hive, mid-level units that dont move
 		careful with long range killing early explorers?
 	when hive attacked, spawn high-level units, free non-moving
 
 COMBAT
-rethink move?
 have to not move to charge attacks?
-limit moving/attacking?
-	ranged cant do both?
-	melee limit move after attack? 
 replace range with melee/ranged flag and accuracy(?), LOS rules, etc.
-make num attacks/regen rate variables, reduce regen rate with dmg
 
 map
 	smaller?
-	continguous
-		force between core, hives, resources (? - ensure generate past gap?)
 	water/islands
 
 needs name, solidified setting, tutorial/info
-	heisenberg uncertainty principle + quantum computing 
+	heisenberg uncertainty principle + quantum computing (rand income)
+	name for blocking terrain??

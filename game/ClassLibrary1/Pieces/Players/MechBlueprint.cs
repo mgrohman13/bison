@@ -54,22 +54,30 @@ namespace ClassLibrary1.Pieces.Players
         public static void CalcCost(double researchMult, double vision, IEnumerable<IKillable.Values> killable, double resilience,
             IEnumerable<IAttacker.Values> attacker, IMovable.Values? movable, out double energy, out double mass)
         {
-            const double moveMult = 26;
-            double move = Consts.MoveValue(movable);
-            double mult = Math.Sqrt(researchMult);
-            move = (move + 2.6) * moveMult / mult;
+            const double moveMult = 13;
+            double baseMove = Math.Pow(Consts.MoveValue(movable), 1.69);
 
             const double attPow = 1.13;
-            double AttCost(IAttacker.Values a) => Consts.StatValue(a.Attack) * CombatTypes.Cost(a.Type)
-                * Math.Sqrt(a.Reload / CombatTypes.ReloadAvg(a.Attack))
-                * Math.Pow((a.Range + Attack.MIN_RANGED) / (Attack.MELEE_RANGE + Attack.MIN_RANGED),
-                    Math.Sqrt(1 + (moveMult + move) / moveMult / moveMult) / 2.0);
-            double DefCost(IKillable.Values d) => Consts.StatValue(d.Defense) * CombatTypes.Cost(d.Type);
+            double AttCost(IAttacker.Values a)
+            {
+                double rangeMult = 1;
+                if (a.Range > Attack.MELEE_RANGE)
+                    rangeMult = (a.Range + Attack.MELEE_RANGE) / (2.6 * Attack.MIN_RANGED);
+                if (rangeMult > 1)
+                    rangeMult = Math.Pow(rangeMult, Math.Sqrt(1 + (moveMult + baseMove) / 3.9 / moveMult));
+                return Consts.StatValue(a.Attack)
+                    * CombatTypes.Cost(a.Type)
+                    * Math.Sqrt(a.Reload / CombatTypes.ReloadAvg(a.Attack))
+                    * rangeMult;
+            };
+            static double DefCost(IKillable.Values d) => Consts.StatValue(d.Defense) * CombatTypes.Cost(d.Type);
 
             double r = Math.Pow(Math.Pow(resilience, Math.Log(3) / Math.Log(2)) * 1.5 + 0.5, .39);
             double att = Math.Pow(attacker.Sum(AttCost), attPow) / researchMult;
             double def = killable.Sum(DefCost) * r / researchMult;
 
+            double mult = Math.Sqrt(researchMult);
+            double move = (baseMove + 2.6) * moveMult / mult;
             double v = vision;
             v = (v + 6.5) * 3.9 / mult;
 
@@ -579,6 +587,13 @@ namespace ClassLibrary1.Pieces.Players
                     cap += rangedAtt;
                 }
 
+                if (research is EnemyResearch)
+                {
+                    const int enemyAtt = 2;
+                    attAvg += enemyAtt;
+                    cap += enemyAtt;
+                }
+
                 int attack = cap;
                 if (attAvg > cap)
                     attack = Game.Rand.GaussianOEInt(attAvg, dev, oe, cap);
@@ -622,9 +637,10 @@ namespace ClassLibrary1.Pieces.Players
                 if (ranged)
                 {
                     rangeAvg = 7.8;
-                    double dev = .39, oe = .104; //less oe?
+                    double dev = .39, oe = .104;
                     ModValues(researchType == Type.MechRange, 2.1, ref rangeAvg, ref dev, ref oe);
                     rangeAvg *= research.GetMult(Type.MechRange, Blueprint_Range);
+                    oe /= Math.Sqrt(rangeAvg);
                     range = Game.Rand.GaussianOE(rangeAvg, dev, oe, Attack.MIN_RANGED);
                 }
                 return range;
@@ -649,7 +665,7 @@ namespace ClassLibrary1.Pieces.Players
 
         private static IMovable.Values GenMovable(IResearch research)
         {
-            double avg = 6.5, dev = .13, oe = .21;  //much less oe?
+            double avg = 6.5, dev = .13, oe = .21;
 
             double researchMult = research.GetMult(Type.MechMove, 1);
             const double lowPenalty = 2.6;
@@ -658,7 +674,9 @@ namespace ClassLibrary1.Pieces.Players
 
             ModValues(research.GetType() == Type.MechMove, 1.69, ref avg, ref dev, ref oe);
 
-            double move = Game.Rand.GaussianOE(1 + avg * research.GetMult(Type.MechMove, Blueprint_Move), dev, oe, 1);
+            avg = 1 + avg * research.GetMult(Type.MechMove, Blueprint_Move);
+            oe /= Math.Sqrt(avg);
+            double move = Game.Rand.GaussianOE(avg, dev, oe, 1);
             int max = Game.Rand.GaussianOEInt(1 + move * 2, dev * 2.6, oe * 1.3, (int)move + 1);
             int limit = Game.Rand.GaussianOEInt(1 + move + max, dev * 2.6, oe * 2.6, max + 1);
 

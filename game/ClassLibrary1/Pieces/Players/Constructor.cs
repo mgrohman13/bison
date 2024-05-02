@@ -31,7 +31,7 @@ namespace ClassLibrary1.Pieces.Players
             IMovable.Values movable = values.GetMovable(_rangeMult, _rounding);
             SetBehavior(
                 new Killable(this, values.GetKillable(Game, _defenseType), values.Resilience),
-                new Movable(this, movable, starter ? movable.MoveMax - movable.MoveInc - 1 : 0),
+                new Movable(this, movable, starter ? movable.MoveMax - movable.MoveInc - .5 : 0),
                 new Builder.BuildExtractor(this, values.GetRepair(Game, _rangeMult, _rounding).Builder));
             Unlock();
         }
@@ -70,7 +70,7 @@ namespace ClassLibrary1.Pieces.Players
                 Unlock();
                 Values values = GetValues(Game);
 
-                this._vision = values.Vision;
+                this.Vision = values.Vision;
                 GetBehavior<IKillable>().Upgrade(values.GetKillable(Game, _defenseType), values.Resilience);
                 GetBehavior<IMovable>().Upgrade(values.GetMovable(_rangeMult, _rounding));
                 if (HasBehavior<IRepair>())

@@ -12,7 +12,7 @@ namespace ClassLibrary1
     public class Game
     {
         public const int POINTS_TO_WIN = 3;
-        public static readonly int? TEST_MAP_GEN = null;// 260;
+        public static readonly int? TEST_MAP_GEN = 260;// 260;
 
         public static readonly MTRandom Rand;
         static Game()

@@ -43,7 +43,7 @@ namespace ClassLibrary1.Pieces.Players
         {
             if (CanUpgrade(out MechBlueprint upgradeTo, out int energy, out int mass) && Game.Player.Spend(energy, mass))
             {
-                this._vision = upgradeTo.Vision;
+                this.Vision = upgradeTo.Vision;
                 GetBehavior<IKillable>().Upgrade(upgradeTo.Killable, upgradeTo.Resilience);
                 GetBehavior<IAttacker>().Upgrade(upgradeTo.Attacker);
                 GetBehavior<IMovable>().Upgrade(upgradeTo.Movable);

@@ -95,7 +95,7 @@ namespace ClassLibrary1.Map
                 while (true)
                 {
                     Tile from = map.SpawnTile(Center, Math.Sqrt(2), true);
-                    path = map.PathFind(from, minSpawnMove, blocked => //, to
+                    path = map.PathFindCore(from, minSpawnMove, blocked => //, to
                     {
                         if (minSpawnMove > Constructor.BASE_MOVE_MAX)
                             return true;

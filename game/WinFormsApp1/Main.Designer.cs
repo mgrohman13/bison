@@ -54,7 +54,7 @@ namespace WinFormsApp1
             mapMain.SelTile = null;
             mapMain.Size = new System.Drawing.Size(420, 541);
             mapMain.TabIndex = 2;
-            mapMain.ViewAttacks = false;
+            //mapMain.ViewAttacks = false;
             // 
             // mapMini
             // 
@@ -66,7 +66,7 @@ namespace WinFormsApp1
             mapMini.SelTile = null;
             mapMini.Size = new System.Drawing.Size(200, 200);
             mapMini.TabIndex = 3;
-            mapMini.ViewAttacks = false;
+            //mapMini.ViewAttacks = false;
             mapMini.Visible = false;
             // 
             // label1

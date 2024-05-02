@@ -132,7 +132,7 @@ namespace ClassLibrary1.Pieces.Enemies
                     if (MoraleCheck(1, true))
                         goto case AIState.Fight;
                     if (moveTiles.Any() && NeedsRetreatPath())
-                        RetreatPath = Game.Map.PathFindRetreat(Tile, GetRetreatTo(), GetPathFindingMovement(), GetCurDefenseValue(), playerAttacks);
+                        RetreatPath = Game.Map.PathFindRetreat(Tile, GetRetreatTo(), GetPathFindingMovement(), GetCurDefenseValue(), playerAttacks, ValidRetreatTile);
                     break;
                 case AIState.Fight:
                     state = AIState.Fight;
@@ -156,7 +156,7 @@ namespace ClassLibrary1.Pieces.Enemies
                         goto case AIState.Fight;
                     if (moveTiles.Any() && !SeePath())
                         if (MoraleCheck(.5, true))
-                            PathToCore = Game.Map.PathFind(Tile, GetPathFindingMovement(), _ => true);
+                            PathToCore = Game.Map.PathFindCore(Tile, GetPathFindingMovement(), _ => true);
                         else
                             goto case AIState.Patrol;
                     break;
@@ -178,12 +178,9 @@ namespace ClassLibrary1.Pieces.Enemies
             bool ValidRetreatTile(Tile tile) => tile != null && !tile.Visible && !playerAttacks.ContainsKey(tile);
             Tile GetRetreatTo()
             {
-                Tile retreat = null;
                 if (Game.Rand.Bool())
-                    retreat = Game.Rand.Iterate(RetreatPath?.Where(ValidRetreat)).OrderBy(p => Tile.GetDistance(p)).Select(Game.Map.GetTile).FirstOrDefault();
-                if (retreat == null)
-                    retreat = Game.Map.FindRetreatTile(Tile, ValidRetreatTile);
-                return retreat;
+                    return Game.Rand.Iterate(RetreatPath?.Where(ValidRetreat)).Select(Game.Map.GetTile).FirstOrDefault();
+                return null;
             }
         }
         private bool MoraleCheck(double check, bool sign)
@@ -209,7 +206,7 @@ namespace ClassLibrary1.Pieces.Enemies
             this.numAtts = 0;
 
             double pct = DefPct();
-            pct = 1 - .65 * pct;
+            pct = 1 - .65 * pct * pct;
             this._morale = float.Epsilon + Math.Pow(_morale, Game.Rand.Range(pct, 1));
             if (_morale > 1)
                 ; //not currenly a problem...

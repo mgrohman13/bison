@@ -1,5 +1,6 @@
 ﻿using ClassLibrary1.Pieces.Players;
 using System;
+using System.Linq;
 using Tile = ClassLibrary1.Map.Map.Tile;
 
 namespace ClassLibrary1.Pieces
@@ -52,10 +53,32 @@ namespace ClassLibrary1.Pieces
         bool IMovable.Move(Tile to)
         {
             Tile from = Piece.Tile;
-            bool move = Piece.IsPlayer && to != null && to.Piece == null && to.Visible;
-            move &= Move(to);
-            if (move)
-                Piece.Game.Map.UpdateVision(Piece as PlayerPiece, from, to);
+            bool move = Piece.IsPlayer && to != null && to.Piece == null && to.Visible && Piece.Tile != to && CanMove;
+
+            if (move && Piece is PlayerPiece piece)
+            {
+                const double lineDist = .5;
+                foreach (var p in Game.Rand.Iterate(Math.Min(from.X, to.X), Math.Max(from.X, to.X), Math.Min(from.Y, to.Y), Math.Max(from.Y, to.Y))
+                    .OrderBy(from.GetDistance))
+                {
+                    bool isX = from.X == to.X;
+                    Tile tile = to.Map.GetTile(p);
+                    if (tile != null && tile.Piece == null)
+                    {
+                        double a = isX ? 0 : (to.Y - from.Y) / (to.X - from.X);
+                        double c = to.Y - a * to.X;
+                        double b = -1;
+                        if (isX || Map.Map.PointLineDistanceAbs(a, b, c, p) < lineDist)
+                            if (to.Map.UpdateVision(tile, piece.Vision))
+                            {
+                                to = tile;
+                                break;
+                            }
+                    }
+                }
+
+                move &= Move(to);
+            }
             return move;
         }
         bool IMovable.EnemyMove(Tile to)

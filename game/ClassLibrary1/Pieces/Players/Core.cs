@@ -31,7 +31,7 @@ namespace ClassLibrary1.Pieces.Players
             Unlock(Game.Player.Research);
             Values values = GetValues(Game);
 
-            this._vision = values.Vision;
+            this.Vision = values.Vision;
             GetBehavior<IKillable>().Upgrade(values.GetKillable(), values.Resilience);
             GetBehavior<IRepair>().Upgrade(values.Repair);
             Builder.UpgradeAll(this, values.Repair.Builder);
