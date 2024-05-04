@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using static ClassLibrary1.ResearchExponents;
 using DefenseType = ClassLibrary1.Pieces.CombatTypes.DefenseType;
 using Tile = ClassLibrary1.Map.Map.Tile;
+using UpgType = ClassLibrary1.ResearchUpgValues.UpgType;
 
 namespace ClassLibrary1.Pieces.Players
 {
@@ -11,7 +11,7 @@ namespace ClassLibrary1.Pieces.Players
     {
         private double _income = 1, _incomeTrg = 1;
 
-        public const double START_VISION = 3;
+        public const double START_VISION = Attack.MIN_RANGED;
 
         private Core(Tile tile, Values values)
             : base(tile, values.Vision)
@@ -92,7 +92,7 @@ namespace ClassLibrary1.Pieces.Players
             private readonly double energy, mass;
             private readonly IRepair.Values repair;
 
-            private double vision;
+            //private double vision;
             private IKillable.Values hits;
             private IKillable.Values? shield;
 
@@ -101,7 +101,7 @@ namespace ClassLibrary1.Pieces.Players
                 this.energy = this.mass = 1300;
                 this.repair = new(new(8.5), 1);
 
-                this.vision = -1;
+                //this.vision = -1;
                 this.hits = new(CombatTypes.DefenseType.Hits, -1);
                 this.shield = null;// new(CombatTypes.DefenseType.Hits, -1);
 
@@ -112,7 +112,7 @@ namespace ClassLibrary1.Pieces.Players
             public double Resilience => resilience;
             public double Energy => energy;
             public double Mass => mass;
-            public double Vision => vision;
+            public double Vision => START_VISION;// vision;
             public IKillable.Values Hits => hits;
             public IKillable.Values? Shield => shield;
             public IRepair.Values Repair => repair;
@@ -134,20 +134,14 @@ namespace ClassLibrary1.Pieces.Players
             }
             private void UpgradeBuildingHits(double researchMult)
             {
-                this.vision = START_VISION * Math.Pow(researchMult, Core_Vision);
+                //this.vision = START_VISION * Math.Pow(researchMult, Core_Vision);
 
-                double defAvg = 11 * Math.Pow(researchMult, Core_Defense);
-                const double lowPenalty = 11 / 10.0;
-                if (researchMult < lowPenalty)
-                    defAvg *= researchMult / lowPenalty;
+                double defAvg = ResearchUpgValues.Calc(UpgType.CoreDefense, researchMult);
                 this.hits = new(DefenseType.Hits, Game.Rand.Round(defAvg));
             }
             private void UpgradeCoreShields(double researchMult)
             {
-                double shieldAvg = 16.9 * Math.Pow(researchMult, Core_Shields);
-                const double lowPenalty = 2.5;
-                if (researchMult < lowPenalty)
-                    shieldAvg *= researchMult / lowPenalty;
+                double shieldAvg = ResearchUpgValues.Calc(UpgType.CoreShields, researchMult);
                 this.shield = new(DefenseType.Shield, Game.Rand.Round(shieldAvg));
             }
         }

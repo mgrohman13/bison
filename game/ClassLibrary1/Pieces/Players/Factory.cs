@@ -1,9 +1,9 @@
 ﻿using ClassLibrary1.Pieces.Terrain;
 using MattUtil;
 using System;
-using static ClassLibrary1.ResearchExponents;
 using DefenseType = ClassLibrary1.Pieces.CombatTypes.DefenseType;
 using Tile = ClassLibrary1.Map.Map.Tile;
+using UpgType = ClassLibrary1.ResearchUpgValues.UpgType;
 
 namespace ClassLibrary1.Pieces.Players
 {
@@ -129,30 +129,23 @@ namespace ClassLibrary1.Pieces.Players
             }
             private void UpgradeBuildingCost(double researchMult)
             {
-                double costMult = Math.Pow(researchMult, Factory_Cost);
+                double costMult = ResearchUpgValues.Calc(UpgType.FactoryCost, researchMult);
                 rounding = Game.Rand.NextDouble();
                 this.energy = MTRandom.Round(1750 / costMult, 1 - rounding);
                 this.mass = MTRandom.Round(500 / costMult, rounding);
             }
             private void UpgradeBuildingHits(double researchMult)
             {
-                double defAvg = 9;
-                const double lowPenalty = 9 / 5.0;
-                if (researchMult < lowPenalty)
-                    defAvg *= researchMult / lowPenalty;
-                int defense = Game.Rand.Round(defAvg * Math.Pow(researchMult, Factory_Defense));
-                this.vision = 5 * Math.Pow(researchMult, Factory_Vision);
+                double defAvg = ResearchUpgValues.Calc(UpgType.FactoryDefense, researchMult);
+                int defense = Game.Rand.Round(defAvg);
+                this.vision = ResearchUpgValues.Calc(UpgType.FactoryVision, researchMult);
                 this.killable = new(DefenseType.Hits, defense);
             }
             private void UpgradeFactoryRepair(double researchMult)
             {
-                double repairMult = 1;
-                const double lowPenalty = Math.E;
-                if (researchMult < lowPenalty)
-                    repairMult *= researchMult / lowPenalty;
-                repairMult *= Math.Pow(researchMult, Factory_Repair);
+                double repairMult = ResearchUpgValues.Calc(UpgType.FactoryRepair, researchMult);
                 double repairRange = 7.8 * Math.Sqrt(repairMult);
-                repairRate = .65 + (1 * repairMult);
+                this.repairRate = repairMult;
                 this.repair = new(new(repairRange), 1);
             }
         }

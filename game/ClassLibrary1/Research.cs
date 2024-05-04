@@ -8,10 +8,12 @@ namespace ClassLibrary1
     [Serializable]
     public class Research : IResearch
     {
+        public const int StartResearch = 20;
         public readonly Game Game;
         Game IResearch.Game => Game;
 
         private Type _researching;
+        private readonly IReadOnlyDictionary<Type, int> _minResearch;
         private readonly Dictionary<Type, int> _lastSeen;
         private readonly Dictionary<Type, int> _researchedTypes;
         private readonly Dictionary<Type, int> _progress;
@@ -67,13 +69,15 @@ namespace ClassLibrary1
             this._researching = Type.Mech;
             this._lastSeen = new();
             this._researchedTypes = new();
-            this._progress = new() { { _researching, 20 } };
+            this._progress = new() { { _researching, StartResearch } };
             this._choices = new() { { _researching, 50 } };
 
             this._researchLast = 0;
             this._nextAvg = 26;
 
             this._blueprints = new();
+
+            this._minResearch = CalcMinResearch();
         }
 
         internal bool HasScrap(int amt)
@@ -114,17 +118,26 @@ namespace ClassLibrary1
             this._researchLast += _choices[_researching];
             this._researchedTypes[_researching] = _researchLast;
             this._progress.Remove(_researching);
-            Game.Player.OnResearch(_researching, GetResearchMult(_researchLast));
+            Game.Player.OnResearch(_researching, GetUpgMult(_researching, _researchLast));
             if (_researching == Type.Mech || IsMech(_researching))
                 MechBlueprint.OnResearch(this, _blueprints);
             if (_researching == Type.ResearchChoices)
                 _numChoices++;
             return _researching;
         }
-        public static double GetResearchMult(double research)
+        private double GetUpgMult(Type type, int research) => GetResearchMult(research - _minResearch[type]);
+        public string GetUpgInfo(Type type)
         {
-            return (research + Consts.ResearchFactor) / Consts.ResearchFactor;
+            if (NoUpgrades.Contains(type) || IsMech(type))
+                return string.Empty;// Array.Empty<string>();
+            if (type == Type.ResearchChoices)
+                return ResearchUpgValues.GetUpgInfo(Type.ResearchChoices, _numChoices, _numChoices + 1, v => v.ToString("0"));
+            _researchedTypes.TryGetValue(type, out int prev);
+            double prevMult = GetUpgMult(type, prev);
+            double nextMult = GetUpgMult(type, _researchLast + _choices[type]);
+            return ResearchUpgValues.GetUpgInfo(type, prevMult, nextMult);
         }
+        public static double GetResearchMult(double research) => (research + Consts.ResearchFactor) / Consts.ResearchFactor;
 
         private void GetNextChoices(int excess, int previous, Type result)
         {
@@ -145,10 +158,14 @@ namespace ClassLibrary1
                     if (available == Type.ResearchChoices && _numChoices == MaxChoices)
                         continue;
                     //certain types can only be researched once
-                    if (_researchedTypes.ContainsKey(available) && NoUpgrades.Contains(available))
+                    bool noUpg = NoUpgrades.Contains(available);
+                    if (_researchedTypes.ContainsKey(available) && noUpg)
                         continue;
-                    // ensure always at least one mech and one non-mech option
+                    //ensure always at least one mech and one non-mech option
                     if (_choices.Count == _numChoices - 1 && (IsMech(available) ? _choices.Keys.All(IsMech) : !_choices.Keys.Any(IsMech)))
+                        continue;
+                    //enforce minimums
+                    if (_researchLast < _minResearch[available])
                         continue;
                     if (Dependencies[available].All(d => _researchedTypes.ContainsKey(d)))
                     {
@@ -182,7 +199,7 @@ namespace ClassLibrary1
                 //?
                 int progress = GetProgress(type);
                 double progressMult = (nextAvg + progress) / nextAvg;
-                mult *= progressMult * progressMult;
+                mult *= progressMult;// * progressMult;
 
                 return Game.Rand.Round(byte.MaxValue * mult);
             }).Where(p => p.Value > 0).ToDictionary(p => p.Key, p => p.Value);
@@ -284,6 +301,26 @@ namespace ClassLibrary1
             return Math.Pow(GetResearchMult(GetLevel()) * GetResearchMult(GetLast(type)), pow / 2.0);
         }
 
+        private static IReadOnlyDictionary<Type, int> CalcMinResearch()
+        {
+            Dictionary<Type, int> retVal = Enum.GetValues<Type>()
+                .Where(t => GetAllDependencies(t).Count <= 1)
+                .ToDictionary(t => t, _ => 0);
+            HashSet<Type> all = Enum.GetValues<Type>().Where(t => !retVal.ContainsKey(t)).ToHashSet();
+
+            double research = 0;// StartResearch;
+            double dev = Math.E * _avgTypeCost / (double)all.Min();
+            while (all.Any())
+            {
+                Type type = Game.Rand.SelectValue(all.Where(t1 => Dependencies[t1].All(t2 => retVal.ContainsKey(t2))));
+                all.Remove(type);
+                research += .78 * GetNext(research) * (double)type / _avgTypeCost;
+                retVal.Add(type, Game.Rand.GaussianCappedInt(research, dev / Math.Sqrt(research)));
+            }
+
+            return retVal.AsReadOnly();
+        }
+
         public static IEnumerable<Type> GetUnlocks(Type selected)
         {
             return GetUnlocks(selected, GetDependencies);
@@ -304,7 +341,7 @@ namespace ClassLibrary1
         }
         public static HashSet<Type> GetAllDependencies(Type type)
         {
-            HashSet<Type> allDependencies = new(Research.Dependencies[type]);
+            HashSet<Type> allDependencies = new(Dependencies[type]);
             foreach (Type a in allDependencies.ToArray())
                 foreach (Type b in GetAllDependencies(a))
                     allDependencies.Add(b);

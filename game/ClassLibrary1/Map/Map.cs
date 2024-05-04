@@ -167,6 +167,7 @@ namespace ClassLibrary1.Map
             foreach (var explore in Game.Rand.Iterate(_paths))
                 GenResources(explore.Explore(this, Consts.PathWidth));
         }
+        internal double ClosestCaveDistSqr(Tile tile) => _caves.Min(c => GetDistSqr(tile.X, tile.Y, c.Center));
         private void SpawnHives()
         {
             int hives = Game.Rand.GaussianOEInt(Math.PI - 1 + _caves.Count, .091, .039, Game.Rand.Round(3.9));
@@ -186,7 +187,7 @@ namespace ClassLibrary1.Map
                 counts[cave] = count + 1;
             }
 
-            int cavesLeft = _caves.Count, resources = cavesLeft + 2;
+            int cavesLeft = _caves.Count, resources = Game.Rand.GaussianCappedInt(cavesLeft + 3, .13);
             double avgHives = hives / (double)cavesLeft + 1;
             foreach (var cave in Game.Rand.Iterate(_caves))
             {
@@ -201,7 +202,8 @@ namespace ClassLibrary1.Map
 
                 cavesLeft--;
                 resources -= spawn;
-                GenResources(Enumerable.Repeat((object)null, spawn).Select(_ => cave.SpawnTile(this, false)), true);
+                //retry on duplicate tile?
+                GenResources(Enumerable.Repeat((object)null, spawn).Select(_ => cave.SpawnTile(this, false)).Distinct(), true);
             }
         }
 
@@ -266,9 +268,10 @@ namespace ClassLibrary1.Map
             return value;
         }
         private static double GetDistSqr(PointD v, PointD w) => GetDistSqr(v.X, v.Y, w);
-        private static double GetDistSqr(double x, double y, PointD point)
+        private static double GetDistSqr(double x, double y, PointD point) => GetDistSqr(x, y, point.X, point.Y);
+        private static double GetDistSqr(double x1, double y1, double x2, double y2)
         {
-            double distX = point.X - x, distY = point.Y - y;
+            double distX = x1 - x2, distY = y1 - y2;
             return distX * distX + distY * distY;
         }
 
@@ -374,7 +377,10 @@ namespace ClassLibrary1.Map
             bool found = false;
             foreach (Point p in Tile.GetPointsInRangeBlocked(this, tile.Location, range))
                 if (_explored.Add(p))
-                    found |= tile.Piece != null && tile.Piece is not Terrain;
+                {
+                    Tile explored = GetTile(p);
+                    found |= explored != null && explored.Piece != null && explored.Piece is not Terrain;
+                }
 
             Explore(tile, range);
 
@@ -531,7 +537,7 @@ namespace ClassLibrary1.Map
 
             HashSet<Point> known = corePaths.Keys.Where(k => corePaths[k].Movement <= movement).ToHashSet();
 
-            var path = PathFind(from, Game.Player.Core.Tile, movement, true, p2 =>
+            var path = PathFind(from, Game.Player.Core.Tile, movement, movement, true, false, p2 =>
                 {
                     //the map is infinite, so to avoid pathfinding forever we impose a penalty on blocked terrain instead of blocking tiles entirely
                     double penalty = 0;
@@ -613,7 +619,7 @@ namespace ClassLibrary1.Map
             //{
             foreach (Tile tile in options)
             {
-                var path = PathFind(from, tile, movement, false, p =>
+                var path = PathFind(from, tile, movement, movement, false, false, p =>
                 {
                     //if (playerAttacks == null)
                     //    return 0;
@@ -636,7 +642,9 @@ namespace ClassLibrary1.Map
             return null;
         }
 
-        private List<Point> PathFind(Tile fromTile, Tile toTile, double movement, bool includeBlocked, Func<Point, double> Penalty, Func<Point, bool> Stop, out HashSet<Point> blocked)
+        //double? minFirstMove
+        private List<Point> PathFind(Tile fromTile, Tile toTile, double minFirstMove, double movement, bool includeBlocked, bool visibleOnly,
+            Func<Point, double> Penalty, Func<Point, bool> Stop, out HashSet<Point> blocked)
         {
             blocked = new();
 
@@ -648,39 +656,74 @@ namespace ClassLibrary1.Map
             //cache tile penalties at each point so they are consistent 
             Dictionary<Point, double> cache = new();
 
+            if (movement < 1)
+                movement = 1;
+            bool first = minFirstMove > 0;// && minFirstMove + 1 < movement;
             var path = TBSUtil.PathFind(Game.Rand, from, to, Stop, p1 =>
-                    Tile.GetAllPointsInRange(this, p1, movement).Where(p =>
-                    {
-                        var tile = GetTile(p);
-                        var piece = tile?.Piece;
-                        if (tile == null || piece is Terrain)
-                            return includeBlocked;
-                        return p == from || p == to || piece is null || piece.HasBehavior<IMovable>();
-                    }).Select(p2 =>
-                    {
-                        if (!cache.TryGetValue(p2, out double penalty))
+                {
+                    IEnumerable<Point> points = Tile.GetAllPointsInRange(this, p1, first ? minFirstMove + 1 : movement);
+                    if (first && !points.Any())
+                        points = Tile.GetAllPointsInRange(this, p1, movement);
+                    var result = points.Where(p =>
                         {
-                            penalty = Penalty(p2);
-                            cache.Add(p2, penalty);
-                        }
-                        double dist = Tile.GetDistance(p1, p2);
-                        return Tuple.Create(p2, dist + penalty);
-                    }),
-                    Tile.GetDistance)
-                .ToList();
+                            if (first && GetDistSqr(p1.X, p1.Y, p.X, p.Y) < minFirstMove * minFirstMove)
+                                return false;
+                            var tile = GetTile(p);
+                            if (visibleOnly && !Visible(p))
+                                return false;
+                            var piece = tile?.Piece;
+                            if (tile == null || piece is Terrain)
+                                return includeBlocked;
+                            return p == from || p == to || piece is null || piece.HasBehavior<IMovable>();
+                        }).Select(p2 =>
+                        {
+                            if (!cache.TryGetValue(p2, out double penalty))
+                            {
+                                penalty = Penalty(p2);
+                                cache.Add(p2, penalty);
+                            }
+                            double dist = Tile.GetDistance(p1, p2);
+                            return Tuple.Create(p2, dist + penalty);
+                        }).ToList();
+                    first = false;
+                    return result;
+                }, Tile.GetDistance);
 
-            foreach (var p in path)
-            {
-                Tile tile = GetTile(p);
-                if (tile == null || tile.Piece is Terrain)
-                    blocked.Add(p);
-            }
+            if (path != null)
+                foreach (var p in path)
+                {
+                    Tile tile = GetTile(p);
+                    if (tile == null || tile.Piece is Terrain)
+                        blocked.Add(p);
+                }
 
             //foreach (var p in blocked)
             //    if (!Game.TEST_MAP_GEN.HasValue && Visible(p))
             //        Debug.WriteLine($"Path through visible tile {p}");
 
             return path;
+        }
+
+        public List<Point> PathFind(Tile from, Tile to, double firstMove, double movement)
+        {
+            //double[] moves = new[] {
+            //    Math.Min(movable.MoveCur - 1, movable.MoveCur + movable.MoveInc - movable.MoveMax) + 1,
+            //    movable.MoveCur,
+            //    movable.MoveMax,
+            //    //(movable.MoveInc + movable.MoveMax) / 2.0,
+            //    //movable.MoveInc,
+            //    (movable.MoveMax + movable.MoveLimit) / 2.0,
+            //    movable.MoveLimit, };
+
+            //foreach (var move in moves)//.Order())
+            //    if (move >= 1)
+            //    {
+            //List<Point> path =
+            return PathFind(from, to, firstMove, movement, false, true, _ => 0, p => !_gameBounds.Contains(p.X, p.Y), out _);
+            //        if (path != null)
+            //            return path;
+            //    }
+            //return null;
         }
     }
 }

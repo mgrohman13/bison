@@ -30,6 +30,7 @@ namespace WinFormsApp1
         private readonly Stopwatch watch = new();
         private bool scrollDown, scrollLeft, scrollUp, scrollRight;
 
+        private readonly HashSet<Point> nullTiles = new();
         private static Pen Red, Green, Blue, White;
         private Pen[] rgbw = new[] { Red, Green, Blue, White };
         private Dictionary<Pen, List<HashSet<Point>>> ranges;
@@ -81,32 +82,54 @@ namespace WinFormsApp1
                 }
             }
         }
+        private List<Point> mousePath = null;
         public Tile MouseTile
         {
             get { return _moused; }
             set
             {
-                float range = -1;
-                bool HasSel() => !scrollDown && !scrollLeft && !scrollUp && !scrollRight && (SelTile?.Piece?.IsPlayer).GetValueOrDefault();
-                //check blocks
-                bool InRange() => HasSel() && _moused != null && _moused.GetDistance(SelTile) <= range;
-                if (HasSel())
-                {
-                    if (SelTile.Piece.HasBehavior(out IBuilder b))
-                        range = (float)Math.Max(range, b.Range);
-                    if (SelTile.Piece.HasBehavior(out IMovable m) && m.CanMove)
-                        range = (float)Math.Max(range, m.MoveCur);
-                }
+                //float range = -1;
+                //bool HasSel() => !scrollDown && !scrollLeft && !scrollUp && !scrollRight && (SelTile?.Piece?.IsPlayer).GetValueOrDefault();
+                //////check blocks
+                ////bool InRange() => HasSel() && _moused != null && _moused.GetDistance(SelTile) <= range;
+                //if (HasSel())
+                //{
+                //    if (SelTile.Piece.HasBehavior(out IBuilder b))
+                //        range = (float)Math.Max(range, b.Range);
+                //    if (SelTile.Piece.HasBehavior(out IMovable m) && m.CanMove)
+                //        range = (float)Math.Max(range, m.MoveCur);
+                //}
 
                 if (_moused != value)
                 {
-                    bool invalidate = InRange();
+
+                    //bool invalidate = InRange();
                     _moused = value;
 
+                    mousePath = null;
+                    if (SelTile?.Piece != null && SelTile.Piece.HasBehavior(out IMovable m) && MouseTile != null && SelTile.GetDistance(MouseTile) > m.MoveCur && MouseTile.Piece is not Terrain)
+                    {
+                        if (shift)
+                            mousePath = new() { SelTile.Location, MouseTile.Location };
+                        else
+                            mousePath = Program.Game.Map.PathFind(SelTile, MouseTile, Math.Min(m.MoveCur - 1, m.MoveCur + m.MoveInc - m.MoveMax), m.MoveMax);
+                        //if (shift)
+                        //    ClampPath();
+                    }
+
                     ShowMouseInfo();
-                    if (invalidate || InRange())
-                        this.Invalidate();
+                    //if (invalidate || InRange())
+                    this.Invalidate();
                 }
+            }
+        }
+
+        private void ClampPath()
+        {
+            if (mousePath != null && mousePath.Count > 2)
+            {
+                mousePath = new() { mousePath[0], mousePath[^1] };
+                this.Invalidate();
             }
         }
         private bool ViewAttacks
@@ -221,6 +244,19 @@ namespace WinFormsApp1
                 {
                     Tiles(e);
                     Ranges(e);
+                    DrawMove(e);
+
+                    if (Program.Game.Map.EnemyPaths != null)
+                        foreach (var path in Program.Game.Map.EnemyPaths.Values.Distinct().Select(f => f.Path))
+                        {
+                            //var path = found.Path;
+                            for (int d = 1; d < path.Count; d++)
+                            {
+                                var p1 = GetCenter(path[d - 1]);
+                                var p2 = GetCenter(path[d]);
+                                e.Graphics.DrawLine(new Pen(Color.Magenta, 2f), p1.X, p1.Y, p2.X, p2.Y);
+                            }
+                        }
                 }
 
                 base.OnPaint(e);
@@ -236,6 +272,20 @@ namespace WinFormsApp1
                 Debug.WriteLine(exception.ToString());
             }
         }
+
+        private void DrawMove(PaintEventArgs e)
+        {
+            if (mousePath != null)
+            {
+                for (int d = 1; d < mousePath.Count; d++)
+                {
+                    var p1 = GetCenter(mousePath[d - 1]);
+                    var p2 = GetCenter(mousePath[d]);
+                    e.Graphics.DrawLine(new Pen(Color.GreenYellow, 2f), p1.X, p1.Y, p2.X, p2.Y);
+                }
+            }
+        }
+
         private void Tiles(PaintEventArgs e)
         {
             //move letters up
@@ -529,6 +579,9 @@ namespace WinFormsApp1
             //            r.Inflate(13, 13);
             //}
 
+            if (nullTiles.Any())
+                e.Graphics.FillRectangles(Brushes.DarkKhaki, nullTiles.Select(p => new RectangleF(GetX(p.X), GetY(p.Y), Scale, Scale)).ToArray());
+
             RectangleF[] rects = rectangles.ToArray();
             RectangleF[] allrects = rectangles.Concat(tileRects).ToArray();
             if (allrects.Length > 0)
@@ -547,18 +600,6 @@ namespace WinFormsApp1
                     e.Graphics.FillRectangles(p.Key, p.Value.ToArray());
             foreach (var p in polygons)
                 e.Graphics.FillPolygon(Brushes.Black, p);
-
-            if (Program.Game.Map.EnemyPaths != null)
-                foreach (var path in Program.Game.Map.EnemyPaths.Values.Distinct().Select(f => f.Path))
-                {
-                    //var path = found.Path;
-                    for (int d = 1; d < path.Count; d++)
-                    {
-                        var p1 = GetCenter(path[d - 1]);
-                        var p2 = GetCenter(path[d]);
-                        e.Graphics.DrawLine(new Pen(Color.Magenta, 2f), p1.X, p1.Y, p2.X, p2.Y);
-                    }
-                }
 
             var rs = Scale > scaleCutoff ? allrects : rects;
             if (rs.Length > 0)// && Scale > scaleCutoff)
@@ -607,8 +648,7 @@ namespace WinFormsApp1
 
             //Debug.WriteLine("1 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
 
-            HashSet<Point> edges = new();
-            ranges[White].Add(edges);
+            nullTiles.Clear();
             Rectangle rect = Program.Game.Map.GameRect();
             for (int a = 0; a < rect.Width; a++)
             {
@@ -617,7 +657,7 @@ namespace WinFormsApp1
                 {
                     int y = rect.Y + b;
                     if (Program.Game.Map.Visible(x, y) && Program.Game.Map.GetVisibleTile(x, y) == null)
-                        edges.Add(new(x, y));
+                        nullTiles.Add(new(x, y));
                 }
             }
 
@@ -682,13 +722,14 @@ namespace WinFormsApp1
 
                     //if ( SelTile.Piece.IsEnemy)
                     moveTiles = GetMoveTiles(movable);
-                    ranges[Green].Add(moveTiles);
 
                     //Debug.WriteLine("3 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
 
                     if (SelTile.Piece.IsPlayer && movable.MoveCur + movable.MoveInc > movable.MoveMax)
                         //check blocks
-                        ranges[Green].Add(moveTiles.Where(t => Math.Min(movable.MoveCur - 1, movable.MoveCur + movable.MoveInc - movable.MoveMax) > SelTile.GetDistance(t)).ToHashSet());
+                        moveTiles = moveTiles.Where(t => Math.Min(movable.MoveCur - 1, movable.MoveCur + movable.MoveInc - movable.MoveMax) < SelTile.GetDistance(t)).ToHashSet();
+                    //else
+                    ranges[Green].Add(moveTiles);
                 }
 
                 //Debug.WriteLine("4 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
@@ -724,7 +765,7 @@ namespace WinFormsApp1
                             {
                                 LineSegment l = new(x1, y1, x2, y2);
                                 if (edge)
-                                    fill[l] = new(Brushes.DarkKhaki, 0);
+                                    ;// fill[l] = new(Brushes.DarkKhaki, 0);
                                 else if (lines.TryGetValue(l, out Tuple<Pen, int> oth))
                                 {
                                     Pen combined;
@@ -799,7 +840,7 @@ namespace WinFormsApp1
                     {
                         //calls++;
                         if (p.Key.Color == Color.White)
-                            e.Graphics.FillPolygon(new SolidBrush(Color.DarkKhaki), points);
+                            ;// e.Graphics.FillPolygon(new SolidBrush(Color.DarkKhaki), points);
                         else
                             e.Graphics.DrawLines(p.Key, points);
                     }
@@ -1074,9 +1115,16 @@ namespace WinFormsApp1
             ShowMouseInfo();
         }
 
+        bool shift = false;
         public void Map_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.KeyCode == Keys.W)
+            shift = false;
+            if (e.Shift)
+            {
+                shift = true;
+                ClampPath();
+            }
+            else if (e.KeyCode == Keys.W)
                 scrollDown = true;
             else if (e.KeyCode == Keys.A)
                 scrollLeft = true;
@@ -1090,6 +1138,13 @@ namespace WinFormsApp1
 
         public void Map_KeyUp(object sender, KeyEventArgs e)
         {
+            if (shift)
+            {
+                shift = false;
+                var old = MouseTile;
+                MouseTile = null;
+                MouseTile = old;
+            }
             if (e.KeyCode == Keys.W)
                 scrollDown = false;
             else if (e.KeyCode == Keys.A)
@@ -1192,11 +1247,50 @@ namespace WinFormsApp1
             {
                 if (SelTile.Piece.HasBehavior(out IMovable movable))
                 {
-                    if (movable.Move(clicked))
+                    bool DoMove(Tile dest)
                     {
-                        SelTile = clicked;
-                        Program.RefreshChanged();
-                        //Program.SaveGame();
+                        bool moved = movable.Move(dest);
+                        if (moved)
+                        {
+                            mousePath = null;
+                            SelTile = movable.Piece.Tile;
+                            Program.RefreshChanged();
+                        }
+                        return moved;
+                    }
+
+                    bool moved = DoMove(clicked);
+                    if (!moved && mousePath != null)
+                    {
+                        // if shift, move to closest point to line, respecing limit 
+                        Tile to = null;
+                        bool limitMove = movable.MoveCur + movable.MoveInc > movable.MoveMax;
+                        foreach (var p in mousePath)
+                        {
+                            var next = Program.Game.Map.GetVisibleTile(p);
+                            if (limitMove && Math.Min(movable.MoveCur - 1, movable.MoveCur + movable.MoveInc - movable.MoveMax) < SelTile.GetDistance(next))
+                            {
+                                if (DoMove(next))
+                                    break;
+                            }
+                            else if (movable.MoveCur < SelTile.GetDistance(next))
+                            {
+                                if (DoMove(to))
+                                    break;
+                            }
+                            to = next;
+                        }
+
+                        //if (SelTile.Piece.IsPlayer && )
+                        //    //check blocks
+                        //    ranges[Green].Add(moveTiles.Where(t => Math.Min(movable.MoveCur - 1, movable.MoveCur + movable.MoveInc - movable.MoveMax) > SelTile.GetDistance(t)).ToHashSet());
+
+                        //foreach (var p in mousePath.Reverse<Point>())
+                        //{
+                        //    var t = Program.Game.Map.GetVisibleTile(p);
+                        //    if (t != null)
+
+                        //}
                     }
                 }
                 if (SelTile.Piece.HasBehavior(out IAttacker attacker) && clicked.Piece != null && clicked.Piece.HasBehavior(out IKillable killable))

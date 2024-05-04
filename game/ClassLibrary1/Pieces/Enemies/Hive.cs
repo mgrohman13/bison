@@ -40,31 +40,42 @@ namespace ClassLibrary1.Pieces.Enemies
             double resilience = Consts.GetPct(Game.Rand.GaussianCapped(.26, .26, .013), 1 + hiveIdx);
             IEnumerable<IAttacker.Values> attacks = GenAttacker(hiveIdx);
             double strInc = Math.Pow(1.5, hiveIdx);
-            MechBlueprint.CalcCost(3.9 + strInc / 1.69, 0, killable, resilience, attacks, null, out double energy, out double mass);
+            MechBlueprint.CalcCost(3.9 + strInc / 2.1, 0, killable, resilience, attacks, null, out double energy, out double mass);
             double cost = energy + mass * Consts.MechMassDiv;
-            energy = Game.Rand.Gaussian(Consts.EnemyEnergy * (39 + 2.1 * strInc) - cost, .13);
+            energy = Game.Rand.Gaussian(Consts.EnemyEnergy * (52 + 2.6 * strInc) - cost, .13);
             Debug.WriteLine($"hiveCost #{hiveIdx + 1}: {cost} ({energy})");
 
             Hive obj = new(tile, killable, resilience, attacks, cost, energy);
             tile.Map.Game.AddPiece(obj);
 
-            Tile resourceSpawn = Game.Rand.SelectValue(tile.GetTilesInRange(obj.attacker).Where(t => t.Piece == null));
+            Tile ResourceSpawn() => Game.Rand.SelectValue(tile.GetTilesInRange(obj.attacker).Where(t => t.Piece == null));
             if (Game.Rand.Bool())
-                Artifact.NewArtifact(resourceSpawn);
+            {
+                Artifact.NewArtifact(ResourceSpawn());
+            }
             else if (Game.Rand.Bool())
-                Biomass.NewBiomass(resourceSpawn);
-            else if (Game.Rand.Bool())
-                Metal.NewMetal(resourceSpawn);
+            {
+                if (Game.Rand.Bool())
+                    Biomass.NewBiomass(ResourceSpawn());
+                else
+                    Metal.NewMetal(ResourceSpawn());
+            }
 
             return obj;
         }
-
-        public void OnDeserialization(object sender)
+        public override void OnDeserialization(object sender)
         {
-            ((Killable)this.killable).OnDeserialization(this);
-            ((Attacker)this.attacker).OnDeserialization(this);
-            this.attacker.Event.AttackEvent += Attacker_AttackEvent;
-            this.killable.Event.DamagedEvent += Killable_DamagedEvent;
+            base.OnDeserialization(sender);
+            if (killable != null)
+            {
+                ((Killable)killable).OnDeserialization(this);
+                killable.Event.DamagedEvent += Killable_DamagedEvent;
+            }
+            if (attacker != null)
+            {
+                ((Attacker)attacker).OnDeserialization(this);
+                attacker.Event.AttackEvent += Attacker_AttackEvent;
+            }
         }
 
         private void Attacker_AttackEvent(object sender, Attacker.AttackEventArgs e)
@@ -90,15 +101,26 @@ namespace ClassLibrary1.Pieces.Enemies
         private static IEnumerable<IKillable.Values> GenKillable(int hiveIdx)
         {
             hiveIdx += Game.Rand.Next(3);
-            IKillable.Values hits = new(DefenseType.Hits, Game.Rand.GaussianOEInt(13 + 3.9 * hiveIdx, .13, .13, 10));
+            IKillable.Values hits = new(DefenseType.Hits, Game.Rand.GaussianOEInt(10.4 + 3.9 * hiveIdx, .13, .13, 10));
 
-            DefenseType type = Game.Rand.Bool() ? DefenseType.Shield : DefenseType.Armor;
-            double def = 6.5 + .26 * hiveIdx;
-            if (type == DefenseType.Armor)
-                def *= 2.1;
-            IKillable.Values extra = new(type, Game.Rand.GaussianOEInt(def, .13, .13, 5));
+            List<IKillable.Values> defenses = new() { hits };
 
-            return new[] { hits, extra };
+            double def = 9.1 + .65 * hiveIdx;
+            bool armor = Game.Rand.Bool();
+            if (armor)
+            {
+                int shield = GenShield(5.2 + .39 * hiveIdx);
+                def = Math.Max(1, Consts.StatValueInverse(Consts.StatValue(def * 2.1) - Consts.StatValue(shield)));
+                defenses.Add(new(DefenseType.Shield, shield));
+                defenses.Add(new(DefenseType.Armor, Game.Rand.GaussianOEInt(def, .13, .13, Math.Min((int)def, 5))));
+            }
+            else
+            {
+                defenses.Add(new(DefenseType.Shield, GenShield(def)));
+            }
+            static int GenShield(double v) => Game.Rand.GaussianOEInt(v, .13, .13, 5);
+
+            return defenses;
         }
         private static IEnumerable<IAttacker.Values> GenAttacker(int hiveIdx)
         {
@@ -109,7 +131,7 @@ namespace ClassLibrary1.Pieces.Enemies
             double range = Game.Rand.GaussianOE(16.9 + 2.1 * hiveIdx, .13, .13, 10);
             IAttacker.Values att1 = new(flag ? AttackType.Energy : AttackType.Kinetic, att, range);
 
-            att = Game.Rand.GaussianOEInt(1.69 + 2.1 * hiveIdx, .13, .13, 1);
+            att = Game.Rand.GaussianOEInt(1.69 + 2.6 * hiveIdx, .13, .13, 1);
             range = Game.Rand.GaussianOE(13 + 1.69 * hiveIdx, .13, .13, 10);
             IAttacker.Values att2 = new(flag ? AttackType.Kinetic : AttackType.Energy, att, range);
 

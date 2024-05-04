@@ -22,15 +22,6 @@ namespace ClassLibrary1.Pieces.Enemies
         private bool targeted;
         //private List<Point> _path;
 
-        //cant use these tiles as references...
-        private Tile lastMove = null, curMove = null;
-        private int numAtts = 0;
-        private readonly List<Tuple<Tile, Tile>> lastAttacks = new();
-
-        //should be Point?
-        public Tile LastMove => lastMove;
-        public List<Tuple<Tile, Tile>> LastAttacks => lastAttacks;
-
         //var defs = killable.AllDefenses.Select(d => new Values(d.Type, d.DefenseMax));
         //var atts = attacker.Attacks.Select(a => new IAttacker.Values(a.Type, a.AttackMax, a.Range));
         //var move = new IMovable.Values(movable.MoveInc, movable.MoveMax, movable.MoveLimit);
@@ -41,7 +32,7 @@ namespace ClassLibrary1.Pieces.Enemies
         private List<Point> PathToCore { get; set; }// private
         private List<Point> RetreatPath { get; set; }// private
 
-        private double Morale => _morale;// private - hide behind research
+        //private double Morale => _morale;// hide behind research
 
         private Alien(Tile tile, List<Point> pathToCore, double energy,
             IEnumerable<Values> killable, double resilience, IEnumerable<IAttacker.Values> attacks, IMovable.Values movable)
@@ -69,19 +60,26 @@ namespace ClassLibrary1.Pieces.Enemies
             return obj;
         }
 
-        public void OnDeserialization(object sender)
+        public override void OnDeserialization(object sender)
         {
-            ((Killable)this.killable).OnDeserialization(this);
-            ((Attacker)this.attacker).OnDeserialization(this);
-            this.attacker.Event.AttackEvent += Attacker_AttackEvent;
-            this.killable.Event.DamagedEvent += Killable_DamagedEvent;
+            base.OnDeserialization(sender);
+            if (killable != null)
+            {
+                ((Killable)killable).OnDeserialization(this);
+                killable.Event.DamagedEvent += Killable_DamagedEvent;
+            }
+            if (attacker != null)
+            {
+                //((Attacker)attacker).OnDeserialization(this);
+                //attacker.Event.AttackEvent += Attacker_AttackEvent;
+            }
         }
 
-        private void Attacker_AttackEvent(object sender, Attacker.AttackEventArgs e)
-        {
-            this.lastAttacks.Add(Tuple.Create(e.From, e.To));
-            this.numAtts++;
-        }
+        //private void Attacker_AttackEvent(object sender, Attacker.AttackEventArgs e)
+        //{
+        //    this.lastAttacks.Add(Tuple.Create(e.From, e.To));
+        //    this.numAtts++;
+        //}
 
         private void Killable_DamagedEvent(object sender, Killable.DamagedEventArgs e)
         {
@@ -175,11 +173,11 @@ namespace ClassLibrary1.Pieces.Enemies
             bool SeePath(List<Point> path = null) => (path ?? PathToCore).Any(p => moveTiles.Contains(Game.Map.GetTile(p)));
             bool NeedsRetreatPath() => RetreatPath == null || !RetreatPath.Any() || !ValidRetreat(RetreatPath[^1]) || !SeePath(RetreatPath);
             bool ValidRetreat(Point point) => ValidRetreatTile(Game.Map.GetTile(point));
-            bool ValidRetreatTile(Tile tile) => tile != null && !tile.Visible && !playerAttacks.ContainsKey(tile);
+            bool ValidRetreatTile(Tile tile) => tile != null && (Game.TEST_MAP_GEN.HasValue || !tile.Visible) && !playerAttacks.ContainsKey(tile);
             Tile GetRetreatTo()
             {
-                if (Game.Rand.Bool())
-                    return Game.Rand.Iterate(RetreatPath?.Where(ValidRetreat)).Select(Game.Map.GetTile).FirstOrDefault();
+                if (RetreatPath != null && Game.Rand.Bool())
+                    return Game.Rand.Iterate(RetreatPath.Where(ValidRetreat)).Select(Game.Map.GetTile).FirstOrDefault();
                 return null;
             }
         }
@@ -196,14 +194,6 @@ namespace ClassLibrary1.Pieces.Enemies
         internal override void StartTurn()
         {
             base.StartTurn();
-
-            this.lastMove = curMove != null && (curMove.Visible || Tile.Visible) ? curMove : null;
-            this.curMove = Tile;
-
-            int remove = lastAttacks.Count - numAtts;
-            if (remove > 0)
-                this.lastAttacks.RemoveRange(0, remove);
-            this.numAtts = 0;
 
             double pct = DefPct();
             pct = 1 - .65 * pct * pct;

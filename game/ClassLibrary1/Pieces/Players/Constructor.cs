@@ -2,16 +2,16 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using static ClassLibrary1.ResearchExponents;
 using DefenseType = ClassLibrary1.Pieces.CombatTypes.DefenseType;
 using Tile = ClassLibrary1.Map.Map.Tile;
+using UpgType = ClassLibrary1.ResearchUpgValues.UpgType;
 
 namespace ClassLibrary1.Pieces.Players
 {
     [Serializable]
     public class Constructor : PlayerPiece, IKillable.IRepairable
     {
-        public const double MOVE_LOW_PENALTY = 1.3, BASE_VISION = 7.5, BASE_MOVE_MAX = 8 * MOVE_LOW_PENALTY;
+        public const double MOVE_RAMP = 1.3, BASE_VISION = 7.5, BASE_MOVE_MAX = 8 * MOVE_RAMP, BASE_MOVE_INC = 3.5;
 
         private bool _canUpgrade;
         private readonly bool _defenseType;
@@ -196,8 +196,8 @@ namespace ClassLibrary1.Pieces.Players
             }
             private void UpgradeConstructorCost(double researchMult)
             {
-                double costMult = Math.Pow(researchMult, Constructor_Cost);
-                this.energy = this.mass = Game.Rand.Round(1250 / costMult);
+                double costMult = ResearchUpgValues.Calc(UpgType.ConstructorCost, researchMult);
+                this.energy = this.mass = Game.Rand.Round(1250 * costMult);
             }
             private void UpgradeConstructorDefense(double researchMult)
             {
@@ -207,35 +207,27 @@ namespace ClassLibrary1.Pieces.Players
 
                 IKillable.Values Gen(DefenseType type, double mult)
                 {
-                    double defAvg = 8 * mult;
-                    const double lowPenalty = 8 / 5.0;
-                    if (researchMult < lowPenalty)
-                        defAvg *= researchMult / lowPenalty;
-                    int defense = Game.Rand.Round(defAvg * Math.Pow(researchMult, Constructor_Defense));
+                    double defAvg = mult * ResearchUpgValues.Calc(UpgType.ConstructorDefense, researchMult);
+                    int defense = Game.Rand.Round(defAvg);
                     return new(type, defense);
                 }
             }
             private void UpgradeConstructorMove(double researchMult)
             {
-                this.vision = BASE_VISION * Math.Pow(researchMult, Constructor_Vision);
+                this.vision = ResearchUpgValues.Calc(UpgType.ConstructorVision, researchMult);
 
-                //const double lowPenalty = MOVE_LOW_PENALTY; // = 1.3;
-                double moveMult = 1;
-                if (researchMult < MOVE_LOW_PENALTY)
-                    moveMult *= researchMult / MOVE_LOW_PENALTY;
+                double moveMult = ResearchUpgValues.Calc(UpgType.ConstructorMove, researchMult) / BASE_MOVE_INC;
 
-                moveMult *= Math.Pow(researchMult, Constructor_Move);
                 double max = BASE_MOVE_MAX * moveMult;
-                double limit = 15 * MOVE_LOW_PENALTY * moveMult;
+                double limit = 15 * MOVE_RAMP * moveMult;
                 int moveMax = Game.Rand.Round(max);
                 int moveLimit = Game.Rand.Round(limit);
-                double inc = Math.Pow((max * 2 + limit) / (moveMax * 2 + moveLimit), 1 / 3.9);
-                double moveInc = 3.5 * MOVE_LOW_PENALTY * inc * moveMult;
+                double moveInc = BASE_MOVE_INC * moveMult * Math.Pow((max * 2 + limit) / (moveMax * 2 + moveLimit), 1 / 3.9);
                 this.movable = new(moveInc, moveMax, moveLimit);
             }
             private void UpgradeConstructorRepair(double researchMult)
             {
-                double repairMult = Math.Pow(researchMult, Factory_Repair);
+                double repairMult = ResearchUpgValues.Calc(UpgType.ConstructorRepair, researchMult);
                 double repairRange = 4.0 * Math.Sqrt(repairMult);
                 repairRate = 1 * repairMult;
                 this.repair = new(new(repairRange), 1);

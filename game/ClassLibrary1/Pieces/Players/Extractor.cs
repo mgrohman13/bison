@@ -1,8 +1,8 @@
 ﻿using ClassLibrary1.Pieces.Terrain;
 using System;
-using static ClassLibrary1.ResearchExponents;
 using DefenseType = ClassLibrary1.Pieces.CombatTypes.DefenseType;
 using Tile = ClassLibrary1.Map.Map.Tile;
+using UpgType = ClassLibrary1.ResearchUpgValues.UpgType;
 
 namespace ClassLibrary1.Pieces.Players
 {
@@ -86,9 +86,9 @@ namespace ClassLibrary1.Pieces.Players
         [Serializable]
         private class Values : IUpgradeValues
         {
-            private const double resilienceBase = .3;
+            private const double resilience = .3;//resilienceBase
 
-            private double costMult, vision, valueMult, sustainMult, resilience;
+            private double costMult, vision, valueMult, sustainMult;//, resilience;
             private IKillable.Values killable;
             public Values()
             {
@@ -116,25 +116,21 @@ namespace ClassLibrary1.Pieces.Players
             }
             private void UpgradeBuildingCost(double researchMult)
             {
-                this.costMult = 1 / Math.Pow(researchMult, Extractor_Cost);
+                this.costMult = ResearchUpgValues.Calc(UpgType.ExtractorCost, researchMult);
             }
             private void UpgradeBuildingHits(double researchMult)
             {
-                double defAvg = 12 * Math.Pow(researchMult, Extractor_Defense);
-                const double lowPenalty = 12 / 5.0;
-                if (researchMult < lowPenalty)
-                    defAvg *= researchMult / lowPenalty;
+                double defAvg = ResearchUpgValues.Calc(UpgType.ExtractorDefense, researchMult);
                 int defense = Game.Rand.Round(defAvg);
-                this.vision = 5 * Math.Pow(researchMult, Extractor_Vision);
+                this.vision = ResearchUpgValues.Calc(UpgType.ExtractorVision, researchMult);
                 this.killable = new(DefenseType.Hits, defense);
             }
             private void UpgradeExtractorValue(double researchMult)
             {
-                this.resilience = Consts.GetPct(resilienceBase, Math.Pow(researchMult, Extractor_Resilience));
+                //this.resilience = Consts.GetPct(resilienceBase, Math.Pow(researchMult, Extractor_Resilience));
 
-                this.valueMult = Math.Pow(researchMult, Extractor_Value);
-                this.sustainMult = Math.Pow(researchMult, Extractor_Sustain);
-                this.killable = new(DefenseType.Hits, killable.Defense);
+                this.valueMult = ResearchUpgValues.Calc(UpgType.ExtractorValue, researchMult);
+                this.sustainMult = ResearchUpgValues.Calc(UpgType.ExtractorSustain, researchMult);
             }
         }
     }

@@ -165,14 +165,14 @@ namespace ClassLibrary1.Pieces
         internal static double EnergyCostRatio(AttackType attackType) => attackType switch
         {
             AttackType.Kinetic => .21,
-            AttackType.Energy => .78,
-            AttackType.Explosive => .52,
+            AttackType.Energy => .65,
+            AttackType.Explosive => .39,
             _ => throw new Exception(),
         };
         internal static double EnergyCostRatio(DefenseType defenseType) => defenseType switch
         {
             DefenseType.Hits => .26,
-            DefenseType.Shield => .91,
+            DefenseType.Shield => .78,
             DefenseType.Armor => .13,
             _ => throw new Exception(),
         };

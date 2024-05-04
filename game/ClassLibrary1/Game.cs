@@ -12,13 +12,14 @@ namespace ClassLibrary1
     public class Game
     {
         public const int POINTS_TO_WIN = 3;
-        public static readonly int? TEST_MAP_GEN = 260;// 260;
+        public static readonly int? TEST_MAP_GEN;
 
         public static readonly MTRandom Rand;
         static Game()
         {
             Rand = new MTRandom();
             Rand.StartTick();
+            //TEST_MAP_GEN = Rand.GaussianCappedInt(Consts.CaveDistance * Math.Sqrt(2), .13);
         }
 
         public readonly ClassLibrary1.Map.Map Map;

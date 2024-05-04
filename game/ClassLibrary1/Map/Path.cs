@@ -62,6 +62,7 @@ namespace ClassLibrary1.Map
             {
                 ExploredDist = Math.Max(ExploredDist, dist);
 
+                //retry on duplicate tile?
                 HashSet<Tile> tiles = new();
                 foreach (double distance in Game.Rand.Iterate(CreateResources()))
                     tiles.Add(map.SpawnTile(GetPoint(Angle, distance), Consts.PathWidth, false));

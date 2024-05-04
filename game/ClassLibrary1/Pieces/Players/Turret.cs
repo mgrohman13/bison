@@ -3,10 +3,10 @@ using MattUtil;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using static ClassLibrary1.ResearchExponents;
 using AttackType = ClassLibrary1.Pieces.CombatTypes.AttackType;
 using DefenseType = ClassLibrary1.Pieces.CombatTypes.DefenseType;
 using Tile = ClassLibrary1.Map.Map.Tile;
+using UpgType = ClassLibrary1.ResearchUpgValues.UpgType;
 
 namespace ClassLibrary1.Pieces.Players
 {
@@ -194,17 +194,24 @@ namespace ClassLibrary1.Pieces.Players
             }
             private void UpgradeBuildingCost(double researchMult)
             {
-                double costMult = Math.Pow(researchMult, Turret_Cost);
+                double costMult = ResearchUpgValues.Calc(UpgType.TurretCost, researchMult);
                 rounding = Game.Rand.NextDouble();
                 this.energy = MTRandom.Round(1000 / costMult, 1 - rounding);
                 this.mass = MTRandom.Round(1750 / costMult, rounding);
             }
             private void UpgradeTurretDefense(double researchMult)
             {
-                this.vision = 12.5 * Math.Pow(researchMult, Turret_Vision);
+                this.vision = ResearchUpgValues.Calc(UpgType.TurretVision, researchMult);
 
                 for (int a = 0; a < MAX_DEFENSES; a++)
                 {
+                    UpgType upgType = a switch
+                    {
+                        0 => UpgType.TurretDefense,
+                        1 => UpgType.TurretShieldDefense,
+                        2 => UpgType.TurretArmorDefense,
+                        _ => throw new Exception(),
+                    };
                     DefenseType type = a switch
                     {
                         0 => DefenseType.Hits,
@@ -213,12 +220,7 @@ namespace ClassLibrary1.Pieces.Players
                         _ => throw new Exception(),
                     };
 
-                    double defAvg = a switch { 0 => 13, 1 => 7, 2 => 10, _ => throw new Exception(), };
-                    const double lowPenalty = 1.2;
-                    if (researchMult < lowPenalty)
-                        defAvg *= researchMult / lowPenalty;
-                    defAvg *= Math.Pow(researchMult, Turret_Defense);
-
+                    double defAvg = ResearchUpgValues.Calc(upgType, researchMult);
                     int defense = Game.Rand.Round(defAvg);
                     defenses[a] = new(type, defense);
                 }
@@ -227,13 +229,15 @@ namespace ClassLibrary1.Pieces.Players
             {
                 for (int a = 0; a < MAX_ATTACKS; a++)
                 {
-                    double range = a switch { 0 => 12, 1 => 16, 2 => 8, _ => throw new Exception(), };
-                    const double lowPenalty = 1.4;
-                    if (researchMult < lowPenalty)
-                        range *= researchMult / lowPenalty;
-                    range *= Math.Pow(researchMult, Turret_Range);
-                    range += Attack.MIN_RANGED;
+                    UpgType upgType = a switch
+                    {
+                        0 => UpgType.TurretRange,
+                        1 => UpgType.TurretLaserRange,
+                        2 => UpgType.TurretExplosivesRange,
+                        _ => throw new Exception(),
+                    };
 
+                    double range = ResearchUpgValues.Calc(upgType, researchMult); 
                     IAttacker.Values attack = attacks[a];
                     attacks[a] = new(attack.Type, attack.Attack, range, attack.Reload);
                 }
@@ -242,6 +246,13 @@ namespace ClassLibrary1.Pieces.Players
             {
                 for (int a = 0; a < MAX_ATTACKS; a++)
                 {
+                    UpgType upgType = a switch
+                    {
+                        0 => UpgType.TurretAttack,
+                        1 => UpgType.TurretLaserAttack,
+                        2 => UpgType.TurretExplosivesAttack,
+                        _ => throw new Exception(),
+                    };
                     AttackType type = a switch
                     {
                         0 => AttackType.Kinetic,
@@ -250,12 +261,7 @@ namespace ClassLibrary1.Pieces.Players
                         _ => throw new Exception(),
                     };
 
-                    double attAvg = a switch { 0 => 9, 1 => 4, 2 => 11, _ => throw new Exception(), };
-                    const double lowPenalty = 1.69;
-                    if (researchMult < lowPenalty)
-                        attAvg *= researchMult / lowPenalty;
-                    attAvg *= Math.Pow(researchMult, Turret_Attack);
-
+                    double attAvg = ResearchUpgValues.Calc(upgType, researchMult);
                     int attack = Game.Rand.Round(attAvg);
 
                     double range = attacks[a].Range;

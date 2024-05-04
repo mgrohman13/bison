@@ -6,13 +6,17 @@ namespace ClassLibrary1.Pieces.Terrain
     [Serializable]
     public class Artifact : Resource
     {
-        private Artifact(Tile tile)
-            : base(tile, Consts.ArtifactResearchInc, Consts.ArtifactSustain, true)
+        private Artifact(Tile tile, double mult)
+            : base(tile, Consts.ArtifactResearchInc * mult, Consts.ArtifactSustain, true)
         {
         }
         internal static Artifact NewArtifact(Tile tile)
         {
-            Artifact artifact = new(tile);
+            double caveDist = tile.Map.ClosestCaveDistSqr(tile);
+            double factor = Consts.CaveSize * Consts.CaveSize;
+            caveDist = 1 + factor / (caveDist + factor);
+
+            Artifact artifact = new(tile, caveDist);
             tile.Map.Game.AddPiece(artifact);
             return artifact;
         }

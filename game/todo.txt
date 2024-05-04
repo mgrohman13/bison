@@ -96,11 +96,8 @@ exploring path should bump up spawn chance
 	add some amount to chance that drops when enemy spawned?
 once you start attacking hives, no/few spawns elsewhere??
 early-mid game not dangerous enough?
-implement pathfinding for player!
-show hive attacks on map too
-reduce energy cost factor for att/def ratio
-	slightly increase mech mass cost pct overall 
-		later but not early??
+ensure everything within .5 (vision blocking) of path is terrain
+
 increased target weight when likely to kill?
 enemy target core too much early?
 	sqrt income in weight calc?
@@ -111,22 +108,6 @@ need to hit extractors more when rushing?
 	less often when in fight?
 	when morale higher, kill defenceless buildings, as drops, kill mechs
 	
-first research of late techs is insane
-	extractor value, constructor repair
-	calc some min offset for mults based on avg cost of path to get there?
-	show pct increase (eventually show something more concrete for certain ones??)
-prevent turrets attacking hives??
-	resistant to raned attacks in general?
-		broader range resistant def type?
-		only if outside hive range???
-		hives get massive def increase until they attack? or get hit with melee??		
-make researches with progress less likely to appear?
-	only taper off high progress, not lowish values?
-	or make it have 0 effect and get rid of research-micro mechanic?
-		alt would need to fix so you dont get punished by having too much research to micro?
-artifacts value mult for near caves?
-
-research upgs show bonus - exact where can e.g. core shields	
 draw null tiles behind everything else
 wide lines cover part of att/def bars
 if you cant afford to build, quick button to trade for it
@@ -147,10 +128,22 @@ show st dev of income in UI somewhere
 	along with upkeep breakdown?
 show alien extended range??
 enter target amount on trade screen
-limit some upgrades? 
-	move, range, build cost?
-	find otehr ways to counter?
+show current upgardes on info button
 
+tweak UpgType values, update spreadsheet
+	repair range values
+player pathfinding optimization 
+	support shift+right click move
+	separate thread, abort on new mousetile
+	give different options
+		modifier keys
+		different move lengths
+		path through unexplored
+prevent turrets attacking hives??
+	resistant to ranged attacks in general?
+		broader range resistant def type?
+		only if outside hive range???
+		hives get massive def increase until they attack? or get hit with melee??	
 walls
 	terrain where walls are unbuildable?
 	requires move blocking
@@ -159,7 +152,13 @@ remove move limit, make const (at 2x?)
 	make random gaussian thats different every turn? could be fun?
 better handling of fractional repair amts 
 aliens not retreating well? 
+research upgs show bonus show exact where can e.g. core shields	
 
+building resilience
+	make all upg? none??
+		tie to building def?
+	core resilience??? 
+		only affects repair?
 fix weights
 	fix anything triggering multiplier - esp MAX
 	repair not high enough? stay in retreat until repaired? only if actively repairing?
@@ -204,6 +203,10 @@ map contiguity / pathfinding / alien behavior
 	do enemy pathfinding in background during player turn?	
 	builds up too many paths over time - duplicate paths with diff speeds
 
+units that can move on Block terrain?
+limit some upgrades? 
+	move, range, build cost?
+	find otehr ways to counter?
 lock extra extractor resources (biomass research, artifact mass) behind research??
 upgs to reduce repair costs? other upkeep??
 multiple turret blueprints like mechs?
@@ -372,6 +375,10 @@ game stats
 randomize tech tree	
 map - occasional caves farther out infinteley??
 refactor Consts.MechMassDiv - only apply in one spot?
+make researches with progress less likely to appear?
+	only taper off high progress, not lowish values?
+	or make it have 0 effect and get rid of research-micro mechanic?
+		alt would need to fix so you dont get punished by having too much research to micro?
 		
 EARLY GAME
 mitigate balance of finding resources quicker?

@@ -137,7 +137,7 @@ namespace ClassLibrary1.Map
             {
                 //this.spawned = true;
 
-                bool inPath = !isEnemy && Game.Rand.Bool(.169);
+                bool inPath = !isEnemy && Game.Rand.Bool(.26);
                 PointD spawnCenter = inPath ? PathCenter : Center;
                 double deviation = deviationMult * (inPath ? PathLength / 6.5 : Consts.CaveSize);
                 Tile tile = map.SpawnTile(spawnCenter, deviation, isEnemy);

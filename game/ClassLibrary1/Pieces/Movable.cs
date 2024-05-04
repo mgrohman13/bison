@@ -53,9 +53,9 @@ namespace ClassLibrary1.Pieces
         bool IMovable.Move(Tile to)
         {
             Tile from = Piece.Tile;
-            bool move = Piece.IsPlayer && to != null && to.Piece == null && to.Visible && Piece.Tile != to && CanMove;
+            //bool move = Piece.IsPlayer && to != null && to.Piece == null && Piece.Tile != to && CanMove;
 
-            if (move && Piece is PlayerPiece piece)
+            if (CanMoveTo(to) && to.Visible && Piece is PlayerPiece piece)
             {
                 const double lineDist = .5;
                 foreach (var p in Game.Rand.Iterate(Math.Min(from.X, to.X), Math.Max(from.X, to.X), Math.Min(from.Y, to.Y), Math.Max(from.Y, to.Y))
@@ -63,6 +63,7 @@ namespace ClassLibrary1.Pieces
                 {
                     bool isX = from.X == to.X;
                     Tile tile = to.Map.GetTile(p);
+                    //remove check, store last, on UpdateVision==true move to last if valid, else find next valid
                     if (tile != null && tile.Piece == null)
                     {
                         double a = isX ? 0 : (to.Y - from.Y) / (to.X - from.X);
@@ -77,28 +78,33 @@ namespace ClassLibrary1.Pieces
                     }
                 }
 
-                move &= Move(to);
+                if (!Move(to))
+                    throw new Exception();
+                return true;
             }
-            return move;
+            return false;
         }
-        bool IMovable.EnemyMove(Tile to)
-        {
-            bool move = Piece.IsEnemy && to != null && to.Piece == null;
-            return move && Move(to);
-        }
+        bool IMovable.EnemyMove(Tile to) => Piece.IsEnemy && Move(to);
         private bool Move(Tile to)
         {
-            if (Piece.Tile != to && CanMove)
+            if (CanMoveTo(to))
+            {
+                double dist = Piece.Tile.GetDistance(to);
+                this._moved = true;
+                this._moveCur -= dist;
+                Piece.SetTile(to);
+                return true;
+            }
+            return false;
+        }
+        public bool CanMoveTo(Tile to)
+        {
+            if (Piece.Tile != to && CanMove && to != null && to.Piece == null)
             {
                 //check blocks
                 double dist = Piece.Tile.GetDistance(to);
                 if (dist <= MoveCur)
-                {
-                    this._moved = true;
-                    this._moveCur -= dist;
-                    Piece.SetTile(to);
                     return true;
-                }
             }
             return false;
         }
