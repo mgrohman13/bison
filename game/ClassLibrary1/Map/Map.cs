@@ -182,7 +182,7 @@ namespace ClassLibrary1.Map
                 if (Game.Rand.Next(13) > 0)
                     chances[cave]--;
                 Tile tile = SpawnTile(cave.Center, Consts.CaveSize, true);
-                cave.AddHive(Hive.NewHive(tile, f));
+                cave.AddHive(Hive.NewHive(tile, f, cave.Spawner));
                 counts.TryGetValue(cave, out int count);
                 counts[cave] = count + 1;
             }
@@ -210,9 +210,9 @@ namespace ClassLibrary1.Map
         internal void PlayTurn(int turn)
         {
             foreach (var p in _paths)
-                p.Turn(turn);
+                p.Spawner.Turn(turn);
             foreach (var c in _caves)
-                c.Turn(turn);
+                c.Spawner.Turn(turn);
         }
 
         [NonSerialized]
@@ -401,7 +401,7 @@ namespace ClassLibrary1.Map
             if (evalCount > 0)
             {
                 float evalTime = 1000f * watch.ElapsedTicks / Stopwatch.Frequency;
-                Debug.WriteLine($"Evaluate ({evalCount}): {evalTime}");
+                //Debug.WriteLine($"Evaluate ({evalCount}): {evalTime}");
                 watch.Reset();
                 evalCount = 0;
             }
@@ -429,8 +429,8 @@ namespace ClassLibrary1.Map
             Core core = tile.Map.Game.Player.Core;
             bool coreRange = core != null && tile.GetDistance(core.Tile) <= core.GetBehavior<IRepair>().Range;
             bool invalid = (visible && !hiveRange) || tile.Piece != null || coreRange;
-            if (!invalid)
-                Debug.WriteLine("InvalidStartTile: " + tile);
+            //if (!invalid)
+            //    Debug.WriteLine("InvalidStartTile: " + tile);
             return invalid;
         }
 
@@ -493,6 +493,7 @@ namespace ClassLibrary1.Map
             foreach (var choice in choices)
                 Debug.WriteLine($"choice - {choice.Key}: {choice.Value}");
             IEnemySpawn spawn = Game.Rand.SelectValue(choices);
+            spawn.Spawner.Spawned();
             Debug.WriteLine($"GetEnemyTile: {spawn}");
             return spawn.SpawnTile(this, true, 1.69);
         }

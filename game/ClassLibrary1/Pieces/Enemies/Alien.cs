@@ -120,12 +120,12 @@ namespace ClassLibrary1.Pieces.Enemies
             {
                 case AIState.Heal:
                     state = AIState.Heal;
-                    if (hitsInc <= 0 || PlayerPresent())
+                    if (hitsInc <= 0 || PlayerThreat())
                         goto case AIState.Retreat;
                     break;
                 case AIState.Retreat:
                     state = AIState.Retreat;
-                    if (hitsInc > 0 && !PlayerPresent())
+                    if (hitsInc > 0 && !PlayerThreat())
                         goto case AIState.Heal;
                     if (MoraleCheck(1, true))
                         goto case AIState.Fight;
@@ -134,23 +134,37 @@ namespace ClassLibrary1.Pieces.Enemies
                     break;
                 case AIState.Fight:
                     state = AIState.Fight;
-                    if (MoraleCheck(1 / Math.Sqrt(difficulty), true) && !PlayerPresent())
+                    if (MoraleCheck(1 / Math.Sqrt(difficulty), true) && !PlayerThreat())
                         goto case AIState.Patrol;
                     break;
                 case AIState.Patrol:
                     state = AIState.Patrol;
                     if (MoraleCheck(1 + (3.9 / difficulty / difficulty), true))
                         goto case AIState.Rush;
+                    if (PlayerThreat())
+                        goto case AIState.Fight;
+                    if (hitsInc > 0)
+                        goto case AIState.Heal;
+                    if (PlayerPassive())
+                        goto case AIState.Harass;
                     if (MoraleCheck(.5 / difficulty, true) && SeePath())
                         goto case AIState.Rush;
-                    if (PlayerPresent())
+                    break;
+                case AIState.Harass:
+                    state = AIState.Harass;
+                    if (MoraleCheck(PlayerThreat() ? .6 : .4, false))
                         goto case AIState.Fight;
-                    else if (hitsInc > 0)
-                        goto case AIState.Heal;
+                    if (!PlayerPassive())
+                        if (MoraleCheck(.8, true))
+                            goto case AIState.Rush;
+                        else
+                            goto case AIState.Patrol;
                     break;
                 case AIState.Rush:
                     state = AIState.Rush;
-                    if (MoraleCheck((PlayerPresent() ? .75 : .25) / difficulty, false))
+                    if (PlayerPassive())
+                        goto case AIState.Harass;
+                    if (MoraleCheck((PlayerThreat() ? .75 : .25) / difficulty, false))
                         goto case AIState.Fight;
                     if (moveTiles.Any() && !SeePath())
                         if (MoraleCheck(.5, true))
@@ -169,7 +183,8 @@ namespace ClassLibrary1.Pieces.Enemies
             this._state = state;
             return state;
 
-            bool PlayerPresent() => targeted || killables.Any() || playerAttacks.ContainsKey(Tile);
+            bool PlayerThreat() => targeted || killables.Any(k => k.Piece.HasBehavior<IAttacker>()) || playerAttacks.ContainsKey(Tile);
+            bool PlayerPassive() => !PlayerThreat() && killables.Any();
             bool SeePath(List<Point> path = null) => (path ?? PathToCore).Any(p => moveTiles.Contains(Game.Map.GetTile(p)));
             bool NeedsRetreatPath() => RetreatPath == null || !RetreatPath.Any() || !ValidRetreat(RetreatPath[^1]) || !SeePath(RetreatPath);
             bool ValidRetreat(Point point) => ValidRetreatTile(Game.Map.GetTile(point));

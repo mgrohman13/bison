@@ -84,6 +84,7 @@ namespace ClassLibrary1.Pieces.Enemies
             Retreat,
             Fight,
             Patrol,
+            Harass,
             Rush,
         }
     }

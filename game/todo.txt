@@ -92,22 +92,10 @@ FEATURES
 	experience
 	power grid
 
-exploring path should bump up spawn chance
-	add some amount to chance that drops when enemy spawned?
-once you start attacking hives, no/few spawns elsewhere??
+log debug to file
 early-mid game not dangerous enough?
 ensure everything within .5 (vision blocking) of path is terrain
 
-increased target weight when likely to kill?
-enemy target core too much early?
-	sqrt income in weight calc?
-	weight research higher?
-need to hit extractors more when rushing?
-	new state??
-		hive should always prioritize mechs over extractors
-	less often when in fight?
-	when morale higher, kill defenceless buildings, as drops, kill mechs
-	
 draw null tiles behind everything else
 wide lines cover part of att/def bars
 if you cant afford to build, quick button to trade for it
@@ -153,7 +141,9 @@ remove move limit, make const (at 2x?)
 better handling of fractional repair amts 
 aliens not retreating well? 
 research upgs show bonus show exact where can e.g. core shields	
+	hide upg info for unaquired types
 
+enemy energy value per spawn area?
 building resilience
 	make all upg? none??
 		tie to building def?

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.Serialization;
+using static ClassLibrary1.Map.Map;
 using AttackType = ClassLibrary1.Pieces.CombatTypes.AttackType;
 using DefenseType = ClassLibrary1.Pieces.CombatTypes.DefenseType;
 using Tile = ClassLibrary1.Map.Map.Tile;
@@ -14,6 +15,8 @@ namespace ClassLibrary1.Pieces.Enemies
     [Serializable]
     public class Hive : EnemyPiece, IDeserializationCallback
     {
+        private readonly SpawnChance spawner;
+
         private readonly IKillable killable;
         private readonly IAttacker attacker;
 
@@ -22,9 +25,11 @@ namespace ClassLibrary1.Pieces.Enemies
 
         public bool Dead => killable.Dead;
 
-        private Hive(Tile tile, IEnumerable<IKillable.Values> killable, double resilience, IEnumerable<IAttacker.Values> attacks, double cost, double energy)
-            : base(tile, AIState.Patrol)
+        private Hive(Tile tile, SpawnChance spawner, IEnumerable<IKillable.Values> killable, double resilience, IEnumerable<IAttacker.Values> attacks, double cost, double energy)
+            : base(tile, AIState.Fight)
         {
+            this.spawner = spawner;
+
             this.Cost = cost + energy;
             this.energy = energy;
 
@@ -34,7 +39,7 @@ namespace ClassLibrary1.Pieces.Enemies
 
             OnDeserialization(this);
         }
-        internal static Hive NewHive(Tile tile, int hiveIdx)
+        internal static Hive NewHive(Tile tile, int hiveIdx, SpawnChance spawner)
         {
             IEnumerable<IKillable.Values> killable = GenKillable(hiveIdx);
             double resilience = Consts.GetPct(Game.Rand.GaussianCapped(.26, .26, .013), 1 + hiveIdx);
@@ -45,7 +50,7 @@ namespace ClassLibrary1.Pieces.Enemies
             energy = Game.Rand.Gaussian(Consts.EnemyEnergy * (52 + 2.6 * strInc) - cost, .13);
             Debug.WriteLine($"hiveCost #{hiveIdx + 1}: {cost} ({energy})");
 
-            Hive obj = new(tile, killable, resilience, attacks, cost, energy);
+            Hive obj = new(tile, spawner, killable, resilience, attacks, cost, energy);
             tile.Map.Game.AddPiece(obj);
 
             Tile ResourceSpawn() => Game.Rand.SelectValue(tile.GetTilesInRange(obj.attacker).Where(t => t.Piece == null));
@@ -80,14 +85,15 @@ namespace ClassLibrary1.Pieces.Enemies
 
         private void Attacker_AttackEvent(object sender, Attacker.AttackEventArgs e)
         {
-            Tile.Map.UpdateVision(this.Tile, Math.Sqrt(attacker.Attacks.Sum(a => a.Range) + Attack.MELEE_RANGE)); //consolidate with below?
+            Tile.Map.UpdateVision(this.Tile, Math.Sqrt(SumRange + Attack.MIN_RANGED));
         }
         private void Killable_DamagedEvent(object sender, Killable.DamagedEventArgs e)
         {
             double cur = killable.AllDefenses.Sum(d => Consts.StatValue(d.DefenseCur));
             double max = killable.AllDefenses.Sum(d => Consts.StatValue(d.DefenseMax));
-            ((Enemy)Side).HiveDamaged(this, ref energy, killable.Hits.DefenseCur, cur / max, MaxRange); //change MaxRange, pull logic from HiveDamaged
+            ((Enemy)Side).HiveDamaged(this, spawner, ref energy, killable.Hits.DefenseCur, cur / max, MaxRange / 2.1 + Attack.MELEE_RANGE);
         }
+        public double SumRange => attacker.Attacks.Sum(a => a.Range);
         public double MaxRange => attacker.Attacks.Max(a => a.Range);
 
         internal override void Die()
@@ -141,6 +147,11 @@ namespace ClassLibrary1.Pieces.Enemies
         public override string ToString()
         {
             return "Hive " + PieceNum;
+        }
+
+        internal static Hive NewHive(Tile tile, int f, object spawner)
+        {
+            throw new NotImplementedException();
         }
     }
 }

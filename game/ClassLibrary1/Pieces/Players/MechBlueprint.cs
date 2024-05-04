@@ -447,7 +447,7 @@ namespace ClassLibrary1.Pieces.Players
 
             int newCost = blueprint.TotalCost();
             if (oldCost != newCost)
-                Debug.WriteLine($"blueprint ({blueprint.BlueprintNum}) {oldCost} -> {newCost}");
+                Debug.WriteLine($"blueprint ({(blueprint.BlueprintNum == "" ? "Alien" : blueprint.BlueprintNum)}) {oldCost} -> {newCost}");
 
             if ((!canKeep || research.GetType() == Type.Mech || Game.Rand.Bool()) && (newCost < minTotal || newCost > maxTotal))
                 blueprint = GenBlueprint(upgrade, research, blueprintNum);

@@ -1,4 +1,6 @@
-﻿using ClassLibrary1.Pieces;
+﻿
+
+using ClassLibrary1.Pieces;
 using System;
 using DefenseType = ClassLibrary1.Pieces.CombatTypes.DefenseType;
 
@@ -24,9 +26,10 @@ namespace ClassLibrary1
 
         public const double ResearchFactor = 2600;
 
-        public const double EnemyStartEnergy = 6500;
+        public const double EnemyStartEnergy = 5200;
         public const double EnemyEnergy = 390;
-        public const double EnemyEnergyRampTurns = 91;
+        public const double ExploreEnergy = 2600 / ResourceAvgDist;
+        public const double EnemyEnergyRampTurns = 65;
         public const double DifficultyIncTurns = 78;
         public const double DifficultyEnergyPow = 1.69;
         public const double DifficultyResearchPow = 1.3;

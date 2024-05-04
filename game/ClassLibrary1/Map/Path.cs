@@ -1,6 +1,7 @@
 ﻿using MattUtil;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace ClassLibrary1.Map
 {
@@ -14,8 +15,10 @@ namespace ClassLibrary1.Map
             public readonly double Angle;
             public readonly PointD Left, Right;
 
-            private readonly SpawnChance spawn = new();
+            private readonly SpawnChance _spawn = new();
             //public readonly double EnemyMult, EnemyPow;
+
+            public SpawnChance Spawner => _spawn;
 
             public int ResourceNum { get; private set; }
             public double ExploredDist { get; private set; }
@@ -60,12 +63,23 @@ namespace ClassLibrary1.Map
             }
             public HashSet<Tile> Explore(Map map, double dist)
             {
-                ExploredDist = Math.Max(ExploredDist, dist);
-
-                //retry on duplicate tile?
                 HashSet<Tile> tiles = new();
-                foreach (double distance in Game.Rand.Iterate(CreateResources()))
-                    tiles.Add(map.SpawnTile(GetPoint(Angle, distance), Consts.PathWidth, false));
+                if (dist > ExploredDist)
+                {
+                    double mult = (dist - ExploredDist) * dist / Consts.CaveDistance;
+
+                    _spawn.Mult(1 + mult / Consts.ResourceAvgDist);
+
+                    int energy = Game.Rand.Round(mult * Consts.ExploreEnergy);
+                    Debug.WriteLine($"ExploreEnergy: {energy}");
+                    map.Game.Enemy.AddEnergy(energy);
+
+                    ExploredDist = dist;
+
+                    //retry on duplicate tile?
+                    foreach (double distance in Game.Rand.Iterate(CreateResources()))
+                        tiles.Add(map.SpawnTile(GetPoint(Angle, distance), Consts.PathWidth, false));
+                }
                 return tiles;
             }
             private double GetExploredDist(Tile tile, double vision)
@@ -111,8 +125,8 @@ namespace ClassLibrary1.Map
                 c = start.Y - a * start.X;
             }
 
-            public void Turn(int turn) => spawn.Turn(turn);
-            public int SpawnChance(int turn, double? enemyMove) => spawn.Chance * 3;
+            //public void Turn(int turn) => _spawn.Turn(turn);
+            public int SpawnChance(int turn, double? enemyMove) => _spawn.Chance;
             public Tile SpawnTile(Map map, bool isEnemy, double deviationMult)
                 => map.SpawnTile(ExploredPoint(), Consts.PathWidth * deviationMult, isEnemy);
             public PointD ExploredPoint(double buffer = 0) => GetPoint(Angle, ExploredDist + buffer);

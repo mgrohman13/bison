@@ -21,7 +21,7 @@ namespace ClassLibrary1.Map
             private readonly PointD seg1, seg2;
             private readonly double segSize;
 
-            private readonly SpawnChance spawn = new();
+            private readonly SpawnChance _spawn = new();
             private readonly List<Hive> hives = new();
 
             private bool explored;//, spawned;
@@ -29,12 +29,16 @@ namespace ClassLibrary1.Map
             private double minSpawnMove = double.NaN;
             //private List<Point> pathToCore = null;
 
+            public SpawnChance Spawner => _spawn;
+
             //PathCenter should handle edge distances better (e.g. segment on other side of cave/path)
             public PointD PathCenter => new((seg1.X + seg2.X) / 2.0, (seg1.Y + seg2.Y) / 2.0);
             public double PathLength => Math.Sqrt(GetDistSqr(seg1, seg2));
 
             public double MinSpawnMove => minSpawnMove;
             public bool Explored => explored;
+
+
             //public Point PathFindStart => pathToCore.First();
             //public IReadOnlyList<Point> PathToCore => pathToCore.AsReadOnly();
 
@@ -121,16 +125,16 @@ namespace ClassLibrary1.Map
                 //this.pathToCore = path;
             }
 
-            public void Turn(int turn)
-            {
-                spawn.Turn(turn);
-            }
+            //public void Turn(int turn)
+            //{
+            //    _spawn.Turn(turn);
+            //}
             public int SpawnChance(int turn, double? enemyMove)
             {
                 if (enemyMove.HasValue && enemyMove.Value < minSpawnMove)
                     return 0;
                 if (!explored || hives.Any(h => !h.Dead))// && spawned)
-                    return Game.Rand.Round(spawn.Chance * Math.Sqrt(2.1 + hives.Count));
+                    return Game.Rand.Round(_spawn.Chance * Math.Sqrt(2.1 + hives.Count));
                 return 0;
             }
             public Tile SpawnTile(Map map, bool isEnemy, double deviationMult = 1)

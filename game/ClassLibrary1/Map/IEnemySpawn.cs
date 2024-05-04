@@ -4,7 +4,8 @@
     {
         private interface IEnemySpawn
         {
-            public void Turn(int turn);
+            public SpawnChance Spawner { get; }
+            //public void Turn(int turn);
             int SpawnChance(int turn, double? enemyMove);
             Tile SpawnTile(Map map, bool isEnemy, double deviationMult);
         }
