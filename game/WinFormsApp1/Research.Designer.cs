@@ -215,7 +215,7 @@ namespace WinFormsApp1
             // 
             // label3
             // 
-            label3.Location = new System.Drawing.Point(132, 143);
+            label3.Location = new System.Drawing.Point(131, 166);
             label3.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             label3.Name = "label3";
             label3.Size = new System.Drawing.Size(126, 15);
@@ -230,19 +230,19 @@ namespace WinFormsApp1
             lbxUnlocks.BorderStyle = System.Windows.Forms.BorderStyle.None;
             lbxUnlocks.FormattingEnabled = true;
             lbxUnlocks.ItemHeight = 15;
-            lbxUnlocks.Location = new System.Drawing.Point(130, 160);
+            lbxUnlocks.Location = new System.Drawing.Point(131, 183);
             lbxUnlocks.Margin = new System.Windows.Forms.Padding(2);
             lbxUnlocks.Name = "lbxUnlocks";
-            lbxUnlocks.Size = new System.Drawing.Size(126, 150);
+            lbxUnlocks.Size = new System.Drawing.Size(126, 120);
             lbxUnlocks.TabIndex = 3;
             lbxUnlocks.SelectedValueChanged += LbxUnlocks_SelectedValueChanged;
             // 
             // label8
             // 
-            label8.Location = new System.Drawing.Point(262, 143);
+            label8.Location = new System.Drawing.Point(261, 166);
             label8.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             label8.Name = "label8";
-            label8.Size = new System.Drawing.Size(136, 15);
+            label8.Size = new System.Drawing.Size(138, 15);
             label8.TabIndex = 18;
             label8.Text = "Also Needs:";
             label8.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -251,10 +251,10 @@ namespace WinFormsApp1
             // 
             lvwAlso.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
             lvwAlso.Enabled = false;
-            lvwAlso.Location = new System.Drawing.Point(260, 160);
+            lvwAlso.Location = new System.Drawing.Point(261, 183);
             lvwAlso.Margin = new System.Windows.Forms.Padding(2);
             lvwAlso.Name = "lvwAlso";
-            lvwAlso.Size = new System.Drawing.Size(138, 143);
+            lvwAlso.Size = new System.Drawing.Size(138, 120);
             lvwAlso.TabIndex = 19;
             lvwAlso.UseCompatibleStateImageBehavior = false;
             lvwAlso.View = System.Windows.Forms.View.List;
@@ -291,7 +291,7 @@ namespace WinFormsApp1
             // 
             lblUpgInf.Location = new System.Drawing.Point(132, 94);
             lblUpgInf.Name = "lblUpgInf";
-            lblUpgInf.Size = new System.Drawing.Size(265, 45);
+            lblUpgInf.Size = new System.Drawing.Size(265, 72);
             lblUpgInf.TabIndex = 22;
             lblUpgInf.Text = "lblUpgInf\r\nlblUpgInf\r\nlblUpgInf";
             lblUpgInf.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;

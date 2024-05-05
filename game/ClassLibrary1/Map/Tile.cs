@@ -90,26 +90,30 @@ namespace ClassLibrary1.Map
             }
             public static IEnumerable<Point> GetPointsInRangeBlocked(Map map, Point point, double range)//, bool blockMap, Piece blockFor)
             {
-                Dictionary<Point, double> block = new();
+                ////SortedDictionary<Point, double> block = new(Comparer<Point>.Create(
+                ////    (p1, p2) => GetDistance(point, p1).CompareTo(GetDistance(point, p2))));
+                //double sqrtTwo = Math.Sqrt(2);
+                //double baseBlock = .5 + (sqrtTwo / 2.0 - .5) / 2.0;
+                ////double enemyBlock = 1 + (sqrtTwo - 1) / 2.0;
+                //void AddBlock(Point b, double blockRange)
+                //{
+                //    block.TryGetValue(b, out double range);
+                //    range = Math.Max(range, blockRange);
+                //    block[b] = range;
+                //}
+                ////if (blockMap)
+                //foreach (var p in GetPointsInRangeUnblocked(map, point, range).Where(p => map.GetTile(p) == null))
+                //    AddBlock(p, baseBlock);
+                ////if (blockFor != null)
+                //////more efficient implementation?
+                ////    foreach (var pair in map._pieces.Where(p => p.Value != blockFor
+                ////            && (p.Value.Side != blockFor.Side || !p.Value.HasBehavior<IMovable>())
+                ////            && GetDistance(point, p.Key) <= range))
+                ////        AddBlock(pair.Key, pair.Value.Side != null && pair.Value.Side != blockFor.Side ? enemyBlock : baseBlock);
 
-                double sqrtTwo = Math.Sqrt(2);
-                double baseBlock = .5 + (sqrtTwo / 2.0 - .5) / 2.0;
-                //double enemyBlock = 1 + (sqrtTwo - 1) / 2.0;
-                void AddBlock(Point b, double blockRange)
-                {
-                    block.TryGetValue(b, out double range);
-                    range = Math.Max(range, blockRange);
-                    block[b] = range;
-                }
-                //if (blockMap)
-                foreach (var p in GetPointsInRangeUnblocked(map, point, range).Where(p => map.GetTile(p) == null))
-                    AddBlock(p, baseBlock);
-                //if (blockFor != null)
-                ////more efficient implementation?
-                //    foreach (var pair in map._pieces.Where(p => p.Value != blockFor
-                //            && (p.Value.Side != blockFor.Side || !p.Value.HasBehavior<IMovable>())
-                //            && GetDistance(point, p.Key) <= range))
-                //        AddBlock(pair.Key, pair.Value.Side != null && pair.Value.Side != blockFor.Side ? enemyBlock : baseBlock);
+                SortedSet<Point> block = new(Game.Rand.Iterate(GetPointsInRangeUnblocked(map, point, range).Where(p => map.GetTile(p) == null)),
+                    Comparer<Point>.Create((p1, p2) => GetDistance(point, p1).CompareTo(GetDistance(point, p2))));
+                double blockRadius = (.5 + Math.Sqrt(2) / 2) / 2.0;
 
                 int max = (int)range + 1;
                 foreach (Point p in Game.Rand.Iterate(-max, max, -max, max))
@@ -119,17 +123,20 @@ namespace ClassLibrary1.Map
                     double distance = GetDistance(point.X, point.Y, x, y);
                     if (distance <= range)
                     {
-                        if (!block.Any(p => GetDistance(point, p.Key) < distance
-                               && Dist(point, new(x, y), p.Key) < p.Value
-                               && (GetAngleDiff(GetAngle(p.Key.X - point.X, p.Key.Y - point.Y), GetAngle(x - point.X, y - point.Y)) < HALF_PI)))
+                        var blocking = block.Where(p => GetDistance(point, p) < distance
+                            && Dist(point, new(x, y), p) < blockRadius
+                            && (GetAngleDiff(GetAngle(p.X - point.X, p.Y - point.Y), GetAngle(x - point.X, y - point.Y)) < HALF_PI));
+                        if (blocking.Any())
+                            yield return blocking.First();
+                        else
                             yield return new(x, y);
                     }
                 }
+
                 static double Dist(Point segment1, PointD segment2, Point point)
                 {
                     if (segment2.X == segment1.X)
                         return Math.Abs(point.X - segment1.X);
-
                     //merge with CalcLine?
                     double a = (segment2.Y - segment1.Y) / (segment2.X - segment1.X);
                     double b = -1;

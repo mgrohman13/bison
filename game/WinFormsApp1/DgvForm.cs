@@ -163,6 +163,8 @@ namespace WinFormsApp1
                 dataGridView1.Columns["Armor"].Visible = CheckStats(b => b.Killable, k => k.Type == DefenseType.Armor);
 
                 dataGridView1.Columns["Builder"].Visible = false;
+
+                dataGridView1.Columns["Ratio"].DefaultCellStyle.Format = "P0";
                 dataGridView1.Columns["Resilience"].DefaultCellStyle.Format = "P0";
 
                 dataGridView1.Columns["Build"].HeaderText = "";
@@ -232,6 +234,7 @@ namespace WinFormsApp1
             public string Name { get; }
             public double Energy { get; }
             public double Mass { get; }
+            public double Ratio => Energy / Mass;
             public bool Notify
             {
                 get

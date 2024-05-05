@@ -11,7 +11,7 @@ namespace ClassLibrary1.Pieces.Players
     [Serializable]
     public class Constructor : PlayerPiece, IKillable.IRepairable
     {
-        public const double MOVE_RAMP = 1.3, BASE_VISION = 7.5, BASE_MOVE_MAX = 8 * MOVE_RAMP, BASE_MOVE_INC = 3.5;
+        public const double BASE_VISION = 7.5, MOVE_RAMP = 1.3, BASE_MOVE_INC = 3.5, BASE_MOVE_MAX = 8 * MOVE_RAMP;
 
         private bool _canUpgrade;
         private readonly bool _defenseType;
@@ -218,8 +218,8 @@ namespace ClassLibrary1.Pieces.Players
 
                 double moveMult = ResearchUpgValues.Calc(UpgType.ConstructorMove, researchMult) / BASE_MOVE_INC;
 
-                double max = BASE_MOVE_MAX * moveMult;
-                double limit = 15 * MOVE_RAMP * moveMult;
+                double max = BASE_MOVE_MAX / MOVE_RAMP * moveMult;
+                double limit = 15 * moveMult;
                 int moveMax = Game.Rand.Round(max);
                 int moveLimit = Game.Rand.Round(limit);
                 double moveInc = BASE_MOVE_INC * moveMult * Math.Pow((max * 2 + limit) / (moveMax * 2 + moveLimit), 1 / 3.9);

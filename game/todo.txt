@@ -93,9 +93,17 @@ FEATURES
 	power grid
 
 log debug to file
-early-mid game not dangerous enough?
 ensure everything within .5 (vision blocking) of path is terrain
+turret range needs early buff again???
 
+pathfind on background thread
+mouse move refresh slows scrolling too much
+	variable scroll speed not working well?
+	save player paths?
+need UI indicator when you can shoot moused over alien
+lose range radius when inside limit move range
+show inverse sum stat value att on info panel
+show turns to target on mouse over info
 draw null tiles behind everything else
 wide lines cover part of att/def bars
 if you cant afford to build, quick button to trade for it
@@ -143,6 +151,10 @@ aliens not retreating well?
 research upgs show bonus show exact where can e.g. core shields	
 	hide upg info for unaquired types
 
+should reasearch progress be included in any calcs?
+	remove altogether?
+	maybe factor into research mults somehow?
+		included as overage bonus in blueprint research level?
 enemy energy value per spawn area?
 building resilience
 	make all upg? none??
@@ -193,6 +205,9 @@ map contiguity / pathfinding / alien behavior
 	do enemy pathfinding in background during player turn?	
 	builds up too many paths over time - duplicate paths with diff speeds
 
+vision for aliens...
+auto repair mech add-on
+	aliens?? no?
 units that can move on Block terrain?
 limit some upgrades? 
 	move, range, build cost?

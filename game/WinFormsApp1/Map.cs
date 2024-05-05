@@ -107,19 +107,19 @@ namespace WinFormsApp1
                     _moused = value;
 
                     mousePath = null;
-                    if (SelTile?.Piece != null && SelTile.Piece.HasBehavior(out IMovable m) && MouseTile != null && SelTile.GetDistance(MouseTile) > m.MoveCur && MouseTile.Piece is not Terrain)
-                    {
-                        if (shift)
-                            mousePath = new() { SelTile.Location, MouseTile.Location };
-                        else
-                            mousePath = Program.Game.Map.PathFind(SelTile, MouseTile, Math.Min(m.MoveCur - 1, m.MoveCur + m.MoveInc - m.MoveMax), m.MoveMax);
-                        //if (shift)
-                        //    ClampPath();
-                    }
+                    if (!timer.Enabled && SelTile?.Piece != null && SelTile.Piece.HasBehavior(out IMovable m)
+                        && MouseTile != null && SelTile.GetDistance(MouseTile) > m.MoveCur && MouseTile.Piece is not Terrain)
+                        if (!SelTile.Piece.HasBehavior(out IAttacker attacker)
+                               || !attacker.Attacks.Any(a => a.CanAttack() && SelTile.GetPointsInRange(a).Contains(MouseTile.Location)))
+                            if (shift)
+                                mousePath = new() { SelTile.Location, MouseTile.Location };
+                            else
+                                mousePath = Program.Game.Map.PathFind(SelTile, MouseTile, LimitedMove(m, out bool limitMove), limitMove, m.MoveMax);
 
                     ShowMouseInfo();
                     //if (invalidate || InRange())
-                    this.Invalidate();
+                    if (!timer.Enabled)
+                        this.Invalidate();
                 }
             }
         }
@@ -191,7 +191,8 @@ namespace WinFormsApp1
                     float distance = (float)SelTile.GetDistance(mousePoint);
                     //if (distance <= movable.MoveCur)
                     this.lblMouse.Text = distance.ToString("0.0");
-                    this.lblMouse.Refresh();
+                    if (!timer.Enabled)
+                        this.lblMouse.Invalidate();
                 }
             }
         }
@@ -722,14 +723,20 @@ namespace WinFormsApp1
 
                     //if ( SelTile.Piece.IsEnemy)
                     moveTiles = GetMoveTiles(movable);
+                    ranges[Green].Add(moveTiles);
 
                     //Debug.WriteLine("3 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
 
                     if (SelTile.Piece.IsPlayer && movable.MoveCur + movable.MoveInc > movable.MoveMax)
                         //check blocks
-                        moveTiles = moveTiles.Where(t => Math.Min(movable.MoveCur - 1, movable.MoveCur + movable.MoveInc - movable.MoveMax) < SelTile.GetDistance(t)).ToHashSet();
-                    //else
-                    ranges[Green].Add(moveTiles);
+                        ranges[Green].Add(moveTiles.Where(t => Math.Min(movable.MoveCur - 1, movable.MoveCur + movable.MoveInc - movable.MoveMax) > SelTile.GetDistance(t)).ToHashSet());
+                    //Debug.WriteLine("3 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
+
+                    //if (SelTile.Piece.IsPlayer && movable.MoveCur + movable.MoveInc > movable.MoveMax)
+                    //    //check blocks
+                    //    ranges[Green].Add(moveTiles.Where(t => Math.Min(movable.MoveCur - 1, movable.MoveCur + movable.MoveInc - movable.MoveMax) < SelTile.GetDistance(t)).ToHashSet());
+                    ////else
+                    ////ranges[Green].Add(moveTiles);
                 }
 
                 //Debug.WriteLine("4 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
@@ -1106,13 +1113,17 @@ namespace WinFormsApp1
         private MouseEventArgs lastMouse;
         private void Map_MouseMove(object sender, MouseEventArgs e)
         {
-            if (e == null)
-                e = lastMouse;
-            else
-                lastMouse = e;
-            if (e != null)
-                this.MouseTile = Program.Game.Map.GetVisibleTile(GetMapX(e.X), GetMapY(e.Y));
-            ShowMouseInfo();
+            //if (!timer.Enabled)
+            {
+                if (e == null)
+                    e = lastMouse;
+                else
+                    lastMouse = e;
+                if (e != null)
+                    this.MouseTile = Program.Game.Map.GetVisibleTile(GetMapX(e.X), GetMapY(e.Y));
+                //if (!timer.Enabled)
+                ShowMouseInfo();
+            }
         }
 
         bool shift = false;
@@ -1245,7 +1256,14 @@ namespace WinFormsApp1
             }
             else if (e.Button == MouseButtons.Right && SelTile != null && SelTile.Piece != null && clicked != null)
             {
-                if (SelTile.Piece.HasBehavior(out IMovable movable))
+                if (SelTile.Piece.HasBehavior(out IAttacker attacker) && clicked.Piece != null && clicked.Piece.HasBehavior(out IKillable killable)
+                    && attacker.Fire(killable))
+                {
+                    SelTile = clicked;
+                    Program.RefreshChanged();
+                    //Program.SaveGame();
+                }
+                else if (SelTile.Piece.HasBehavior(out IMovable movable))
                 {
                     bool DoMove(Tile dest)
                     {
@@ -1263,43 +1281,21 @@ namespace WinFormsApp1
                     if (!moved && mousePath != null)
                     {
                         // if shift, move to closest point to line, respecing limit 
-                        Tile to = null;
-                        bool limitMove = movable.MoveCur + movable.MoveInc > movable.MoveMax;
-                        foreach (var p in mousePath)
+                        double limitedMove = LimitedMove(movable, out bool limitMove);
+                        var path = limitMove ? mousePath : mousePath.Reverse<Point>();
+                        foreach (var p in path)
                         {
                             var next = Program.Game.Map.GetVisibleTile(p);
-                            if (limitMove && Math.Min(movable.MoveCur - 1, movable.MoveCur + movable.MoveInc - movable.MoveMax) < SelTile.GetDistance(next))
-                            {
-                                if (DoMove(next))
-                                    break;
-                            }
-                            else if (movable.MoveCur < SelTile.GetDistance(next))
-                            {
-                                if (DoMove(to))
-                                    break;
-                            }
-                            to = next;
+                            if (next != null && next != SelTile)
+                                if (limitMove == SelTile.GetDistance(next) >= limitedMove)
+                                    if (DoMove(next))
+                                        break;
+                                    else
+                                        ;
                         }
-
                         //if (SelTile.Piece.IsPlayer && )
                         //    //check blocks
                         //    ranges[Green].Add(moveTiles.Where(t => Math.Min(movable.MoveCur - 1, movable.MoveCur + movable.MoveInc - movable.MoveMax) > SelTile.GetDistance(t)).ToHashSet());
-
-                        //foreach (var p in mousePath.Reverse<Point>())
-                        //{
-                        //    var t = Program.Game.Map.GetVisibleTile(p);
-                        //    if (t != null)
-
-                        //}
-                    }
-                }
-                if (SelTile.Piece.HasBehavior(out IAttacker attacker) && clicked.Piece != null && clicked.Piece.HasBehavior(out IKillable killable))
-                {
-                    if (attacker.Fire(killable))
-                    {
-                        SelTile = clicked;
-                        Program.RefreshChanged();
-                        //Program.SaveGame();
                     }
                 }
             }
@@ -1311,6 +1307,12 @@ namespace WinFormsApp1
                 else
                     Program.Next(true);
             }
+        }
+
+        private static double LimitedMove(IMovable movable, out bool limitMove)
+        {
+            limitMove = movable.MoveCur + movable.MoveInc > movable.MoveMax;
+            return limitMove ? movable.MoveCur + movable.MoveInc - movable.MoveMax : movable.MoveCur;
         }
     }
 }

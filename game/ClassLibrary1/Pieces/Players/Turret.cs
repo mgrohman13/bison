@@ -196,8 +196,8 @@ namespace ClassLibrary1.Pieces.Players
             {
                 double costMult = ResearchUpgValues.Calc(UpgType.TurretCost, researchMult);
                 rounding = Game.Rand.NextDouble();
-                this.energy = MTRandom.Round(1000 / costMult, 1 - rounding);
-                this.mass = MTRandom.Round(1750 / costMult, rounding);
+                this.energy = MTRandom.Round(1000 * costMult, 1 - rounding);
+                this.mass = MTRandom.Round(1750 * costMult, rounding);
             }
             private void UpgradeTurretDefense(double researchMult)
             {

@@ -131,8 +131,8 @@ namespace ClassLibrary1.Pieces.Players
             {
                 double costMult = ResearchUpgValues.Calc(UpgType.FactoryCost, researchMult);
                 rounding = Game.Rand.NextDouble();
-                this.energy = MTRandom.Round(1750 / costMult, 1 - rounding);
-                this.mass = MTRandom.Round(500 / costMult, rounding);
+                this.energy = MTRandom.Round(1750 * costMult, 1 - rounding);
+                this.mass = MTRandom.Round(500 * costMult, rounding);
             }
             private void UpgradeBuildingHits(double researchMult)
             {

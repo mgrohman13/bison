@@ -30,7 +30,7 @@ namespace ClassLibrary1
         public const double EnemyEnergy = 390;
         public const double ExploreEnergy = 2600 / ResourceAvgDist;
         public const double EnemyEnergyRampTurns = 65;
-        public const double DifficultyIncTurns = 78;
+        public const double DifficultyIncTurns = 104;
         public const double DifficultyEnergyPow = 1.69;
         public const double DifficultyResearchPow = 1.3;
         public const double DifficultyAIPow = .52;

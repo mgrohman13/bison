@@ -158,7 +158,7 @@ namespace ClassLibrary1.Pieces.Players
 
                 valid = research.GetType() switch
                 {
-                    //Type.Mech =>,
+                    Type.Mech => blueprint.Attacker.Single().Attack < blueprint.Killable.Single().Defense,
                     Type.MechEnergyWeapons => blueprint.Attacker.Any(a => a.Type == AttackType.Energy && a.Range == Attack.MELEE_RANGE),
                     Type.MechShields => blueprint.Killable.Any(k => k.Type == DefenseType.Shield),
                     //Type.MechResilience =>,

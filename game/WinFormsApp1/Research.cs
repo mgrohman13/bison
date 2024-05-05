@@ -49,7 +49,10 @@ namespace WinFormsApp1
         {
             this.lblTotal.Text = Program.Game.Player.Research.ResearchCur.ToString();
 
-            Type? s = GetSelected() ?? GetSelected(lbxDone);
+            this.lblUpgInf.Hide();
+
+            Type? sel = GetSelected();
+            Type? s = sel ?? GetSelected(lbxDone);
             if (s.HasValue)
             {
                 Type selected = s.Value;
@@ -57,7 +60,6 @@ namespace WinFormsApp1
                 this.lblName.Text = selected.ToString();
                 this.lblLast.Text = Program.Game.Player.Research.GetLast(selected).ToString();
                 this.lblProgress.Text = Program.Game.Player.Research.GetProgress(selected).ToString();
-                this.lblUpgInf.Text = Program.Game.Player.Research.GetUpgInfo(selected);
 
                 if (Program.Game.Player.Research.Available.Contains(selected))
                 {
@@ -69,6 +71,12 @@ namespace WinFormsApp1
                 {
                     this.lblCost.Hide();
                     this.label6.Hide();
+                }
+
+                if (sel.HasValue)
+                {
+                    this.lblUpgInf.Text = Program.Game.Player.Research.GetUpgInfo(sel.Value);
+                    this.lblUpgInf.Show();
                 }
 
                 IEnumerable<Type> unlocks = cbxAll.Checked ? Research.GetAllUnlocks(selected) : Research.GetUnlocks(selected);
@@ -100,7 +108,6 @@ namespace WinFormsApp1
                 this.lblProgress.Show();
                 this.label4.Show();
                 this.label5.Show();
-                this.lblUpgInf.Show();
             }
             else
             {
@@ -111,7 +118,6 @@ namespace WinFormsApp1
                 this.label4.Hide();
                 this.label5.Hide();
                 this.label6.Hide();
-                this.lblUpgInf.Hide();
             }
 
             base.Refresh();

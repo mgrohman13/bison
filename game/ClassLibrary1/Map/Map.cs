@@ -134,10 +134,13 @@ namespace ClassLibrary1.Map
             LogEvalTime();
         }
 
+        internal double ClosestCaveDistSqr(Tile tile) => _caves.Min(c => GetDistSqr(tile.X, tile.Y, c.Center));
         internal void NewGame()
         {
-            SpawnHives();
+            //order is important - the starting resource distribution is different than the refils
             GenerateStartResources();
+            InitExplorePaths();
+            SpawnHives();
 
             foreach (var cave in Game.Rand.Iterate(_caves))
                 cave.PathFind(this);//, Game.Player.Core.Tile);
@@ -163,11 +166,12 @@ namespace ClassLibrary1.Map
                         break;
                 }
             }
-
+        }
+        private void InitExplorePaths()
+        {
             foreach (var explore in Game.Rand.Iterate(_paths))
                 GenResources(explore.Explore(this, Consts.PathWidth));
         }
-        internal double ClosestCaveDistSqr(Tile tile) => _caves.Min(c => GetDistSqr(tile.X, tile.Y, c.Center));
         private void SpawnHives()
         {
             int hives = Game.Rand.GaussianOEInt(Math.PI - 1 + _caves.Count, .091, .039, Game.Rand.Round(3.9));
@@ -400,7 +404,7 @@ namespace ClassLibrary1.Map
         {
             if (evalCount > 0)
             {
-                float evalTime = 1000f * watch.ElapsedTicks / Stopwatch.Frequency;
+                //float evalTime = 1000f * watch.ElapsedTicks / Stopwatch.Frequency;
                 //Debug.WriteLine($"Evaluate ({evalCount}): {evalTime}");
                 watch.Reset();
                 evalCount = 0;
@@ -538,7 +542,7 @@ namespace ClassLibrary1.Map
 
             HashSet<Point> known = corePaths.Keys.Where(k => corePaths[k].Movement <= movement).ToHashSet();
 
-            var path = PathFind(from, Game.Player.Core.Tile, movement, movement, true, false, p2 =>
+            var path = PathFind(from, Game.Player.Core.Tile, movement, false, movement, true, false, p2 =>
                 {
                     //the map is infinite, so to avoid pathfinding forever we impose a penalty on blocked terrain instead of blocking tiles entirely
                     double penalty = 0;
@@ -620,7 +624,7 @@ namespace ClassLibrary1.Map
             //{
             foreach (Tile tile in options)
             {
-                var path = PathFind(from, tile, movement, movement, false, false, p =>
+                var path = PathFind(from, tile, movement, false, movement, false, false, p =>
                 {
                     //if (playerAttacks == null)
                     //    return 0;
@@ -644,7 +648,7 @@ namespace ClassLibrary1.Map
         }
 
         //double? minFirstMove
-        private List<Point> PathFind(Tile fromTile, Tile toTile, double minFirstMove, double movement, bool includeBlocked, bool visibleOnly,
+        private List<Point> PathFind(Tile fromTile, Tile toTile, double firstMove, bool limitMove, double movement, bool includeBlocked, bool visibleOnly,
             Func<Point, double> Penalty, Func<Point, bool> Stop, out HashSet<Point> blocked)
         {
             blocked = new();
@@ -657,17 +661,23 @@ namespace ClassLibrary1.Map
             //cache tile penalties at each point so they are consistent 
             Dictionary<Point, double> cache = new();
 
+            double moveMin = firstMove;
+            if (limitMove)
+                firstMove += Math.Sqrt(2);
+            //else
+            //    moveMin = 0;
             if (movement < 1)
                 movement = 1;
-            bool first = minFirstMove > 0;// && minFirstMove + 1 < movement;
+
+            bool first = firstMove >= 1;// && minFirstMove + 1 < movement;
             var path = TBSUtil.PathFind(Game.Rand, from, to, Stop, p1 =>
                 {
-                    IEnumerable<Point> points = Tile.GetAllPointsInRange(this, p1, first ? minFirstMove + 1 : movement);
+                    IEnumerable<Point> points = Tile.GetAllPointsInRange(this, p1, first ? firstMove : movement);
                     if (first && !points.Any())
                         points = Tile.GetAllPointsInRange(this, p1, movement);
                     var result = points.Where(p =>
                         {
-                            if (first && GetDistSqr(p1.X, p1.Y, p.X, p.Y) < minFirstMove * minFirstMove)
+                            if (first && limitMove && GetDistSqr(p1.X, p1.Y, p.X, p.Y) < moveMin * moveMin)
                                 return false;
                             var tile = GetTile(p);
                             if (visibleOnly && !Visible(p))
@@ -705,7 +715,7 @@ namespace ClassLibrary1.Map
             return path;
         }
 
-        public List<Point> PathFind(Tile from, Tile to, double firstMove, double movement)
+        public List<Point> PathFind(Tile from, Tile to, double firstMove, bool limitMove, double movement)
         {
             //double[] moves = new[] {
             //    Math.Min(movable.MoveCur - 1, movable.MoveCur + movable.MoveInc - movable.MoveMax) + 1,
@@ -720,7 +730,7 @@ namespace ClassLibrary1.Map
             //    if (move >= 1)
             //    {
             //List<Point> path =
-            return PathFind(from, to, firstMove, movement, false, true, _ => 0, p => !_gameBounds.Contains(p.X, p.Y), out _);
+            return PathFind(from, to, firstMove, limitMove, movement, false, true, _ => 0, p => !_gameBounds.Contains(p.X, p.Y), out _);
             //        if (path != null)
             //            return path;
             //    }

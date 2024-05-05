@@ -76,8 +76,9 @@ namespace ClassLibrary1.Map
 
                     ExploredDist = dist;
 
-                    //retry on duplicate tile?
-                    foreach (double distance in Game.Rand.Iterate(CreateResources()))
+                    // retry on duplicate tile?
+                    //not randomizing order preserves start resource distribution better
+                    foreach (double distance in CreateResources())
                         tiles.Add(map.SpawnTile(GetPoint(Angle, distance), Consts.PathWidth, false));
                 }
                 return tiles;

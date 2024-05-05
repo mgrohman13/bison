@@ -125,18 +125,19 @@ namespace ClassLibrary1
                 _numChoices++;
             return _researching;
         }
-        private double GetUpgMult(Type type, int research) => GetResearchMult(research - _minResearch[type]);
+        private double GetUpgMult(Type type, int research) => GetResearchMult(research > _minResearch[type] ? research - _minResearch[type] : 0);
         public string GetUpgInfo(Type type)
         {
-            if (NoUpgrades.Contains(type) || IsMech(type))
+            if (!HasMin(type))
                 return string.Empty;// Array.Empty<string>();
             if (type == Type.ResearchChoices)
                 return ResearchUpgValues.GetUpgInfo(Type.ResearchChoices, _numChoices, _numChoices + 1, v => v.ToString("0"));
-            _researchedTypes.TryGetValue(type, out int prev);
-            double prevMult = GetUpgMult(type, prev);
+            double prevMult = GetUpgMult(type, GetLast(type));
             double nextMult = GetUpgMult(type, _researchLast + _choices[type]);
             return ResearchUpgValues.GetUpgInfo(type, prevMult, nextMult);
         }
+        private static bool HasMin(Type type) => !NoUpgrades.Contains(type) && !IsMech(type);
+
         public static double GetResearchMult(double research) => (research + Consts.ResearchFactor) / Consts.ResearchFactor;
 
         private void GetNextChoices(int excess, int previous, Type result)
@@ -159,15 +160,15 @@ namespace ClassLibrary1
                         continue;
                     //certain types can only be researched once
                     bool noUpg = NoUpgrades.Contains(available);
-                    if (_researchedTypes.ContainsKey(available) && noUpg)
+                    if (HasType(available) && noUpg)
                         continue;
                     //ensure always at least one mech and one non-mech option
                     if (_choices.Count == _numChoices - 1 && (IsMech(available) ? _choices.Keys.All(IsMech) : !_choices.Keys.Any(IsMech)))
                         continue;
                     //enforce minimums
-                    if (_researchLast < _minResearch[available])
+                    if (_researchLast <= _minResearch[available])
                         continue;
-                    if (Dependencies[available].All(d => _researchedTypes.ContainsKey(d)))
+                    if (Dependencies[available].All(d => HasType(d)))
                     {
                         this._progress.TryAdd(available, 0);
                         this._choices.Add(available, CalcCost(available, nextAvg, nextDev, nextOE, nextMin));
@@ -187,19 +188,27 @@ namespace ClassLibrary1
                 mult *= 1.3 - lastSeen / ((double)Game.Turn + 16.9);
 
                 int last = GetLast(type);
+                bool hasType = last > 0;
                 mult *= (_researchLast + Consts.ResearchFactor) / (last + Consts.ResearchFactor);
 
-                if (IsUpgradeOnly(type, last) && (last > 0 || GetAllUnlocks(type).All(t => IsUpgradeOnly(t, GetLast(t)))))
+                if (!hasType)
+                {
+                    int min = _minResearch[type];
+                    double minMult = (_researchLast - min) * 16.9 / (min + _minResearch.Values.Average() + Consts.ResearchFactor);
+                    if (minMult > 0)
+                        minMult = Math.Sqrt(minMult);
+                    mult *= minMult;
+                }
+
+                if (IsUpgradeOnly(type, last) && (hasType || GetAllUnlocks(type).All(t => IsUpgradeOnly(t, GetLast(t)))))
                 {
                     double upgMult = (_researchLast - last) / Consts.ResearchFactor;
                     upgMult = Math.Pow(upgMult, upgMult > 1 ? .39 : .78);
                     mult *= upgMult;
                 }
 
-                //?
                 int progress = GetProgress(type);
-                double progressMult = (nextAvg + progress) / nextAvg;
-                mult *= progressMult;// * progressMult;
+                mult *= Math.Sqrt((nextAvg + progress) / nextAvg);
 
                 return Game.Rand.Round(byte.MaxValue * mult);
             }).Where(p => p.Value > 0).ToDictionary(p => p.Key, p => p.Value);
@@ -249,7 +258,7 @@ namespace ClassLibrary1
 
         public bool HasType(Type research)
         {
-            return _researchedTypes.ContainsKey(research);
+            return GetLast(research) > 0;
         }
 
         public int GetLevel()
@@ -303,10 +312,12 @@ namespace ClassLibrary1
 
         private static IReadOnlyDictionary<Type, int> CalcMinResearch()
         {
-            Dictionary<Type, int> retVal = Enum.GetValues<Type>()
-                .Where(t => GetAllDependencies(t).Count <= 1)
-                .ToDictionary(t => t, _ => 0);
-            HashSet<Type> all = Enum.GetValues<Type>().Where(t => !retVal.ContainsKey(t)).ToHashSet();
+            //help key types to not come too late
+            HashSet<Type> keyTechs = new() { Type.BuildingDefense, Type.ExtractorAutoRepair, Type.Factory, Type.FactoryRepair,
+                Type.FactoryConstructor, Type.ConstructorDefense, Type.ConstructorMove };
+
+            Dictionary<Type, int> retVal = new();
+            HashSet<Type> all = Enum.GetValues<Type>().ToHashSet();
 
             double research = 0;// StartResearch;
             double dev = Math.E * _avgTypeCost / (double)all.Min();
@@ -315,7 +326,14 @@ namespace ClassLibrary1
                 Type type = Game.Rand.SelectValue(all.Where(t1 => Dependencies[t1].All(t2 => retVal.ContainsKey(t2))));
                 all.Remove(type);
                 research += .78 * GetNext(research) * (double)type / _avgTypeCost;
-                retVal.Add(type, Game.Rand.GaussianCappedInt(research, dev / Math.Sqrt(research)));
+                int min = 0;
+                if (GetAllDependencies(type).Count > 2)
+                    min = Game.Rand.GaussianCappedInt(research, dev / Math.Sqrt(research));
+                else
+                    ;
+                if (keyTechs.Contains(type))
+                    min = Game.Rand.Round(Math.Pow(min, .91));
+                retVal.Add(type, min);
             }
 
             return retVal.AsReadOnly();

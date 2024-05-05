@@ -70,7 +70,7 @@ namespace ClassLibrary1
             energy -= xfer;
             Debug.WriteLine($"Enemy energy: {_energy} ({(xfer > 0 ? "+" : "")}{xfer})");
 
-            hitsPct = hitsPct / Math.Sqrt(hits);
+            hitsPct /= Math.Sqrt(hits);
             if (this.Energy > 0 && Game.Rand.Bool(hitsPct / 2.0))
             {
                 SpawnAlien(() =>
@@ -441,6 +441,7 @@ namespace ClassLibrary1
                             Inc(ref moveWeight, 2);
                             goto case AIState.Fight;
                         case AIState.Fight:
+                        case AIState.Harass:
                             Inc(ref attWeight, 4);
                             Inc(ref playerAttWeight, 2);
                             Inc(ref defWeight, 3);
