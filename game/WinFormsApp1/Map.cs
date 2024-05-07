@@ -110,7 +110,7 @@ namespace WinFormsApp1
                     if (!timer.Enabled && SelTile?.Piece != null && SelTile.Piece.HasBehavior(out IMovable m)
                         && MouseTile != null && SelTile.GetDistance(MouseTile) > m.MoveCur && MouseTile.Piece is not Terrain)
                         if (!SelTile.Piece.HasBehavior(out IAttacker attacker)
-                               || !attacker.Attacks.Any(a => a.CanAttack() && SelTile.GetPointsInRange(a).Contains(MouseTile.Location)))
+                               || !attacker.Attacks.Any(a => a.GetDefenders(MouseTile.Piece).Any() && SelTile.GetPointsInRange(a).Contains(MouseTile.Location)))
                             if (shift)
                                 mousePath = new() { SelTile.Location, MouseTile.Location };
                             else
@@ -178,11 +178,11 @@ namespace WinFormsApp1
                 int sign = 1;
                 Point center = new(0, 0);
 
-                if (!Game.TEST_MAP_GEN.HasValue)
-                {
-                    center = Program.Game.Player.Core.Tile.Location;
-                    sign = -1;
-                }
+                //if (!Game.TEST_MAP_GEN.HasValue)
+                //{
+                //    center = Program.Game.Player.Core.Tile.Location;
+                //    sign = -1;
+                //}
                 Point mousePoint = new(GetMapX(lastMouse.X), GetMapY(lastMouse.Y));
 
                 this.lblMouse.Text = string.Format("({0}, {1})", mousePoint.X - center.X, sign * (mousePoint.Y - center.Y));

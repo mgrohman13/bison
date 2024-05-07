@@ -26,6 +26,7 @@ namespace ClassLibrary1.Pieces.Players
         {
             upgradeTo = Blueprint.UpgradeTo;
             energy = mass = 0;
+
             if (upgradeTo != null)
             {
                 while (upgradeTo.UpgradeTo != null)
@@ -34,8 +35,11 @@ namespace ClassLibrary1.Pieces.Players
                 energy = upgradeTo.Energy - Blueprint.Energy;
                 mass = upgradeTo.Mass - Blueprint.Mass;
 
+                Defense hits = GetBehavior<IKillable>().Hits;
+                double hp = hits.DefenseCur / (double)hits.DefenseMax * upgradeTo.Killable.Single(d => d.Type == CombatTypes.DefenseType.Hits).Defense;
                 //check blocks
-                return Game.Player.Has(energy, mass) && Side.PiecesOfType<IBuilder.IBuildMech>().Any(b => Tile.GetDistance(b.Piece.Tile) <= b.Range);
+                if (hp >= 1)
+                    return Game.Player.Has(energy, mass) && Side.PiecesOfType<IBuilder.IBuildMech>().Any(b => Tile.GetDistance(b.Piece.Tile) <= b.Range);
             }
             return false;
         }

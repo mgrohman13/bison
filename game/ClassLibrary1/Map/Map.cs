@@ -147,34 +147,20 @@ namespace ClassLibrary1.Map
         }
         private void GenerateStartResources()
         {
-            for (int a = 0; a < 8; a++)
-            {
-                Tile tile = StartTile();
-                switch (GenResourceType())
-                {
-                    case ResourceType.Artifact:
-                        Artifact.NewArtifact(tile);
-                        break;
-                    case ResourceType.Biomass:
-                        Biomass.NewBiomass(tile);
-                        break;
-                    case ResourceType.Metal:
-                        Metal.NewMetal(tile);
-                        break;
-                    case ResourceType.Foundation:
-                        Foundation.NewFoundation(tile);
-                        break;
-                }
-            }
+            const int startResources = 8;
+            GenResources(_ => StartTile(), 1.3 / startResources, startResources);
         }
         private void InitExplorePaths()
         {
             foreach (var explore in Game.Rand.Iterate(_paths))
-                GenResources(explore.Explore(this, Consts.PathWidth));
+                explore.Explore(this, Consts.PathWidth);
         }
         private void SpawnHives()
         {
-            int hives = Game.Rand.GaussianOEInt(Math.PI - 1 + _caves.Count, .091, .039, Game.Rand.Round(3.9));
+            double spawnHives = Math.PI - 1 + _caves.Count;
+            int hives = Game.Rand.GaussianOEInt(spawnHives, .091, .039, Game.Rand.Round(3.9));
+            spawnHives = (spawnHives + hives) / 2.0 + 1;
+
             Dictionary<Cave, int> chances = new(), counts = new();
             foreach (Cave c in _caves)
                 chances[c] = 2;
@@ -187,6 +173,7 @@ namespace ClassLibrary1.Map
                     chances[cave]--;
                 Tile tile = SpawnTile(cave.Center, Consts.CaveSize, true);
                 cave.AddHive(Hive.NewHive(tile, f, cave.Spawner));
+
                 counts.TryGetValue(cave, out int count);
                 counts[cave] = count + 1;
             }
@@ -196,18 +183,19 @@ namespace ClassLibrary1.Map
             foreach (var cave in Game.Rand.Iterate(_caves))
             {
                 counts.TryGetValue(cave, out int caveHives);
+                caveHives++;
                 int spawn = resources;
                 if (cavesLeft > 1)
                 {
-                    double avg = resources / (double)cavesLeft * avgHives / (caveHives + 1.0);
+                    double avg = resources / (double)cavesLeft * avgHives / caveHives;
                     int cap = (int)Math.Ceiling(Math.Max(2 * avg - resources, 0));
                     spawn = Math.Min(resources, avg > cap ? Game.Rand.GaussianCappedInt(avg, 1, cap) : Game.Rand.RangeInt(0, resources));
                 }
 
                 cavesLeft--;
                 resources -= spawn;
-                //retry on duplicate tile?
-                GenResources(Enumerable.Repeat((object)null, spawn).Select(_ => cave.SpawnTile(this, false)).Distinct(), true);
+                double foundationMult = Math.Min(1, caveHives / spawnHives);
+                GenResources(type => cave.SpawnTile(this, type), foundationMult, spawn);
             }
         }
 
@@ -444,46 +432,46 @@ namespace ClassLibrary1.Map
             {
                 double angle = GetAngle(tile.X, tile.Y);
                 Path explore = Game.Rand.Iterate(_paths).OrderBy(path => GetAngleDiff(path.Angle, angle)).First();
-                GenResources(explore.Explore(tile, vision));
+                explore.Explore(tile, vision);
                 foreach (Cave c in _caves)
                     c.Explore(tile, vision);
             }
         }
-        internal void GenResources(IEnumerable<Tile> tiles, bool noFoundation = false)
+        internal void GenResources(Func<ResourceType, Tile> GetTile, double foundationMult = 1, int numResources = 1)
         {
-            foreach (Tile resource in Game.Rand.Iterate(tiles))
+            for (int a = 0; a < numResources; a++)
             {
-                switch (GenResourceType(noFoundation))
+                if (resourcePool.Values.Any(v => v == 0))
+                {
+                    resourcePool[ResourceType.Artifact] += 2;
+                    resourcePool[ResourceType.Foundation] += 4;
+                    resourcePool[ResourceType.Biomass] += 5;
+                    resourcePool[ResourceType.Metal] += 6;
+                }
+
+                ResourceType type;
+                do
+                    type = Game.Rand.SelectValue(resourcePool);
+                while (type == ResourceType.Foundation && !Game.Rand.Bool(foundationMult));
+                resourcePool[type]--;
+
+                Tile tile = GetTile(type);
+                switch (type)
                 {
                     case ResourceType.Artifact:
-                        Artifact.NewArtifact(resource);
+                        Artifact.NewArtifact(tile);
                         break;
                     case ResourceType.Biomass:
-                        Biomass.NewBiomass(resource);
+                        Biomass.NewBiomass(tile);
                         break;
                     case ResourceType.Metal:
-                        Metal.NewMetal(resource);
+                        Metal.NewMetal(tile);
                         break;
                     case ResourceType.Foundation:
-                        Foundation.NewFoundation(resource);
+                        Foundation.NewFoundation(tile);
                         break;
                 }
             }
-        }
-        private ResourceType GenResourceType(bool noFoundation = false)
-        {
-            if (resourcePool.Values.Any(v => v == 0))
-            {
-                resourcePool[ResourceType.Artifact] += 2;
-                resourcePool[ResourceType.Foundation] += 4;
-                resourcePool[ResourceType.Biomass] += 5;
-                resourcePool[ResourceType.Metal] += 6;
-            }
-            ResourceType type = Game.Rand.SelectValue(resourcePool);
-            if (noFoundation && type == ResourceType.Foundation)
-                return GenResourceType(noFoundation);
-            resourcePool[type]--;
-            return type;
         }
 
         internal double GetMinSpawnMove(Tile tile)
@@ -499,7 +487,7 @@ namespace ClassLibrary1.Map
             IEnemySpawn spawn = Game.Rand.SelectValue(choices);
             spawn.Spawner.Spawned();
             Debug.WriteLine($"GetEnemyTile: {spawn}");
-            return spawn.SpawnTile(this, true, 1.69);
+            return spawn.SpawnTile(this, null, 1.69);
         }
 
         private static double GetAngle(PointD point) => GetAngle(point.X, point.Y);

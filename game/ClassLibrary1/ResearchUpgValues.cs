@@ -79,7 +79,7 @@ namespace ClassLibrary1
 
         internal static string GetUpgInfo(Type type, double prevMult, double nextMult)
         {
-            return UpgTypes[type].Select(upgType =>
+            return UpgTypes[type].Where(u => !u.ToString().Contains("Vision")).Select(upgType =>
             {
                 var param = UpgParams[upgType];
                 double prev = CheckZero(upgType, prevMult, param.CalcAvg(prevMult));

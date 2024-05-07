@@ -111,23 +111,24 @@ namespace ClassLibrary1.Map
                 ////            && GetDistance(point, p.Key) <= range))
                 ////        AddBlock(pair.Key, pair.Value.Side != null && pair.Value.Side != blockFor.Side ? enemyBlock : baseBlock);
 
-                SortedSet<Point> block = new(Game.Rand.Iterate(GetPointsInRangeUnblocked(map, point, range).Where(p => map.GetTile(p) == null)),
-                    Comparer<Point>.Create((p1, p2) => GetDistance(point, p1).CompareTo(GetDistance(point, p2))));
-                double blockRadius = (.5 + Math.Sqrt(2) / 2) / 2.0;
+                List<Point> block = Game.Rand.Iterate(GetPointsInRangeUnblocked(map, point, range).Where(p => map.GetTile(p) == null))
+                    .OrderBy(b => GetDistance(point, b)).ToList();
+                double blockRadius = (.5 + Math.Sqrt(2) / 2) / 2.0;// Math.Sqrt(2) / 2
 
-                int max = (int)range + 1;
-                foreach (Point p in Game.Rand.Iterate(-max, max, -max, max))
+                int max = (int)Math.Ceiling(range);
+                foreach (Point add in Game.Rand.Iterate(-max, max, -max, max))
                 {
-                    int x = point.X + p.X;
-                    int y = point.Y + p.Y;
+                    int x = point.X + add.X;
+                    int y = point.Y + add.Y;
                     double distance = GetDistance(point.X, point.Y, x, y);
                     if (distance <= range)
                     {
-                        var blocking = block.Where(p => GetDistance(point, p) < distance
-                            && Dist(point, new(x, y), p) < blockRadius
-                            && (GetAngleDiff(GetAngle(p.X - point.X, p.Y - point.Y), GetAngle(x - point.X, y - point.Y)) < HALF_PI));
-                        if (blocking.Any())
-                            yield return blocking.First();
+                        var blocking = block.Where(b => GetDistance(point, b) < distance
+                            && Dist(point, new(x, y), b) < blockRadius
+                            && (GetAngleDiff(GetAngle(b.X - point.X, b.Y - point.Y), GetAngle(x - point.X, y - point.Y)) < HALF_PI))
+                            .Select(b => (Point?)b).FirstOrDefault();
+                        if (blocking.HasValue)
+                            yield return blocking.Value;
                         else
                             yield return new(x, y);
                     }
@@ -138,7 +139,7 @@ namespace ClassLibrary1.Map
                     if (segment2.X == segment1.X)
                         return Math.Abs(point.X - segment1.X);
                     //merge with CalcLine?
-                    double a = (segment2.Y - segment1.Y) / (segment2.X - segment1.X);
+                    double a = (segment2.Y - segment1.Y) / (double)(segment2.X - segment1.X);
                     double b = -1;
                     double c = segment1.Y - a * segment1.X;
                     return PointLineDistanceAbs(a, b, c, point);

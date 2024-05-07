@@ -67,6 +67,9 @@ namespace ClassLibrary1.Pieces
             GetDefenders(attacker, target, _ => true);
         private static Dictionary<IKillable, int> GetDefenders(Side attacker, Piece target, Func<Piece, bool> InRange)
         {
+            if (target == null)
+                return new();
+
             if (!CanAttack(target, true))
             {
                 var adjacent = AdjacentPieces(target).Where(p => CanAttack(p, true));

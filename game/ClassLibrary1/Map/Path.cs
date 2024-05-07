@@ -57,13 +57,12 @@ namespace ClassLibrary1.Map
                 NextResourceDist += Game.Rand.DoubleFull(inc) + Game.Rand.OE(oe);
             }
 
-            public HashSet<Tile> Explore(Tile tile, double vision)
+            public void Explore(Tile tile, double vision)
             {
-                return Explore(tile.Map, GetExploredDist(tile, vision));
+                Explore(tile.Map, GetExploredDist(tile, vision));
             }
-            public HashSet<Tile> Explore(Map map, double dist)
+            public void Explore(Map map, double dist)
             {
-                HashSet<Tile> tiles = new();
                 if (dist > ExploredDist)
                 {
                     double mult = (dist - ExploredDist) * dist / Consts.CaveDistance;
@@ -76,12 +75,8 @@ namespace ClassLibrary1.Map
 
                     ExploredDist = dist;
 
-                    // retry on duplicate tile?
-                    //not randomizing order preserves start resource distribution better
-                    foreach (double distance in CreateResources())
-                        tiles.Add(map.SpawnTile(GetPoint(Angle, distance), Consts.PathWidth, false));
+                    CreateResources(map);
                 }
-                return tiles;
             }
             private double GetExploredDist(Tile tile, double vision)
             {
@@ -102,20 +97,20 @@ namespace ClassLibrary1.Map
                     return new(lineX, lineY);
                 return new(0, 0);
             }
-            private IEnumerable<double> CreateResources()
+            private void CreateResources(Map map)
             {
-                double generationBuffer = 2.1 * (Consts.PathWidth + Consts.ResourceAvgDist);
+                double generationBuffer = Consts.ResourceAvgDist;
                 if (Game.TEST_MAP_GEN.HasValue)
                     generationBuffer = Game.TEST_MAP_GEN.Value;
 
                 List<double> create = new();
                 while (ExploredDist + generationBuffer > NextResourceDist)
                 {
-                    create.Add(NextResourceDist);
+                    map.GenResources(_ => map.SpawnTile(GetPoint(Angle, NextResourceDist), Consts.PathWidth, false));
+
                     ResourceNum++;
                     GetNextDist();
                 }
-                return create;
             }
 
             //calculates the line equation in the format ax + by + c = 0 
@@ -128,8 +123,8 @@ namespace ClassLibrary1.Map
 
             //public void Turn(int turn) => _spawn.Turn(turn);
             public int SpawnChance(int turn, double? enemyMove) => _spawn.Chance;
-            public Tile SpawnTile(Map map, bool isEnemy, double deviationMult)
-                => map.SpawnTile(ExploredPoint(), Consts.PathWidth * deviationMult, isEnemy);
+            public Tile SpawnTile(Map map, ResourceType? type, double deviationMult = 1)
+                => map.SpawnTile(ExploredPoint(), Consts.PathWidth * deviationMult, !type.HasValue);
             public PointD ExploredPoint(double buffer = 0) => GetPoint(Angle, ExploredDist + buffer);
 
             public override string ToString() => "Path " + (float)Angle;

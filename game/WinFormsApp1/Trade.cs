@@ -29,18 +29,20 @@ namespace WinFormsApp1
 
             if (form.ShowDialog() == DialogResult.OK)
             {
-                Program.Game.Player.Trade((int)form.nudBurn.Value, (int)form.nudFabricate.Value, (int)Math.Ceiling(form.nudScrap.Value / Consts.MassForScrapResearch));
+                Program.Game.Player.Trade((int)form.nudBurn.Value, (int)form.nudFabricate.Value, GetResearch());
                 return true;
             }
             return false;
         }
 
+
         private void NUD_ValueChanged(object sender, EventArgs e)
         {
             SetLext(lblBurn, form.nudBurn.Value * Consts.BurnMassForEnergy);
             SetLext(lblFabricate, form.nudFabricate.Value * Consts.EnergyForFabricateMass);
-            SetLext(lblScrap, form.nudScrap.Value / Consts.MassForScrapResearch);
+            SetLext(lblScrap, GetResearch());
         }
+        private static int GetResearch() => (int)Math.Ceiling(form.nudScrap.Value / Consts.MassForScrapResearch);
         private static void SetLext(Label label, decimal value)
         {
             label.Text = ((int)(-value)).ToString();

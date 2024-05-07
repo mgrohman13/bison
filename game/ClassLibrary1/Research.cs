@@ -313,8 +313,8 @@ namespace ClassLibrary1
         private static IReadOnlyDictionary<Type, int> CalcMinResearch()
         {
             //help key types to not come too late
-            HashSet<Type> keyTechs = new() { Type.BuildingDefense, Type.ExtractorAutoRepair, Type.Factory, Type.FactoryRepair,
-                Type.FactoryConstructor, Type.ConstructorDefense, Type.ConstructorMove };
+            HashSet<Type> keyTechs = new() { Type.Factory, Type.MechMove, Type.TurretRange, Type.ConstructorDefense, Type.ConstructorMove,
+                Type.FactoryRepair, Type.FactoryConstructor, Type.BuildingDefense, Type.ExtractorAutoRepair, };
 
             Dictionary<Type, int> retVal = new();
             HashSet<Type> all = Enum.GetValues<Type>().ToHashSet();

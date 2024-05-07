@@ -24,10 +24,9 @@ namespace ClassLibrary1.Map
             private readonly SpawnChance _spawn = new();
             private readonly List<Hive> hives = new();
 
-            private bool explored;//, spawned;
+            private bool explored;
 
             private double minSpawnMove = double.NaN;
-            //private List<Point> pathToCore = null;
 
             public SpawnChance Spawner => _spawn;
 
@@ -37,10 +36,6 @@ namespace ClassLibrary1.Map
 
             public double MinSpawnMove => minSpawnMove;
             public bool Explored => explored;
-
-
-            //public Point PathFindStart => pathToCore.First();
-            //public IReadOnlyList<Point> PathToCore => pathToCore.AsReadOnly();
 
             public Cave(PointD center, PointD connectTo, bool connectCave = false)
             {
@@ -92,14 +87,14 @@ namespace ClassLibrary1.Map
             {
                 hives.Add(hive);
             }
-            public void PathFind(Map map)//, Tile to)
+            public void PathFind(Map map)
             {
                 this.minSpawnMove = 1;
                 List<Point> path;
                 while (true)
                 {
                     Tile from = map.SpawnTile(Center, Math.Sqrt(2), true);
-                    path = map.PathFindCore(from, minSpawnMove, blocked => //, to
+                    path = map.PathFindCore(from, minSpawnMove, blocked =>
                     {
                         if (minSpawnMove > Constructor.BASE_MOVE_MAX)
                             return true;
@@ -122,26 +117,20 @@ namespace ClassLibrary1.Map
                     else
                         break;
                 }
-                //this.pathToCore = path;
             }
 
-            //public void Turn(int turn)
-            //{
-            //    _spawn.Turn(turn);
-            //}
             public int SpawnChance(int turn, double? enemyMove)
             {
                 if (enemyMove.HasValue && enemyMove.Value < minSpawnMove)
                     return 0;
-                if (!explored || hives.Any(h => !h.Dead))// && spawned)
+                if (!explored || hives.Any(h => !h.Dead))
                     return Game.Rand.Round(_spawn.Chance * Math.Sqrt(2.1 + hives.Count));
                 return 0;
             }
-            public Tile SpawnTile(Map map, bool isEnemy, double deviationMult = 1)
+            public Tile SpawnTile(Map map, ResourceType? type, double deviationMult = 1)
             {
-                //this.spawned = true;
-
-                bool inPath = !isEnemy && Game.Rand.Bool(.26);
+                bool isEnemy = !type.HasValue;
+                bool inPath = !isEnemy && Game.Rand.Bool(type == ResourceType.Foundation ? .65 : .26);
                 PointD spawnCenter = inPath ? PathCenter : Center;
                 double deviation = deviationMult * (inPath ? PathLength / 6.5 : Consts.CaveSize);
                 Tile tile = map.SpawnTile(spawnCenter, deviation, isEnemy);

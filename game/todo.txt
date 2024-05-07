@@ -95,6 +95,26 @@ FEATURES
 log debug to file
 ensure everything within .5 (vision blocking) of path is terrain
 turret range needs early buff again???
+aliens move towards mechs with range on them
+blockRadius needs to be Math.Sqrt(2) / 2 ??
+chance to not place resource on destroyed extractor if value is really low
+turret att/range tradeoff should be 1-1?
+	and use StatValue
+	dbl check def elsewhere for StatValue
+	fix _rangeMult calc (fix min, avoid too extreme)
+aliens really struggle to retreat and heal
+	make more likely to jump to any available heal tile?
+	new state not working? aliens parked outside visible still dont sit and heal?
+mech cost capping should decrease move speed (and attack range?)
+slightly increase move, but only at low vals?
+mech costs
+	add const val to att/def so extreme mechs arent so good??
+SpawnChance
+	Turn - sign use rate 
+	Spawned - reduces too much?
+upg must leave 1 HP
+IMovable.Move tile != null check
+min blueprint hp = 2?
 
 pathfind on background thread
 mouse move refresh slows scrolling too much

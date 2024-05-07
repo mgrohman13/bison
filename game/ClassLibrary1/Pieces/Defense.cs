@@ -38,6 +38,8 @@ namespace ClassLibrary1.Pieces
             this._values = values;
             //if (Type != DefenseType.Shield) //move to CombatTypes
             this._defenseCur = Game.Rand.Round(Consts.StatValueInverse(Consts.StatValue(DefenseMax) * defPct));
+            if (DefenseCur < 1)
+                this._defenseCur = 1;
         }
 
         internal void Damage(Attack attack)
@@ -169,7 +171,7 @@ namespace ClassLibrary1.Pieces
         {
             double energyUpk = 0, massUpk = 0;
             return IncDefense(false, ref energyUpk, ref massUpk) - DefenseCur;
-        } 
+        }
         private double IncDefense(bool doEndTurn, ref double energyUpk, ref double massUpk)
         {
             return Consts.IncDefense(doEndTurn, Type, Piece.HasBehavior<IAttacker>(), DefenseCur, DefenseMax, GetRepair(), ref energyUpk, ref massUpk);

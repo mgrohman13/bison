@@ -58,23 +58,25 @@ namespace ClassLibrary1.Pieces
             if (CanMoveTo(to) && to.Visible && Piece is PlayerPiece piece)
             {
                 const double lineDist = .5;
-                foreach (var p in Game.Rand.Iterate(Math.Min(from.X, to.X), Math.Max(from.X, to.X), Math.Min(from.Y, to.Y), Math.Max(from.Y, to.Y))
-                    .OrderBy(from.GetDistance))
+                bool isX = from.X == to.X;
+                double a = isX ? 0 : (to.Y - from.Y) / (double)(to.X - from.X);
+                double c = to.Y - a * to.X;
+                double b = -1;
+
+                IOrderedEnumerable<MattUtil.Point> ps =
+                    Game.Rand.Iterate(Math.Min(from.X, to.X), Math.Max(from.X, to.X), Math.Min(from.Y, to.Y), Math.Max(from.Y, to.Y))
+                    .Where(p => isX || Map.Map.PointLineDistanceAbs(a, b, c, p) < lineDist)
+                    .OrderBy(from.GetDistance);
+
+                bool stop = false;
+                foreach (var p in ps)
                 {
-                    bool isX = from.X == to.X;
-                    Tile tile = to.Map.GetTile(p);
-                    //remove check, store last, on UpdateVision==true move to last if valid, else find next valid
-                    if (tile != null && tile.Piece == null)
+                    Tile tile = from.Map.GetTile(p);
+                    stop |= from.Map.UpdateVision(tile, piece.Vision);
+                    if (stop && tile != null && tile.Piece == null)
                     {
-                        double a = isX ? 0 : (to.Y - from.Y) / (to.X - from.X);
-                        double c = to.Y - a * to.X;
-                        double b = -1;
-                        if (isX || Map.Map.PointLineDistanceAbs(a, b, c, p) < lineDist)
-                            if (to.Map.UpdateVision(tile, piece.Vision))
-                            {
-                                to = tile;
-                                break;
-                            }
+                        to = tile;
+                        break;
                     }
                 }
 

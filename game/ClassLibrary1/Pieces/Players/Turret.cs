@@ -142,6 +142,7 @@ namespace ClassLibrary1.Pieces.Players
                 for (int a = 0; a < MAX_ATTACKS; a++)
                 {
                     IAttacker.Values attack = attacks[a];
+
                     double baseAtt = attack.Attack;
                     double baseReload = attack.Reload;
 

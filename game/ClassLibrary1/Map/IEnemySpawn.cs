@@ -7,7 +7,7 @@
             public SpawnChance Spawner { get; }
             //public void Turn(int turn);
             int SpawnChance(int turn, double? enemyMove);
-            Tile SpawnTile(Map map, bool isEnemy, double deviationMult);
+            Tile SpawnTile(Map map, ResourceType? type, double deviationMult);
         }
     }
 }

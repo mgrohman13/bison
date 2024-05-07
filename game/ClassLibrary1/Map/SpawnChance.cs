@@ -82,7 +82,7 @@ namespace ClassLibrary1.Map
                     add = GenValue() * mult;
                     mult++;
                 }
-                int M(double v) => Game.Rand.Round(v * mult + add);
+                int M(double v) => Game.Rand.Round(1 + v * mult + add);
                 this.chance = M(chance);
                 if (Game.Rand.Bool())
                     this.target = M(target);

@@ -100,7 +100,7 @@ namespace ClassLibrary1.Pieces.Enemies
         {
             Tile tile = this.Tile;
             base.Die();
-            tile.Map.GenResources(new[] { tile }, true);
+            tile.Map.GenResources(_ => tile, .065);
             Game.CollectHive(Cost);
         }
 

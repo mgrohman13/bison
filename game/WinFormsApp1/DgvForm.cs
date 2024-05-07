@@ -232,9 +232,9 @@ namespace WinFormsApp1
             public IBuilder Builder { get; }
 
             public string Name { get; }
-            public double Energy { get; }
-            public double Mass { get; }
-            public double Ratio => Energy / Mass;
+            public double Energy { get; } // int?
+            public double Mass { get; } // int?
+            public double Ratio => Energy / (double)Mass;
             public bool Notify
             {
                 get
