@@ -93,7 +93,7 @@ FEATURES
 	power grid
 
 log debug to file
-ensure everything within .5 (vision blocking) of path is terrain
+ensure everything within .5 (vision blocking) of core paths is terrain
 turret range needs early buff again???
 aliens move towards mechs with range on them
 blockRadius needs to be Math.Sqrt(2) / 2 ??

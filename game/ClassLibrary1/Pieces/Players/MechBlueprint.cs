@@ -635,7 +635,7 @@ namespace ClassLibrary1.Pieces.Players
                 rangeAvg = range;
                 if (ranged)
                 {
-                    rangeAvg = 7.8;
+                    rangeAvg += 7.8;
                     double dev = .39, oe = .104;
                     ModValues(researchType == Type.MechRange, 2.1, ref rangeAvg, ref dev, ref oe);
                     rangeAvg *= research.GetMult(Type.MechRange, Blueprint_Range_Pow);
@@ -667,20 +667,24 @@ namespace ClassLibrary1.Pieces.Players
             double avg = 6.5, dev = .13, oe = .21;
 
             double researchMult = research.GetMult(Type.MechMove, 1);
-            const double lowPenalty = 2.6;
+            const double lowPenalty = 1.69;
             if (researchMult < lowPenalty)
                 avg *= researchMult / lowPenalty;
 
             ModValues(research.GetType() == Type.MechMove, 1.69, ref avg, ref dev, ref oe);
 
-            avg = 1 + avg * research.GetMult(Type.MechMove, Blueprint_Move_Pow);
+            avg *= research.GetMult(Type.MechMove, Blueprint_Move_Pow);
             oe /= Math.Sqrt(avg);
-            double move = Game.Rand.GaussianOE(avg, dev, oe, 1);
-            int max = Game.Rand.GaussianOEInt(1 + move * 2, dev * 2.6, oe * 1.3, (int)move + 1);
-            int limit = Game.Rand.GaussianOEInt(1 + move + max, dev * 2.6, oe * 2.6, max + 1);
+            double cap = Game.Rand.Range(Game.Rand.Range(1, Math.Sqrt(2) + 1), Math.Sqrt(2) * 2 + Game.Rand.DoubleHalf());
+            if (avg < cap)
+                ;
+            double move = Game.Rand.GaussianOE(1 + avg, dev, oe, cap);
+            int max = Game.Rand.GaussianOEInt(1 + move * 2, dev * 2.6, oe * 1.3, (int)Math.Ceiling(move) + 1);
+            int limit = Game.Rand.GaussianOEInt(1 + move + max, dev * 2.6, oe * 2.6, max + (int)move);
 
             return new(move, max, limit);
         }
+
         private static void ModValues(bool match, double mult, ref double avg, ref double dev, ref double oe)
         {
             if (match)

@@ -17,20 +17,26 @@ namespace ClassLibrary1.Pieces.Players
         public const int MAX_DEFENSES = 3;
 
         private readonly double _shieldMult, _armorMult, _rounding;
-        private readonly double[] _rangeMult = new double[MAX_ATTACKS];
+        private readonly double[] _attMult = new double[MAX_ATTACKS];
 
         private Turret(Tile tile, Values values)
             : base(tile, values.Vision)
         {
-            this._shieldMult = Game.Rand.GaussianCapped(1, .169, .21);
-            this._armorMult = Game.Rand.GaussianCapped(1.0 / _shieldMult, .169, .21);
+            this._shieldMult = Game.Rand.GaussianCapped(1, .13, .5);
+            this._armorMult = Game.Rand.GaussianCapped(1 / _shieldMult, .13, .5 / _shieldMult);
             this._rounding = Game.Rand.NextDouble();
+            double attMults = 1;
             for (int a = 0; a < MAX_ATTACKS; a++)
-                this._rangeMult[a] = Game.Rand.GaussianOE(values.AttackRange[a], .21, .26, 1) / values.AttackRange[a];
+            {
+                double devMult = (MAX_ATTACKS - a) / (double)MAX_ATTACKS;
+                double mult = 1 / Game.Rand.GaussianCapped(attMults, .13 * devMult, attMults * (1 - .5 * devMult));
+                this._attMult[a] = mult;
+                attMults *= mult;
+            }
 
             SetBehavior(
                 new Killable(this, values.GetKillable(Game.Player.Research, _shieldMult, _armorMult, _rounding), values.Resilience),
-                new Attacker(this, values.GetAttacks(Game.Player.Research, _rangeMult, _rounding)));
+                new Attacker(this, values.GetAttacks(Game.Player.Research, _attMult, _rounding)));
         }
         internal static Turret NewTurret(Foundation foundation)
         {
@@ -54,7 +60,7 @@ namespace ClassLibrary1.Pieces.Players
 
             this.Vision = values.Vision;
             GetBehavior<IKillable>().Upgrade(values.GetKillable(Game.Player.Research, _shieldMult, _armorMult, _rounding), values.Resilience);
-            GetBehavior<IAttacker>().Upgrade(values.GetAttacks(Game.Player.Research, _rangeMult, _rounding));
+            GetBehavior<IAttacker>().Upgrade(values.GetAttacks(Game.Player.Research, _attMult, _rounding));
         }
         private static Values GetValues(Game game)
         {
@@ -118,6 +124,7 @@ namespace ClassLibrary1.Pieces.Players
             public double Rounding => rounding;
             public IKillable.Values[] GetKillable(Research research, double shieldMult, double armorMult, double rounding)
             {
+                // use rounded armor/shield values
                 double hitsMult = Math.Sqrt(1.0 / shieldMult / armorMult);
 
                 List<IKillable.Values> results = new();
@@ -136,40 +143,34 @@ namespace ClassLibrary1.Pieces.Players
 
                 return results.ToArray();
             }
-            public IAttacker.Values[] GetAttacks(Research research, double[] rangeMult, double rounding)
+            public IAttacker.Values[] GetAttacks(Research research, double[] _attMult, double rounding)
             {
                 List<IAttacker.Values> results = new();
                 for (int a = 0; a < MAX_ATTACKS; a++)
                 {
                     IAttacker.Values attack = attacks[a];
+                    AttackType type = attack.Type;
 
-                    double baseAtt = attack.Attack;
-                    double baseReload = attack.Reload;
-
-                    int att = MTRandom.Round(baseAtt / rangeMult[a], rounding);
+                    int baseAtt = attack.Attack;
+                    int att = MTRandom.Round(baseAtt * _attMult[a], rounding);
                     if (att < 1)
                         att = 1;
+                    double mult = Math.Sqrt(Consts.StatValue(baseAtt) / Consts.StatValue(att));
 
-                    double range = int.MaxValue;
-                    int reload;
-                    do
-                    {
-                        if (range < Attack.MIN_RANGED && att > 1)
-                            --att;
-                        range = attack.Range * Math.Pow(baseAtt / att, 1.3);
+                    double baseReload = (1 + CombatTypes.GetReloadBase(type, baseAtt)) / 2.0;
+                    int reload = MTRandom.Round(baseReload * mult, rounding);
+                    if (reload < 1)
+                        reload = 1;
+                    else if (reload > att)
+                        reload = att;
+                    mult *= Math.Sqrt(baseReload / reload);
 
-                        reload = MTRandom.Round(baseReload * att / baseAtt, 1 - rounding);
-                        if (reload < 1)
-                            reload = 1;
-                        else if (reload > att)
-                            reload = att;
-                        range *= Math.Sqrt(baseReload / reload);
+                    double range = attack.Range * mult;
 
-                    } while (range < Attack.MIN_RANGED && att > 1);
                     if (range < Attack.MIN_RANGED)
-                        throw new Exception();
+                        range = Attack.MIN_RANGED;
 
-                    results.Add(new(attack.Type, att, range, reload));
+                    results.Add(new(type, att, range, reload));
                 }
 
                 if (!research.HasType(Research.Type.TurretExplosives))
@@ -238,7 +239,7 @@ namespace ClassLibrary1.Pieces.Players
                         _ => throw new Exception(),
                     };
 
-                    double range = ResearchUpgValues.Calc(upgType, researchMult); 
+                    double range = ResearchUpgValues.Calc(upgType, researchMult);
                     IAttacker.Values attack = attacks[a];
                     attacks[a] = new(attack.Type, attack.Attack, range, attack.Reload);
                 }

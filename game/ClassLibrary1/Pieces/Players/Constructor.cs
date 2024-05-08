@@ -11,7 +11,7 @@ namespace ClassLibrary1.Pieces.Players
     [Serializable]
     public class Constructor : PlayerPiece, IKillable.IRepairable
     {
-        public const double BASE_VISION = 7.5, MOVE_RAMP = 1.3, BASE_MOVE_INC = 3.5, BASE_MOVE_MAX = 8 * MOVE_RAMP;
+        public const double BASE_VISION = 5.5, MOVE_RAMP = 1.3, BASE_MOVE_INC = 4.5, BASE_MOVE_MAX = 10 * MOVE_RAMP;
 
         private bool _canUpgrade;
         private readonly bool _defenseType;
@@ -219,7 +219,7 @@ namespace ClassLibrary1.Pieces.Players
                 double moveMult = ResearchUpgValues.Calc(UpgType.ConstructorMove, researchMult) / BASE_MOVE_INC;
 
                 double max = BASE_MOVE_MAX / MOVE_RAMP * moveMult;
-                double limit = 15 * moveMult;
+                double limit = 20 * moveMult;
                 int moveMax = Game.Rand.Round(max);
                 int moveLimit = Game.Rand.Round(limit);
                 double moveInc = BASE_MOVE_INC * moveMult * Math.Pow((max * 2 + limit) / (moveMax * 2 + moveLimit), 1 / 3.9);
@@ -228,7 +228,7 @@ namespace ClassLibrary1.Pieces.Players
             private void UpgradeConstructorRepair(double researchMult)
             {
                 double repairMult = ResearchUpgValues.Calc(UpgType.ConstructorRepair, researchMult);
-                double repairRange = 4.0 * Math.Sqrt(repairMult);
+                double repairRange = 5.0 * Math.Sqrt(repairMult);
                 repairRate = 1 * repairMult;
                 this.repair = new(new(repairRange), 1);
             }
