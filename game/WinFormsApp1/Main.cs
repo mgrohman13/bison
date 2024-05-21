@@ -1,6 +1,11 @@
-﻿using System;
+﻿using ClassLibrary1;
+using System;
+using System.Diagnostics;
 using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
+using LogEntry = ClassLibrary1.Log.LogEntry;
+using Tile = ClassLibrary1.Map.Map.Tile;
 
 namespace WinFormsApp1
 {
@@ -91,6 +96,38 @@ namespace WinFormsApp1
         private void Main_FormClosing(object sender, FormClosingEventArgs e)
         {
             Program.SaveGame();
+        }
+
+        private LogEntry lastLog = null;
+        internal void UpdateProgress(Tile center, double progress)
+        {
+            mapMain.SelTile = null;
+            Debug.WriteLine($"UpdateProgress: {progress}");
+
+            bool visible = progress >= 0 && progress <= 1;
+            if (visible)
+            {
+                progressBar1.Value = Game.Rand.Round(progress * progressBar1.Maximum);
+
+                var map = mapMain.Bounds;
+                double w = map.Width;// / 2.0;
+                double h = progressBar1.Height;
+                double x = map.X;// + (map.Width - w) / 2.0;
+                double y = map.Y + (map.Height - h);// / 2.0;
+                progressBar1.Bounds = new((int)x, (int)y, (int)w, (int)h);
+
+                if (center != null)
+                    mapMain.Center(center);
+                this.Refresh();
+
+                var curLog = Program.Game.Log.Data(null).FirstOrDefault();
+                if (lastLog != curLog)
+                {
+                    lastLog = curLog;
+                    Info.RefreshLog();
+                }
+            }
+            progressBar1.Visible = visible;
         }
     }
 }

@@ -137,7 +137,11 @@ namespace WinFormsApp1
 
                 SaveGame();
                 CopyAutoSave("e");
-                Type? researched = Game.EndTurn();
+
+                Form.UpdateProgress(null, 0);
+                Type? researched = Game.EndTurn(Form.UpdateProgress);
+                Form.UpdateProgress(null, 2);
+
                 if (Game.GameOver)
                 {
                     MessageBox.Show((Game.Win ? "VICTORY!!!  :)" : "DEFEAT!  :(") + $"{Environment.NewLine}Hives Destroyed: {Game.Victory}/{Game.POINTS_TO_WIN}{Environment.NewLine}Game over...  {Game.Turn} turns.");

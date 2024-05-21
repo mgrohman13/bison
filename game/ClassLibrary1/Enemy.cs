@@ -29,11 +29,11 @@ namespace ClassLibrary1
             this._nextAlien = MechBlueprint.Alien(_research);
         }
 
-        internal void PlayTurn()
+        internal void PlayTurn(Action<Tile, double> UpdateProgress)
         {
             double difficulty = GetDifficulty(Game);
 
-            PlayTurn(Math.Pow(difficulty, Consts.DifficultyAIPow));
+            PlayTurn(Math.Pow(difficulty, Consts.DifficultyAIPow), UpdateProgress);
 
             base.EndTurn(out double energyUpk, out double massUpk);
             double energy = GetEneryIncome(Game);
@@ -120,8 +120,13 @@ namespace ClassLibrary1
             return true;
         }
 
-        private void PlayTurn(double difficulty)
+        private void PlayTurn(double difficulty, Action<Tile, double> UpdateProgress)
         {
+            double offset = 0;
+            offset = Pieces.Average(Time);
+            double totalTime = offset + Pieces.Sum(Time);
+            double progress = offset / totalTime;
+
             Dictionary<Tile, double> playerAttacks = GetPlayerAttacks();
             Dictionary<IKillable, Dictionary<IKillable, int>> allTargets = GetAllTargets();
             double avgHp = 1, avgWeight = 1;
@@ -130,9 +135,18 @@ namespace ClassLibrary1
                 avgHp = allTargets.Keys.Average(k => k.AllDefenses.Sum(d => Consts.StatValue(d.DefenseCur)));
                 avgWeight = allTargets.Keys.Average(k => GetKillWeight(k, avgHp, null, null));
             }
+
+            UpdateProgress(null, progress);
             HashSet<EnemyPiece> moved = new();
             foreach (var piece in Game.Rand.Iterate(Pieces.Cast<EnemyPiece>()).OrderBy(p => p is Hive ? 1 : 2))
+            {
+                progress += Time(piece) / totalTime;
+
                 allTargets = PlayTurn(piece, Math.Pow(difficulty, Consts.DifficultyAIPow), moved, playerAttacks, allTargets, avgHp, avgWeight);
+
+                UpdateProgress(piece.Tile.Visible ? piece.Tile : null, Math.Min(progress, 1));
+            }
+            double Time(Piece enemy) => offset + (enemy.HasBehavior(out IMovable movable) ? movable.MoveCur * movable.MoveCur : 0);
         }
         private Dictionary<Tile, double> GetPlayerAttacks()
         {

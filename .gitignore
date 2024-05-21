@@ -6,3 +6,6 @@ DesignTimeBuild
 *.vsidx
 read.lock
 /SpaceRunner/pics/pics.dat
+.vs
+*.suo
+*.user

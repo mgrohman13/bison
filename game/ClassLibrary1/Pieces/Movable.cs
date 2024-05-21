@@ -71,8 +71,8 @@ namespace ClassLibrary1.Pieces
                 bool stop = false;
                 foreach (var p in ps)
                 {
+                    stop |= from.Map.UpdateVision(p, piece.Vision);
                     Tile tile = from.Map.GetTile(p);
-                    stop |= from.Map.UpdateVision(tile, piece.Vision);
                     if (stop && tile != null && tile.Piece == null)
                     {
                         to = tile;

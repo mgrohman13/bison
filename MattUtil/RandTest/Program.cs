@@ -527,16 +527,16 @@ namespace randTest
 
             //do
             //{
-            //    Console.WriteLine();
-            //    FactRand(new float[] { 1 / 3f, 3f, 1f }, 3f / 12f, 4f / 12f);
+                Console.WriteLine();
+                FactRand(new float[] { 1 / 3f, 3f, 1f }, 1f / 3f, 1f / 2f);
             //} while (Console.ReadKey(true).KeyChar != 'q');
 
 
             //lotr();
 
 
-            newgame();
-            newgame2();
+            //newgame();
+            //newgame2();
 
 
             Console.ReadKey(true);

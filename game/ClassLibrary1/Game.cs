@@ -5,6 +5,7 @@ using MattUtil;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using static ClassLibrary1.Map.Map;
 
 namespace ClassLibrary1
 {
@@ -97,7 +98,7 @@ namespace ClassLibrary1
             SaveGame();
         }
 
-        public Research.Type? EndTurn()
+        public Research.Type? EndTurn(Action<Tile, double> UpdateProgress)
         {
             if (this.GameOver)
                 return null;
@@ -105,7 +106,7 @@ namespace ClassLibrary1
             Research.Type? researched = Player.EndTurn();
             _turn++;
             Map.PlayTurn(Turn);
-            Enemy.PlayTurn();
+            Enemy.PlayTurn(UpdateProgress);
             Player.StartTurn();
 
             SaveGame();

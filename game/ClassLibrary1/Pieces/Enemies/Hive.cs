@@ -85,7 +85,7 @@ namespace ClassLibrary1.Pieces.Enemies
 
         private void Attacker_AttackEvent(object sender, Attacker.AttackEventArgs e)
         {
-            Tile.Map.UpdateVision(this.Tile, Math.Sqrt(SumRange + Attack.MIN_RANGED));
+            Tile.Map.UpdateVision(Tile.Location, Math.Sqrt(SumRange + Attack.MIN_RANGED));
         }
         private void Killable_DamagedEvent(object sender, Killable.DamagedEventArgs e)
         {

@@ -361,26 +361,26 @@ namespace ClassLibrary1.Map
         {
             _pieces.Remove(piece.Tile.Location);
         }
-        internal bool UpdateVision(PlayerPiece playerPiece) => UpdateVision(playerPiece.Tile, playerPiece.Vision);
-        internal bool UpdateVision(Tile tile, double range)
+        internal bool UpdateVision(PlayerPiece playerPiece) => UpdateVision(playerPiece.Tile.Location, playerPiece.Vision);
+        internal bool UpdateVision(Point point, double range)
         {
             LogEvalTime();
 
             bool found = false;
-            foreach (Point p in Tile.GetPointsInRangeBlocked(this, tile.Location, range))
+            foreach (Point p in Tile.GetPointsInRangeBlocked(this, point, range))
                 if (_explored.Add(p))
                 {
                     Tile explored = GetTile(p);
                     found |= explored != null && explored.Piece != null && explored.Piece is not Terrain;
                 }
 
-            Explore(tile, range);
+            Explore(point, range);
 
             int vision = (int)range + 1;
-            int x = Math.Min(_gameBounds.X, tile.X - vision);
-            int y = Math.Min(_gameBounds.Y, tile.Y - vision);
-            int right = Math.Max(_gameBounds.Right, tile.X + vision + 1);
-            int bottom = Math.Max(_gameBounds.Bottom, tile.Y + vision + 1);
+            int x = Math.Min(_gameBounds.X, point.X - vision);
+            int y = Math.Min(_gameBounds.Y, point.Y - vision);
+            int right = Math.Max(_gameBounds.Right, point.X + vision + 1);
+            int bottom = Math.Max(_gameBounds.Bottom, point.Y + vision + 1);
             _gameBounds = new Rectangle(x, y, right - x, bottom - y);
 
             LogEvalTime();
@@ -426,15 +426,15 @@ namespace ClassLibrary1.Map
             return invalid;
         }
 
-        internal void Explore(Tile tile, double vision)
+        internal void Explore(Point point, double vision)
         {
-            if (tile.X != 0 || tile.Y != 0)
+            if (point.X != 0 || point.Y != 0)
             {
-                double angle = GetAngle(tile.X, tile.Y);
+                double angle = GetAngle(point.X, point.Y);
                 Path explore = Game.Rand.Iterate(_paths).OrderBy(path => GetAngleDiff(path.Angle, angle)).First();
-                explore.Explore(tile, vision);
+                explore.Explore(this, point, vision);
                 foreach (Cave c in _caves)
-                    c.Explore(tile, vision);
+                    c.Explore(this, point, vision);
             }
         }
         internal void GenResources(Func<ResourceType, Tile> GetTile, double foundationMult = 1, int numResources = 1)

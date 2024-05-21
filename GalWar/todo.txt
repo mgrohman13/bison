@@ -147,3 +147,34 @@ directly upgrade existing ships?
 special ship abilities
 	stop combat?
 	level up during combat?
+
+
+rethink:
+
+planets have diff g/r/p ratios, change randomly over time 
+PD - built automatically with pct, option to build intentionally
+soldiers?
+
+build PD/repair in discrete chunks
+	specific schematics
+	repair drone?
+
+gold income - instead of estimating, force consistency at turn end, and push offset to following turn, where previous offset is guaranteed
+
+rethink prod system entirely again?
+	store with certain research pct?
+	decreases as research goes up? higher in general?
+	build from pool, no stored prod?
+
+info hiding
+	shroud!
+	ship repair - ?
+	research?
+		income ratios change over time, not on a time when you check/uncheck?
+		just literally show research?
+			could snowball....
+	gold repair - ?
+	maybe dont prioritize info hiding at all costs...
+
+SIMPLIFY
+

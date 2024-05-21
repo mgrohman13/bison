@@ -458,7 +458,7 @@ namespace WinFormsApp1
             SelectLog(rtbLog.SelectionStart);
         }
 
-        private void RefreshLog()
+        public void RefreshLog()
         {
             //Debug.WriteLine("RefreshLog");
             logPreventScroll = true;

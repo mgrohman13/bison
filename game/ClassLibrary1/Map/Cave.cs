@@ -53,10 +53,10 @@ namespace ClassLibrary1.Map
                     throw new Exception();
             }
 
-            public void Explore(Tile tile, double vision)
+            public void Explore(Map map, Point point, double vision)
             {
                 vision++;
-                explored |= GetDistSqr(new(tile.X, tile.Y), Center) < vision * vision;
+                explored |= GetDistSqr(new(point.X, point.Y), Center) < vision * vision;
             }
 
             public double GetMult(int x, int y)

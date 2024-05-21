@@ -42,6 +42,7 @@ namespace WinFormsApp1
             lblResearchInc = new System.Windows.Forms.Label();
             lblResearching = new System.Windows.Forms.Label();
             infoMain = new Info();
+            progressBar1 = new System.Windows.Forms.ProgressBar();
             SuspendLayout();
             // 
             // mapMain
@@ -54,7 +55,6 @@ namespace WinFormsApp1
             mapMain.SelTile = null;
             mapMain.Size = new System.Drawing.Size(420, 541);
             mapMain.TabIndex = 2;
-            //mapMain.ViewAttacks = false;
             // 
             // mapMini
             // 
@@ -66,7 +66,6 @@ namespace WinFormsApp1
             mapMini.SelTile = null;
             mapMini.Size = new System.Drawing.Size(200, 200);
             mapMini.TabIndex = 3;
-            //mapMini.ViewAttacks = false;
             mapMini.Visible = false;
             // 
             // label1
@@ -189,11 +188,24 @@ namespace WinFormsApp1
             infoMain.Size = new System.Drawing.Size(350, 520);
             infoMain.TabIndex = 14;
             // 
+            // progressBar1
+            // 
+            progressBar1.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            progressBar1.BackColor = System.Drawing.SystemColors.Control;
+            progressBar1.Location = new System.Drawing.Point(458, 243);
+            progressBar1.Maximum = 65000;
+            progressBar1.Name = "progressBar1";
+            progressBar1.Size = new System.Drawing.Size(210, 99);
+            progressBar1.Step = 1;
+            progressBar1.TabIndex = 15;
+            progressBar1.Visible = false;
+            // 
             // Main
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             ClientSize = new System.Drawing.Size(784, 561);
+            Controls.Add(progressBar1);
             Controls.Add(infoMain);
             Controls.Add(lblResearching);
             Controls.Add(lblResearchInc);
@@ -235,6 +247,7 @@ namespace WinFormsApp1
         private System.Windows.Forms.Label lblMassInc;
         private System.Windows.Forms.Label lblResearchInc;
         private System.Windows.Forms.Label lblResearching;
+        private System.Windows.Forms.ProgressBar progressBar1;
     }
 }
 

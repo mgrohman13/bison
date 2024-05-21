@@ -57,9 +57,9 @@ namespace ClassLibrary1.Map
                 NextResourceDist += Game.Rand.DoubleFull(inc) + Game.Rand.OE(oe);
             }
 
-            public void Explore(Tile tile, double vision)
+            public void Explore(Map map, Point point, double vision)
             {
-                Explore(tile.Map, GetExploredDist(tile, vision));
+                Explore(map, GetExploredDist(point, vision));
             }
             public void Explore(Map map, double dist)
             {
@@ -78,9 +78,9 @@ namespace ClassLibrary1.Map
                     CreateResources(map);
                 }
             }
-            private double GetExploredDist(Tile tile, double vision)
+            private double GetExploredDist(Point point, double vision)
             {
-                PointD closest = GetClosestPoint(tile.X, tile.Y);
+                PointD closest = GetClosestPoint(point.X, point.Y);
                 return Math.Sqrt(closest.X * closest.X + closest.Y * closest.Y) + vision;
 
             }

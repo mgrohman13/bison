@@ -788,11 +788,14 @@ namespace GalWar
             int move = anomShip.LoseMove();
 
             if (Game.Random.Bool())
-                any |= PushShip(handler, anomShip, move);
-            if (Game.Random.Bool())
                 any |= CreateWormhole(handler, anomShip, move);
             if (Game.Random.Bool())
-                any |= PullIn(handler, anomShip, move);
+            {
+                if (Game.Random.Bool())
+                    any |= PushShip(handler, anomShip, move);
+                if (Game.Random.Bool())
+                    any |= PullIn(handler, anomShip, move);
+            }
             if (Game.Random.Bool())
                 any |= CreateAnomalies(handler, anomShip, move);
 
@@ -911,7 +914,7 @@ namespace GalWar
             Tile tile = this.Tile;
             for (int a = 0; a < create; ++a)
             {
-                tile = MoveTile(tile, 5.2, anomShip, move);
+                tile = MoveTile(tile, (anomShip.Tile.Game.MapDeviation / 1.69 + 6.5) / 2.0, anomShip, move);
                 if (Tile.Game.CreateAnomaly(tile) != null)
                     retVal = true;
             }

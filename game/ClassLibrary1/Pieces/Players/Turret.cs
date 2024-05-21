@@ -268,7 +268,7 @@ namespace ClassLibrary1.Pieces.Players
                     double range = attacks[a].Range;
                     int reload = attacks[a].Reload;
                     attacks[a] = new(type, attack, range);
-                    reload = Math.Max(reload, Game.Rand.Round(1 + (attacks[a].Reload - 1) / 2.0));
+                    reload = Math.Max(reload, Game.Rand.Round(1 + (attacks[a].Reload - 1) / 2.0)); // use in GetAttacks
                     attacks[a] = new(type, attack, range, reload);
                 }
             }
