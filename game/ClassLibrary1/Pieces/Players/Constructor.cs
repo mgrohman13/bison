@@ -65,7 +65,7 @@ namespace ClassLibrary1.Pieces.Players
         private bool Upgrade()
         {
             //check blocks
-            if (CanUpgrade && Side.PiecesOfType<IBuilder>().Any(b => b.Piece is not Constructor && Tile.GetDistance(b.Piece.Tile) <= b.Range))
+            if (CanUpgrade && Side.PiecesOfType<IBuilder.IBuildConstructor>().Any(b => b.Piece is not Constructor && Tile.GetDistance(b.Piece.Tile) <= b.Range))
             {
                 Unlock();
                 Values values = GetValues(Game);
