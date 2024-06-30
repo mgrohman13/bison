@@ -81,7 +81,7 @@ FEATURES
 	fog
 	more units 
 		enemy defensive structures
-		mobile factory?
+		mobile factory?000
 		teleporter?
 		more interesting attacks (some not blocked by calc with lines)
 	more abilities
@@ -92,8 +92,19 @@ FEATURES
 	experience
 	power grid
 
+mouse move causes windows to think game is hanging during enemy move
+research mostly finished too early
+	increase non-upgrade (first level) research costs? esp later ones?
+	make available choices less similar cost?
+core def/shld balance
+constructor defense show only 1 upgrade
+enforce 2 def min 
+dont show exact move to tile?
+	move from/to unexplored tile could reveal tile?
+	aline smove into still show range?
 alien more flexible on pathing heat map
 move left if mech upg available
+	can be attacked?
 constructor range min
 enemies overvalue attacking repair?
 mech upg shouldnt clear log when name changes 
