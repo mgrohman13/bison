@@ -24,6 +24,8 @@ namespace ClassLibrary1.Pieces.Players
         public readonly IReadOnlyList<IAttacker.Values> Attacker;
         public readonly IMovable.Values Movable;
 
+        public IKillable.Values Hits => Killable.Single(d => d.Type == CombatTypes.DefenseType.Hits);
+
         private MechBlueprint(int blueprintNum, MechBlueprint upgrade, int research, double vision,
             IEnumerable<IKillable.Values> killable, double resilience, IEnumerable<IAttacker.Values> attacker, IMovable.Values movable)
         {
@@ -172,6 +174,7 @@ namespace ClassLibrary1.Pieces.Players
                     Type.MechExplosives => blueprint.Attacker.Any(a => a.Type == AttackType.Explosive),
                     _ => true,
                 };
+                valid &= blueprint.Hits.Defense > 1;
             }
             while (!valid);
 

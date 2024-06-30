@@ -36,7 +36,7 @@ namespace ClassLibrary1.Pieces.Players
                 mass = upgradeTo.Mass - Blueprint.Mass;
 
                 Defense hits = GetBehavior<IKillable>().Hits;
-                double hp = hits.DefenseCur / (double)hits.DefenseMax * upgradeTo.Killable.Single(d => d.Type == CombatTypes.DefenseType.Hits).Defense;
+                double hp = hits.DefenseCur / (double)hits.DefenseMax * upgradeTo.Hits.Defense;
                 //check blocks
                 if (hp >= 1)
                     return Game.Player.Has(energy, mass) && Side.PiecesOfType<IBuilder.IBuildMech>().Any(b => Tile.GetDistance(b.Piece.Tile) <= b.Range);
