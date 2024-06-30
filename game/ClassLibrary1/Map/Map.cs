@@ -51,8 +51,8 @@ namespace ClassLibrary1.Map
             clearTerrain = new();
 
             const double dev = .21, oe = .13;
-            featureDist = Game.Rand.GaussianOE(Consts.FeatureDist, dev, oe, 65);
-            double max = Game.Rand.GaussianOE(Consts.CaveDistance, dev, oe, 65);
+            featureDist = Game.Rand.GaussianOE(Consts.FeatureDist, dev, oe, Consts.FeatureMin);
+            double max = Game.Rand.GaussianOE(Consts.CaveDistance, dev, oe, Consts.FeatureMin);
             double min = Game.Rand.GaussianOE(13, dev, oe, Game.Rand.Range(2, 4));
             int steps = Game.Rand.GaussianOEInt(5.2, dev, oe, Game.Rand.RangeInt(2, 5));
             double weightScale = Game.Rand.Weighted(.78) + Game.Rand.OE(.13);
