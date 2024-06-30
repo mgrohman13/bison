@@ -8,29 +8,32 @@ namespace ClassLibrary1
 {
     public static class Consts
     {
-        public const double PathMinSeparation = Math.PI * 1.3;
-        public const double PathWidth = 16.9;
-        public const double PathWidthDev = .13;
-        public const double PathWidthMin = 9.1;
-        public const double FeatureDist = 169;
+        public const double Scale = Math.E * .26;
 
-        public const double CaveDistance = 210;
+        public const double PathMinSeparation = Scale * Math.PI * 1.3;
+        public const double PathWidth = Scale * 16.9;
+        public const double PathWidthDev = .13;
+        public const double PathWidthMin = Scale * 9.1;
+        public const double FeatureDist = Scale * 169;
+        public const double FeatureMin = FeatureDist / Math.PI;
+
+        public const double CaveDistance = Scale * 210;
         public const double CaveDistanceDev = .13;
         public const double CaveDistanceOE = .169;
-        public const double CaveMinDist = 91;
-        public const double CaveSize = 13;
-        public const double CavePathSize = 2.6;
+        public const double CaveMinDist = Scale * 91;
+        public const double CaveSize = Scale * 13;
+        public static readonly double CavePathSize = Math.Sqrt(Scale) * 2.6;
         public const double CaveDistPow = 1.13;
 
-        public const double ResourceAvgDist = 16.9;
+        public static readonly double ResourceAvgDist = Math.Sqrt(Scale) * 16.9;
 
         public const double ResearchFactor = 2600;
 
         public const double EnemyStartEnergy = 5200;
         public const double EnemyEnergy = 390;
-        public const double ExploreEnergy = 2600 / ResourceAvgDist;
+        public static readonly double ExploreEnergy = 2600 / ResourceAvgDist;
         public const double EnemyEnergyRampTurns = 65;
-        public const double DifficultyIncTurns = 130;
+        public const double DifficultyIncTurns = 91;
         public const double DifficultyEnergyPow = 1.69;
         public const double DifficultyResearchPow = 1.3;
         public const double DifficultyAIPow = .52;
@@ -39,6 +42,9 @@ namespace ClassLibrary1
         public const double MoveDev = .013;
         public const double MoveLimitPow = 1.3;
 
+        public const double CoreEnergyLow = 260;
+        public const double CoreEnergyMid = 91;
+        public const double CoreEnergyHigh = CoreEnergy - CoreEnergyMid - CoreEnergyLow;
         public const double CoreEnergy = 550;
         public const double CoreMass = 250;
         public const double CoreResearch = 20;

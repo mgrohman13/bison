@@ -68,9 +68,11 @@ namespace ClassLibrary1.Pieces.Players
         internal override void GenerateResources(ref double energyInc, ref double massInc, ref double researchInc)
         {
             base.GenerateResources(ref energyInc, ref massInc, ref researchInc);
-            energyInc += Consts.CoreEnergy * _income;
-            massInc += Consts.CoreMass * _income * _income;
-            researchInc += Consts.CoreResearch * Math.Sqrt(_income);
+            double mult = _income;
+            double lowMult = Math.Sqrt(mult), highMult = mult * mult;
+            energyInc += Consts.CoreEnergyLow * lowMult + Consts.CoreEnergyMid * mult + Consts.CoreEnergyHigh * highMult;
+            massInc += Consts.CoreMass * highMult;
+            researchInc += Consts.CoreResearch * lowMult;
         }
         internal override void EndTurn(ref double energyUpk, ref double massUpk)
         {
