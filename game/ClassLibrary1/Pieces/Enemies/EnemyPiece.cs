@@ -50,13 +50,19 @@ namespace ClassLibrary1.Pieces.Enemies
         {
             base.StartTurn();
 
-            this.lastMove = curMove != null && (curMove.Visible || Tile.Visible) ? curMove : null;
+            static bool Show(Tile tile) => tile.Visible &&
+                Tile.GetAllPointsInRange(tile.Map, tile.Location, Attack.MELEE_RANGE)
+                    .Where(tile.Map.Visible).Skip(3).Any();
+            this.lastMove = curMove != null && (Show(curMove) || Show(Tile)) ? curMove : null;
             this.curMove = Tile;
 
             int remove = lastAttacks.Count - numAtts;
             if (remove > 0)
                 this.lastAttacks.RemoveRange(0, remove);
             this.numAtts = 0;
+
+            if (LastMove != null || LastAttacks.Any())
+                Tile.Map.UpdateVision(new[] { lastMove, curMove });
         }
 
         internal virtual AIState TurnState(double difficulty, Dictionary<Tile, double> playerAttacks, HashSet<Tile> moveTiles, HashSet<IKillable> killables,

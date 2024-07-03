@@ -16,6 +16,7 @@ namespace ClassLibrary1
         public const double PathWidthMin = Scale * 9.1;
         public const double FeatureDist = Scale * 169;
         public const double FeatureMin = FeatureDist / Math.PI;
+        public static readonly double NoiseDistance = CaveDistance / Math.Sqrt(Scale);
 
         public const double CaveDistance = Scale * 210;
         public const double CaveDistanceDev = .13;
@@ -29,13 +30,13 @@ namespace ClassLibrary1
 
         public const double ResearchFactor = 2600;
 
-        public const double EnemyStartEnergy = 5200;
-        public const double EnemyEnergy = 390;
-        public static readonly double ExploreEnergy = 2600 / ResourceAvgDist;
-        public const double EnemyEnergyRampTurns = 65;
+        public const double EnemyStartEnergy = 10400;
+        public const double EnemyEnergy = 520;
+        public const double ExploreEnergy = 3900;
+        public const double EnemyEnergyRampTurns = 169;
         public const double DifficultyIncTurns = 91;
-        public const double DifficultyEnergyPow = 1.69;
-        public const double DifficultyResearchPow = 1.3;
+        public const double DifficultyEnergyPow = 1.3;
+        public const double DifficultyResearchPow = 3.9 / Math.E;
         public const double DifficultyAIPow = .52;
         //public const double DistanceMoveDirPow = .26;
 

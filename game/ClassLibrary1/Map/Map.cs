@@ -52,7 +52,7 @@ namespace ClassLibrary1.Map
 
             const double dev = .21, oe = .13;
             featureDist = Game.Rand.GaussianOE(Consts.FeatureDist, dev, oe, Consts.FeatureMin);
-            double max = Game.Rand.GaussianOE(Consts.CaveDistance, dev, oe, Consts.FeatureMin);
+            double max = Game.Rand.GaussianOE(Consts.NoiseDistance, dev, oe, Consts.FeatureMin);
             double min = Game.Rand.GaussianOE(13, dev, oe, Game.Rand.Range(2, 4));
             int steps = Game.Rand.GaussianOEInt(5.2, dev, oe, Game.Rand.RangeInt(2, 5));
             double weightScale = Game.Rand.Weighted(.78) + Game.Rand.OE(.13);
@@ -362,6 +362,12 @@ namespace ClassLibrary1.Map
             _pieces.Remove(piece.Tile.Location);
         }
         internal bool UpdateVision(PlayerPiece playerPiece) => UpdateVision(playerPiece.Tile.Location, playerPiece.Vision);
+        internal void UpdateVision(IEnumerable<Tile> tiles)
+        {
+            foreach (var t in tiles)
+                if (t != null)
+                    UpdateVision(t.Location, 0);
+        }
         internal bool UpdateVision(Point point, double range)
         {
             LogEvalTime();
@@ -416,7 +422,7 @@ namespace ClassLibrary1.Map
         {
             if (tile == null) return true;
 
-            bool visible = tile.Visible && !Game.TEST_MAP_GEN.HasValue;
+            bool visible = tile.Visible && !tile.Map.Game.GameOver && !Game.TEST_MAP_GEN.HasValue;
             bool hiveRange = isEnemy && tile.Map._pieces.OfType<Hive>().Any(h => tile.GetDistance(h.Tile) <= h.MaxRange);
             Core core = tile.Map.Game.Player.Core;
             bool coreRange = core != null && tile.GetDistance(core.Tile) <= core.GetBehavior<IRepair>().Range;
@@ -522,7 +528,7 @@ namespace ClassLibrary1.Map
             (a * point.X + b * point.Y + c) / Math.Sqrt(a * a + b * b);
 
         private readonly Dictionary<Point, FoundPath> corePaths = new(); // rename
-        public Dictionary<Point, FoundPath> EnemyPaths => Game.TEST_MAP_GEN.HasValue || Game.GameOver ? corePaths : null;
+        public Dictionary<Point, FoundPath> EnemyPaths => Game.TEST_MAP_GEN.HasValue ? corePaths : null; //|| Game.GameOver 
         internal List<Point> PathFindCore(Tile from, double movement, Func<HashSet<Point>, bool> Accept)
         {
             if (corePaths.TryGetValue(from.Location, out FoundPath found) && found.Movement <= movement)
@@ -545,7 +551,7 @@ namespace ClassLibrary1.Map
                         mult *= mult; //ranges from 0.25 - 2.25
                         penalty = Game.Rand.GaussianCapped((Consts.PathWidth + movement) * mult, .065);
                     }
-                    if (penalty > 0 && !Game.TEST_MAP_GEN.HasValue && Visible(p2))
+                    if (penalty > 0 && !Game.GameOver && !Game.TEST_MAP_GEN.HasValue && Visible(p2))
                         penalty *= Consts.PathWidth;
                     return penalty;
                 }, known.Contains, out var blocked);
@@ -555,7 +561,7 @@ namespace ClassLibrary1.Map
                 //clear any blocked terrain we pathed through 
                 clearTerrain.UnionWith(blocked.SelectMany(p =>
                 {
-                    if (!Game.TEST_MAP_GEN.HasValue && Visible(p))
+                    if (!Game.GameOver && !Game.TEST_MAP_GEN.HasValue && Visible(p))
                         Debug.WriteLine($"!!! Cleared terrain on visible tile! {p}");
 
                     List<Point> list = new() { p };
@@ -563,7 +569,7 @@ namespace ClassLibrary1.Map
                     for (int a = 0; a < extra; a++)
                     {
                         Tile tile = Game.Map.GetTile(p.X + Game.Rand.GaussianInt(), p.Y + Game.Rand.GaussianInt());
-                        if (tile != null && tile.Piece is Terrain && (Game.TEST_MAP_GEN.HasValue || !tile.Visible))
+                        if (tile != null && tile.Piece is Terrain && (Game.TEST_MAP_GEN.HasValue || Game.GameOver || !tile.Visible))
                             list.Add(tile.Location);
                     }
                     return list;

@@ -465,8 +465,8 @@ namespace ClassLibrary1
 
             ConstructorCost = 180, // quick
             ConstructorDefense = 190, //key
-            ConstructorMove = 330, // end
-            ConstructorRepair = 350, // end
+            ConstructorMove = 325, // end
+            ConstructorRepair = 520, // end
 
             FactoryAutoRepair = 205,
             FactoryRepair = 240, //key
@@ -479,7 +479,7 @@ namespace ClassLibrary1
             BurnMass = 165,
             BuildingCost = 175,
             ExtractorAutoRepair = 285, //key
-            ExtractorValue = 340, // end   
+            ExtractorValue = 350, // end   
         }
     }
 }

@@ -1111,7 +1111,7 @@ namespace WinFormsApp1
         }
 
         private MouseEventArgs lastMouse;
-        private void Map_MouseMove(object sender, MouseEventArgs e)
+        public void Map_MouseMove(object sender, MouseEventArgs e)
         {
             //if (!timer.Enabled)
             {

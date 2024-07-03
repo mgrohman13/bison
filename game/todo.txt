@@ -92,19 +92,39 @@ FEATURES
 	experience
 	power grid
 
-mouse move causes windows to think game is hanging during enemy move
+improve/fix combat log.....
+	font awesome??
+income/upk breakdown
+turret randomness??
+show extended atts in att range, but with val of 0?
+remove constructor repair entirely???
+	replace with new unit?
+	teleport technology?
+	automatic repair drone??
+		like we were thinking for GW
+remove constructor repair? replace with new unit?
+	has to stand still to repair anything
+		switches between move/repair mode? 
+			or just a special mode for constructors?
+			permanent? cant switch back? costs money to switch?
+	more expensive, slower, tankier
+	bundle in constructor range upg with something else
+	bundle factory repair and new unit repair upg into one (bc  repair upgs very weak?)
+		factory repair and new unit research specific techs have no upg
+dont show exact move to tile?
+	show all possible target tiles??
+	aliens move out of vision still show range?
+	alien ghosts after move away? some kind of reminder
+	ghost when attacked from range?
 research mostly finished too early
 	increase non-upgrade (first level) research costs? esp later ones?
 	make available choices less similar cost?
-core def/shld balance
+entire tree too easily completed rn before game victory
+	add more late-game research
+	increase cost of late game techs
 constructor defense show only 1 upgrade
-enforce 2 def min 
-dont show exact move to tile?
-	move from/to unexplored tile could reveal tile?
-	aline smove into still show range?
 alien more flexible on pathing heat map
-move left if mech upg available
-	can be attacked?
+move left if can be attacked/killed?	
 constructor range min
 enemies overvalue attacking repair?
 mech upg shouldnt clear log when name changes 
@@ -117,44 +137,21 @@ alien move progress bar
 	center on moved aliens
 	change mouse to wait cursor
 	old school hourglass?
-improve/fix combat log.....
 OrderAtt, dgvAttacks inconsistency
 	use same for blueprint, mech, turret, enemies
-show extended atts in att range, but with val of 0?
-increase turret def ramp
-	make more GC?
-	make turret less op later??
-		still good but only cause cheap
 increase enemy unlock time
 	tie to a new turn const
-remove constructor repair entirely???
-	replace with new unit?
-	teleport technology?
-	automatic repair drone??
-		like we were thinking for GW
 way to extend turret range in specific direction?
 	ability move foundations small distances??
 	secondary radar piece that allows attacking near?
 	then can reduce ridiculous ranges?
 show area you will scout on mouseover when can move to target
-constructor vision upg better
 reduce mech costs slightly?
 	exp att/move too much??
 increase explosive cost?
-alien morale inc should use sqr hpPct
-require factoryconstructor to upg constructors again??
 escape close upg dialog
 preprocess general pathfinding??
 	look up algorithms
-remove constructor repair? replace with new unit?
-	has to stand still to repair anything
-		switches between move/repair mode? 
-			or just a special mode for constructors?
-			permanent? cant switch back? costs money to switch?
-	more expensive, slower, tankier
-	bundle in constructor range upg with something else
-	bundle factory repair and new unit repair upg into one (bc  repair upgs very weak?)
-		factory repair and new unit research specific techs have no upg
 make core non-reparable? only repairs through research?
 	tweak how building def affects though
 	remove efficiency entirely / no max def
@@ -162,9 +159,6 @@ make core non-reparable? only repairs through research?
 random aliens path differnt directions if possible/available??
 	esp faster aliens
 	tough to do efficiently
-entire tree too easily completed rn before game victory
-	add more late-game research
-	increase cost of late game techs
 research popup on turn start too?
 	really need to know what upgs you might be getting before moving units
 	maybe time to eliminate weight for stored research entirely...

@@ -289,6 +289,9 @@ namespace WinFormsApp1
                 move |= maxRange > 0 && piece.Tile.GetVisibleTilesInRange(max).Any(t => t.Piece != null && t.Piece.HasBehavior<IKillable>() && t.Piece.IsEnemy);
             }
 
+            if (piece is Mech mech)
+                move |= mech.CanUpgrade(out _, out _, out _);
+
             return move;
         }
 

@@ -128,6 +128,10 @@ namespace WinFormsApp1
                 }
             }
             progressBar1.Visible = visible;
+
+            mapMain.MouseMove -= mapMain.Map_MouseMove;
+            if (!visible)
+                mapMain.MouseMove += mapMain.Map_MouseMove;
         }
     }
 }

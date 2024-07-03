@@ -65,9 +65,9 @@ namespace ClassLibrary1.Map
             {
                 if (dist > ExploredDist)
                 {
-                    double mult = (dist - ExploredDist) * dist / Consts.CaveDistance;
+                    double mult = (dist - ExploredDist) * dist / Consts.CaveDistance / Consts.ResourceAvgDist;
 
-                    _spawn.Mult(1 + mult / Consts.ResourceAvgDist);
+                    _spawn.Mult(1 + mult);
 
                     int energy = Game.Rand.Round(mult * Consts.ExploreEnergy);
                     Debug.WriteLine($"ExploreEnergy: {energy}");
@@ -82,7 +82,6 @@ namespace ClassLibrary1.Map
             {
                 PointD closest = GetClosestPoint(point.X, point.Y);
                 return Math.Sqrt(closest.X * closest.X + closest.Y * closest.Y) + vision;
-
             }
             public PointD GetClosestPoint(double x, double y)
             {

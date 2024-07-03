@@ -74,7 +74,7 @@ namespace ClassLibrary1
             switch (type)
             {
                 case Type.MechAttack:
-                    start = 1.5;
+                    start = 1.6;
                     mult = 0.8;
                     break;
                 case Type.MechEnergyWeapons:
@@ -104,8 +104,8 @@ namespace ClassLibrary1
                     mult = 1.3;
                     break;
                 case Type.MechMove:
-                    start = 1.4;
-                    mult = 0.5; //.4?
+                    start = 1.5;
+                    mult = .3; 
                     break;
                 case Type.MechResilience:
                     mult = 0.4;

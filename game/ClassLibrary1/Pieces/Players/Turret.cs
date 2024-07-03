@@ -2,6 +2,7 @@
 using MattUtil;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using AttackType = ClassLibrary1.Pieces.CombatTypes.AttackType;
 using DefenseType = ClassLibrary1.Pieces.CombatTypes.DefenseType;
@@ -146,12 +147,13 @@ namespace ClassLibrary1.Pieces.Players
             public IAttacker.Values[] GetAttacks(Research research, double[] _attMult, double rounding)
             {
                 List<IAttacker.Values> results = new();
+                bool offset = false;
                 for (int a = 0; a < MAX_ATTACKS; a++)
                 {
                     IAttacker.Values attack = attacks[a];
                     AttackType type = attack.Type;
 
-                    int baseAtt = attack.Attack;
+                    int baseAtt = attack.Attack - (offset ? 1 : 0);
                     int att = MTRandom.Round(baseAtt * _attMult[a], rounding);
                     if (att < 1)
                         att = 1;
@@ -166,9 +168,19 @@ namespace ClassLibrary1.Pieces.Players
                     mult *= Math.Sqrt(baseReload / reload);
 
                     double range = attack.Range * mult;
-
                     if (range < Attack.MIN_RANGED)
+                    {
+                        if (!offset)
+                        {
+                            offset = true;
+                            a--;
+                            continue;
+                        }
+                        else
+                            Debug.WriteLine("!!! turret min range " + range);
                         range = Attack.MIN_RANGED;
+                    }
+                    offset = false;
 
                     results.Add(new(type, att, range, reload));
                 }

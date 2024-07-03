@@ -559,21 +559,29 @@ namespace WinFormsApp1
                         rtbLog.AppendText(Environment.NewLine + "  ");
 
                         rtbLog.SelectionColor = Color.Purple;
+                        if (entry.Attack.Cur != entry.Attack.Prev)
+                            rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Bold);
                         rtbLog.AppendText($"{FormatDmg(entry.Attack)}");
+                        rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Regular);
                         rtbLog.SelectionColor = Color.Black;
                         rtbLog.AppendText($" : ");
                         rtbLog.SelectionColor = Color.Purple;
+                        if (entry.Defense.Any(d => d.Cur != d.Prev))
+                            rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Bold);
                         rtbLog.AppendText($"{FormatDef(FormatDmg)}");
+                        rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Regular);
                         rtbLog.SelectionColor = Color.Black;
-                        rtbLog.AppendText($"  ->  ");
-                        rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Bold);
-                        rtbLog.AppendText($"{entry.Attack.Cur}");
-                        rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Regular);
-                        rtbLog.AppendText($"/{entry.Attack.Max}");
-                        rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Bold);
-                        rtbLog.AppendText($" : {FormatDef(s => s.Cur)}");
-                        rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Regular);
-                        rtbLog.AppendText($"/{FormatDef(s => s.Max)}");
+                        ////?
+                        //rtbLog.AppendText($"  ->  ");
+                        //rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Bold);
+                        //rtbLog.AppendText($"{entry.Attack.Cur}");
+                        //rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Regular);
+                        //rtbLog.AppendText($"/{entry.Attack.Max}");
+                        //rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Bold);
+                        //rtbLog.AppendText($" : {FormatDef(s => s.Cur)}");
+                        //rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Regular);
+                        //rtbLog.AppendText($"/{FormatDef(s => s.Max)}");
+
 
                         ////// damage breakdown
                         ////if (entry.HitsDmg > 0)
