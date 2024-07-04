@@ -90,7 +90,7 @@ namespace ClassLibrary1.Pieces
                     foreach (var a in attacker.Attacks)
                         ApplyValue(a.AttackCur, CombatTypes.GetStartCur(a.Type, a.AttackMax), Consts.EnergyPerAttack);
                 if (totCur > totStart) throw new Exception();
-                double mult = ((totStart == 0 ? totCur : totCur / totStart) + 1.0) / 2.0;
+                double mult = totStart == 0 ? 1 : ((totCur / totStart) + 1.0) / 2.0;
 
                 mult *= Consts.ReplaceRefundPct * Consts.StatValue(killable.Hits.DefenseCur) / Consts.StatValue(killable.Hits.DefenseMax);
                 double rounding = 1 - GetRounding();

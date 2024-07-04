@@ -571,6 +571,7 @@ namespace WinFormsApp1
                         rtbLog.AppendText($"{FormatDef(FormatDmg)}");
                         rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Regular);
                         rtbLog.SelectionColor = Color.Black;
+
                         ////?
                         //rtbLog.AppendText($"  ->  ");
                         //rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Bold);
