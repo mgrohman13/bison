@@ -91,7 +91,30 @@ FEATURES
 			harvest
 	experience
 	power grid
+	treasure?
+		more likely farther away from features
+	research to automate mechs - big buff
 
+constructor def randomness
+inc hive energy too?
+mech bp use random range for research
+balance
+	remove constructor repair - new unit with increasing cost
+	more enemy energy later
+	turret too OP? reduce cost decrease?
+	too much research? decrease artifact avg?
+factory/turret upkeep?
+	turn off...
+prevent Application.DoEvents from affecting game state during enemy turn
+abusing pathfinding with DoEvents crashes form?
+	replace PathFind DoEvents with background worker
+resilience much more random 
+make path edges less sharp??
+isolated vision tiles kill pathfinding perf
+min move - help with pathfinding 
+damages reduces shield regen?
+	shield regen in BP?
+hives slowly increase cave spawner over time??
 improve/fix combat log.....
 	font awesome??
 income/upk breakdown

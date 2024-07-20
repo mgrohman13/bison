@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using Tile = ClassLibrary1.Map.Map.Tile;
 using Values = ClassLibrary1.Pieces.IKillable.Values;
 
 namespace ClassLibrary1.Pieces
@@ -103,7 +104,7 @@ namespace ClassLibrary1.Pieces
         void IKillable.GetHitsRepair(out double hitsInc, out double massCost)
         {
             Hits.Repair(false, out hitsInc, out massCost);
-        } 
+        }
 
         void IBehavior.GetUpkeep(ref double energyUpk, ref double massUpk)
         {
@@ -134,20 +135,23 @@ namespace ClassLibrary1.Pieces
         {
             public delegate void DamagedEventHandler(object sender, DamagedEventArgs e);
             public event DamagedEventHandler DamagedEvent;
-            internal void RaiseDamagedEvent(Attack attack, Defense defense) =>
-                DamagedEvent?.Invoke(this, new DamagedEventArgs(attack, defense));
+            internal void RaiseDamagedEvent(Attack attack, Defense defense, Tile defTile) =>
+                DamagedEvent?.Invoke(this, new DamagedEventArgs(attack, defense, defTile));
         }
         public class DamagedEventArgs
         {
             public readonly Attack Attack;
             public readonly Defense Defense;
-            public DamagedEventArgs(Attack attack, Defense defense)
+            public readonly Tile DefTile;
+            public DamagedEventArgs(Attack attack, Defense defense, Tile defTile)
             {
                 this.Attack = attack;
                 this.Defense = defense;
+                this.DefTile = defTile;
             }
         }
-        void IKillable.RaiseDamagedEvent(Attack attack, Defense defense) => Event.RaiseDamagedEvent(attack, defense);
+        void IKillable.RaiseDamagedEvent(Attack attack, Defense defense, Tile defTile)
+            => Event.RaiseDamagedEvent(attack, defense, defTile);
 
         public void OnDeserialization(object sender)
         {

@@ -32,8 +32,8 @@ namespace ClassLibrary1
 
         public const double EnemyStartEnergy = 10400;
         public const double EnemyEnergy = 520;
-        public const double ExploreEnergy = 3900;
-        public const double EnemyEnergyRampTurns = 169;
+        public const double ExploreEnergy = 3900;//6500?
+        public const double EnemyEnergyRampTurns = 169;//130?
         public const double DifficultyIncTurns = 91;
         public const double DifficultyEnergyPow = 1.3;
         public const double DifficultyResearchPow = 3.9 / Math.E;
@@ -71,7 +71,7 @@ namespace ClassLibrary1
         public const double MetalMassInc = 52;
         public const double MetalSustain = 1.17;
         public const double MetalEnergyUpkDiv = 4;
-        public const double ArtifactResearchInc = 14.3;
+        public const double ArtifactResearchInc = 14.3;//<=10.4?
         public const double ArtifactSustain = 1.69;
         public const double ArtifactMassIncDiv = 3;
         public const double ArtifactEnergyUpkMult = 2.5;

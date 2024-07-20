@@ -101,10 +101,13 @@ namespace WinFormsApp1
         private LogEntry lastLog = null;
         internal void UpdateProgress(Tile center, double progress)
         {
+            bool visible = progress >= 0 && progress <= 1;
+            mapMain.MouseMove -= mapMain.Map_MouseMove;
+            if (!visible)
+                mapMain.MouseMove += mapMain.Map_MouseMove;
+
             mapMain.SelTile = null;
             Debug.WriteLine($"UpdateProgress: {progress}");
-
-            bool visible = progress >= 0 && progress <= 1;
             if (visible)
             {
                 progressBar1.Value = Game.Rand.Round(progress * progressBar1.Maximum);
@@ -118,6 +121,7 @@ namespace WinFormsApp1
 
                 if (center != null)
                     mapMain.Center(center);
+                Application.DoEvents();
                 this.Refresh();
 
                 var curLog = Program.Game.Log.Data(null).FirstOrDefault();
@@ -128,10 +132,6 @@ namespace WinFormsApp1
                 }
             }
             progressBar1.Visible = visible;
-
-            mapMain.MouseMove -= mapMain.Map_MouseMove;
-            if (!visible)
-                mapMain.MouseMove += mapMain.Map_MouseMove;
         }
     }
 }

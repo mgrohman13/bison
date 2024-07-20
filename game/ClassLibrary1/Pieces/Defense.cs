@@ -2,6 +2,7 @@
 using System.Data;
 using System.Linq;
 using DefenseType = ClassLibrary1.Pieces.CombatTypes.DefenseType;
+using Tile = ClassLibrary1.Map.Map.Tile;
 using Values = ClassLibrary1.Pieces.IKillable.Values;
 
 namespace ClassLibrary1.Pieces
@@ -54,9 +55,10 @@ namespace ClassLibrary1.Pieces
                     if (defense != this && CombatTypes.SplashAgainst(defense) && DoCollateralDamage(defense.Piece, defense.DefenseCur))
                         defense.Damage();
 
+            Tile tile = Piece.Tile;
             Damage();
 
-            Piece.GetBehavior<IKillable>().RaiseDamagedEvent(attack, this);
+            Piece.GetBehavior<IKillable>().RaiseDamagedEvent(attack, this, tile);
         }
         private void Damage()//int damage)
         {

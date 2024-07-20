@@ -709,7 +709,7 @@ namespace ClassLibrary1.Map
             return path;
         }
 
-        public List<Point> PathFind(Tile from, Tile to, double firstMove, bool limitMove, double movement)
+        public List<Point> PathFind(Tile from, Tile to, double firstMove, bool limitMove, double movement, Action DoEvents)
         {
             //double[] moves = new[] {
             //    Math.Min(movable.MoveCur - 1, movable.MoveCur + movable.MoveInc - movable.MoveMax) + 1,
@@ -724,7 +724,9 @@ namespace ClassLibrary1.Map
             //    if (move >= 1)
             //    {
             //List<Point> path =
-            return PathFind(from, to, firstMove, limitMove, movement, false, true, _ => 0, p => !_gameBounds.Contains(p.X, p.Y), out _);
+            return PathFind(from, to, firstMove, limitMove, movement, false, true,
+                _ => { DoEvents(); return 0; },
+                p => !_gameBounds.Contains(p.X, p.Y), out _);
             //        if (path != null)
             //            return path;
             //    }

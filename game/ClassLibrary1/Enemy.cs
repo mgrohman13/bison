@@ -58,19 +58,24 @@ namespace ClassLibrary1
         internal static double GetEneryIncome(Game game) =>
             Math.Pow(GetDifficulty(game), Consts.DifficultyEnergyPow) * Consts.EnemyEnergy;
 
-        internal void HiveDamaged(Hive hive, Map.Map.SpawnChance spawn, ref double energy, int hits, double hitsPct, double dev)
+        internal void HiveDamaged(Hive hive, Tile defTile, Map.Map.SpawnChance spawn, ref double energy,
+            int hits, double hitsPct, double dev)
         {
             hitsPct = 1 - hitsPct;
             int xfer = Game.Rand.Round(energy);
             if (hive.Dead)
+            {
                 hitsPct = 1;
+            }
             else
+            {
                 xfer = Game.Rand.GaussianInt(energy * hitsPct, 1);
+                hitsPct /= Math.Sqrt(hits);
+            }
             AddEnergy(xfer);
             energy -= xfer;
             Debug.WriteLine($"Enemy energy: {_energy} ({(xfer > 0 ? "+" : "")}{xfer})");
 
-            hitsPct /= Math.Sqrt(hits);
             if (this.Energy > 0 && Game.Rand.Bool(hitsPct / 2.0))
             {
                 SpawnAlien(() =>
@@ -78,7 +83,7 @@ namespace ClassLibrary1
                     Tile tile;
                     int RandCoord(double coord) => Game.Rand.Round(coord + Game.Rand.Gaussian(dev)); //push up to caller
                     do
-                        tile = Game.Map.GetTile(RandCoord(hive.Tile.X), RandCoord(hive.Tile.Y));
+                        tile = Game.Map.GetTile(RandCoord(defTile.X), RandCoord(defTile.Y));
                     while (tile == null || tile.Piece != null);
 
                     while (Alien.GetPathFindingMovement(_nextAlien.Movable) < Game.Map.GetMinSpawnMove(tile))
@@ -292,9 +297,9 @@ namespace ClassLibrary1
 
                 Debug.WriteLine(piece);
 
-                double multiplier = 1;
+                //double multiplier = 1;
                 //eventually convert to ulong?
-                Dictionary<Tile, int> dict = new();
+                Dictionary<Tile, double> dictDbl = new();
                 foreach (var moveTile in Game.Rand.Iterate(moveTiles))
                 {
                     double attWeight = 1;
@@ -497,32 +502,50 @@ namespace ClassLibrary1
                     }
                     result *= div * moveTiles.Count;// Math.Pow(result, 1.0 / multipliers);
 
-                    double min = 1 / Math.Sqrt(moveTiles.Count);
-                    double max = int.MaxValue / (double)(moveTiles.Count * moveTiles.Count);
-                    double oldMult = multiplier;
-                    if (result > max)
-                    {
-                        Debug.WriteLine(state + " tile chance exceeded MAX: " + result);
-                        Debug.WriteLine(logWeights);
-                        multiplier = Math.Min(multiplier, max / result);
-                    }
-                    else if (result < min && multiplier >= 1)
-                    {
-                        Debug.WriteLine(state + " tile chance exceeded MIN: " + result);
-                        multiplier = Math.Max(multiplier, min / result);
-                    }
-                    else if (result < min)
-                        ;
-                    if (oldMult != multiplier)
-                        foreach (var t in dict.Keys.ToList())
-                            dict[t] = Game.Rand.Round(dict[t] * multiplier / oldMult);
+                    //double min = 1 / Math.Sqrt(moveTiles.Count);
+                    //double max = int.MaxValue / (double)(moveTiles.Count * moveTiles.Count);
+                    //double oldMult = multiplier;
+                    //double test = result * multiplier;
+                    //if (test > max)
+                    //{
+                    //    Debug.WriteLine(state + " tile chance exceeded MAX: " + result);
+                    //    Debug.WriteLine(logWeights);
+                    //    multiplier = Math.Min(multiplier, max / result);
+                    //}
+                    //else if (test < min && multiplier >= 1)
+                    //{
+                    //    Debug.WriteLine(state + " tile chance exceeded MIN: " + result);
+                    //    multiplier = Math.Max(multiplier, min / result);
+                    //}
+                    //else if (test < min)
+                    //    ;
+                    //if (oldMult != multiplier)
+                    //    foreach (var t in dict.Keys.ToList())
+                    //        dict[t] = Game.Rand.Round(dict[t] * multiplier / oldMult);
 
-                    int chance = Game.Rand.Round(1 + result * multiplier);
-                    if (chance < 0)
+                    //int chance = Game.Rand.Round(1 + result * multiplier);
+                    //if (chance < 0)
+                    //    throw new Exception();
+
+                    if (result <= 0)
                         throw new Exception();
-                    dict.Add(moveTile, chance);
+
+                    dictDbl.Add(moveTile, result);
                 }
-                moveTo = Game.Rand.SelectValue(dict);
+
+                double multiplier = 1;
+                double min = dictDbl.Values.Min();
+                if (min * multiplier < 1)
+                    multiplier = 1 / min;
+                double sum = dictDbl.Values.Sum();
+                int max = int.MaxValue - dictDbl.Count;
+                if (sum * multiplier > max)
+                    multiplier = max / sum;
+                Dictionary<Tile, int> dictInt = new();
+                foreach (var p in dictDbl)
+                    dictInt.Add(p.Key, Game.Rand.Round(p.Value * multiplier));
+
+                moveTo = Game.Rand.SelectValue(dictInt);
             }
 
             if (piece.Tile != moveTo)

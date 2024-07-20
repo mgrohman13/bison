@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using static ClassLibrary1.Pieces.Killable;
-
 using DefenseType = ClassLibrary1.Pieces.CombatTypes.DefenseType;
+using Tile = ClassLibrary1.Map.Map.Tile;
 
 namespace ClassLibrary1.Pieces
 {
@@ -27,7 +27,7 @@ namespace ClassLibrary1.Pieces
         internal void GetHitsRepair(out double hitsInc, out double massCost);
 
         public Events Event { get; }
-        internal void RaiseDamagedEvent(Attack attack, Defense defense);
+        internal void RaiseDamagedEvent(Attack attack, Defense defense, Tile defTile);
 
         [Serializable]
         public readonly struct Values
