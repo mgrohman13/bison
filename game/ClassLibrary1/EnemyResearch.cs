@@ -16,10 +16,7 @@ namespace ClassLibrary1
         private double _research;
         private double _difficulty;
 
-        private readonly HashSet<Type> _available;
-
-        //in order of liklihood
-        private static readonly Type[] Unlocks = new Type[] { Type.MechEnergyWeapons, Type.MechShields, Type.MechRange, Type.MechArmor, Type.MechLasers, Type.MechExplosives, };
+        private readonly Dictionary<Type, int> _unlockTurns;
 
         public EnemyResearch(Game game)
         {
@@ -27,7 +24,32 @@ namespace ClassLibrary1
             _type = noType;
             _research = 0;
             _difficulty = 1;
-            _available = new HashSet<Type>();
+
+            _unlockTurns = GenUnlockTurns();
+        }
+        private static Dictionary<Type, int> GenUnlockTurns()
+        {
+            //in order of liklihood
+            Type[] unlocks = new Type[] { Type.MechEnergyWeapons, Type.MechShields, Type.MechRange, Type.MechArmor, Type.MechLasers, Type.MechExplosives, };
+            int count = unlocks.Length;
+            Dictionary<Type, int> chances = unlocks.ToDictionary(t => t, t =>
+                Game.Rand.Round(Math.Pow(1 + count - Array.IndexOf(unlocks, t), 2.1)));
+
+            Dictionary<Type, int> result = new();
+            for (int a = 0; a < count; a++)
+            {
+                Type next = Game.Rand.SelectValue(chances);
+                chances.Remove(next);
+
+                double avg = (a + 1) * Consts.EnemyUnlockTurns / count;
+                double dev = (1 + count - a) * .39 / (count + 1);
+                if (avg < 13) throw new Exception();
+                int min = Game.Rand.RangeInt(Game.Rand.RangeInt(1, 13), Game.Rand.RangeInt(13, Game.Rand.Round(avg / Math.PI)));
+                int value = Game.Rand.GaussianOEInt(avg, dev, dev / Math.E, min);
+
+                result.Add(next, value);
+            }
+            return result;
         }
 
         public void EndTurn(double difficulty)
@@ -37,36 +59,12 @@ namespace ClassLibrary1
                     .Where(t => Research.IsMech(t) && TypeVailable(t)));
             _research += Game.Rand.OE(difficulty);
             _difficulty = difficulty;
-
-            if (_available.Count < Unlocks.Length)
-            {
-                double cost = Math.Pow(1.3, _available.Count) * Math.Pow(_available.Count + 1, 1.3) * 1.69;
-                if (_research > Game.Rand.GaussianCapped(cost * 2.1, .13))
-                {
-                    _research -= cost;
-                    while (!_available.Add(Game.Rand.SelectValue(Unlocks, t => Game.Rand.Round(Math.Pow(1 + Unlocks.Length - Array.IndexOf(Unlocks, t), 2.1))))) ;
-                }
-            }
         }
 
-        private bool TypeVailable(Type type)
-        {
-            return (_available.Contains(type) || !Unlocks.Contains(type));
-        }
-
-        public int GetBlueprintLevel()
-        {
-            return Game.Rand.Round(Consts.ResearchFactor * (_difficulty - 1) + _research);
-        }
-
-        public int GetMinCost()
-        {
-            return Game.Rand.Round(Math.Pow(GetBlueprintLevel() + 7.8 * Consts.ResearchFactor, 0.65));
-        }
-        public int GetMaxCost()
-        {
-            return Game.Rand.Round(Math.Pow(GetBlueprintLevel() + 0.169 * Consts.ResearchFactor, 1.04)) + 390;
-        }
+        private bool TypeVailable(Type type) => !_unlockTurns.ContainsKey(type) || _unlockTurns[type] < Game.Turn;
+        public int GetBlueprintLevel() => Game.Rand.Round(Consts.ResearchFactor * (_difficulty - 1) + _research);
+        public int GetMinCost() => Game.Rand.Round(Math.Pow(GetBlueprintLevel() + 7.8 * Consts.ResearchFactor, 0.65));
+        public int GetMaxCost() => Game.Rand.Round(Math.Pow(GetBlueprintLevel() + 0.169 * Consts.ResearchFactor, 1.04)) + 390;
 
         public double GetMult(Type type, double pow)
         {
