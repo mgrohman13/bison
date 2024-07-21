@@ -15,7 +15,7 @@ namespace ClassLibrary1.Pieces.Players
 
         private bool _canUpgrade;
         private readonly bool _defenseType;
-        private readonly double _rangeMult, _rounding;
+        private readonly double _defMult, _rangeMult, _rounding;
 
         private Constructor(Tile tile, Values values, bool starter)
             : base(tile, values.Vision)
@@ -23,14 +23,18 @@ namespace ClassLibrary1.Pieces.Players
             this._canUpgrade = false;
 
             this._defenseType = Game.Rand.Bool();
+            this._defMult = 1;
             this._rangeMult = 1;
             this._rounding = Game.Rand.NextDouble();
             if (!starter)
+            {
+                this._defMult = Game.Rand.GaussianCapped(1, .091, .65);
                 this._rangeMult = Game.Rand.GaussianOE(values.BuilderRange, .21, .26, 1) / values.BuilderRange;
+            }
 
             IMovable.Values movable = values.GetMovable(_rangeMult, _rounding);
             SetBehavior(
-                new Killable(this, values.GetKillable(Game, _defenseType), values.Resilience),
+                new Killable(this, values.GetKillable(Game, _defenseType, _defMult, _rounding), values.Resilience),
                 new Movable(this, movable, starter ? movable.MoveMax - movable.MoveInc - .5 : 0),
                 new Builder.BuildExtractor(this, values.GetRepair(Game, _rangeMult, _rounding).Builder));
             Unlock();
@@ -71,7 +75,7 @@ namespace ClassLibrary1.Pieces.Players
                 Values values = GetValues(Game);
 
                 this.Vision = values.Vision;
-                GetBehavior<IKillable>().Upgrade(values.GetKillable(Game, _defenseType), values.Resilience);
+                GetBehavior<IKillable>().Upgrade(values.GetKillable(Game, _defenseType, _defMult, _rounding), values.Resilience);
                 GetBehavior<IMovable>().Upgrade(values.GetMovable(_rangeMult, _rounding));
                 if (HasBehavior<IRepair>())
                     GetBehavior<IRepair>().Upgrade(values.GetRepair(Game, _rangeMult, _rounding));
@@ -137,9 +141,7 @@ namespace ClassLibrary1.Pieces.Players
 
             private int energy, mass;
             private double vision, repairRate;
-            private IKillable.Values hits;
-            private IKillable.Values shield;
-            private IKillable.Values armor;
+            private double hits, shield, armor;
             private IMovable.Values movable;
             private IRepair.Values repair;
             public Values()
@@ -155,28 +157,30 @@ namespace ClassLibrary1.Pieces.Players
             public int Mass => mass;
             public double Vision => vision;
             public double BuilderRange => repair.Builder.Range;
-            public IKillable.Values[] GetKillable(Game game, bool defenseType)
+            public IKillable.Values[] GetKillable(Game game, bool defenseType, double defMult, double rounding)
             {
-                List<IKillable.Values> defenses = new() { hits };
+                int hits = MTRandom.Round(this.hits * defMult, rounding);
+                double mult = Math.Sqrt(Consts.StatValueInverse(Consts.StatValue(this.hits) / Consts.StatValue(hits)));
+                int def = MTRandom.Round((defenseType ? this.shield : this.armor) * mult, rounding);
+
+                List<IKillable.Values> defenses = new() { new IKillable.Values(DefenseType.Hits, hits) };
                 if (game.Player.Research.HasType(Research.Type.ConstructorDefense))
-                    if (defenseType)
-                        defenses.Add(this.shield);
-                    else
-                        defenses.Add(this.armor);
+                    defenses.Add(new IKillable.Values(defenseType ? DefenseType.Shield : DefenseType.Armor, def));
+
                 return defenses.ToArray();
             }
             public IMovable.Values GetMovable(double rangeMult, double rounding)
             {
                 double mult = 1 / Math.Pow(rangeMult, .26);
                 double inc = movable.MoveInc * mult;
-                int max = 1 + MTRandom.Round((movable.MoveMax - 1) * mult, rounding);
-                int limit = 1 + MTRandom.Round((movable.MoveLimit - 1) * mult, rounding);
+                int max = 1 + MTRandom.Round((movable.MoveMax - 1) * mult, 1 - rounding);
+                int limit = 1 + MTRandom.Round((movable.MoveLimit - 1) * mult, 1 - rounding);
                 return new IMovable.Values(inc, max, limit);
             }
             public IRepair.Values GetRepair(Game game, double rangeMult, double rounding)
             {
                 IRepair.Values repair = this.repair;
-                int rate = Math.Max(1, MTRandom.Round(repairRate / rangeMult, 1 - rounding));
+                int rate = Math.Max(1, MTRandom.Round(repairRate / rangeMult, rounding));
                 if (!game.Player.Research.HasType(Research.Type.ConstructorRepair))
                     rate = 1;
                 double range = repair.Builder.Range * repairRate / rate * Math.Pow(rangeMult, .65);
@@ -205,11 +209,12 @@ namespace ClassLibrary1.Pieces.Players
                 this.shield = Gen(DefenseType.Shield, 1.23);
                 this.armor = Gen(DefenseType.Armor, 1.69);
 
-                IKillable.Values Gen(DefenseType type, double mult)
+                double Gen(DefenseType type, double mult)
                 {
                     double defAvg = mult * ResearchUpgValues.Calc(UpgType.ConstructorDefense, researchMult);
-                    int defense = Game.Rand.Round(defAvg);
-                    return new(type, defense);
+                    return defAvg;
+                    //int defense = Game.Rand.Round(defAvg);
+                    //return new(type, defense);
                 }
             }
             private void UpgradeConstructorMove(double researchMult)
