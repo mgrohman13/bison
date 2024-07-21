@@ -139,7 +139,7 @@ namespace ClassLibrary1.Pieces
         {
             AttackType.Kinetic => .78,
             AttackType.Energy => 1.3,
-            AttackType.Explosive => .91,
+            AttackType.Explosive => 1,
             _ => throw new Exception(),
         };
         internal static double Cost(DefenseType defenseType) => defenseType switch
