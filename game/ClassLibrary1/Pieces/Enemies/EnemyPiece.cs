@@ -85,7 +85,7 @@ namespace ClassLibrary1.Pieces.Enemies
         {
         }
 
-        internal protected enum AIState// internal protected
+        internal protected enum AIState
         {
             Heal,
             Retreat,

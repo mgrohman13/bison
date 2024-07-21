@@ -27,10 +27,10 @@ namespace ClassLibrary1.Pieces.Enemies
         //var move = new IMovable.Values(movable.MoveInc, movable.MoveMax, movable.MoveLimit);
         //MechBlueprint.CalcCost(Enemy.GetDifficulty(Game), 0, defs, killable.Resilience, atts, move, out double e, out double m);
         double IRepairable.RepairCost => Consts.GetRepairCost(this, _energy, 0);
-        bool IRepairable.AutoRepair => !Tile.Visible;// Game.Rand.Bool(.078);// _autoRepair;
+        bool IRepairable.AutoRepair => !Tile.Visible;
 
-        private List<Point> PathToCore { get; set; }// private
-        private List<Point> RetreatPath { get; set; }// private
+        private List<Point> PathToCore { get; set; }
+        private List<Point> RetreatPath { get; set; }
 
         //private double Morale => _morale;// hide behind research
 

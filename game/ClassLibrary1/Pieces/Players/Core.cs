@@ -105,7 +105,7 @@ namespace ClassLibrary1.Pieces.Players
 
                 //this.vision = -1;
                 this.hits = new(CombatTypes.DefenseType.Hits, -1);
-                this.shield = null;// new(CombatTypes.DefenseType.Hits, -1);
+                this.shield = null;//new(CombatTypes.DefenseType.Hits, -1);
 
                 UpgradeBuildingHits(1);
                 //UpgradeCoreShields(1);
@@ -114,7 +114,7 @@ namespace ClassLibrary1.Pieces.Players
             public double Resilience => resilience;
             public double Energy => energy;
             public double Mass => mass;
-            public double Vision => START_VISION;// vision;
+            public double Vision => START_VISION;
             public IKillable.Values Hits => hits;
             public IKillable.Values? Shield => shield;
             public IRepair.Values Repair => repair;

@@ -233,11 +233,6 @@ namespace ClassLibrary1
             double maxMoveAttRange = (movePiece?.MoveCur ?? 0) + (attacks.Max(a => a?.Range) ?? 0);
             HashSet<IKillable> extendedTargets = allTargets.Keys.Where(k => k.Piece.Tile.GetDistance(piece.Tile) < maxMoveAttRange).SelectMany(k => allTargets[k].Keys).ToHashSet();
 
-            //if (moveTiles.Any(t => !playerAttacks.ContainsKey(t)))
-            //    ;
-            //else
-            //    ;
-
             AIState state = piece.TurnState(difficulty, playerAttacks, moveTiles, extendedTargets, out List<Point> fullPath);
 
             IKillable target = null;
@@ -369,20 +364,15 @@ namespace ClassLibrary1
                             pct *= pct;
                             double dist = tile.GetDistance(moveTile);
                             dist = (dist + 1) * (dist + padding);
-                            //dist /= pct;
 
                             double weight = 1 + (1 + pct * mult) / dist;
                             if (moveCloser)
                                 weight *= (weight);
                             else
                                 weight = Math.Sqrt(weight);
-                            //if (moveTile == tile)
-                            //    weight *= Math.Pow(weight, (1 + pct));
 
                             pathWeight = Math.Max(pathWeight, (weight));
                         }
-                        //if (piece.ToString() == "Alien 2")
-                        //    Debug.WriteLine((float)pathWeight);
                     }
 
                     double coreWeight = Consts.CaveDistance / (Consts.CaveDistance + Consts.PathWidth + moveTile.GetDistance(piece.Game.Player.Core.Tile));
@@ -440,12 +430,9 @@ namespace ClassLibrary1
                     string logWeights = string.Format("attWeight:{1}{0}pathWeight:{2}{0}coreWeight:{3}{0}playerAttWeight:{4}{0}moveWeight:{5}{0}repairWeight:{6}{0}defWeight:{7}",
                             Environment.NewLine, attWeight, pathWeight, coreWeight, playerAttWeight, moveWeight, repairWeight, defWeight);
 
-                    //double multipliers = 0;
                     void Inc(ref double weight, double pow)
                     {
                         weight = Math.Pow(weight, Math.Sqrt(pow));
-                        //if (weight != 1)
-                        //    multipliers += (pow - 1);// / 2.0;
                     }
                     switch (state)
                     {
@@ -476,56 +463,15 @@ namespace ClassLibrary1
                     double result = 1, div = 1;
                     foreach (var w in weights)
                     {
-                        //if (w != 1)
-                        //    multipliers++;
                         double weight = w;
                         if (double.IsNaN(weight) || weight < 0)
                             throw new Exception();
-
-                        //double slow = (max + short.MaxValue) / 2.0;
-                        //double diff = max - slow;
-                        //if (diff < 0)
-                        //{
-                        //    weight = slow;
-                        //    Debug.WriteLine("Bad weight!");
-                        //}
-                        //else if (weight > slow)
-                        //{
-                        //    weight -= slow;
-                        //    weight = slow + diff * weight / (weight + diff);
-                        //}
-
                         if (weight > 1)
                             result += weight;
                         else
-                            div *= weight;// * w;
+                            div *= weight;
                     }
-                    result *= div * moveTiles.Count;// Math.Pow(result, 1.0 / multipliers);
-
-                    //double min = 1 / Math.Sqrt(moveTiles.Count);
-                    //double max = int.MaxValue / (double)(moveTiles.Count * moveTiles.Count);
-                    //double oldMult = multiplier;
-                    //double test = result * multiplier;
-                    //if (test > max)
-                    //{
-                    //    Debug.WriteLine(state + " tile chance exceeded MAX: " + result);
-                    //    Debug.WriteLine(logWeights);
-                    //    multiplier = Math.Min(multiplier, max / result);
-                    //}
-                    //else if (test < min && multiplier >= 1)
-                    //{
-                    //    Debug.WriteLine(state + " tile chance exceeded MIN: " + result);
-                    //    multiplier = Math.Max(multiplier, min / result);
-                    //}
-                    //else if (test < min)
-                    //    ;
-                    //if (oldMult != multiplier)
-                    //    foreach (var t in dict.Keys.ToList())
-                    //        dict[t] = Game.Rand.Round(dict[t] * multiplier / oldMult);
-
-                    //int chance = Game.Rand.Round(1 + result * multiplier);
-                    //if (chance < 0)
-                    //    throw new Exception();
+                    result *= div * moveTiles.Count;
 
                     if (result <= 0)
                         throw new Exception();
@@ -618,19 +564,11 @@ namespace ClassLibrary1
                                     playerAttacks[pair.Item1] -= pair.Item2;
                                 foreach (var killable in trgGrp.Keys)
                                     if (killable.Dead)
-                                        //{
-                                        //    allTargets.Remove(killable);
-                                        //    foreach (var v in allTargets.Values)
-                                        //        if (v.Remove(killable))
-                                        //            ;
                                         //fully re-load all targets since this kill could affect target grouping
                                         allTargets = piece.Game.Enemy.GetAllTargets();
-                                    //}
                                     else
-                                        //{
                                         foreach (var t in PlayerAttacks(killable.GetBehavior<IAttacker>()))
                                             playerAttacks[t.Item1] += t.Item2;
-                                //}
                                 //unecessary - we never loop through all playerAttacks
                                 //foreach (var pair in trgAttacks)
                                 //    if (playerAttacks[pair.Item1] <= 0)

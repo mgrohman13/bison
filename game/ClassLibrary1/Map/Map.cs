@@ -76,26 +76,9 @@ namespace ClassLibrary1.Map
                     }
             } while (!valid);
 
-            //double[] enemyPows = angles.Select(x => 1 + Game.Rand.OE(1 / 13.0)).ToArray();
-            //static double Increase(double x) => 1.3 + (x - 1) * 1.69;
-            //enemyPows[0] = Increase(enemyPows[0]);
-            //enemyPows[1] = Increase(enemyPows[1]);
-            //enemyPows = enemyPows.Select(x => x > 2 ? 1 + Math.Sqrt(x - 1) : x).ToArray();
-            //enemyPows[1] = 1 / enemyPows[1];
-            //for (int c = 2; c < numPaths; c++)
-            //    if (Game.Rand.Bool())
-            //        enemyPows[c] = 1 / enemyPows[c];
-            //Game.Rand.Shuffle(enemyPows);
-
             _paths = new Path[numPaths];
             for (int d = 0; d < numPaths; d++)
-            {
-                //double enemyPow = enemyPows[d];
-                //double enemyMult = 1 + Game.Rand.OE(1 / (enemyPow > 1 ? enemyPow : 1 / enemyPow));
-                //if (Game.Rand.Bool())
-                //    enemyMult = 1 / enemyMult;
-                _paths[d] = new Path(angles[d]);//, enemyMult / enemyPow, enemyPow);
-            }
+                _paths[d] = new Path(angles[d]);
 
             separation /= 2.6;
             double caveMult = Math.PI / numPaths;
@@ -527,7 +510,7 @@ namespace ClassLibrary1.Map
         private static double PointLineDistance(double a, double b, double c, Point point) =>
             (a * point.X + b * point.Y + c) / Math.Sqrt(a * a + b * b);
 
-        private readonly Dictionary<Point, FoundPath> corePaths = new(); // rename
+        private readonly Dictionary<Point, FoundPath> corePaths = new(); 
         public Dictionary<Point, FoundPath> EnemyPaths => Game.TEST_MAP_GEN.HasValue ? corePaths : null; //|| Game.GameOver 
         internal List<Point> PathFindCore(Tile from, double movement, Func<HashSet<Point>, bool> Accept)
         {
@@ -720,17 +703,9 @@ namespace ClassLibrary1.Map
             //    (movable.MoveMax + movable.MoveLimit) / 2.0,
             //    movable.MoveLimit, };
 
-            //foreach (var move in moves)//.Order())
-            //    if (move >= 1)
-            //    {
-            //List<Point> path =
             return PathFind(from, to, firstMove, limitMove, movement, false, true,
                 _ => { DoEvents(); return 0; },
                 p => !_gameBounds.Contains(p.X, p.Y), out _);
-            //        if (path != null)
-            //            return path;
-            //    }
-            //return null;
         }
     }
 }

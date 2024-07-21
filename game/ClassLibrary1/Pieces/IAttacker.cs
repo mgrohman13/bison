@@ -38,12 +38,8 @@ namespace ClassLibrary1.Pieces
         {
             public readonly AttackType Type;
             private readonly int _attack, _reload;
-            //private readonly int _numAttacks;
 
             private readonly double _range;
-            //public Values(AttackType type, int attack) : this(type, attack, Pieces.Attack.MELEE_RANGE) { }
-            //public Values(AttackType type, int attack, double range)
-            //    : this(type, attack, range, CombatTypes.GetReloadBase(type, attack)) { }
             public Values(AttackType type, int attack, double range, int? reload = null)
             {
                 this.Type = type;

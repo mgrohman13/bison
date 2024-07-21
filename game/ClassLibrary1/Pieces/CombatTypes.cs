@@ -54,15 +54,12 @@ namespace ClassLibrary1.Pieces
             if (defense.DefenseCur == 0)
                 return 0;
 
-            //var totalDefenses = defense.Piece.GetBehavior<IKillable>().TotalDefenses;
             bool hits = defense.Type == DefenseType.Hits;
             double offset = hits ? .5 : 0;
             double cur = Consts.StatValue(defense.DefenseCur - offset);
             double pct = cur / Consts.StatValue(defense.DefenseMax - offset);
 
             double chance = cur;
-            //if (!hits)
-            //    chance /= Math.Sqrt(pct);
             switch (defense.Type)
             {
                 case DefenseType.Hits:
@@ -77,16 +74,6 @@ namespace ClassLibrary1.Pieces
             }
             return Game.Rand.Round(1 + chance);
         }
-        //internal static object CompareDef(Defense defense)
-        //{
-        //    int value = defense.DefenseCur;
-        //    int higher = defense.Piece.GetBehavior<IKillable>().TotalDefenses.Max(d => d.DefenseCur) + 1;
-        //    if (defense.Type == DefenseType.Hits)
-        //        value -= higher;
-        //    else if (defense.Type == DefenseType.Shield && defense.DefenseCur == defense.DefenseMax)
-        //        value += higher;
-        //    return -value;
-        //}
 
         internal static IReadOnlyList<IAttacker.Values> OrderAtt(IEnumerable<IAttacker.Values> attacks) =>
             OrderAtt(attacks, a => a.Attack, a => a.Range, a => a.Type);
