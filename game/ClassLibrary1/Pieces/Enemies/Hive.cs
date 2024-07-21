@@ -97,6 +97,11 @@ namespace ClassLibrary1.Pieces.Enemies
         public double SumRange => attacker.Attacks.Sum(a => a.Range);
         public double MaxRange => attacker.Attacks.Max(a => a.Range);
 
+        internal override void StartTurn()
+        {
+            spawner.Mult(1 + 1.0 / 65);
+        }
+
         internal override void Die()
         {
             Tile tile = this.Tile;
