@@ -125,16 +125,17 @@ namespace ClassLibrary1.Pieces.Players
             public double Rounding => rounding;
             public IKillable.Values[] GetKillable(Research research, double shieldMult, double armorMult, double rounding)
             {
-                // use rounded armor/shield values
-                double hitsMult = Math.Sqrt(1.0 / shieldMult / armorMult);
+                double hitsMult = 1;
 
                 List<IKillable.Values> results = new();
-                for (int a = 0; a < MAX_ATTACKS; a++)
+                for (int a = MAX_ATTACKS; --a >= 0;)
                 {
                     IKillable.Values defense = defenses[a];
                     double mult = a switch { 0 => hitsMult, 1 => shieldMult, 2 => armorMult, _ => throw new Exception() };
                     int def = Math.Max(1, MTRandom.Round(defense.Defense * mult, 1 - rounding));
                     results.Add(new(defense.Type, def));
+
+                    hitsMult *= Consts.StatValueInverse(Consts.StatValue(mult) / Consts.StatValue(def));
                 }
 
                 if (!research.HasType(Research.Type.TurretArmor))
@@ -197,8 +198,6 @@ namespace ClassLibrary1.Pieces.Players
             {
                 if (type == Research.Type.BuildingCost)
                     UpgradeBuildingCost(researchMult);
-                //else if (type == Research.Type.BuildingDefense)
-                //    UpgradeBuildingHits(researchMult);
                 else if (type == Research.Type.TurretDefense)
                     UpgradeTurretDefense(researchMult);
                 else if (type == Research.Type.TurretRange)
@@ -279,10 +278,10 @@ namespace ClassLibrary1.Pieces.Players
                     int attack = Game.Rand.Round(attAvg);
 
                     double range = attacks[a].Range;
-                    int reload = attacks[a].Reload;
+                    //int reload = attacks[a].Reload;
                     attacks[a] = new(type, attack, range);
-                    reload = Math.Max(reload, Game.Rand.Round(1 + (attacks[a].Reload - 1) / 2.0)); // use in GetAttacks
-                    attacks[a] = new(type, attack, range, reload);
+                    //reload = Math.Max(reload, Game.Rand.Round(1 + (attacks[a].Reload - 1) / 2.0)); //use in GetAttacks
+                    attacks[a] = new(type, attack, range, 1);
                 }
             }
         }
