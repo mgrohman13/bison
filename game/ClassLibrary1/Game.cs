@@ -81,7 +81,7 @@ namespace ClassLibrary1
 
         internal void CollectHive(double cost)
         {
-            cost /= 1.69;
+            cost /= 2.1;
             int mass = Game.Rand.RangeInt(0, Game.Rand.Round(cost / Consts.MechMassDiv - 1.3));
             int energy = Game.Rand.Round(cost - mass * Consts.MechMassDiv);
             Player.Spend(-energy, -mass);
@@ -144,7 +144,7 @@ namespace ClassLibrary1
             Debug.WriteLine("SaveGame");
             TBSUtil.SaveGame(this, SavePath);
         }
-        public static Game LoadGame<T>(string filePath, out T data) // where T : ISerializable
+        public static Game LoadGame<T>(string filePath, out T data) //where T : ISerializable
         {
             Game game = TBSUtil.LoadGame<Game>(filePath);
             game.OnDeserialization();

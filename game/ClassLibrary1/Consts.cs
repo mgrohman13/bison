@@ -32,8 +32,8 @@ namespace ClassLibrary1
 
         public const double EnemyStartEnergy = 10400;
         public const double EnemyEnergy = 520;
-        public const double ExploreEnergy = 3900;//6500?
-        public const double EnemyEnergyRampTurns = 169;//130?
+        public const double ExploreEnergy = 6500;
+        public const double EnemyEnergyRampTurns = 169;
         public const double DifficultyIncTurns = 91;
         public const double DifficultyEnergyPow = 1.3;
         public const double DifficultyResearchPow = 3.9 / Math.E;
@@ -56,8 +56,8 @@ namespace ClassLibrary1
         public const double ResourceDistPow = .52;
         public const double ResourceSustainValuePow = .26;
         public const double ExtractTurns = 65;//0.98461538461538461538461538461538
-        // ExtractPow=x/(1-x) where x is desired exponent when sustain=1 
-        // inverse: x=ExtractPow/(ExtractPow+1)
+        //ExtractPow=x/(1-x) where x is desired exponent when sustain=1 
+        //inverse: x=ExtractPow/(ExtractPow+1)
         public const double ExtractPow = 3.5; //x=0.77777777777777777777777777777778
         public const double ExtractSustainPow = .39;
         public const double ExtractorSustainCostPow = .65;
@@ -71,7 +71,7 @@ namespace ClassLibrary1
         public const double MetalMassInc = 52;
         public const double MetalSustain = 1.17;
         public const double MetalEnergyUpkDiv = 4;
-        public const double ArtifactResearchInc = 14.3;//<=10.4?
+        public const double ArtifactResearchInc = 10.4;
         public const double ArtifactSustain = 1.69;
         public const double ArtifactMassIncDiv = 3;
         public const double ArtifactEnergyUpkMult = 2.5;
@@ -81,12 +81,12 @@ namespace ClassLibrary1
         public const double BiomassExtractorMassCost = 910;
         public const double MetalExtractorEnergyCost = 780;
         public const double MetalExtractorMassCost = 400;
-        public const double ArtifactExtractorEnergyCost = 1690;
+        public const double ArtifactExtractorEnergyCost = 1300;
         public const double ArtifactExtractorMassCost = 300;
 
         public const int EnergyForFabricateMass = 10;
         public const int BurnMassForEnergy = 2;
-        public const int MassForScrapResearch = 5; // inverted value from the other two
+        public const int MassForScrapResearch = 5; //inverted value from the other two
 
         public const double BaseConstructorUpkeep = 5;
         public const double BaseMechUpkeep = 1;

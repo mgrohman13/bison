@@ -94,32 +94,10 @@ FEATURES
 	treasure?
 		more likely farther away from features
 	research to automate mechs - big buff
-
+	
+alien retreat path look at adjacent tile visibility
 constructor def randomness
-inc hive energy too?
-mech bp use random range for research
-balance
-	remove constructor repair - new unit with increasing cost
-	more enemy energy later
-	turret too OP? reduce cost decrease?
-	too much research? decrease artifact avg?
-factory/turret upkeep?
-	turn off...
-prevent Application.DoEvents from affecting game state during enemy turn
-abusing pathfinding with DoEvents crashes form?
-	replace PathFind DoEvents with background worker
-resilience much more random 
-make path edges less sharp??
-isolated vision tiles kill pathfinding perf
-min move - help with pathfinding 
-damages reduces shield regen?
-	shield regen in BP?
-hives slowly increase cave spawner over time??
-improve/fix combat log.....
-	font awesome??
-income/upk breakdown
-turret randomness??
-show extended atts in att range, but with val of 0?
+remove constructor repair - new unit with increasing cost
 remove constructor repair entirely???
 	replace with new unit?
 	teleport technology?
@@ -134,6 +112,71 @@ remove constructor repair? replace with new unit?
 	bundle in constructor range upg with something else
 	bundle factory repair and new unit repair upg into one (bc  repair upgs very weak?)
 		factory repair and new unit research specific techs have no upg
+constructor repair - instead of new unit, transform into stationary repair?
+	costs 
+	transform back?? cost???
+resilience much more random
+rebalance resilience - remove / 2.0 from GetDamagedValue		
+increase enemy unlock time
+	tie to a new turn const
+make core non-reparable? only repairs through research?
+	tweak how building def affects though
+	remove efficiency entirely / no max def
+	core repair/range upgs?? maybe not...
+reduce mech costs slightly?
+	esp att/move too much??
+increase explosive cost?
+turret range needs early buff again???
+chance to not place resource on destroyed extractor if value is really low
+	very low extractors eventually disappear without even being killed
+turret att/range tradeoff should be 1-1?
+	and use StatValue
+	dbl check def elsewhere for StatValue
+	fix _rangeMult calc (fix min, avoid too extreme)
+slightly increase move, but only at low vals?
+SpawnChance
+	Turn - sign use rate 
+	Spawned - reduces too much?
+tweak UpgType values, update spreadsheet
+	repair range values
+resource more likely to jump to sustain mult when higher 
+
+map - occasional caves farther out infinitely??
+replace func tell you cost even if you cant afford
+mech cost capping should decrease move speed (and attack range?)
+mech costs
+	add const val to att/def so extreme mechs arent so good??
+fix Visible code crappiness with TEST_MAP_GEN & GameOver
+show area you will scout on mouseover when can move to target
+make path edges less sharp??
+turret randomness??
+constructor range min
+can turn off mechs to save energy
+	but take time to come back online
+	can also scrap for mass
+aliens move towards mechs with range on them
+weak generator buildings for foundations
+remove move limit, make const (at 2x?)
+	make random gaussian thats different every turn? could be fun?
+randomize more consts every game
+	ResearchUpgValues
+	EnemyResearch GetMult & MakeType 
+randomize tech tree	
+
+blockRadius needs to be Math.Sqrt(2) / 2 ??
+improve/fix combat log.....
+	font awesome??
+income/upk breakdown
+factory/turret upkeep?
+	turn off...
+prevent Application.DoEvents from affecting game state during enemy turn
+abusing pathfinding with DoEvents crashes form?
+	replace PathFind DoEvents with background worker
+isolated vision tiles kill pathfinding perf
+min move - help with pathfinding 
+damages reduces shield regen?
+	shield regen in BP?
+show extended atts in att range, but with val of 0?
 dont show exact move to tile?
 	show all possible target tiles??
 	aliens move out of vision still show range?
@@ -148,37 +191,25 @@ entire tree too easily completed rn before game victory
 constructor defense show only 1 upgrade
 alien more flexible on pathing heat map
 move left if can be attacked/killed?	
-constructor range min
 enemies overvalue attacking repair?
 mech upg shouldnt clear log when name changes 
 	also replace turret 
 trade form trade all button
 alien move progress bar
-	move to bottom
 	fix/remove move/attack trails
 	attack ranges?
 	center on moved aliens
 	change mouse to wait cursor
-	old school hourglass?
+		old school hourglass?
 OrderAtt, dgvAttacks inconsistency
 	use same for blueprint, mech, turret, enemies
-increase enemy unlock time
-	tie to a new turn const
 way to extend turret range in specific direction?
 	ability move foundations small distances??
 	secondary radar piece that allows attacking near?
 	then can reduce ridiculous ranges?
-show area you will scout on mouseover when can move to target
-reduce mech costs slightly?
-	exp att/move too much??
-increase explosive cost?
 escape close upg dialog
 preprocess general pathfinding??
 	look up algorithms
-make core non-reparable? only repairs through research?
-	tweak how building def affects though
-	remove efficiency entirely / no max def
-	core repair/range upgs?? maybe not...
 random aliens path differnt directions if possible/available??
 	esp faster aliens
 	tough to do efficiently
@@ -190,35 +221,14 @@ fog of war??
 	but, vision should matter somehwat even if not scouting new areas
 	maybe very delayed fog of war??
 player pathfinding fallback when no space within initial restricted range
-can turn off mechs to save energy
-	but take time to come back online
-	can also scrap for mass
 enemy move calc tile probabilities in parallel
+fix 1 - rounding
 
 log debug to file
 ensure everything within .5 (vision blocking) of core paths is terrain
-turret range needs early buff again???
-aliens move towards mechs with range on them
-blockRadius needs to be Math.Sqrt(2) / 2 ??
-chance to not place resource on destroyed extractor if value is really low
-	very low extractors eventually disappear without even being killed
-turret att/range tradeoff should be 1-1?
-	and use StatValue
-	dbl check def elsewhere for StatValue
-	fix _rangeMult calc (fix min, avoid too extreme)
 aliens really struggle to retreat and heal
 	make more likely to jump to any available heal tile?
 	new state not working? aliens parked outside visible still dont sit and heal?
-mech cost capping should decrease move speed (and attack range?)
-slightly increase move, but only at low vals?
-mech costs
-	add const val to att/def so extreme mechs arent so good??
-SpawnChance
-	Turn - sign use rate 
-	Spawned - reduces too much?
-upg must leave 1 HP
-IMovable.Move tile != null check
-min blueprint hp = 2?
 
 pathfind on background thread
 mouse move refresh slows scrolling too much
@@ -250,8 +260,6 @@ show alien extended range??
 enter target amount on trade screen
 show current upgardes on info button
 
-tweak UpgType values, update spreadsheet
-	repair range values
 player pathfinding optimization 
 	support shift+right click move
 	separate thread, abort on new mousetile
@@ -267,9 +275,6 @@ prevent turrets attacking hives??
 walls
 	terrain where walls are unbuildable?
 	requires move blocking
-resource more likely to jump to sustain mult when higher 
-remove move limit, make const (at 2x?)
-	make random gaussian thats different every turn? could be fun?
 better handling of fractional repair amts 
 aliens not retreating well? 
 research upgs show bonus show exact where can e.g. core shields	
@@ -343,8 +348,6 @@ after attack select alien who actually defended
 	log splash damage
 fix center
 	make core always 0,0, actual center is randed offset from there
-ranged attack min range???
-	as individual stat???
 make movement path when alien is out of vision ambiguous 
 	(and atts?)
 cap zooming out to map bounds 
@@ -395,8 +398,6 @@ explosives
 pay back stored energy on death
 make shield regen variable
 	reduce with dmg pct?
-better "lowPenalty" ramp up logic
-rebalance resilience - remove / 2.0 from GetDamagedValue		
 hardcoded references to .5, .25 terrain cuttoffs			
 movement - long term
 	start with just inc, lose all at turn end
@@ -418,7 +419,6 @@ draw bars not use stat value for pct cur/max??
 	clearer colors? darker?
 log splash damage
 show total cost in info
-weak geneartor buildings for foundations
 select tile square always draw on top
 save log to file on game end
 select terrain shouldnt hide log
@@ -437,7 +437,6 @@ experience
 new ranged attack type that you can move and then shoot
 	much less likely for alien spawns? impossible??
 remove outliers from att/def bar length?
-pull gen/upgrade value constants, research powers into special consts we can see and tweak together
 attack range circle not accurate around corners
 support rallying, multiple moves to get to destination
 combined power grid, but if separate pieces impose power penalty?
@@ -471,7 +470,6 @@ metagame system pts
 Evaluate use MemoryCache instead of Dictionary?
 fix mirror image painting? may confuse in future?
 building costs get more expensive with upgrade - countered by cost research
-replace func tell you cost even if you cant afford
 disband mech
 	turn off power?
 	put on patrol/scout/etc mode for reduced power?
@@ -494,15 +492,11 @@ notify cboxes that arent supported
 fix build/repair/upgrade weirdness?
 	remove some research?
 	or clear up with colors?
-show mass/eng ratio on build screen?  
 minimap
 shroud
 	show last spotted aliens
-	keep alien vision in shroud for 1 turn after move out of vision?
 varaible scroll speed doesnt quite work
 game stats
-randomize tech tree	
-map - occasional caves farther out infinteley??
 refactor Consts.MechMassDiv - only apply in one spot?
 make researches with progress less likely to appear?
 	only taper off high progress, not lowish values?
