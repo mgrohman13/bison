@@ -72,7 +72,7 @@ namespace ClassLibrary1.Map
 
             private static int GenValue() => Game.Rand.GaussianOEInt(650, .78, .26, 1);
 
-            internal void Spawned() => Mult(1 / 3.9);
+            internal void Spawned() => Mult(1 / 2.1);
             internal void Mult(double mult)
             {
                 double add = 0;

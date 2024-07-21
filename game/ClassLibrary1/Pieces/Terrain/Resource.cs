@@ -31,9 +31,9 @@ namespace ClassLibrary1.Pieces.Terrain
 
             sustainMult *= Math.Pow(baseValue / value, Consts.ResourceSustainValuePow);
             double sustain = Game.Rand.GaussianOE(sustainMult, Consts.ResourceDev, Consts.ResourceOE, .05);
-            if (Game.Rand.Bool(.13))
+            if (Game.Rand.Bool(.26 * sustain / (sustain + 1)))
             {
-                double mult = Game.Rand.Next(3) == 0 ? 10 : 20;
+                double mult = Game.Rand.Next(sustain > 1 ? 2 : 3) == 0 ? 10 : 20;
                 sustain = Game.Rand.Round(sustain * mult) / mult;
                 const double offset = .01;
                 sustain += Game.Rand.GaussianCapped(offset, 1 / 3.0, offset / 2.0) - offset;
