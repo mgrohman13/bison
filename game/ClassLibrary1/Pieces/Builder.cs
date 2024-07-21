@@ -16,7 +16,7 @@ namespace ClassLibrary1.Pieces
 
         private IBuilder.Values _values;
 
-        public double Range => Consts.GetDamagedValue(Piece, RangeBase, 1);
+        public double Range => Consts.GetDamagedValue(Piece, RangeBase, Attack.MELEE_RANGE);
         public double RangeBase => _values.Range;
 
         public Builder(Piece piece, IBuilder.Values values)

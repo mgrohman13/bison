@@ -516,8 +516,17 @@ namespace ClassLibrary1.Pieces.Players
         private static double GenResilience(IResearch research)
         {
             bool isResilience = research.GetType() == Type.MechResilience;
-            return Consts.GetPct(Game.Rand.GaussianCapped(.39, .091, .169),
-                Math.Pow(research.GetMult(Type.MechResilience, Blueprint_Resilience_Pow) + (isResilience ? .52 : 0), isResilience ? .5 : .2));
+            return GenResilience(isResilience ? .5 : .39, isResilience ? .13 : .26,
+                Math.Pow(research.GetMult(Type.MechResilience, 1) + (isResilience ? .52 : 0),
+                    isResilience ? .5 : .2));
+        }
+        public static double GenResilience(double avg, double dev, double pow)
+        {
+            double weightPct = dev / Math.PI;
+            double max = 1 - 2 * avg;
+            double weight = avg * weightPct / max;
+            avg *= 1 - weightPct;
+            return Consts.GetPct(Game.Rand.GaussianCapped(avg, dev) + Game.Rand.Weighted(max, weight), pow);
         }
         private static IReadOnlyList<IKillable.Values> GenKillable(IResearch research)
         {

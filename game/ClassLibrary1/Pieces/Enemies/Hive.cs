@@ -42,7 +42,7 @@ namespace ClassLibrary1.Pieces.Enemies
         internal static Hive NewHive(Tile tile, int hiveIdx, SpawnChance spawner)
         {
             IEnumerable<IKillable.Values> killable = GenKillable(hiveIdx);
-            double resilience = Consts.GetPct(Game.Rand.GaussianCapped(.26, .26, .013), 1 + hiveIdx);
+            double resilience = MechBlueprint.GenResilience(.26, .169, 1 + hiveIdx);
             IEnumerable<IAttacker.Values> attacks = GenAttacker(hiveIdx);
             double strInc = Math.Pow(1.5, hiveIdx);
             MechBlueprint.CalcCost(3.9 + strInc / 2.1, 0, killable, resilience, attacks, null, out double energy, out double mass);

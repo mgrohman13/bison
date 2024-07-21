@@ -14,7 +14,6 @@ namespace ClassLibrary1
         internal const double Blueprint_Defense_Pow = 0.70;
         internal const double Blueprint_Move_Pow = 0.40;
         internal const double Blueprint_Range_Pow = 0.60;
-        internal const double Blueprint_Resilience_Pow = 1.00;
         internal const double Blueprint_Vision_Pow = 0.50;
 
         //internal const double Constructor_Cost_Pow = ;

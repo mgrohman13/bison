@@ -171,7 +171,7 @@ namespace ClassLibrary1
 
         public static double GetDamagedValue(Piece piece, double value, double min) =>
             GetDamagedValue(piece, value, min, false);
-        private static double GetDamagedValue(Piece piece, double value, double min, bool sqrt)
+        public static double GetDamagedValue(Piece piece, double value, double min, bool sqrt)
         {
             IKillable killable = piece.GetBehavior<IKillable>();
             double resilience = killable.Resilience;
