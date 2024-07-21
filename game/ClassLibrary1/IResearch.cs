@@ -5,7 +5,7 @@ namespace ClassLibrary1
     interface IResearch
     {
         Game Game { get; }
-        int GetLevel();
+        int GetBlueprintLevel();
         Type GetType();
         int GetMinCost();
         int GetMaxCost();

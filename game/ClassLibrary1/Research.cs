@@ -102,9 +102,9 @@ namespace ClassLibrary1
             Type? result = null;
             if (_progress[_researching] >= _choices[_researching])
             {
-                // excess research will be applied to a random available next choice
+                //excess research will be applied to a random available next choice
                 int excess = _progress[_researching] - _choices[_researching];
-                // upgrading researches you have done previously will cause less of an overall research cost increase
+                //upgrading researches you have done previously will cause less of an overall research cost increase
                 int previous = GetLast(_researching);
                 result = OnResearch();
                 GetNextChoices(excess, previous, result.Value);
@@ -129,7 +129,7 @@ namespace ClassLibrary1
         public string GetUpgInfo(Type type)
         {
             if (!HasMin(type))
-                return string.Empty;// Array.Empty<string>();
+                return string.Empty;//Array.Empty<string>();
             if (type == Type.ResearchChoices)
                 return ResearchUpgValues.GetUpgInfo(Type.ResearchChoices, _numChoices, _numChoices + 1, v => v.ToString("0"));
             double prevMult = GetUpgMult(type, GetLast(type));
@@ -261,7 +261,11 @@ namespace ClassLibrary1
             return GetLast(research) > 0;
         }
 
-        public int GetLevel()
+        public int GetBlueprintLevel()
+        {
+            return Game.Rand.RangeInt(_blueprints.Max(b => b.ResearchLevel) + 1, GetLevel() - 1);
+        }
+        private int GetLevel()
         {
             return _researchLast;
         }
@@ -319,7 +323,7 @@ namespace ClassLibrary1
             Dictionary<Type, int> retVal = new();
             HashSet<Type> all = Enum.GetValues<Type>().ToHashSet();
 
-            double research = 0;// StartResearch;
+            double research = 0;//StartResearch;
             double dev = Math.E * _avgTypeCost / (double)all.Min();
             while (all.Any())
             {
@@ -399,32 +403,32 @@ namespace ClassLibrary1
             { Type.MechLasers, new Type[]           { Type.Mech, Type.MechRange, Type.MechEnergyWeapons, } },
             { Type.MechExplosives, new Type[]       { Type.Mech, Type.MechRange, Type.MechResilience, } },
 
-            { Type.TurretAttack, new Type[]         { Type.Turret, Type.MechAttack, } }, // delay
-            { Type.TurretLasers, new Type[]         { Type.Turret, Type.TurretAttack, Type.MechLasers, } }, // end
+            { Type.TurretAttack, new Type[]         { Type.Turret, Type.MechAttack, } }, //delay
+            { Type.TurretLasers, new Type[]         { Type.Turret, Type.TurretAttack, Type.MechLasers, } }, //end
             { Type.TurretRange, new Type[]          { Type.Turret, Type.TurretAttack, Type.MechRange, } },
-            { Type.TurretExplosives, new Type[]     { Type.Turret, Type.TurretRange, Type.MechExplosives } }, // end
-            { Type.TurretDefense, new Type[]        { Type.Turret, } }, // quick
-            { Type.TurretArmor, new Type[]          { Type.Turret, Type.TurretDefense, Type.MechArmor, } }, // end
-            { Type.TurretShields, new Type[]        { Type.Turret, Type.MechShields, } },
-            { Type.TurretAutoRepair, new Type[]     { Type.Turret, Type.TurretShields, Type.FactoryAutoRepair, } }, // end
+            { Type.TurretExplosives, new Type[]     { Type.Turret, Type.TurretRange, Type.MechExplosives } }, //end
+            { Type.TurretShields, new Type[]        { Type.Turret, } }, //quick
+            { Type.TurretDefense, new Type[]        { Type.Turret, Type.MechDefense, } },
+            { Type.TurretArmor, new Type[]          { Type.Turret, Type.TurretDefense, Type.MechArmor, } },
+            { Type.TurretAutoRepair, new Type[]     { Type.Turret, Type.TurretArmor, Type.FactoryAutoRepair, } }, //end
 
-            { Type.ConstructorCost, new Type[]      { Type.Constructor, } }, // quick
+            { Type.ConstructorCost, new Type[]      { Type.Constructor, } }, //quick
             { Type.ConstructorDefense, new Type[]   { Type.Constructor, Type.MechShields, Type.MechArmor, } },
-            { Type.ConstructorMove, new Type[]      { Type.Constructor, Type.ConstructorDefense, Type.MechVision, Type.MechMove, } }, // end
-            { Type.ConstructorRepair, new Type[]    { Type.Constructor, Type.FactoryConstructor, Type.FabricateMass, } }, // end
+            { Type.ConstructorMove, new Type[]      { Type.Constructor, Type.ConstructorDefense, Type.MechVision, Type.MechMove, } }, //end
+            { Type.ConstructorRepair, new Type[]    { Type.Constructor, Type.FactoryConstructor, Type.FabricateMass, } }, //end
 
             { Type.FactoryRepair, new Type[]        { Type.Factory, } },
             { Type.FactoryConstructor, new Type[]   { Type.Factory, Type.FactoryRepair, Type.ConstructorCost, } },
             { Type.FactoryAutoRepair, new Type[]    { Type.Factory, Type.FactoryRepair, Type.ExtractorAutoRepair, } },
 
-            { Type.BuildingDefense, new Type[]      { Type.Constructor } }, // quick
+            { Type.BuildingDefense, new Type[]      { Type.Constructor } }, //quick
             { Type.ExtractorAutoRepair, new Type[]  { Type.BuildingDefense, } },
             { Type.BuildingCost, new Type[]         { Type.BuildingDefense, Type.ConstructorCost, } },
             { Type.ResearchChoices, new Type[]      { Type.Turret, } },
             { Type.ScrapResearch, new Type[]        { Type.ResearchChoices, } },
             { Type.BurnMass, new Type[]             { Type.Factory, } },
             { Type.FabricateMass, new Type[]        { Type.ScrapResearch, Type.BurnMass, Type.FactoryAutoRepair, } },
-            { Type.ExtractorValue, new Type[]       { Type.ExtractorAutoRepair, Type.BuildingCost, Type.ScrapResearch, Type.BurnMass, } }, // end
+            { Type.ExtractorValue, new Type[]       { Type.ExtractorAutoRepair, Type.BuildingCost, Type.ScrapResearch, Type.BurnMass, } }, //end
             
             //Type.BuildingResilience - not extractor??
             // Constructor resilience ?
@@ -433,7 +437,7 @@ namespace ClassLibrary1
         public static bool IsMech(Type type) => type != Type.Mech && type.ToString().StartsWith("Mech");
 
         private const double _avgTypeCost = (double)Type.Mech;
-        // int value is used as relative cost
+        //int value is used as relative cost
         public enum Type
         {
             CoreShields = 100,
@@ -454,32 +458,32 @@ namespace ClassLibrary1
             MechArmor = 146,
             MechExplosives = 149,
 
-            TurretDefense = 110, // quick
-            TurretShields = 120,
-            TurretLasers = 130, // end
-            TurretRange = 140,
-            TurretArmor = 150, // end
-            TurretExplosives = 160, // end
-            TurretAttack = 170, // delay
-            TurretAutoRepair = 245, // end
+            TurretShields = 110, //quick
+            TurretRange = 120,
+            TurretLasers = 130, //end
+            TurretDefense = 140,
+            TurretArmor = 150,
+            TurretExplosives = 160, //end
+            TurretAttack = 170, //delay
+            TurretAutoRepair = 245, //end
 
-            ConstructorCost = 180, // quick
+            ConstructorCost = 180, //quick
             ConstructorDefense = 190, //key
-            ConstructorMove = 325, // end
-            ConstructorRepair = 520, // end
+            ConstructorMove = 325, //end
+            ConstructorRepair = 520, //end
 
             FactoryAutoRepair = 205,
             FactoryRepair = 240, //key
             FactoryConstructor = 290, //key
 
-            BuildingDefense = 115, // quick
+            BuildingDefense = 115, //quick
             FabricateMass = 125,
             ScrapResearch = 145,
             ResearchChoices = 155,
             BurnMass = 165,
             BuildingCost = 175,
             ExtractorAutoRepair = 285, //key
-            ExtractorValue = 350, // end   
+            ExtractorValue = 350, //end   
         }
     }
 }

@@ -54,18 +54,18 @@ namespace ClassLibrary1
             return (_available.Contains(type) || !Unlocks.Contains(type));
         }
 
-        public int GetLevel()
+        public int GetBlueprintLevel()
         {
             return Game.Rand.Round(Consts.ResearchFactor * (_difficulty - 1) + _research);
         }
 
         public int GetMinCost()
         {
-            return Game.Rand.Round(Math.Pow(GetLevel() + 7.8 * Consts.ResearchFactor, 0.65));
+            return Game.Rand.Round(Math.Pow(GetBlueprintLevel() + 7.8 * Consts.ResearchFactor, 0.65));
         }
         public int GetMaxCost()
         {
-            return Game.Rand.Round(Math.Pow(GetLevel() + 0.169 * Consts.ResearchFactor, 1.04)) + 390;
+            return Game.Rand.Round(Math.Pow(GetBlueprintLevel() + 0.169 * Consts.ResearchFactor, 1.04)) + 390;
         }
 
         public double GetMult(Type type, double pow)
@@ -105,7 +105,7 @@ namespace ClassLibrary1
                     break;
                 case Type.MechMove:
                     start = 1.5;
-                    mult = .3; 
+                    mult = .3;
                     break;
                 case Type.MechResilience:
                     mult = 0.4;
