@@ -99,6 +99,7 @@ namespace ClassLibrary1.Pieces.Enemies
 
         internal override void StartTurn()
         {
+            base.StartTurn();
             spawner.Mult(1 + 1.0 / 65);
         }
 

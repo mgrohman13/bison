@@ -263,7 +263,7 @@ namespace ClassLibrary1
 
         public int GetBlueprintLevel()
         {
-            return Game.Rand.RangeInt(_blueprints.Max(b => b.ResearchLevel) + 1, GetLevel() - 1);
+            return Game.Rand.RangeInt((_blueprints.Max(b => (int?)b.ResearchLevel) ?? 0) + 1, GetLevel() - 1);
         }
         private int GetLevel()
         {
