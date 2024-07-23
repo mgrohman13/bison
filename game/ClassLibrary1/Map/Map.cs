@@ -127,7 +127,16 @@ namespace ClassLibrary1.Map
 
             foreach (var cave in Game.Rand.Iterate(_caves))
                 cave.PathFind(this);//, Game.Player.Core.Tile);
+
+            if (Game.TEST_MAP_GEN.HasValue)
+            {
+                int v = Game.TEST_MAP_GEN.Value;
+                for (int x = -v; x <= v; x++)
+                    for (int y = -v; y <= v; y++)
+                        CreateTreasure(GetTile(x, y));
+            }
         }
+
         private void GenerateStartResources()
         {
             const int startResources = 8;
@@ -338,7 +347,10 @@ namespace ClassLibrary1.Map
             _pieces.Add(piece.Tile.Location, piece);
 
             if (piece is PlayerPiece playerPiece)
+            {
                 UpdateVision(playerPiece);
+                Treasure.Collect(piece.Tile);
+            }
         }
         internal void RemovePiece(Piece piece)
         {
@@ -360,6 +372,7 @@ namespace ClassLibrary1.Map
                 if (_explored.Add(p))
                 {
                     Tile explored = GetTile(p);
+                    CreateTreasure(explored);
                     found |= explored != null && explored.Piece != null && explored.Piece is not Terrain;
                 }
 
@@ -375,6 +388,28 @@ namespace ClassLibrary1.Map
             LogEvalTime();
 
             return found;
+        }
+        private void CreateTreasure(Tile tile)
+        {
+            if (tile != null && tile.Piece == null)
+            {
+                int x = tile.X, y = tile.Y;
+
+                var dist = _caves.Select(c => c.Center).Concat(_paths.Select(p => p.GetClosestPoint(x, y)))
+                    .Select(p => GetDistSqr(p, new(x, y))).Concat(_caves.Select(c => c.ConnectionDistSqr(x, y)))
+                    .Min();
+                dist = Math.Sqrt(dist) / Consts.PathWidth / 2;
+
+                double chance;
+                if (dist > 1.5)
+                    chance = .21 - 1 / (dist - .5) / 5;
+                else
+                    chance = .01 * dist / 1.5;
+                chance /= 20;
+
+                if (Game.Rand.Bool(chance))
+                    Treasure.NewTreasure(tile);
+            }
         }
 
         public static void LogEvalTime()
@@ -510,7 +545,7 @@ namespace ClassLibrary1.Map
         private static double PointLineDistance(double a, double b, double c, Point point) =>
             (a * point.X + b * point.Y + c) / Math.Sqrt(a * a + b * b);
 
-        private readonly Dictionary<Point, FoundPath> corePaths = new(); 
+        private readonly Dictionary<Point, FoundPath> corePaths = new();
         public Dictionary<Point, FoundPath> EnemyPaths => Game.TEST_MAP_GEN.HasValue ? corePaths : null; //|| Game.GameOver 
         internal List<Point> PathFindCore(Tile from, double movement, Func<HashSet<Point>, bool> Accept)
         {

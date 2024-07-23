@@ -91,62 +91,57 @@ FEATURES
 			harvest
 	experience
 	power grid
-	treasure?
-		more likely farther away from features
 	research to automate mechs - big buff
 	
-alien retreat path look at adjacent tile visibility
-constructor def randomness
-remove constructor repair - new unit with increasing cost
-remove constructor repair entirely???
+transform to repair mode
+	stationary
+		refund move?
+	reduce defenses?
+	costs some amt?
+		based on defenses?
+		refund small pct on xfer back?
+	always 1 repair
+constructor repair
+	bundle in constructor range upg with something else
+		bundle factory repair and new unit repair upg into one (bc  repair upgs very weak?)
+			factory repair and new unit research specific techs have no upg
+	transform to repair mode
+		defense values??
+			same as contructor? different? upgrades?
+		cost based on defense/repair
+			must be upgraded
+		transform back for no/small refund?
 	replace with new unit?
+		has to stand still to repair anything
+			switches between move/repair mode? 
+		more expensive, slower, tankier
 	teleport technology?
 	automatic repair drone??
 		like we were thinking for GW
-remove constructor repair? replace with new unit?
-	has to stand still to repair anything
-		switches between move/repair mode? 
-			or just a special mode for constructors?
-			permanent? cant switch back? costs money to switch?
-	more expensive, slower, tankier
-	bundle in constructor range upg with something else
-	bundle factory repair and new unit repair upg into one (bc  repair upgs very weak?)
-		factory repair and new unit research specific techs have no upg
-constructor repair - instead of new unit, transform into stationary repair?
-	costs 
-	transform back?? cost???
-resilience much more random
-rebalance resilience - remove / 2.0 from GetDamagedValue		
-increase enemy unlock time
-	tie to a new turn const
+		
+treasure
+	push away from cave connections?
+		or remove resources from connections and let treasures do the rest
+	increase ResourceAvgDist
+	
 make core non-reparable? only repairs through research?
 	tweak how building def affects though
 	remove efficiency entirely / no max def
 	core repair/range upgs?? maybe not...
 reduce mech costs slightly?
 	esp att/move too much??
-increase explosive cost?
-turret range needs early buff again???
 chance to not place resource on destroyed extractor if value is really low
 	very low extractors eventually disappear without even being killed
-turret att/range tradeoff should be 1-1?
-	and use StatValue
-	dbl check def elsewhere for StatValue
-	fix _rangeMult calc (fix min, avoid too extreme)
-slightly increase move, but only at low vals?
-SpawnChance
-	Turn - sign use rate 
-	Spawned - reduces too much?
 tweak UpgType values, update spreadsheet
 	repair range values
-resource more likely to jump to sustain mult when higher 
 
+fix Visible code crappiness with TEST_MAP_GEN & GameOver
+alien retreat path look at adjacent tile visibility
 map - occasional caves farther out infinitely??
 replace func tell you cost even if you cant afford
 mech cost capping should decrease move speed (and attack range?)
 mech costs
 	add const val to att/def so extreme mechs arent so good??
-fix Visible code crappiness with TEST_MAP_GEN & GameOver
 show area you will scout on mouseover when can move to target
 make path edges less sharp??
 turret randomness??
@@ -162,6 +157,10 @@ randomize more consts every game
 	ResearchUpgValues
 	EnemyResearch GetMult & MakeType 
 randomize tech tree	
+resilience
+	cost?	
+	movement sqrt?
+SpawnChance Turn - sign use rate  
 
 blockRadius needs to be Math.Sqrt(2) / 2 ??
 improve/fix combat log.....

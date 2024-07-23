@@ -67,13 +67,14 @@ namespace ClassLibrary1.Map
                 double distance = GetDistSqr(x, y, Center) / s;
                 double centerMult = GetMult(distance, shape[5] * Consts.CaveSize / offset, shape[3]);
 
-                double connection = GetMult(PointLineDistSqr(seg1, seg2, new(x, y)), segSize, shape[4]);
+                double connection = GetMult(ConnectionDistSqr(x, y), segSize, shape[4]);
 
                 return centerMult + connection;
 
                 static double GetMult(double distSqr, double size, double o) =>
                     (Math.Pow(size, Consts.CaveDistPow) + o) / (Math.Pow(distSqr, Consts.CaveDistPow / 2.0) + o);
             }
+            public double ConnectionDistSqr(int x, int y) => PointLineDistSqr(seg1, seg2, new(x, y));
             private static double PointLineDistSqr(PointD v, PointD w, PointD p)
             {
                 var l2 = GetDistSqr(v, w);

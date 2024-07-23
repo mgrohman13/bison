@@ -20,7 +20,7 @@ namespace ClassLibrary1
         {
             Rand = new MTRandom();
             Rand.StartTick();
-            //TEST_MAP_GEN = Rand.GaussianCappedInt(1.3 * Consts.CaveDistance * Math.Sqrt(2), .13);
+            TEST_MAP_GEN = Rand.GaussianCappedInt(1.3 * Consts.CaveDistance * Math.Sqrt(2), .13);
         }
 
         public readonly ClassLibrary1.Map.Map Map;

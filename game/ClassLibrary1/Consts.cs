@@ -26,7 +26,7 @@ namespace ClassLibrary1
         public static readonly double CavePathSize = Math.Sqrt(Scale) * 2.6;
         public const double CaveDistPow = 1.13;
 
-        public static readonly double ResourceAvgDist = Math.Sqrt(Scale) * 16.9;
+        public static readonly double ResourceAvgDist = Math.Sqrt(Scale) * 21;
 
         public const double ResearchFactor = 2600;
 

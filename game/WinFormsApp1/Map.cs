@@ -414,6 +414,8 @@ namespace WinFormsApp1
                         AddFill(Brushes.Aqua, rect);
                     else if (piece is Turret)
                         ellipses.Add(ellipse);
+                    else if (piece is Treasure)
+                        AddFill(Brushes.CornflowerBlue, RectangleF.Inflate(rect, rect.Width * -.26f, rect.Height * -.26f));
                     else if (resource != null)
                     {
                         if (resource is Biomass)
