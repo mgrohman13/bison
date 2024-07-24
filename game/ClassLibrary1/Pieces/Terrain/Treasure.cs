@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using static ClassLibrary1.Map.Map;
 
 namespace ClassLibrary1.Pieces.Terrain
@@ -23,45 +24,30 @@ namespace ClassLibrary1.Pieces.Terrain
         }
         private void Collect()
         {
-            //Tile tile = Tile;
-            //this.Die();
+            Tile tile = Tile;
+            this.Die();
 
-            //int value = Game.Rand.GaussianOEInt((130 + Game.Turn) * 13, .26, .13, 650);
+            Dictionary<Func<Tile, int, int>, int> choices = new() { { CollectResources, 13 }, { NewResource, 1 } };
+            var Func = Game.Rand.SelectValue(choices);
 
-            //switch (Game.Rand.Next(13))
-            //{
-            //    case 0:
-            //    case 1:
-            //    case 2:
-            //    case 3:
-            //    case 4:
-            //    case 5:
-            //    case 6:
-            //        value = Resources(value);
-            //        break;
-            //    case 7:
-            //    case 8:
-            //    case 9:
-            //        value = Mech(value);
-            //        break;
-            //    case 10:
-            //    case 11:
-            //        value = Alien(value);
-            //        break;
-            //    case 12:
-            //        value = Resource(value);
-            //        break;
-            //    default: throw new Exception();
-            //}
-
-            //Game.Enemy.AddEnergy(Game.Rand.Round(value / 1.69));
+            int value = Func(tile, Game.Rand.GaussianOEInt((130 + Game.Turn) * 16.9, .26, .13, 650));
+            Game.Enemy.AddEnergy(Game.Rand.Round(value / 2.1));
         }
 
-        //private int Resources(Tile tile, int value)
-        //{
-        //    Game.Player.Collect(value);
-        //    return value;
-        //}
+        private int CollectResources(Tile tile, int value)
+        {
+            int v1 = Game.Rand.Bool() ? Game.Rand.RangeInt(value - 1, 1) : 0;
+            int v2 = value - v1;
+            if (Game.Rand.Bool())
+                (v1, v2) = (v2, v1);
+            Game.Player.AddResources(v1, v2);
+            return value;
+        }
+        private int NewResource(Tile tile, int value)
+        {
+            Game.Map.GenResources(_ => tile, Game.Rand.DoubleHalf());
+            return 0;
+        }
         //private int Mech(Tile tile, int value)
         //{
         //    Pieces.Players.Mech.NewMech();
@@ -76,12 +62,7 @@ namespace ClassLibrary1.Pieces.Terrain
         //{
         //    Pieces.Enemies.Alien.NewAlien();
         //    value = Game.Enemy.Alien(tile, value);
-        //    return Resources(value);
-        //}
-        //private int Resource(Tile tile, int value)
-        //{
-        //    Game.Map.GenResource(tile);
-        //    return 0;
+        //    return Game.Rand.Bool() ? Resources(value) : 0;
         //}
 
         public override string ToString() => "Unknown Object";

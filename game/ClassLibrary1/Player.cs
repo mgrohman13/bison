@@ -97,14 +97,16 @@ namespace ClassLibrary1
             }
         }
 
+        internal void AddResources(int energy, int mass)
+        {
+            this._energy += energy;
+            this._mass += mass;
+        }
         internal override bool Spend(int energy, int mass)
         {
             bool has = Has(energy, mass);
             if (has)
-            {
-                this._energy -= energy;
-                this._mass -= mass;
-            }
+                AddResources(-energy, -mass);
             return has;
         }
         public bool Has(double energy, double mass)
