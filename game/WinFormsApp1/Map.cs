@@ -330,13 +330,14 @@ namespace WinFormsApp1
             //static float? SumAttacksCur(IAttacker attacker) => SumAttacks(attacker, a => a.AttackCur);
             static float? SumAttacksMax(IAttacker attacker) => SumAttacks(attacker, a => a.AttackMax);
             static float? SumAttacks(IAttacker attacker, Func<Attack, int> Stat) => attacker.Attacks.Sum(a => StatValue(Stat(a)));
-            static float StatValue(float stat) => (float)Consts.StatValue(stat); // stat; //
-            const float padding = 1.69f; // 1.3f; // 
+            static float StatValue(float stat) => stat;// (float)Consts.StatValue(stat); 
+            static float StatValueInverse(float stat) => stat;// (float)Consts.StatValue(stat); 
+            const float padding = 1.3f; // 1.69f;  
             float attackMax = (GetPieces<IAttacker>().Where(k => k.Piece.HasBehavior<IKillable>() && k.Piece.HasBehavior<IMovable>())
                 .Max<IAttacker>(SumAttacksMax) ?? 1) * padding;
             float defenseMax = (GetPieces<IKillable>().Where(k => k.Piece.HasBehavior<IAttacker>() && k.Piece.HasBehavior<IMovable>())
                 .Max(k => k.AllDefenses.Sum(d => (float?)StatValue(d.DefenseMax))) ?? 1) * padding;
-            attackMax = defenseMax = (float)Consts.StatValueInverse(Math.Max(attackMax, defenseMax));
+            attackMax = defenseMax = (float)StatValueInverse(Math.Max(attackMax, defenseMax));
 
             foreach (var attack in Program.Game.Enemy.LastAttacks)
             {
@@ -436,7 +437,7 @@ namespace WinFormsApp1
                         float barSize = defHeight * rect.Height;
                         //statBarPow makes smaller bars bigger which helps visual clarity 
                         //float widthTotal = (float)Math.Pow(killable.AllDefenses.Sum(k => StatValue(k.DefenseMax)) / defenseMax, statBarPow);
-                        float widthTotal = (float)Consts.StatValueInverse(killable.AllDefenses.Sum(k => StatValue(k.DefenseMax))) / defenseMax;
+                        float widthTotal = (float)StatValueInverse(killable.AllDefenses.Sum(k => StatValue(k.DefenseMax))) / defenseMax;
                         if (widthTotal > 1)
                             widthTotal = 1;
                         widthTotal *= rect.Width;
@@ -450,7 +451,7 @@ namespace WinFormsApp1
                         float max2 = GetValue(DefenseType.Armor, Get);
                         float max3 = GetValue(DefenseType.Shield, Get);
                         float GetValue(DefenseType type, Func<Defense, int?> GetStat) =>
-                            (float)Consts.StatValueInverse(killable.AllDefenses.Where(d => d.Type == type).Sum(a => StatValue(GetStat(a) ?? 0)));//StatValue?
+                            (float)StatValueInverse(killable.AllDefenses.Where(d => d.Type == type).Sum(a => StatValue(GetStat(a) ?? 0)));//StatValue?
 
                         DrawBar(1, new float[] { cur1, cur2, cur3 }, new float[] { max1, max2, max3 },
                             new Brush[] { Brushes.DarkGray, Brushes.LightGray, Brushes.SkyBlue, }, barSize, widthTotal);
@@ -459,7 +460,7 @@ namespace WinFormsApp1
                     {
                         float barSize = defHeight * rect.Height;
                         //float widthTotal = (float)Math.Pow((SumAttacksMax(attacker) ?? 0) / attackMax, statBarPow);
-                        float widthTotal = (float)Consts.StatValueInverse((SumAttacksMax(attacker) ?? 0)) / attackMax;
+                        float widthTotal = (float)StatValueInverse((SumAttacksMax(attacker) ?? 0)) / attackMax;
                         if (widthTotal > 1)
                             widthTotal = 1;
                         widthTotal *= rect.Width;
@@ -473,7 +474,7 @@ namespace WinFormsApp1
                         float max2 = GetValue(AttackType.Energy, Get);
                         float max3 = GetValue(AttackType.Explosive, Get);
                         float GetValue(AttackType type, Func<Attack, int?> GetStat) =>
-                            (float)Consts.StatValueInverse(attacker.Attacks.Where(d => d.Type == type).Sum(a => StatValue(GetStat(a) ?? 0)));//StatValue?
+                            (float)StatValueInverse(attacker.Attacks.Where(d => d.Type == type).Sum(a => StatValue(GetStat(a) ?? 0)));//StatValue?
 
                         DrawBar(2, new float[] { cur1, cur2, cur3 }, new float[] { max1, max2, max3 },
                             new Brush[] { Brushes.Silver, Brushes.SandyBrown, Brushes.MediumPurple, }, barSize, widthTotal);
@@ -557,7 +558,7 @@ namespace WinFormsApp1
                         float barSize = defHeight * rect.Height;
 
                         //float widthTotal = (float)Math.Pow(StatValue(p.Value) / defenseMax, statBarPow);
-                        float widthTotal = (float)Consts.StatValueInverse(StatValue(p.Value)) / defenseMax;
+                        float widthTotal = (float)StatValueInverse(StatValue(p.Value)) / defenseMax;
                         if (widthTotal > 1)
                             widthTotal = 1;
                         widthTotal *= rect.Width;
@@ -1273,6 +1274,12 @@ namespace WinFormsApp1
                 }
                 else if (SelTile.Piece.HasBehavior(out IMovable movable))
                 {
+                    //if (clicked.Piece is Treasure treasure)
+                    //{
+                    //    treasure.Collect(SelTile.Piece as PlayerPiece);
+                    //}
+                    //else
+                    //{
                     bool DoMove(Tile dest)
                     {
                         bool moved = movable.Move(dest);
@@ -1305,6 +1312,7 @@ namespace WinFormsApp1
                         //    //check blocks
                         //    ranges[Green].Add(moveTiles.Where(t => Math.Min(movable.MoveCur - 1, movable.MoveCur + movable.MoveInc - movable.MoveMax) > SelTile.GetDistance(t)).ToHashSet());
                     }
+                    //}
                 }
             }
 
