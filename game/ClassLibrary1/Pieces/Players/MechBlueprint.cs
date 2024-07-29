@@ -526,7 +526,10 @@ namespace ClassLibrary1.Pieces.Players
             double max = 1 - 2 * avg;
             double weight = avg * weightPct / max;
             avg *= 1 - weightPct;
-            return Consts.GetPct(Game.Rand.GaussianCapped(avg, dev) + Game.Rand.Weighted(max, weight), pow);
+            double w = 0;
+            if (max > 0)
+                Game.Rand.Weighted(max, weight);
+            return Consts.GetPct(Game.Rand.GaussianCapped(avg, dev) + w, pow);
         }
         private static IReadOnlyList<IKillable.Values> GenKillable(IResearch research)
         {

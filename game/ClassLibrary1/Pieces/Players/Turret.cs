@@ -135,9 +135,10 @@ namespace ClassLibrary1.Pieces.Players
                     int def = Math.Max(1, MTRandom.Round(defense.Defense * mult, 1 - rounding));
                     results.Add(new(defense.Type, def));
 
-                    hitsMult *= Consts.StatValueInverse(Consts.StatValue(mult) / Consts.StatValue(def));
+                    hitsMult *= Consts.StatValueInverse(Consts.StatValue(defense.Defense) / Consts.StatValue(def));
                 }
 
+                results.Reverse();
                 if (!research.HasType(Research.Type.TurretArmor))
                     results.RemoveAt(2);
                 if (!research.HasType(Research.Type.TurretShields))

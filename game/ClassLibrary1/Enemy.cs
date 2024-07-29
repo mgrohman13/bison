@@ -167,7 +167,7 @@ namespace ClassLibrary1
         }
         private static IEnumerable<Tuple<Tile, double>> PlayerAttacks(IAttacker attacker)
         {
-            if (attacker != null)
+            if (attacker != null && !attacker.Piece.GetBehavior<IKillable>().Dead)
                 foreach (var attack in attacker.Attacks)
                 {
                     var tiles = attacker.Piece.Tile.GetTilesInRange(attack);
@@ -553,22 +553,21 @@ namespace ClassLibrary1
                                     continue;
                             }
 
-                            List<Tuple<Tile, double>> trgAttacks = new();
-                            if (CanTarget(target))
-                                trgAttacks = trgGrp.Keys.SelectMany(k => PlayerAttacks(k.GetBehavior<IAttacker>())).ToList();
-
                             if (attPiece.EnemyFire(target, attack))
                             {
-                                //update targets, player attacks 
+                                //splash damage??
+                                List<Tuple<Tile, double>> trgAttacks = trgGrp.Keys.SelectMany(k => PlayerAttacks(k.GetBehavior<IAttacker>())).ToList();
                                 foreach (var pair in trgAttacks)
                                     playerAttacks[pair.Item1] -= pair.Item2;
                                 foreach (var killable in trgGrp.Keys)
-                                    if (killable.Dead)
-                                        //fully re-load all targets since this kill could affect target grouping
-                                        allTargets = piece.Game.Enemy.GetAllTargets();
-                                    else
+                                    if (!killable.Dead)
                                         foreach (var t in PlayerAttacks(killable.GetBehavior<IAttacker>()))
                                             playerAttacks[t.Item1] += t.Item2;
+
+                                if (allTargets.Keys.Any(k => k.Dead))
+                                    //fully re-load all targets since this kill could affect target grouping
+                                    allTargets = piece.Game.Enemy.GetAllTargets();
+
                                 //unecessary - we never loop through all playerAttacks
                                 //foreach (var pair in trgAttacks)
                                 //    if (playerAttacks[pair.Item1] <= 0)
@@ -615,7 +614,7 @@ namespace ClassLibrary1
                 e = r = 0;
                 playerPiece.GenerateResources(ref e, ref mass, ref r);
                 double researchMult = Math.Sqrt(Consts.EnergyForFabricateMass * Consts.BurnMassForEnergy) * Consts.MassForScrapResearch;
-                mass += e * Consts.MechMassDiv + r * researchMult;
+                mass += e / Consts.MechMassDiv + r * researchMult;
             }
             double massDiv = state switch
             {
