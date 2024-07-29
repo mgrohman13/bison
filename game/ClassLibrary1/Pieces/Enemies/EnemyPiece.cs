@@ -56,10 +56,7 @@ namespace ClassLibrary1.Pieces.Enemies
             this.numAtts = 0;
 
             bool showAtt = LastAttacks.Any();
-            static bool ShowMove(Tile tile) => tile.Visible &&
-                Tile.GetAllPointsInRange(tile.Map, tile.Location, Attack.MELEE_RANGE)
-                    .Where(tile.Map.Visible).Skip(3).Any();
-            this.lastMove = curMove != null && (showAtt || ShowMove(curMove) || ShowMove(Tile)) ? curMove : null;
+            this.lastMove = curMove != null && (showAtt || curMove.ShowMove() || Tile.ShowMove()) ? curMove: null;
             this.curMove = Tile;
 
             if (showAtt || LastMove != null)

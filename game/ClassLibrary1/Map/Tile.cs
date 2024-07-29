@@ -37,6 +37,9 @@ namespace ClassLibrary1.Map
                 Y = y;
             }
 
+            public bool ShowMove() => Visible &&
+                GetAllPointsInRange(Map, Location, Attack.MELEE_RANGE).Where(Map.Visible).Skip(3).Any();
+
             //support blocking
             public double GetDistance(Point other) => GetDistance(other.X, other.Y);
             public double GetDistance(Tile other) => GetDistance(other.X, other.Y);
