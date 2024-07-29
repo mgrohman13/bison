@@ -90,7 +90,7 @@ namespace ClassLibrary1.Pieces.Players
         [Serializable]
         private class Values : IUpgradeValues
         {
-            private const double resilience = .7;
+            private const double resilience = 1;
             private readonly double energy, mass;
             private readonly IRepair.Values repair;
 
