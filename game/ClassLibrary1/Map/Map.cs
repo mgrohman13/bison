@@ -391,13 +391,14 @@ namespace ClassLibrary1.Map
         }
         private void CreateTreasure(Tile tile)
         {
-            if (tile != null && tile.Piece == null)
+            static bool Clear(Tile t) => t != null && t.Piece == null;
+            if (Clear(tile) && tile.GetAdjacentTiles().Where(Clear).Skip(1).Any())
             {
                 int x = tile.X, y = tile.Y;
 
                 var dist = _caves.Select(c => c.Center).Concat(_paths.Select(p => p.GetClosestPoint(x, y)))
                     .Select(p => GetDistSqr(p, new(x, y))).Concat(_caves.Select(c => c.ConnectionDistSqr(x, y)))
-                    .Min();
+                    .Min() + 1;
                 dist = Math.Sqrt(dist) / Consts.PathWidth / 2;
 
                 double chance;
