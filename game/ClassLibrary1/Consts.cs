@@ -146,7 +146,10 @@ namespace ClassLibrary1
         internal static int Income(int cur, double income)
         {
             double avg = cur + Income(income);
-
+            return IncomeRounding(avg);
+        }
+        internal static int IncomeRounding(double avg)
+        {
             int div = (Game.Rand.OEInt(.39) + 1) * 5;
             div = Game.Rand.WeightedInt(div, 1 - .21 / Math.Sqrt(div));
             if (div < 1)

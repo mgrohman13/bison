@@ -16,13 +16,23 @@ namespace ClassLibrary1.Pieces.Terrain
             return obj;
         }
 
+        //public void Collect(PlayerPiece piece)
+        //{
+        //    Tile tile = Tile;
+        //    if (piece.HasBehavior(out IMovable movable) && movable.CanMoveTo(tile))
+        //    {
+        //        Collect(true);
+        //        movable.Move(tile);
+        //    }
+        //}
+
         internal static void Collect(Tile tile)
         {
             foreach (var n in Game.Rand.Iterate(tile.GetAdjacentTiles()))
                 if (n.Piece is Treasure t)
-                    t.Collect();
+                    t.Collect();// false);
         }
-        private void Collect()
+        private void Collect()//bool forceEmpty)
         {
             Tile tile = Tile;
             this.Die();
@@ -30,14 +40,20 @@ namespace ClassLibrary1.Pieces.Terrain
             Dictionary<Func<Tile, int, int>, int> choices = new() { { CollectResources, 13 }, { NewResource, 1 } };
             var Func = Game.Rand.SelectValue(choices);
 
+            //if (forceEmpty)
+            //    Func = CollectResources;
+
             int value = Func(tile, Game.Rand.GaussianOEInt((130 + Game.Turn) * 16.9, .26, .13, 650));
             Game.Enemy.AddEnergy(Game.Rand.Round(value / 2.1));
+
+            //if (forceEmpty && tile.Piece != null)
+            //    throw new Exception();
         }
 
         private int CollectResources(Tile tile, int value)
         {
-            int v1 = Game.Rand.Bool() ? Game.Rand.RangeInt(value - 1, 1) : 0;
-            int v2 = value - v1;
+            int v1 = Game.Rand.Bool() ? Consts.IncomeRounding(Game.Rand.Range(value, 0)) : 0;
+            int v2 = Math.Max(0, Consts.IncomeRounding(value - v1));
             if (Game.Rand.Bool())
                 (v1, v2) = (v2, v1);
             Game.Player.AddResources(v1, v2);
