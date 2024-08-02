@@ -49,7 +49,7 @@ namespace ClassLibrary1
             { UpgType.ConstructorMove, new(Constructor.BASE_MOVE_INC * Constructor.MOVE_RAMP, 0.35, Constructor.MOVE_RAMP) },
             { UpgType.ConstructorVision, new(Constructor.BASE_VISION, 0.30) },
             { UpgType.ConstructorRepair, new(1, 0.45) },
-            { UpgType.CoreDefense, new(11, 0.65, 11 / 10.0) },
+            //{ UpgType.CoreDefense, new(11, 0.65, 11 / 10.0) },
             { UpgType.CoreShields, new(7.8, .85, 1.5) },
             /*UpgType.ExtractorResilience*/
             { UpgType.ExtractorCost, new(0.15, true) },
@@ -129,12 +129,12 @@ namespace ClassLibrary1
 
         private static readonly IReadOnlyDictionary<Type, UpgType[]> UpgTypes = new Dictionary<Type, UpgType[]>() {
             { Type.BuildingCost, new[] { UpgType.ExtractorCost, UpgType.FactoryCost, UpgType.TurretCost, } },
-            { Type.BuildingDefense, new[] { UpgType.CoreDefense, UpgType.ExtractorDefense, UpgType.ExtractorVision, UpgType.FactoryDefense, UpgType.FactoryVision, } },
+            { Type.BuildingDefense, new[] { UpgType.ExtractorDefense, UpgType.ExtractorVision, UpgType.FactoryDefense, UpgType.FactoryVision, } },
             { Type.ConstructorCost, new[] { UpgType.ConstructorCost } },
             { Type.ConstructorDefense, new[] { UpgType.ConstructorDefense } },
             { Type.ConstructorMove, new[] { UpgType.ConstructorMove, UpgType.ConstructorVision, } },
             { Type.ConstructorRepair, new[] { UpgType.ConstructorRepair } },
-            { Type.CoreShields, new[] { UpgType.CoreShields } },
+            { Type.CoreDefense, new[] { UpgType.CoreShields } },
             { Type.ExtractorValue, new[] { UpgType.ExtractorValue, UpgType.ExtractorSustain, } },
             { Type.FactoryRepair, new[] { UpgType.FactoryRepair } },
             { Type.TurretAttack, new[] { UpgType.TurretAttack, UpgType.TurretLaserAttack, UpgType.TurretExplosivesAttack, } },
@@ -149,7 +149,7 @@ namespace ClassLibrary1
             ConstructorMove,
             ConstructorVision,
             ConstructorRepair,
-            CoreDefense,
+            //CoreDefense,
             CoreShields,
             //ExtractorResilience,
             ExtractorCost,

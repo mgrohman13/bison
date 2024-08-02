@@ -89,14 +89,14 @@ namespace ClassLibrary1
             this._progress[_researching] -= amt;
         }
 
-        internal Type? AddResearch(double research)
+        internal Type? AddResearch(double research, out int add)
         {
             foreach (Type type in _choices.Keys)
                 _lastSeen[type] = Game.Turn;
 
             if (_researching != Type.Mech)
                 research = Consts.Income(research);
-            int add = Game.Rand.Round(research);
+            add = Game.Rand.Round(research);
             this._progress[_researching] += add;
 
             Type? result = null;
@@ -112,6 +112,9 @@ namespace ClassLibrary1
 
             return result;
         }
+        //internal Type FreeTech(int value)
+        //{            
+        //}
 
         private Type OnResearch()
         {
@@ -254,7 +257,7 @@ namespace ClassLibrary1
             else
                 return min + Add();
         }
-        private static double GetNext(double v) => Math.Pow(v * 5.2 + 1690, .52);
+        internal static double GetNext(double v) => Math.Pow(v * 5.2 + 1690, .52);
 
         public bool HasType(Type research)
         {
@@ -263,9 +266,9 @@ namespace ClassLibrary1
 
         public int GetBlueprintLevel()
         {
-            return Game.Rand.RangeInt((_blueprints.Max(b => (int?)b.ResearchLevel) ?? 0) + 1, GetLevel() - 1);
+            return Game.Rand.RangeInt((_blueprints.Max(b => (int?)b.ResearchLevel) ?? 0) + 1, GetTotalLevel() - 1);
         }
-        private int GetLevel()
+        public int GetTotalLevel()
         {
             return _researchLast;
         }
@@ -275,11 +278,11 @@ namespace ClassLibrary1
         }
         public int GetMinCost()
         {
-            return Game.Rand.Round(Math.Pow(GetLevel() + 2.6 * Consts.ResearchFactor, 0.78));
+            return Game.Rand.Round(Math.Pow(GetTotalLevel() + 2.6 * Consts.ResearchFactor, 0.78));
         }
         public int GetMaxCost()
         {
-            return Game.Rand.Round(Math.Pow(GetLevel() + 1.69 * Consts.ResearchFactor, 0.91));
+            return Game.Rand.Round(Math.Pow(GetTotalLevel() + 1.69 * Consts.ResearchFactor, 0.91));
         }
         public bool MakeType(Type type)
         {
@@ -304,14 +307,14 @@ namespace ClassLibrary1
                 default: throw new Exception();
             }
 
-            double chance = .65 * Math.Pow(GetLevel() / (GetLevel() + Consts.ResearchFactor), totalPow);
-            chance *= Math.Pow(GetLast(type) / (double)GetLevel(), typePow);
+            double chance = .65 * Math.Pow(GetTotalLevel() / (GetTotalLevel() + Consts.ResearchFactor), totalPow);
+            chance *= Math.Pow(GetLast(type) / (double)GetTotalLevel(), typePow);
 
             return HasType(type) && Game.Rand.Bool(chance);
         }
         public double GetMult(Type type, double pow)
         {
-            return Math.Pow(GetResearchMult(GetLevel()) * GetResearchMult(GetLast(type)), pow / 2.0);
+            return Math.Pow(GetResearchMult(GetTotalLevel()) * GetResearchMult(GetLast(type)), pow / 2.0);
         }
 
         private static IReadOnlyDictionary<Type, int> CalcMinResearch()
@@ -386,9 +389,9 @@ namespace ClassLibrary1
         public static readonly Dictionary<Type, Type[]> Dependencies = new()
         {
             { Type.Mech, Array.Empty<Type>() },
-            { Type.CoreShields, new Type[]          { Type.Mech, } },
-            { Type.Turret, new Type[]               { Type.CoreShields, } },
-            { Type.Constructor, new Type[]          { Type.CoreShields, } },
+            { Type.CoreDefense, new Type[]          { Type.Mech, } },
+            { Type.Turret, new Type[]               { Type.CoreDefense, } },
+            { Type.Constructor, new Type[]          { Type.CoreDefense, } },
             { Type.Factory, new Type[]              { Type.Constructor, } },
 
             { Type.MechVision, new Type[]           { Type.Mech, } },
@@ -440,7 +443,7 @@ namespace ClassLibrary1
         //int value is used as relative cost
         public enum Type
         {
-            CoreShields = 100,
+            CoreDefense = 100,
             Mech = 169,
             Constructor = 200,
             Turret = 250,

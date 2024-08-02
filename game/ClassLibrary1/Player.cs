@@ -139,7 +139,7 @@ namespace ClassLibrary1
             this._energy = Consts.Income(Energy, energyInc - energyUpk);
             this._mass = Consts.Income(Mass, massInc - massUpk);
 
-            return this.Research.AddResearch(researchInc);
+            return this.Research.AddResearch(researchInc, out _);
         }
     }
 }

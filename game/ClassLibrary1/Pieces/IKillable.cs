@@ -22,6 +22,7 @@ namespace ClassLibrary1.Pieces
 
         public bool Dead { get; }
 
+        internal void SetHits(int cur, int max);
         internal void Upgrade(IEnumerable<Values> defenses, double resilience);
         internal void OnAttacked();
         internal void GetHitsRepair(out double hitsInc, out double massCost);

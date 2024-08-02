@@ -33,6 +33,12 @@ namespace ClassLibrary1.Pieces
             return Piece.GetBehavior<T>();
         }
 
+        internal void SetHits(int cur, int max)
+        {
+            this._defenseCur = cur;
+            if (max != DefenseMax)
+                this._values = new(Type, max);
+        }
         internal void Upgrade(Values values)
         {
             double defPct = Consts.StatValue(DefenseCur) / Consts.StatValue(DefenseMax);

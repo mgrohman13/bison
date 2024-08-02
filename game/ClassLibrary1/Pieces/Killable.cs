@@ -58,6 +58,7 @@ namespace ClassLibrary1.Pieces
             return _piece.GetBehavior<T>();
         }
 
+        void IKillable.SetHits(int cur, int max) => Hits.SetHits(cur, max);
         void IKillable.Upgrade(IEnumerable<Values> values, double resilience)
         {
             Values hits = GetHits(values);
