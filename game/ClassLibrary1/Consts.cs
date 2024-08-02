@@ -1,6 +1,4 @@
-﻿
-
-using ClassLibrary1.Pieces;
+﻿using ClassLibrary1.Pieces;
 using System;
 using DefenseType = ClassLibrary1.Pieces.CombatTypes.DefenseType;
 
@@ -27,7 +25,7 @@ namespace ClassLibrary1
         public const double CaveDistPow = 1.13;
 
         public static readonly double ResourceAvgDist = Math.Sqrt(Scale) * 21;
-
+        public static readonly double TreasureDiv = Scale * 21;
         public const double ResearchFactor = 2600;
 
         public const double EnemyStartEnergy = 10400;
@@ -88,6 +86,8 @@ namespace ClassLibrary1
         public const int EnergyForFabricateMass = 10;
         public const int BurnMassForEnergy = 2;
         public const int MassForScrapResearch = 5; //inverted value from the other two
+        public static readonly double ResearchMassConversion = MassForScrapResearch
+            * Math.Sqrt(EnergyForFabricateMass * BurnMassForEnergy);
 
         public const double BaseConstructorUpkeep = 5;
         public const double BaseMechUpkeep = 1;
@@ -150,10 +150,14 @@ namespace ClassLibrary1
         }
         internal static int IncomeRounding(double avg)
         {
-            int div = (Game.Rand.OEInt(.39) + 1) * 5;
-            div = Game.Rand.WeightedInt(div, 1 - .21 / Math.Sqrt(div));
+            const int divMult = 5;
+            int div = 1 + Game.Rand.OEInt(.52);
+            if (Game.Rand.Bool())
+                div = Game.Rand.WeightedInt(div * divMult, 1 - .21 / Math.Sqrt(div * divMult));
+            else
+                div = Game.Rand.RangeInt(0, div) * divMult;
             if (div < 1)
-                div = 5;
+                div = Game.Rand.Bool() ? 1 : divMult;
             return Game.Rand.Round(avg / div) * div;
         }
         internal static double Income(double income) => income + Game.Rand.Gaussian(IncomeDev(income));

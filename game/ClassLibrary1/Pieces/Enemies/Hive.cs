@@ -107,8 +107,9 @@ namespace ClassLibrary1.Pieces.Enemies
         {
             Tile tile = this.Tile;
             base.Die();
+            Game.VictoryPoint();
             tile.Map.GenResources(_ => tile, .065);
-            Game.CollectHive(Cost);
+            Game.CollectResources(Cost / 1.69, out _, out _);
         }
 
         private static IEnumerable<IKillable.Values> GenKillable(int hiveIdx)
@@ -154,11 +155,6 @@ namespace ClassLibrary1.Pieces.Enemies
         public override string ToString()
         {
             return "Hive " + PieceNum;
-        }
-
-        internal static Hive NewHive(Tile tile, int f, object spawner)
-        {
-            throw new NotImplementedException();
-        }
+        } 
     }
 }

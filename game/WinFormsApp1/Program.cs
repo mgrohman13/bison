@@ -63,6 +63,7 @@ namespace WinFormsApp1
             //for (int a = 1; a < 780; a++)
             //    bp(a);
 
+            Treasure.CollectEvent += Treasure_CollectEvent;
             LoadGame();
             Application.Run(Form);
         }
@@ -120,6 +121,13 @@ namespace WinFormsApp1
                 data = new();
                 SaveGame();
             }
+        }
+
+        private static void Treasure_CollectEvent(object sender, Treasure.CollectEventArgs e)
+        {
+            MessageBox.Show(e.info);
+            if (e.research)
+                ResearchForm.ShowForm();
         }
 
         public static void EndTurn()

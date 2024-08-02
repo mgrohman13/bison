@@ -112,6 +112,10 @@ namespace ClassLibrary1.Pieces.Players
             return Energy + Mass * Consts.MechMassDiv;
         }
 
+        internal static MechBlueprint MechOneOff(IResearch research, int researchLevel)
+        {
+            return GenBlueprint(null, research, research.Game.GetPieceNum(typeof(MechBlueprint)), researchLevel);
+        }
         internal static MechBlueprint Alien(IResearch research)
         {
             return GenBlueprint(null, research, 0, research.GetBlueprintLevel());

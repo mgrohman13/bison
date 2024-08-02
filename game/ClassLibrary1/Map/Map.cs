@@ -131,9 +131,8 @@ namespace ClassLibrary1.Map
             if (Game.TEST_MAP_GEN.HasValue)
             {
                 int v = Game.TEST_MAP_GEN.Value;
-                for (int x = -v; x <= v; x++)
-                    for (int y = -v; y <= v; y++)
-                        CreateTreasure(GetTile(x, y));
+                foreach (var p in Game.Rand.Iterate(-v, v, -v, v))
+                    CreateTreasure(GetTile(p));
             }
         }
 
@@ -391,8 +390,8 @@ namespace ClassLibrary1.Map
         }
         private void CreateTreasure(Tile tile)
         {
-            static bool Clear(Tile t) => t != null && t.Piece == null;
-            if (Clear(tile) && tile.GetAdjacentTiles().Where(Clear).Skip(1).Any())
+            static bool Clear(Tile t) => t != null && (t.Piece == null || t.Piece.HasBehavior<IMovable>());
+            if (Clear(tile) && tile.Piece == null && tile.GetAdjacentTiles().Where(Clear).Skip(1).Any())
             {
                 int x = tile.X, y = tile.Y;
 
@@ -406,7 +405,7 @@ namespace ClassLibrary1.Map
                     chance = .21 - 1 / (dist - .5) / 5;
                 else
                     chance = .01 * dist / 1.5;
-                chance /= 20;
+                chance /= Consts.TreasureDiv;
 
                 if (Game.Rand.Bool(chance))
                     Treasure.NewTreasure(tile);

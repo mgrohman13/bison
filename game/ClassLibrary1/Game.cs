@@ -20,7 +20,7 @@ namespace ClassLibrary1
         {
             Rand = new MTRandom();
             Rand.StartTick();
-            TEST_MAP_GEN = Rand.GaussianCappedInt(1.3 * Consts.CaveDistance * Math.Sqrt(2), .13);
+            //TEST_MAP_GEN = Rand.GaussianCappedInt(1.3 * Consts.CaveDistance * Math.Sqrt(2), .13);
         }
 
         public readonly ClassLibrary1.Map.Map Map;
@@ -79,13 +79,25 @@ namespace ClassLibrary1
             return num;
         }
 
-        internal void CollectHive(double cost)
+        internal void CollectResources(double value, out int energy, out int mass)
         {
-            cost /= 2.1;
-            int mass = Game.Rand.RangeInt(0, Game.Rand.Round(cost / Consts.MechMassDiv - 1.3));
-            int energy = Game.Rand.Round(cost - mass * Consts.MechMassDiv);
-            Player.Spend(-energy, -mass);
+            const double massWeight = Consts.MechMassDiv / (1 + Consts.MechMassDiv);
+            double massMax = value / Consts.MechMassDiv;
+            double massAvg;
+            if (Game.Rand.Bool())
+                massAvg = Game.Rand.Weighted(massMax, massWeight);
+            else
+                massAvg = Game.Rand.Bool() ? massMax : 0;
 
+            mass = Consts.IncomeRounding(massAvg);
+            energy = Consts.IncomeRounding(value - mass * Consts.MechMassDiv);
+            if (energy < 0)
+                ;
+
+            Player.AddResources(energy, mass);
+        }
+        internal void VictoryPoint()
+        {
             if (++_victory >= POINTS_TO_WIN)
                 End(true);
         }
