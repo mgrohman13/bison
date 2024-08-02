@@ -35,7 +35,7 @@ namespace ClassLibrary1.Pieces.Players
             IMovable.Values movable = values.GetMovable(_rangeMult, _rounding);
             SetBehavior(
                 new Killable(this, values.GetKillable(Game, _defenseType, _defMult, _rounding), values.Resilience),
-                new Movable(this, movable, starter ? movable.MoveMax - movable.MoveInc - .5 : 0),
+                new Movable(this, movable, 0),// starter ? movable.MoveMax - movable.MoveInc - .5 : 0),
                 new Builder.BuildExtractor(this, values.GetRepair(Game, _rangeMult, _rounding).Builder));
             Unlock();
         }
