@@ -18,6 +18,9 @@ namespace ClassLibrary1
 
         private readonly Dictionary<Type, int> _unlockTurns;
 
+        internal EnemyResearch()
+        {
+        }
         public EnemyResearch(Game game)
         {
             Game = game;
@@ -77,11 +80,11 @@ namespace ClassLibrary1
                     break;
                 case Type.MechEnergyWeapons:
                     start = 1.3;
-                    mult = 1.0;
+                    mult = 1.1;
                     break;
                 case Type.MechLasers:
                     start = 0.7;
-                    mult = 1.5;
+                    mult = 1.3;
                     break;
                 case Type.MechExplosives:
                     mult = 0.7;
@@ -92,18 +95,18 @@ namespace ClassLibrary1
                     break;
                 case Type.MechDefense:
                     start = 0.9;
-                    mult = 1.1;
+                    mult = 1.0;
                     break;
                 case Type.MechShields:
                     start = 1.2;
                     mult = 0.6;
                     break;
                 case Type.MechArmor:
-                    mult = 1.3;
+                    mult = 1.2;
                     break;
                 case Type.MechMove:
                     start = 1.5;
-                    mult = .3;
+                    mult = 0.2;
                     break;
                 case Type.MechResilience:
                     mult = 0.4;
