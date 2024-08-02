@@ -16,6 +16,7 @@ namespace ClassLibrary1
     {
         private readonly EnemyResearch _research;
         private MechBlueprint _nextAlien;
+        private MechBlueprint NextAlien => _nextAlien;
 
         public IEnumerable<Piece> VisiblePieces => _pieces.Where(p => p.Tile.Visible);
 
@@ -43,8 +44,8 @@ namespace ClassLibrary1
             this._mass = 0;
 
             int spawns = Game.Rand.OEInt(Game.Turn / 13.0);
-            for (int a = 0; a < spawns && _nextAlien.AlienCost() + 13 < this.Energy; a++)
-                SpawnAlien(() => Game.Map.GetEnemyTile(Alien.GetPathFindingMovement(_nextAlien.Movable)));
+            for (int a = 0; a < spawns && NextAlien.AlienCost() + 13 < this.Energy; a++)
+                SpawnAlien(() => Game.Map.GetEnemyTile(Alien.GetPathFindingMovement(NextAlien.Movable)));
 
             Debug.WriteLine($"Enemy energy: {_energy}");
 
@@ -86,7 +87,7 @@ namespace ClassLibrary1
                         tile = Game.Map.GetTile(RandCoord(defTile.X), RandCoord(defTile.Y));
                     while (tile == null || tile.Piece != null);
 
-                    while (Alien.GetPathFindingMovement(_nextAlien.Movable) < Game.Map.GetMinSpawnMove(tile))
+                    while (Alien.GetPathFindingMovement(NextAlien.Movable) < Game.Map.GetMinSpawnMove(tile))
                         this._nextAlien = MechBlueprint.Alien(_research);
 
                     return tile;
@@ -100,24 +101,41 @@ namespace ClassLibrary1
         }
         internal void AddEnergy(int energy) => this._energy += energy;
 
-        private void SpawnAlien(Func<Tile> GetTile)
+        internal double SpawnAlien(Func<Tile> GetTile, double? value = null)
         {
+            void GenAlien()
+            {
+                IResearch research = _research;
+                if (value.HasValue)
+                {
+                    int min = Game.Rand.Round(value.Value / 2.1);
+                    int max = Game.Rand.Round(value.Value * 1.3);
+                    research = new ResearchMinMaxCost(research, min, max);
+                }
+                this._nextAlien = MechBlueprint.Alien(research);
+            };
+
+            if (value.HasValue)
+                GenAlien();
+
             Tile tile;
             List<Point> path;
             while (true)
             {
                 tile = GetTile();
-                path = tile.Map.PathFindCore(tile, Alien.GetPathFindingMovement(_nextAlien.Movable), blocked => !blocked.Any());
+                path = tile.Map.PathFindCore(tile, Alien.GetPathFindingMovement(NextAlien.Movable), blocked => !blocked.Any());
                 if (path == null)
-                    this._nextAlien = MechBlueprint.Alien(_research);
+                    GenAlien();
                 else
                     break;
             }
 
-            double energy = _nextAlien.AlienCost();
+            double energy = NextAlien.AlienCost();
             this._energy -= Game.Rand.Round(energy);
-            Alien.NewAlien(tile, path, energy, _nextAlien.Killable, _nextAlien.Resilience, _nextAlien.Attacker, _nextAlien.Movable);
-            this._nextAlien = MechBlueprint.Alien(_research);
+            Alien.NewAlien(tile, path, energy, NextAlien.Killable, NextAlien.Resilience, NextAlien.Attacker, NextAlien.Movable);
+            GenAlien();
+
+            return energy;
         }
         internal override bool Spend(int energy, int mass)
         {
@@ -262,8 +280,11 @@ namespace ClassLibrary1
             Tile moveTo = piece.Tile;
             if (movePiece != null && state != AIState.Heal)
             {
+                bool seeCore = targets.Any(k => k.Piece is Core);
+                if (seeCore)
+                    ;
                 List<Tile> pathTiles = new();
-                if (fullPath != null)
+                if (fullPath != null && fullPath.Count > 2)
                 {
                     int keepDiv = 0;
                     //Point final = fullPath[^1];
@@ -427,8 +448,8 @@ namespace ClassLibrary1
                         }
                     }
 
-                    string logWeights = string.Format("attWeight:{1}{0}pathWeight:{2}{0}coreWeight:{3}{0}playerAttWeight:{4}{0}moveWeight:{5}{0}repairWeight:{6}{0}defWeight:{7}",
-                            Environment.NewLine, attWeight, pathWeight, coreWeight, playerAttWeight, moveWeight, repairWeight, defWeight);
+                    //string logWeights = string.Format("attWeight:{1}{0}pathWeight:{2}{0}coreWeight:{3}{0}playerAttWeight:{4}{0}moveWeight:{5}{0}repairWeight:{6}{0}defWeight:{7}",
+                    //        Environment.NewLine, attWeight, pathWeight, coreWeight, playerAttWeight, moveWeight, repairWeight, defWeight);
 
                     void Inc(ref double weight, double pow)
                     {
@@ -453,7 +474,17 @@ namespace ClassLibrary1
                             Inc(ref defWeight, 3);
                             break;
                         case AIState.Rush:
-                            Inc(ref pathWeight, 4);
+                            if (seeCore)
+                            {
+                                Inc(ref attWeight, 3);
+                                Inc(ref playerAttWeight, 1 / 2.5);
+                                Inc(ref defWeight, 2);
+                            }
+                            else
+                            {
+                                Inc(ref pathWeight, 4);
+                                Inc(ref coreWeight, 2);
+                            }
                             Inc(ref coreWeight, 2);
                             goto case AIState.Fight;
                         default: throw new Exception();
@@ -613,8 +644,14 @@ namespace ClassLibrary1
                 double e, r;
                 e = r = 0;
                 playerPiece.GenerateResources(ref e, ref mass, ref r);
-                double researchMult = Math.Sqrt(Consts.EnergyForFabricateMass * Consts.BurnMassForEnergy) * Consts.MassForScrapResearch;
-                mass += e / Consts.MechMassDiv + r * researchMult;
+                if (killable.Piece is Core && state == AIState.Rush)
+                {
+                    const double div = 3;
+                    e += Consts.CoreEnergy / div;
+                    mass += Consts.CoreMass / div;
+                    r += Consts.CoreResearch / div;
+                }
+                mass += e / Consts.MechMassDiv + r * Consts.ResearchMassConversion;
             }
             double massDiv = state switch
             {
