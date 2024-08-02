@@ -1,6 +1,7 @@
 ﻿using ClassLibrary1.Pieces;
 using ClassLibrary1.Pieces.Enemies;
 using ClassLibrary1.Pieces.Players;
+using ClassLibrary1.Pieces.Terrain;
 using MattUtil;
 using System;
 using System.Collections.Generic;
@@ -94,6 +95,7 @@ namespace ClassLibrary1
             if (energy < 0)
                 ;
 
+            Treasure.RaiseCollectEvent(energy, mass);
             Player.AddResources(energy, mass);
         }
         internal void VictoryPoint()

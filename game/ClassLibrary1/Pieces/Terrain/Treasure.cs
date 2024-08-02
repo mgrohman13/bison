@@ -47,7 +47,7 @@ namespace ClassLibrary1.Pieces.Terrain
         private double CollectResources(Tile tile, double value)
         {
             Game.CollectResources(value, out int energy, out int mass);
-            RaiseCollectEvent($"Energy: {energy}  Mass: {mass}");
+            //RaiseCollectEvent($"Energy: {energy}  Mass: {mass}");
             return energy + mass * Consts.MechMassDiv;
         }
         private double Research(Tile tile, double value)
@@ -102,8 +102,10 @@ namespace ClassLibrary1.Pieces.Terrain
 
         public override string ToString() => "Unknown Object";
 
-        private void RaiseCollectEvent(string info, bool research = false) =>
-            CollectEvent?.Invoke(this, new CollectEventArgs(info, research));
+        internal static void RaiseCollectEvent(int energy, int mass) => 
+            RaiseCollectEvent($"Energy: {energy}  Mass: {mass}");
+        private static void RaiseCollectEvent(string info, bool research = false) =>
+            CollectEvent?.Invoke(null, new CollectEventArgs(info, research));
 
         public delegate void CollectEventHandler(object sender, CollectEventArgs e);
         public static event CollectEventHandler CollectEvent;
