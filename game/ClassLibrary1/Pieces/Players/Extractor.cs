@@ -59,10 +59,37 @@ namespace ClassLibrary1.Pieces.Players
 
         internal override void Die()
         {
+            Die(true);
+        }
+        private void Die(bool resource)
+        {
             Tile tile = this.Tile;
             base.Die();
-            Resource.SetTile(tile);
+
+            if (resource && VanishStr() > Game.Rand.GaussianOE(6.5, .39, .39))
+            {
+                Resource.SetTile(tile);
+            }
+            else
+            {
+                Resource.GetCost(1, out int energy, out int mass);
+                Treasure.NewTreasure(tile, energy + mass * Consts.MechMassDiv);
+            }
         }
+
+        internal override void StartTurn()
+        {
+            if (VanishStr() < Math.Min(Game.Rand.OEInt(), Game.Rand.OE()))
+                Die(false);
+        }
+        private double VanishStr()
+        {
+            double energyInc, massInc, researchInc;
+            energyInc = massInc = researchInc = 0;
+            Resource.GenerateResources(ref energyInc, ref massInc, ref researchInc);
+            return Math.Abs(energyInc) + Math.Abs(massInc) + Math.Abs(researchInc);
+        }
+
 
         internal override void GenerateResources(ref double energyInc, ref double massInc, ref double researchInc)
         {

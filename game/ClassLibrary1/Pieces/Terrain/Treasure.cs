@@ -9,14 +9,24 @@ namespace ClassLibrary1.Pieces.Terrain
     [Serializable]
     public class Treasure : Piece
     {
-        private static readonly double ConvertResearch = Consts.ResearchMassConversion * Consts.MechMassDiv;
+        internal static readonly double ConvertResearch = Consts.ResearchMassConversion * Consts.MechMassDiv;
 
-        internal Treasure(Tile tile) : base(null, tile) { }
+        private double? _value;
 
-        internal static Treasure NewTreasure(Tile tile)
+        internal Treasure(Tile tile, double? value) : base(null, tile)
         {
-            Treasure obj = new(tile);
+            this._value = value;
+        }
+
+        internal static Treasure NewTreasure(Tile tile, double? value = null)
+        {
+            Treasure obj = new(tile, value);
             tile.Map.Game.AddPiece(obj);
+            if (tile.GetAdjacentTiles().Any(t => t.Piece is PlayerPiece))
+            {
+                obj.Collect();
+                obj = null;
+            }
             return obj;
         }
 
@@ -39,8 +49,14 @@ namespace ClassLibrary1.Pieces.Terrain
             };
             choices.Add(CollectResources, choices.Values.Sum() * 2 + 3);
             var Func = Game.Rand.SelectValue(choices);
+            if (_value.HasValue)
+                Func = CollectResources;
 
-            double value = Func(tile, Game.Rand.GaussianOE((210 + Game.Turn) * 9.1, .26, .13, 650));
+            double value = _value ?? (210 + Game.Turn) * 9.1;
+            double min = _value.HasValue ? 13 : 650;
+            if (value < min)
+                min = value * .21;
+            value = Func(tile, Game.Rand.GaussianOE(value, .26, .13, min));
             Game.Enemy.AddEnergy(Game.Rand.Round(value * .52));
         }
 
@@ -100,9 +116,9 @@ namespace ClassLibrary1.Pieces.Terrain
             return blueprint.Energy + blueprint.Mass * Consts.MechMassDiv + researchCost;
         }
 
-        public override string ToString() => "Unknown Object";
+        public override string ToString() => _value.HasValue ? "Resources ~ " + _value.Value.ToString("0") : "Unknown Object";
 
-        internal static void RaiseCollectEvent(int energy, int mass) => 
+        internal static void RaiseCollectEvent(int energy, int mass) =>
             RaiseCollectEvent($"Energy: {energy}  Mass: {mass}");
         private static void RaiseCollectEvent(string info, bool research = false) =>
             CollectEvent?.Invoke(null, new CollectEventArgs(info, research));

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ClassLibrary1.Pieces.Terrain;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -10,6 +11,7 @@ namespace ClassLibrary1.Pieces.Enemies
     [Serializable]
     public class Portal : EnemyPiece, IDeserializationCallback
     {
+        private const double avgRange = 6.5, MIN_RANGE = Attack.MELEE_RANGE;// Attack.MIN_RANGED;
         //private readonly SpawnChance spawner;
 
         private readonly IKillable killable;
@@ -17,17 +19,21 @@ namespace ClassLibrary1.Pieces.Enemies
 
         private readonly bool _exit;
         private int _decay;
+        private double _range, _collect;
 
         //internal readonly double Cost;
         //private double energy;
 
+        public bool Exit => _exit;
         public bool Dead => killable.Dead;
 
-        private Portal(Tile tile, bool exit, IEnumerable<IKillable.Values> killable, double resilience)
+        private Portal(Tile tile, bool exit, IEnumerable<IKillable.Values> killable, double resilience, double range, double collect)
             : base(tile, AIState.Fight)
         {
             this._exit = exit;
             this._decay = 0;
+            this._range = range;
+            this._collect = collect;
 
             //this.Cost = cost + energy;
             //this.energy = energy;
@@ -38,7 +44,7 @@ namespace ClassLibrary1.Pieces.Enemies
 
             //OnDeserialization(this);
         }
-        internal static Portal NewPortal(Tile tile, double difficulty, bool exit)
+        internal static Portal NewPortal(Tile tile, double difficulty, bool exit, out double cost)
         {
             IEnumerable<IKillable.Values> killable = GenKillable(tile.Map.Game, difficulty, exit);
             //double resilience = MechBlueprint.GenResilience(.26, .169, 1 + hiveIdx);
@@ -49,61 +55,17 @@ namespace ClassLibrary1.Pieces.Enemies
             //energy = Game.Rand.Gaussian(Consts.EnemyEnergy * (52 + 2.6 * strInc) - cost, .13);
             //Debug.WriteLine($"hiveCost #{hiveIdx + 1}: {cost} ({energy})");
 
-            Portal obj = new(tile, exit, killable, 1);
+            double range = Game.Rand.GaussianCapped(avgRange, .13, MIN_RANGE);
+            cost = Consts.PortalCost * (Consts.StatValue(killable.First().Defense) + Consts.PortalDecayRate * range);
+
+            Portal obj = new(tile, exit, killable, 1, range, cost * Consts.PortalRewardPct);
             tile.Map.Game.AddPiece(obj);
 
-            double cost = Consts.StatValue(killable.First().Defense);
-
-            //Tile ResourceSpawn() => Game.Rand.SelectValue(tile.GetTilesInRange(obj.attacker).Where(t => t.Piece == null));
-            //if (Game.Rand.Bool())
-            //{
-            //    Artifact.NewArtifact(ResourceSpawn());
-            //}
-            //else if (Game.Rand.Bool())
-            //{
-            //    if (Game.Rand.Bool())
-            //        Biomass.NewBiomass(ResourceSpawn());
-            //    else
-            //        Metal.NewMetal(ResourceSpawn());
-            //}
-
+            //if (exit)
+            //    cost *= Consts.PortalExitCost;
             return obj;
         }
-        //public override void OnDeserialization(object sender)
-        //{
-        //    base.OnDeserialization(sender);
-        //    if (killable != null)
-        //    {
-        //        ((Killable)killable).OnDeserialization(this);
-        //        killable.Event.DamagedEvent += Killable_DamagedEvent;
-        //    }
-        //    if (attacker != null)
-        //    {
-        //        ((Attacker)attacker).OnDeserialization(this);
-        //        attacker.Event.AttackEvent += Attacker_AttackEvent;
-        //    }
-        //}
 
-        //private void Attacker_AttackEvent(object sender, Attacker.AttackEventArgs e)
-        //{
-        //    Tile.Map.UpdateVision(Tile.Location, Math.Sqrt(SumRange + Attack.MIN_RANGED));
-        //}
-        //private void Killable_DamagedEvent(object sender, Killable.DamagedEventArgs e)
-        //{
-        //    double cur = killable.AllDefenses.Sum(d => Consts.StatValue(d.DefenseCur));
-        //    double max = killable.AllDefenses.Sum(d => Consts.StatValue(d.DefenseMax));
-        //    ((Enemy)Side).HiveDamaged(this, e.DefTile, spawner, ref energy,
-        //        killable.Hits.DefenseCur, cur / max, MaxRange / 2.1 + Attack.MELEE_RANGE);
-        //}
-        //public double SumRange => attacker.Attacks.Sum(a => a.Range);
-        //public double MaxRange => attacker.Attacks.Max(a => a.Range);
-
-        //internal override void EndTurn(ref double energyUpk, ref double massUpk)
-        //{
-        //    Decay();
-        //    if (!Dead)
-        //        base.EndTurn(ref energyUpk, ref massUpk);
-        //}
         internal override void StartTurn()
         {
             base.StartTurn();
@@ -112,10 +74,16 @@ namespace ClassLibrary1.Pieces.Enemies
 
         private void Decay()
         {
-            this._decay += Game.Rand.OEInt(5.2);
             IKillable killable1 = GetBehavior<IKillable>();
             Defense hits = killable1.Hits;
             int def = hits.DefenseCur;
+
+            double pct = Math.Max(0, 1 - Consts.PortalDecayRate / Consts.StatValue(def));
+            _range = MIN_RANGE + pct * (_range - MIN_RANGE);
+            _collect *= 1 - Game.Rand.DoubleFull(Consts.PortalDecayRate) / Consts.PortalEntranceDef;
+
+            this._decay += Game.Rand.OEInt(Consts.PortalDecayRate);
+            // use StatValueDiff
             while (_decay >= def && def > 0)
             {
                 _decay -= def;
@@ -128,58 +96,39 @@ namespace ClassLibrary1.Pieces.Enemies
                 Die();
         }
 
-        //internal override void Die()
-        //{
-        //    //Tile tile = this.Tile;
-        //    base.Die();
-        //    //Game.VictoryPoint();
-        //    //tile.Map.GenResources(_ => tile, .065);
-        //    //Game.CollectResources(Cost / 1.69, out _, out _);
-        //}
+        internal override void Die()
+        {
+            Tile tile = this.Tile;
+            base.Die();
+            Treasure.NewTreasure(tile, _collect);
+        }
 
         private static IEnumerable<IKillable.Values> GenKillable(Game game, double difficulty, bool exit)
         {
-            //game.Enemy.di
-
-            double avg = exit ? 390 : 169;
+            double avg = exit ? Consts.PortalExitDef : Consts.PortalEntranceDef;
             avg = Consts.StatValueInverse(avg * difficulty);
-            //hiveIdx += Game.Rand.Next(3);
             IKillable.Values hits = new(DefenseType.Hits, Game.Rand.GaussianOEInt(avg, .13, .13, 10));
 
             List<IKillable.Values> defenses = new() { hits };
-
-            //double def = 9.1 + .65 * hiveIdx;
-            //bool armor = Game.Rand.Bool();
-            //if (armor)
-            //{
-            //    int shield = GenShield(5.2 + .39 * hiveIdx);
-            //    def = Math.Max(1, Consts.StatValueInverse(Consts.StatValue(def * 2.1) - Consts.StatValue(shield)));
-            //    defenses.Add(new(DefenseType.Shield, shield));
-            //    defenses.Add(new(DefenseType.Armor, Game.Rand.GaussianOEInt(def, .13, .13, Math.Min((int)def, 5))));
-            //}
-            //else
-            //{
-            //    defenses.Add(new(DefenseType.Shield, GenShield(def)));
-            //}
-            //static int GenShield(double v) => Game.Rand.GaussianOEInt(v, .13, .13, 5);
-
             return defenses;
         }
-        //private static IEnumerable<IAttacker.Values> GenAttacker(int hiveIdx)
-        //{
-        //    hiveIdx += Game.Rand.Next(3);
-        //    bool flag = Game.Rand.Bool();
 
-        //    int att = Game.Rand.GaussianOEInt(6.5 + 1.3 * hiveIdx, .13, .13, 5);
-        //    double range = Game.Rand.GaussianOE(16.9 + 2.1 * hiveIdx, .13, .13, 10);
-        //    IAttacker.Values att1 = new(flag ? AttackType.Energy : AttackType.Kinetic, att, range);
-
-        //    att = Game.Rand.GaussianOEInt(1.69 + 2.6 * hiveIdx, .13, .13, 1);
-        //    range = Game.Rand.GaussianOE(13 + 1.69 * hiveIdx, .13, .13, 10);
-        //    IAttacker.Values att2 = new(flag ? AttackType.Kinetic : AttackType.Energy, att, range);
-
-        //    return new[] { att1, att2 };
-        //}
+        internal Tile GetOutTile()
+        {
+            if (Exit)
+            {
+                Tile tile;
+                double range = _range;
+                do
+                {
+                    tile = Game.Map.GetTile(Game.Rand.GaussianInt(range), Game.Rand.GaussianInt(range));
+                    range += Game.Rand.DoubleFull();
+                }
+                while (tile is null || tile.Piece is not null);
+                return tile;
+            }
+            return null;
+        }
 
         public override string ToString()
         {
