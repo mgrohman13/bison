@@ -161,6 +161,7 @@ namespace ClassLibrary1.Pieces.Players
                     def = MTRandom.Round(Consts.StatValueInverse(Consts.StatValue(curDef) + diff * inc), rounding);
                     if (def < curDef)
                         def = curDef;
+                    // use StatValueDiff
                     prevMult += (Consts.StatValue(def) - Consts.StatValue(curDef)) / inc;
                 }
 

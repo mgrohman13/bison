@@ -13,7 +13,7 @@ namespace ClassLibrary1
 {
     internal static class EnemyMovement
     {
-        internal static void PlayTurn(Game game, double difficulty, Action<Tile, double> UpdateProgress)
+        internal static void PlayTurn(Game game, double difficulty, bool clearPaths, Action<Tile, double> UpdateProgress)
         {
             double offset = 0;
             offset = game.Enemy.Pieces.Average(Time);
@@ -35,13 +35,13 @@ namespace ClassLibrary1
             {
                 progress += Time(piece) / totalTime;
 
-                allTargets = PlayTurn(piece, Math.Pow(difficulty, Consts.DifficultyAIPow), moved, playerAttacks, allTargets, avgHp, avgWeight);
+                allTargets = PlayTurn(piece, Math.Pow(difficulty, Consts.DifficultyAIPow), clearPaths, moved, playerAttacks, allTargets, avgHp, avgWeight);
 
                 UpdateProgress(piece.Tile.Visible ? piece.Tile : null, Math.Min(progress, 1));
             }
             double Time(Piece enemy) => offset + (enemy.HasBehavior(out IMovable movable) ? movable.MoveCur * movable.MoveCur : 0);
         }
-        private static Dictionary<Tile, double> GetPlayerAttacks(Game game)
+        internal static Dictionary<Tile, double> GetPlayerAttacks(Game game)
         {
             Dictionary<Tile, double> result = new();
             foreach (var attacker in game.Player.PiecesOfType<IAttacker>())
@@ -69,12 +69,9 @@ namespace ClassLibrary1
         private static Dictionary<IKillable, Dictionary<IKillable, int>> GetAllTargets(Game game) =>
             game.Player.PiecesOfType<IKillable>().ToDictionary(k => k, k => Attack.GetDefenders(game.Enemy, k.Piece));
 
-        private static Dictionary<IKillable, Dictionary<IKillable, int>> PlayTurn(EnemyPiece piece, double difficulty, HashSet<EnemyPiece> moved,
+        private static Dictionary<IKillable, Dictionary<IKillable, int>> PlayTurn(EnemyPiece piece, double difficulty, bool clearPaths, HashSet<EnemyPiece> moved,
             Dictionary<Tile, double> playerAttacks, Dictionary<IKillable, Dictionary<IKillable, int>> allTargets, double avgHp, double avgWeight)
         {
-            if (piece.Tile.Visible)
-                ;
-
             IKillable killPiece = piece.GetBehavior<IKillable>();
             IAttacker attPiece = piece.GetBehavior<IAttacker>();
             IMovable movePiece = piece.GetBehavior<IMovable>();
@@ -94,11 +91,15 @@ namespace ClassLibrary1
             HashSet<Tile> moveTiles = new();
             if (movePiece != null)
                 moveTiles = piece.Tile.GetTilesInRange(movePiece, movePiece.MoveCur + (melee.Any() ? Attack.MELEE_RANGE : 0)).ToHashSet();
+            bool seePortal = moveTiles.Any(t => t.Piece is Portal portal && !portal.Exit)
+                && piece.Side.PiecesOfType<Portal>().Where(p => p.Exit).Any();
+            if (seePortal)
+                ;
             bool filteredMoves = false;
             void FilterMoves()
             {
                 if (!filteredMoves)
-                    moveTiles.RemoveWhere(t => t.Piece != null && t.Piece != piece);
+                    moveTiles.RemoveWhere(t => t.Piece != null && t.Piece != piece && (!seePortal || t.Piece is not Portal));
                 filteredMoves = true;
             }
 
@@ -121,7 +122,10 @@ namespace ClassLibrary1
             double maxMoveAttRange = (movePiece?.MoveCur ?? 0) + (attacks.Max(a => a?.Range) ?? 0);
             HashSet<IKillable> extendedTargets = allTargets.Keys.Where(k => k.Piece.Tile.GetDistance(piece.Tile) < maxMoveAttRange).SelectMany(k => allTargets[k].Keys).ToHashSet();
 
-            AIState state = piece.TurnState(difficulty, playerAttacks, moveTiles, extendedTargets, out List<Point> fullPath);
+            AIState state = piece.TurnState(difficulty, clearPaths, playerAttacks, moveTiles, extendedTargets, out List<Point> fullPath);
+            seePortal &= (state == AIState.Fight || state == AIState.Patrol || state == AIState.Rush);
+            if (seePortal)
+                ;
 
             IKillable target = null;
             if (attPiece != null && state != AIState.Retreat)
@@ -154,7 +158,7 @@ namespace ClassLibrary1
                 if (seeCore)
                     ;
                 List<Tile> pathTiles = new();
-                if (fullPath != null && fullPath.Count > 2)
+                if (fullPath != null && (fullPath.Count > 2 || piece.Game.Map.GetTile(fullPath[^1]).Piece is Portal))
                 {
                     int keepDiv = 0;
                     //Point final = fullPath[^1];
@@ -186,6 +190,7 @@ namespace ClassLibrary1
                 //double multiplier = 1;
                 //eventually convert to ulong?
                 Dictionary<Tile, double> dictDbl = new();
+#pragma warning disable IDE0018 // Inline variable declaration
                 foreach (var moveTile in Game.Rand.Iterate(moveTiles))
                 {
                     double attWeight = 1;
@@ -240,13 +245,28 @@ namespace ClassLibrary1
                     }
 
                     double pathWeight = 1;
-                    if (pathTiles.Any())
+                    double padding = Math.Sqrt(moveValue + 1);
+                    if (moveTile.Piece is Portal entrance && !entrance.Exit
+                        && seePortal)
                     {
+                        // consolidate
+                        Tile final = moveTile;
+                        double curDist = piece.Tile.GetDistance(final) + 1;
+                        double mult = curDist + padding;
+                        double pct = 1;
+                        double dist = -.5;
+                        dist = (dist + 1) * (dist + padding);
+                        double weight = 1 + (1 + pct * mult) / dist;
+                        weight *= weight;
+                        pathWeight = weight;
+                    }
+                    else if (pathTiles.Any())
+                    {
+                        // consolidate
                         Tile final = pathTiles[^1];
                         double curDist = piece.Tile.GetDistance(final) + 1;
                         double moveTileDist = moveTile.GetDistance(final) + 1;
                         bool moveCloser = moveTileDist <= curDist;
-                        double padding = Math.Sqrt(moveValue + 1); ;
                         double mult = curDist + padding;
                         for (int b = 0; b < pathTiles.Count; b++)
                         {
@@ -258,7 +278,7 @@ namespace ClassLibrary1
 
                             double weight = 1 + (1 + pct * mult) / dist;
                             if (moveCloser)
-                                weight *= (weight);
+                                weight *= weight;
                             else
                                 weight = Math.Sqrt(weight);
 
@@ -267,6 +287,18 @@ namespace ClassLibrary1
                     }
 
                     double coreWeight = Consts.CaveDistance / (Consts.CaveDistance + Consts.PathWidth + moveTile.GetDistance(piece.Game.Player.Core.Tile));
+                    //if (entrance)
+                    //{
+                    //    double[] all = new double[] { attWeight, pathWeight, coreWeight, playerAttWeight, moveWeight, // repairWeight,
+                    //        defWeight, };
+                    //    double w = all.Min();
+                    //    if (w < 1)
+                    //        w = 1 / w;
+                    //    else
+                    //        w = all.Max();
+                    //    w *= w + 1;
+                    //    coreWeight *= moveTiles.Count + w;
+                    //}
                     coreWeight = Math.Pow(coreWeight, difficulty);
 
                     double playerAttWeight = 1;
@@ -312,7 +344,7 @@ namespace ClassLibrary1
                                 count++;
                             }
                             defWeight = (1 + Math.Pow(defWeight, 2.0 / count)) * count;
-                            if (friendly.OfType<Hive>().Any())
+                            if (!seePortal && (friendly.OfType<Hive>().Any() || friendly.OfType<Portal>().Any()))
                                 defWeight *= Math.Sqrt(defWeight);
                             defWeight = Math.Pow(defWeight, Math.Sqrt(.25 / playerAttWeight));
                         }
@@ -379,6 +411,7 @@ namespace ClassLibrary1
 
                     dictDbl.Add(moveTile, result);
                 }
+#pragma warning restore IDE0018 // Inline variable declaration
 
                 double multiplier = 1;
                 double min = dictDbl.Values.Min();
@@ -395,7 +428,13 @@ namespace ClassLibrary1
                 moveTo = Game.Rand.SelectValue(dictInt);
             }
 
-            if (piece.Tile != moveTo)
+            if (moveTo.Piece is Portal portal && !portal.Exit)
+            {
+                var ported = movePiece?.Port(portal);
+                if (!ported.HasValue || !ported.Value)
+                    ;
+            }
+            else if (piece.Tile != moveTo)
             {
                 if (attPiece != null)
                 {
@@ -410,8 +449,7 @@ namespace ClassLibrary1
                     Fire((meleeTrg?.Piece.Tile.GetDistance(moveTo) ?? 0) > Attack.MELEE_RANGE);
                 }
 
-                if (!movePiece.EnemyMove(moveTo))
-                    ;
+                movePiece.EnemyMove(moveTo);
             }
 
             Fire(true);
@@ -432,8 +470,6 @@ namespace ClassLibrary1
                             var choices = targets.Where(CanTarget);
                             if (choices.Any())
                                 target = Game.Rand.SelectValue(choices, GetWeight);
-                            else
-                                ;
                         }
 
                         if (target != null && allTargets.TryGetValue(target, out var trgGrp))

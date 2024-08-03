@@ -124,6 +124,7 @@ namespace ClassLibrary1.Pieces.Enemies
             if (armor)
             {
                 int shield = GenShield(5.2 + .39 * hiveIdx);
+                // use StatValueDiff
                 def = Math.Max(1, Consts.StatValueInverse(Consts.StatValue(def * 2.1) - Consts.StatValue(shield)));
                 defenses.Add(new(DefenseType.Shield, shield));
                 defenses.Add(new(DefenseType.Armor, Game.Rand.GaussianOEInt(def, .13, .13, Math.Min((int)def, 5))));

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ClassLibrary1.Pieces.Players;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Tile = ClassLibrary1.Map.Map.Tile;
@@ -108,6 +109,23 @@ namespace ClassLibrary1.Pieces
             //bool attacked = HasBehavior(out IAttacker attacker) && attacker.Attacked;
             foreach (IBehavior behavior in Game.Rand.Iterate(behavior))
                 behavior.EndTurn(ref energyUpk, ref massUpk);
+        }
+
+        //internal double Strength() => Side.Research.GetTotalLevel();
+        internal double Strength(int research, bool includeImmobile = true)
+        {
+            IAttacker attacker = GetBehavior<IAttacker>();
+            IKillable killable = GetBehavior<IKillable>();
+            IMovable movable = GetBehavior<IMovable>();
+            if (attacker != null && killable != null && (includeImmobile || movable != null))
+            {
+                double researchMult = Research.GetResearchMult(research);
+                MechBlueprint.CalcCost(researchMult, 0, killable.AllDefenses.Select(d => new IKillable.Values(d)),
+                    killable.Resilience, attacker.Attacks.Select(a => new IAttacker.Values(a)),
+                    new IMovable.Values(movable), out double energy, out double mass);
+                return (energy + mass * Consts.MechMassDiv) * Consts.GetDamagedValue(killable.Piece, 1, 0);
+            }
+            return 0;
         }
     }
 }

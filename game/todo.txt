@@ -92,7 +92,35 @@ FEATURES
 	experience
 	power grid
 	research to automate mechs - big buff
+
+increase deviation in loop for all do..while tile selection
+portal leave behind treasure
+	based on player dmg done, not decay?
+	decay gives reduced reward??
+	treasure specific amt use same func as for expended resources
+pathfinding to portal has issues
+portal exit also has spawner
+portal entrance range??
+
+chance to not place resource on destroyed extractor if value is really low
+	check against sum(abs(...)) income
+		or look at cost??
+	if < gaus(6.5,.39,.39)
+	very low extractors eventually disappear without even being killed?
+		min(oe(),oe())?
+	leave behind weak collectible based on final value/cost?
+	scale def loosely with value??
+	leave behind resource?
 	
+build repair bot
+	built by constructor
+		can only move/operate inside constructor rage??
+		staying inside build range refreshes/keeps alive??
+	slow speed, 1 melee repair range
+	cost cost? cost based on def+upgrades?
+	upgrades def/move with constructor?
+	expires
+		def? upgs?
 transform to repair mode
 	stationary
 		refund move?
@@ -118,25 +146,43 @@ constructor repair
 	teleport technology?
 	automatic repair drone??
 		like we were thinking for GW
-		
-treasure
-	push away from cave connections?
-		or remove resources from connections and let treasures do the rest
-	increase ResourceAvgDist
-	
+
+mechanism to kill you quicker when behind
+	portal exit that opens near core
+		used as another spawn point
+		existing aliens can also teleport there?
+	portal entrances appear around patrolling/powerful aliens
+	costs enemy energy to place
+	placed when aliens have tech/income/army advantage
+	can be killed? decays over time?
+	state to attack core harder?
+		use existing rush, but make transation to it more likely?
+		new high level overall enemy state that changes morale cutoffs?
+
+research upg output for core hits
+BuildingDefense also add core hits?
+no max hits for core, portal, hive
+	or hive auto repair??
 make core non-reparable? only repairs through research?
 	tweak how building def affects though
 	remove efficiency entirely / no max def
 	core repair/range upgs?? maybe not...
+	
+small weapon energy cost to go offline->online (~.25?)
+	other flag switches?
+info btn show upg values
+alien att/def ratio long term
+
+retreat state not always attack, just more likely?
+weak generator buildings for foundations
+aliens move towards mechs with range on them
 reduce mech costs slightly?
 	esp att/move too much??
-chance to not place resource on destroyed extractor if value is really low
-	very low extractors eventually disappear without even being killed
 tweak UpgType values, update spreadsheet
-	repair range values
+	repair range values 
 
+constructor range min
 fix Visible code crappiness with TEST_MAP_GEN & GameOver
-alien retreat path look at adjacent tile visibility
 map - occasional caves farther out infinitely??
 replace func tell you cost even if you cant afford
 mech cost capping should decrease move speed (and attack range?)
@@ -145,12 +191,9 @@ mech costs
 show area you will scout on mouseover when can move to target
 make path edges less sharp??
 turret randomness??
-constructor range min
 can turn off mechs to save energy
 	but take time to come back online
 	can also scrap for mass
-aliens move towards mechs with range on them
-weak generator buildings for foundations
 remove move limit, make const (at 2x?)
 	make random gaussian thats different every turn? could be fun?
 randomize more consts every game
@@ -162,6 +205,14 @@ resilience
 	movement sqrt?
 SpawnChance Turn - sign use rate  
 
+Points/Tiles??
+== null vs is null
+make enemy move progress bar an event
+full move always tries to move to edge
+	fix wonky +1 inner range logic too?
+click on alien 2 centers alien 22
+implement vision for aliens?
+more treasure
 blockRadius needs to be Math.Sqrt(2) / 2 ??
 improve/fix combat log.....
 	font awesome??

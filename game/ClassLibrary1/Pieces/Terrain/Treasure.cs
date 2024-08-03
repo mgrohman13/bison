@@ -9,7 +9,7 @@ namespace ClassLibrary1.Pieces.Terrain
     [Serializable]
     public class Treasure : Piece
     {
-        private static readonly double ConvertResearch = Consts.ResearchMassConversion * Consts.MechMassDiv;
+        internal static readonly double ConvertResearch = Consts.ResearchMassConversion * Consts.MechMassDiv;
 
         internal Treasure(Tile tile) : base(null, tile) { }
 

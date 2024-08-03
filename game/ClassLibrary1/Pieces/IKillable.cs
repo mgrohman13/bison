@@ -43,6 +43,12 @@ namespace ClassLibrary1.Pieces
                     defense = 1;
                 this._defense = defense;
             }
+            public Values(Defense defense)
+                : this(defense.Type, defense.DefenseMax)
+            { }
+            public Values(Values defense)
+                : this(defense.Type, defense.Defense)
+            { }
 
             public int Defense => _defense;
         }

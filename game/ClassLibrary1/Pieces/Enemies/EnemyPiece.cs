@@ -56,14 +56,14 @@ namespace ClassLibrary1.Pieces.Enemies
             this.numAtts = 0;
 
             bool showAtt = LastAttacks.Any();
-            this.lastMove = curMove != null && (showAtt || curMove.ShowMove() || Tile.ShowMove()) ? curMove: null;
+            this.lastMove = curMove != null && (showAtt || curMove.ShowMove() || Tile.ShowMove()) ? curMove : null;
             this.curMove = Tile;
 
             if (showAtt || LastMove != null)
                 Tile.Map.UpdateVision(new[] { lastMove, curMove });
         }
 
-        internal virtual AIState TurnState(double difficulty, Dictionary<Tile, double> playerAttacks, HashSet<Tile> moveTiles, HashSet<IKillable> killables,
+        internal virtual AIState TurnState(double difficulty, bool clearPaths, Dictionary<Tile, double> playerAttacks, HashSet<Tile> moveTiles, HashSet<IKillable> killables,
             out List<Point> path)
         {
             path = null;

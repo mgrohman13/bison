@@ -307,7 +307,7 @@ namespace ClassLibrary1.Pieces.Players
                         if (Game.Rand.Bool())
                         {
                             newMovable = GenMovable(research);
-                            movable = new IMovable.Values(newMovable.MoveInc, newMovable.MoveMax, newMovable.MoveLimit);
+                            movable = new IMovable.Values(newMovable);
                         }
                         break;
                     default:

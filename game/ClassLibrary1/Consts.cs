@@ -31,13 +31,18 @@ namespace ClassLibrary1
         public const double EnemyStartEnergy = 10400;
         public const double EnemyEnergy = 520;
         public const double ExploreEnergy = 6500;
-        public const double EnemyEnergyRampTurns = 169;
-        public const double EnemyUnlockTurns = 130;
+        public const double EnemyEnergyRampTurns = EnemyUnlockTurns;
+        public const double EnemyUnlockTurns = 169;
         public const double DifficultyIncTurns = 91;
         public const double DifficultyEnergyPow = 1.3;
         public const double DifficultyResearchPow = 3.9 / Math.E;
         public const double DifficultyAIPow = .52;
-        //public const double DistanceMoveDirPow = .26;
+        public const double PortalSpawnTime = 52;
+        public const double PortalSpawnStrMult = 1.69;
+        public const double PortalCost = 16.9;
+        public const double PortalExitDef = 390;
+        public const double PortalEntranceDef = 169;
+        public const double PortalDecayRate = 5.2;
 
         public const double MoveDev = .013;
         public const double MoveLimitPow = 1.3;
@@ -213,6 +218,7 @@ namespace ClassLibrary1
                 newValue = Math.Min(max, cur + regen);
                 if (doEndTurn)
                     newValue = Game.Rand.Round(newValue);
+                // use StatValueDiff
                 double cost = StatValue(newValue) - StatValue(cur);
                 cost *= upkeepRate;
                 upkeep += cost;

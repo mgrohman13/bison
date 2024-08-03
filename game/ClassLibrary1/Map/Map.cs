@@ -37,6 +37,8 @@ namespace ClassLibrary1.Map
 
         private readonly Dictionary<ResourceType, int> resourcePool;
 
+        internal IEnumerable<Piece> AllPieces => _pieces.Values;
+
         static Map()
         {
             //static init to set NewTile
@@ -554,7 +556,9 @@ namespace ClassLibrary1.Map
 
             HashSet<Point> known = corePaths.Keys.Where(k => corePaths[k].Movement <= movement).ToHashSet();
 
-            var path = PathFind(from, Game.Player.Core.Tile, movement, false, movement, true, false, p2 =>
+            Tile to = Game.Enemy.PiecesOfType<Portal>().Where(p => !p.Exit).Select(p => p.Tile)
+                .Append(Game.Player.Core.Tile).OrderBy(t => from.GetDistance(t)).First();
+            var path = PathFind(from, to, movement, false, movement, true, false, p2 =>
                 {
                     //the map is infinite, so to avoid pathfinding forever we impose a penalty on blocked terrain instead of blocking tiles entirely
                     double penalty = 0;
@@ -595,13 +599,13 @@ namespace ClassLibrary1.Map
 
                 FoundPath target = null;
                 Point final = path[^1];
-                if (final != Game.Player.Core.Tile.Location)
+                if (final != Game.Player.Core.Tile.Location && Game.Map.GetTile(final).Piece is not Portal)
                     target = corePaths[final];
                 FoundPath foundPath = new(path, target, movement);
                 for (int a = 0; a < path.Count - 1; a++)
                 {
                     corePaths.TryGetValue(path[a], out FoundPath old);
-                    if (foundPath.Movement < (old?.Movement ?? double.MaxValue))
+                    if (foundPath.Movement < (old?.Movement ?? double.MaxValue) && to.Piece is Core)
                         corePaths[path[a]] = foundPath;//should join together so that faster aliens can switch over to faster path
                 }
                 if (target != null)

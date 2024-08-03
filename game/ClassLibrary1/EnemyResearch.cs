@@ -8,7 +8,8 @@ namespace ClassLibrary1
     [Serializable]
     internal class EnemyResearch : IResearch
     {
-        private const Type noType = Type.BuildingCost;
+        private const Type NoType = Type.BuildingCost;
+        internal const Type PortalType = Type.BuildingDefense;
 
         public Game Game { get; private set; }
 
@@ -24,7 +25,7 @@ namespace ClassLibrary1
         public EnemyResearch(Game game)
         {
             Game = game;
-            _type = noType;
+            _type = NoType;
             _research = 0;
             _difficulty = 1;
 
@@ -33,7 +34,7 @@ namespace ClassLibrary1
         private static Dictionary<Type, int> GenUnlockTurns()
         {
             //in order of liklihood
-            Type[] unlocks = new Type[] { Type.MechEnergyWeapons, Type.MechShields, Type.MechRange, Type.MechArmor, Type.MechLasers, Type.MechExplosives, };
+            Type[] unlocks = new Type[] { Type.MechEnergyWeapons, Type.MechShields, Type.MechRange, PortalType, Type.MechArmor, Type.MechLasers, Type.MechExplosives, };
             int count = unlocks.Length;
             Dictionary<Type, int> chances = unlocks.ToDictionary(t => t, t =>
                 Game.Rand.Round(Math.Pow(1 + count - Array.IndexOf(unlocks, t), 2.1)));
@@ -58,13 +59,13 @@ namespace ClassLibrary1
         public void EndTurn(double difficulty)
         {
             if (Game.Rand.Bool())
-                _type = Game.Rand.Bool() ? noType : Game.Rand.SelectValue(Enum.GetValues<Type>()
+                _type = Game.Rand.Bool() ? NoType : Game.Rand.SelectValue(Enum.GetValues<Type>()
                     .Where(t => Research.IsMech(t) && TypeVailable(t)));
             _research += Game.Rand.OE(difficulty);
             _difficulty = difficulty;
         }
 
-        private bool TypeVailable(Type type) => !_unlockTurns.ContainsKey(type) || _unlockTurns[type] < Game.Turn;
+        internal bool TypeVailable(Type type) => !_unlockTurns.ContainsKey(type) || _unlockTurns[type] < Game.Turn;
         public int GetBlueprintLevel() => Game.Rand.Round(Consts.ResearchFactor * (_difficulty - 1) + _research);
         public int GetMinCost() => Game.Rand.Round(Math.Pow(GetBlueprintLevel() + 7.8 * Consts.ResearchFactor, 0.65));
         public int GetMaxCost() => Game.Rand.Round(Math.Pow(GetBlueprintLevel() + 0.169 * Consts.ResearchFactor, 1.04)) + 390;
@@ -118,10 +119,7 @@ namespace ClassLibrary1
             return Math.Pow(start + mult * (_difficulty - 1), pow);
         }
 
-        bool IResearch.HasType(Type research)
-        {
-            return true;
-        }
+        bool IResearch.HasType(Type type) => TypeVailable(type);
         public bool MakeType(Type type)
         {
             double start, mult;
