@@ -15,7 +15,16 @@ namespace ClassLibrary1.Pieces
 
         public Piece Piece => _piece;
         public IReadOnlyList<Attack> Attacks => CombatTypes.OrderAtt(_attacks);
-        public bool Attacked => Attacks.Any(a => a.Attacked);
+
+        bool IAttacker.Attacked
+        {
+            get => Attacks.Any(a => a.Attacked);
+            set
+            {
+                foreach (var att in Attacks)
+                    att.Attacked = value;
+            }
+        }
         bool IAttacker.RestrictMove => Attacks.Any(a => a.RestrictMove);
 
         //public double TotalAttackCur2 => Consts.SumStats(Attacks.Select(a => a.AttackCur));

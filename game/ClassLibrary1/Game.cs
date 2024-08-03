@@ -37,6 +37,7 @@ namespace ClassLibrary1
         private bool _gameOver, _win;
         public bool GameOver => _gameOver;
         public bool Win => _win;
+        internal IEnumerable<Piece> AllPieces => Map.AllPieces;
 
         private readonly Dictionary<string, int> _pieceNums;
 

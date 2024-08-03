@@ -21,7 +21,11 @@ namespace ClassLibrary1.Pieces
 
         public AttackType Type => _values.Type;
         internal bool RestrictMove => _restrictMove;
-        public bool Attacked => _attacked;
+        public bool Attacked
+        {
+            get => _attacked;
+            internal set => _attacked = value;
+        }
         public int AttackCur => _attackCur;
         public int AttackMax => _values.Attack;
         public double Range => RangeBase > MELEE_RANGE ? Consts.GetDamagedValue(Piece, RangeBase, 2) : MELEE_RANGE;

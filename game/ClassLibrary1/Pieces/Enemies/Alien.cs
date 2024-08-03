@@ -104,10 +104,13 @@ namespace ClassLibrary1.Pieces.Enemies
             this._morale *= Game.Rand.Weighted(pct);
         }
 
-        internal override AIState TurnState(double difficulty, Dictionary<Tile, double> playerAttacks, HashSet<Tile> moveTiles, HashSet<IKillable> killables,
+        internal override AIState TurnState(double difficulty, bool clearPaths, Dictionary<Tile, double> playerAttacks, HashSet<Tile> moveTiles, HashSet<IKillable> killables,
             out List<Point> path)
         {
-            AIState state = base.TurnState(difficulty, playerAttacks, moveTiles, killables, out path);
+            if (clearPaths)
+                PathToCore.Clear();
+
+            AIState state = base.TurnState(difficulty, clearPaths, playerAttacks, moveTiles, killables, out path);
             killable.GetHitsRepair(out double hitsInc, out _);
             var armor = killable.Protection.SingleOrDefault(d => d.Type == CombatTypes.DefenseType.Armor && d.DefenseCur < d.DefenseMax);
             if (armor != null)
@@ -231,7 +234,7 @@ namespace ClassLibrary1.Pieces.Enemies
 
         private double GetCurDefenseValue() => killable.AllDefenses.Sum(d => Consts.StatValue(d.DefenseCur));
         private double GetPathFindingMovement() =>
-            GetPathFindingMovement(new(movable.MoveInc, movable.MoveMax, movable.MoveLimit));
+            GetPathFindingMovement(new(movable));
         internal static double GetPathFindingMovement(IMovable.Values movable) =>
             (movable.MoveInc + movable.MoveMax) / 2.0;
 

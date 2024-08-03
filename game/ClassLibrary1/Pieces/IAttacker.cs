@@ -9,7 +9,7 @@ namespace ClassLibrary1.Pieces
     public interface IAttacker : IBehavior
     {
         public IReadOnlyList<Attack> Attacks { get; }
-        public bool Attacked { get; }
+        public bool Attacked { get; internal set; }
 
         //public bool Attacked => Attacks.Any(a => a.Attacked);
         //public double TotalAttackCur2 { get; }
@@ -40,6 +40,7 @@ namespace ClassLibrary1.Pieces
             private readonly int _attack, _reload;
 
             private readonly double _range;
+
             public Values(AttackType type, int attack, double range, int? reload = null)
             {
                 this.Type = type;
@@ -51,6 +52,13 @@ namespace ClassLibrary1.Pieces
                 if (Attack < 1 || Range < 1 || Reload < 1 || Attack < Reload)
                     throw new Exception();
             }
+            public Values(Attack attack)
+                : this(attack.Type, attack.AttackMax, attack.RangeBase, attack.ReloadBase)
+            { }
+            public Values(Values attack)
+                : this(attack.Type, attack.Attack, attack.Range, attack.Reload)
+            { }
+
             public int Attack => _attack;
             public double Range => _range;
             public int Reload => _reload;

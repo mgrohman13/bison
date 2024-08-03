@@ -1,4 +1,5 @@
-﻿using ClassLibrary1.Pieces.Players;
+﻿using ClassLibrary1.Pieces.Enemies;
+using ClassLibrary1.Pieces.Players;
 using System;
 using System.Linq;
 using Tile = ClassLibrary1.Map.Map.Tile;
@@ -111,6 +112,24 @@ namespace ClassLibrary1.Pieces
             return false;
         }
         public bool CanMove => !(_moved && Piece.HasBehavior(out IAttacker attacker) && attacker.RestrictMove);
+
+        bool IMovable.Port(Portal portal)
+        {
+            double dist = Piece.Tile.GetDistance(portal.Tile);
+            if (Piece.IsEnemy && CanMove && dist <= MoveCur)
+            {
+                this._moveCur -= dist;
+                // Piece.DrainMove();
+                this._moved = true;
+                if (Piece.HasBehavior(out IAttacker attacker))
+                    attacker.Attacked = true;
+                var exits = Piece.Side.PiecesOfType<Portal>().Where(p => p.Exit);
+                if (exits.Any())
+                    Piece.SetTile(Game.Rand.SelectValue(exits).GetOutTile());
+                return true;
+            }
+            return false;
+        }
 
         public double GetInc()
         {

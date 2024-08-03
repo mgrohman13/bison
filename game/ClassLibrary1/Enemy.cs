@@ -16,6 +16,7 @@ namespace ClassLibrary1
         private readonly EnemyResearch _research;
         private MechBlueprint _nextAlien;
         private MechBlueprint NextAlien => _nextAlien;
+        private double _portalSpawn;
 
         public IEnumerable<Piece> VisiblePieces => _pieces.Where(p => p.Tile.Visible);
 
@@ -27,13 +28,18 @@ namespace ClassLibrary1
         {
             this._research = new EnemyResearch(game);
             this._nextAlien = MechBlueprint.Alien(_research);
+            this._portalSpawn = 0;
         }
 
         internal void PlayTurn(Action<Tile, double> UpdateProgress)
         {
             double difficulty = GetDifficulty(Game);
 
-            EnemyMovement.PlayTurn(Game, Math.Pow(difficulty, Consts.DifficultyAIPow), UpdateProgress);
+            bool portal = false;
+            if (this._research.TypeVailable(EnemyResearch.PortalType))
+                portal = BuildPortals();
+
+            EnemyMovement.PlayTurn(Game, Math.Pow(difficulty, Consts.DifficultyAIPow), portal, UpdateProgress);
 
             base.EndTurn(out double energyUpk, out double massUpk);
             double energy = GetEneryIncome(Game);
@@ -53,6 +59,121 @@ namespace ClassLibrary1
             //we start turn here so the player sees things in the correct state for the enemy's next moves
             base.StartTurn();
         }
+
+        private bool BuildPortals()
+        {
+            int researchLevel = Game.Rand.Round((_research.GetBlueprintLevel() + Game.Player.Research.GetBlueprintLevel()) / 2.0);
+
+            Game.Player.GetIncome(out double energyInc, out double massInc, out double researchInc);
+            double pInc = energyInc + Consts.MechMassDiv * (massInc + researchInc * Consts.ResearchMassConversion);
+            double pRes = Game.Player.Energy + Game.Player.Mass * Consts.MechMassDiv;
+            double pStr = Game.Player.Pieces.Sum(p => p.Strength(researchLevel, false));
+
+            double eInc = GetEneryIncome(Game);
+            double eRes = this.Energy + this.Mass * Consts.MechMassDiv;
+            double eStr = this.Pieces.Sum(p => p.Strength(researchLevel, false));
+
+            pStr += pRes;
+            eStr += eRes;
+
+            pStr *= Consts.PortalSpawnStrMult;
+
+            static double Inc(double e, double p) => 2 * e / (e + p) - 1;
+            double inc = 0;
+            bool str = eStr > pStr;
+            if (str)
+                inc += Inc(eStr, pStr);
+            if (eInc > pInc)
+            {
+                inc += Inc(eInc, pInc);
+                if (str)
+                    inc *= inc + 1;
+            }
+            inc /= Consts.PortalSpawnTime;
+
+            var portals = PiecesOfType<Portal>();
+            bool hasEntrance = portals.Any(p => !p.Exit);
+            bool hasExit = portals.Any(p => p.Exit);
+            double count = portals.Sum(p => Consts.StatValue(p.GetBehavior<IKillable>().Hits.DefenseCur)) / Consts.PortalExitDef + 1;
+            if (count > 2)
+                count *= count - 1;
+            inc /= count;
+
+            this._portalSpawn += inc;
+
+            bool portal = false;
+            double needed = hasEntrance && !hasExit ? .5 : 1;
+            if ((hasExit && !hasEntrance) || _portalSpawn > needed)
+                if (hasExit)
+                {
+                    portal |= BuildPortal(false);
+                }
+                else
+                {
+                    portal |= BuildPortal(true);
+                    if (!hasEntrance)
+                        portal |= BuildPortal(false);
+                }
+            return portal;
+        }
+        private bool BuildPortal(bool exit)
+        {
+            Tile tile;
+            if (exit)
+            {
+                //exits always place near core, avoiding immediate player attacks 
+                Core core = Game.Player.Core;
+                double deviation = core.GetBehavior<IRepair>().Range + Game.Rand.Range(Attack.MELEE_RANGE, Attack.MIN_RANGED);
+                var avoid = EnemyMovement.GetPlayerAttacks(Game).Keys
+                    .Concat(core.Tile.GetAllPointsInRange(deviation).Select(Game.Map.GetTile))
+                    .Where(t => t is not null).ToHashSet();
+                do
+                {
+                    deviation += Game.Rand.DoubleFull(Math.Sqrt(Consts.PathWidth));
+                    tile = Game.Map.GetTile(Game.Rand.GaussianInt(deviation), Game.Rand.GaussianInt(deviation));
+                }
+                while (tile is null || tile.Piece is not null || avoid.Contains(tile));
+            }
+            else
+            {
+                //entrances chosen based on prioximity to aliens and distance from player pieces or resources
+                static bool CanPlace(Tile t) => t.Piece is null;
+                var pieces = Pieces.Where(p => p.HasBehavior<IMovable>() && p.Tile.GetAdjacentTiles().Any(CanPlace));
+                if (pieces.Any())
+                {
+                    Dictionary<Piece, int> select = new();
+                    foreach (var piece in Game.Rand.Iterate(pieces))
+                    {
+                        double mult = 3.9, div = 1;
+                        foreach (var check in Game.Rand.Iterate(Game.AllPieces))
+                            if (piece != check)
+                            {
+                                double factor = 2.1 * Consts.PathWidth / (Consts.CavePathSize + piece.Tile.GetDistance(check.Tile));
+                                factor *= factor;
+                                if (check.IsEnemy && check is not Portal)
+                                    mult += factor;
+                                else
+                                    div += factor;
+                            }
+                        mult /= div;
+                        mult *= mult;
+                        select.Add(piece, Game.Rand.Round(mult + 1));
+                    }
+                    tile = Game.Rand.SelectValue(Game.Rand.SelectValue(select).Tile
+                        .GetAdjacentTiles().Where(CanPlace));
+                }
+                else
+                {
+                    return false;
+                }
+            }
+
+            Portal portal = Portal.NewPortal(tile, GetDifficulty(Game), exit, out double cost);
+            Spend(Game.Rand.Round(cost), 0);
+            this._portalSpawn--;
+            return true;
+        }
+
         internal static double GetDifficulty(Game game) =>
             (game.Turn + Consts.DifficultyIncTurns) / Consts.DifficultyIncTurns;
         internal static double GetEneryIncome(Game game) =>

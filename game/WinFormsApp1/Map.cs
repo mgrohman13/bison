@@ -372,10 +372,10 @@ namespace WinFormsApp1
                         resource = extractor.Resource;
                     if (piece is EnemyPiece)
                     {
-                        if (piece is Hive)
-                            AddFill(Brushes.IndianRed, rect);
-                        else
+                        if (piece is Alien)
                             AddFill(Brushes.Red, rect);
+                        else
+                            AddFill(Brushes.IndianRed, rect);
                         //if (piece is Alien alien)
                         //{
                         //    if (alien.LastMove != null)

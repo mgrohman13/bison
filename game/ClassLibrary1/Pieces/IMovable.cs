@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ClassLibrary1.Pieces.Enemies;
+using System;
 using Tile = ClassLibrary1.Map.Map.Tile;
 
 namespace ClassLibrary1.Pieces
@@ -16,6 +17,7 @@ namespace ClassLibrary1.Pieces
         void Upgrade(Values values);
         public bool Move(Tile to);
         internal bool EnemyMove(Tile to);
+        internal bool Port(Portal portal);
         public double GetInc();
 
         [Serializable]
@@ -23,6 +25,7 @@ namespace ClassLibrary1.Pieces
         {
             private readonly int _moveMax, _moveLimit;
             private readonly double _moveInc;
+
             public Values(double moveInc, int moveMax, int moveLimit)
             {
                 if (!(moveInc < moveMax && moveMax < moveLimit)) throw new Exception();
@@ -31,6 +34,13 @@ namespace ClassLibrary1.Pieces
                 this._moveMax = moveMax;
                 this._moveLimit = moveLimit;
             }
+            public Values(IMovable movable)
+                : this(movable.MoveInc, movable.MoveMax, movable.MoveLimit)
+            { }
+            public Values(Values movable)
+                : this(movable.MoveInc, movable.MoveMax, movable.MoveLimit)
+            { }
+
             public double MoveInc => _moveInc;
             public int MoveMax => _moveMax;
             public int MoveLimit => _moveLimit;
