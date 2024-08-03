@@ -137,6 +137,10 @@ research upg output for core hits
 BuildingDefense also add core hits?
 no max hits for core, portal, hive
 	or hive auto repair??
+research upg output for core hits
+BuildingDefense also add core hits?
+no max hits for core, portal, hive
+	or hive auto repair??
 make core non-reparable? only repairs through research?
 	tweak how building def affects though
 	remove efficiency entirely / no max def

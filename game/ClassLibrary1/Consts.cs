@@ -43,7 +43,6 @@ namespace ClassLibrary1
         public const double PortalExitDef = 390;
         public const double PortalEntranceDef = 169;
         public const double PortalDecayRate = 5.2;
-        public const double PortalRewardPct = .39;
 
         public const double MoveDev = .013;
         public const double MoveLimitPow = 1.3;
