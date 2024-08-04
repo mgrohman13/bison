@@ -26,14 +26,12 @@ namespace ClassLibrary1.Pieces.Enemies
             : base(tile.Map.Game.Enemy, tile)
         {
             this._state = state;
-            SetAttackEvent(this);
+
+            OnDeserialization(this);
         }
         public virtual void OnDeserialization(object sender)
         {
-            SetAttackEvent(this);
-        }
-        private void SetAttackEvent(object sender)
-        {
+            //base.OnDeserialization(sender);
             if (this.HasBehavior(out IAttacker attacker))
             {
                 ((Attacker)attacker).OnDeserialization(this);

@@ -160,6 +160,7 @@ namespace ClassLibrary1.Pieces
         {
             EndTurn(true, ref energyUpk, ref massUpk);
         }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         private void EndTurn(bool doEndTurn, ref double energyUpk, ref double massUpk)
         {
             double newValue = Consts.IncStatValue(doEndTurn, AttackCur, AttackMax, Reload, Consts.EnergyPerAttack, ref energyUpk);

@@ -9,7 +9,7 @@ using UpgType = ClassLibrary1.ResearchUpgValues.UpgType;
 namespace ClassLibrary1.Pieces.Players
 {
     [Serializable]
-    public class Core : PlayerPiece, IKillable.IRepairable, IDeserializationCallback
+    public class Core : PlayerPiece, IDeserializationCallback//, IKillable.IRepairable
     {
         private double _income = 1, _incomeTrg = 1, _hitsResearchMult = 1;
 
@@ -83,15 +83,15 @@ namespace ClassLibrary1.Pieces.Players
             Game.End();
         }
 
-        double IKillable.IRepairable.RepairCost
-        {
-            get
-            {
-                return Consts.GetRepairCost(this, GetValues(Game).Energy, GetValues(Game).Mass);
-            }
-        }
-        bool IKillable.IRepairable.AutoRepair => false;
-        public bool CanRepair() => Consts.CanRepair(this);
+        //double IKillable.IRepairable.RepairCost
+        //{
+        //    get
+        //    {
+        //        return Consts.GetRepairCost(this, GetValues(Game).Energy, GetValues(Game).Mass);
+        //    }
+        //}
+        //bool IKillable.IRepairable.AutoRepair => false;
+        //public bool CanRepair() => Consts.CanRepair(this);
 
         internal override void GenerateResources(ref double energyInc, ref double massInc, ref double researchInc)
         {

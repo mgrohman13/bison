@@ -138,6 +138,7 @@ namespace ClassLibrary1.Pieces
 
         public void OnDeserialization(object sender)
         {
+            //base.OnDeserialization(sender);
             _event ??= new();
         }
     }

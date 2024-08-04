@@ -46,7 +46,7 @@ namespace ClassLibrary1.Pieces.Enemies
         }
         internal static Portal NewPortal(Tile tile, double difficulty, bool exit, out double cost)
         {
-            IEnumerable<IKillable.Values> killable = GenKillable(tile.Map.Game, difficulty, exit);
+            IEnumerable<IKillable.Values> killable = GenKillable(difficulty, exit);
             //double resilience = MechBlueprint.GenResilience(.26, .169, 1 + hiveIdx);
             //IEnumerable<IAttacker.Values> attacks = GenAttacker(hiveIdx);
             //double strInc = Math.Pow(1.5, hiveIdx);
@@ -103,7 +103,7 @@ namespace ClassLibrary1.Pieces.Enemies
             Treasure.NewTreasure(tile, _collect);
         }
 
-        private static IEnumerable<IKillable.Values> GenKillable(Game game, double difficulty, bool exit)
+        private static IEnumerable<IKillable.Values> GenKillable(double difficulty, bool exit)
         {
             double avg = exit ? Consts.PortalExitDef : Consts.PortalEntranceDef;
             avg = Consts.StatValueInverse(avg * difficulty);
@@ -121,7 +121,7 @@ namespace ClassLibrary1.Pieces.Enemies
                 double range = _range;
                 do
                 {
-                    tile = Game.Map.GetTile(Game.Rand.GaussianInt(range), Game.Rand.GaussianInt(range));
+                    tile = Game.Map.GetTile(Tile.X + Game.Rand.GaussianInt(range), Tile.Y + Game.Rand.GaussianInt(range));
                     range += Game.Rand.DoubleFull();
                 }
                 while (tile is null || tile.Piece is not null);

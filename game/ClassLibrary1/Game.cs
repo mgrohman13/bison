@@ -168,6 +168,7 @@ namespace ClassLibrary1
         }
         private void OnDeserialization()
         {
+            //base.OnDeserialization(sender);
             this.ToString();
         }
     }

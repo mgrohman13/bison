@@ -99,10 +99,10 @@ namespace ClassLibrary1
                 count *= count - 1;
             inc /= count;
 
-            this._portalSpawn += inc;
+            this._portalSpawn += Game.Rand.OE(inc);
 
             bool portal = false;
-            double needed = hasEntrance && !hasExit ? .5 : 1;
+            double needed = hasEntrance && !hasExit ? Game.Rand.DoubleHalf() : 1;
             if ((hasExit && !hasEntrance) || _portalSpawn > needed)
                 if (hasExit)
                 {
@@ -130,7 +130,7 @@ namespace ClassLibrary1
                 do
                 {
                     deviation += Game.Rand.DoubleFull(Math.Sqrt(Consts.PathWidth));
-                    tile = Game.Map.GetTile(Game.Rand.GaussianInt(deviation), Game.Rand.GaussianInt(deviation));
+                    tile = Game.Map.GetTile(core.Tile.X + Game.Rand.GaussianInt(deviation), core.Tile.Y + Game.Rand.GaussianInt(deviation));
                 }
                 while (tile is null || tile.Piece is not null || avoid.Contains(tile));
             }
@@ -170,7 +170,7 @@ namespace ClassLibrary1
 
             Portal portal = Portal.NewPortal(tile, GetDifficulty(Game), exit, out double cost);
             Spend(Game.Rand.Round(cost), 0);
-            this._portalSpawn--;
+            this._portalSpawn -= .5;
             return true;
         }
 
