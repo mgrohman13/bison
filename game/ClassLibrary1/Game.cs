@@ -81,7 +81,7 @@ namespace ClassLibrary1
             return num;
         }
 
-        internal void CollectResources(double value, out int energy, out int mass)
+        internal void CollectResources(Tile tile,double value, out int energy, out int mass)
         {
             const double massWeight = Consts.MechMassDiv / (1 + Consts.MechMassDiv);
             double massMax = value / Consts.MechMassDiv;
@@ -96,7 +96,7 @@ namespace ClassLibrary1
             if (energy < 0)
                 ;
 
-            Treasure.RaiseCollectEvent(energy, mass);
+            Treasure.RaiseCollectEvent(tile, energy, mass);
             Player.AddResources(energy, mass);
         }
         internal void VictoryPoint()

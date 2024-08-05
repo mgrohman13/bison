@@ -62,7 +62,7 @@ namespace ClassLibrary1.Pieces.Terrain
 
         private double CollectResources(Tile tile, double value)
         {
-            Game.CollectResources(value, out int energy, out int mass);
+            Game.CollectResources(tile, value, out int energy, out int mass);
             //RaiseCollectEvent($"Energy: {energy}  Mass: {mass}");
             return energy + mass * Consts.MechMassDiv;
         }
@@ -73,7 +73,7 @@ namespace ClassLibrary1.Pieces.Terrain
             //return research * ConvertResearch;
 
             var type = Game.Player.Research.AddResearch(value / ConvertResearch, out int add);
-            RaiseCollectEvent($"Research: {add}", type.HasValue);
+            RaiseCollectEvent(tile, $"Research: {add}", type.HasValue);
             return add * ConvertResearch;
         }
         private double NewResource(Tile tile, double value)
@@ -112,27 +112,29 @@ namespace ClassLibrary1.Pieces.Terrain
             static double GetMove(IMovable.Values movable) => (movable.MoveMax + movable.MoveLimit) / 2.0;
             Players.Mech.NewMech(tile, blueprint);
 
-            RaiseCollectEvent($"Research Level: {researchLevel}");
+            RaiseCollectEvent(tile, $"Research Level: {researchLevel}");
             return blueprint.Energy + blueprint.Mass * Consts.MechMassDiv + researchCost;
         }
 
         public override string ToString() => _value.HasValue ? "Resources ~ " + _value.Value.ToString("0") : "Unknown Object";
 
-        internal static void RaiseCollectEvent(int energy, int mass) =>
-            RaiseCollectEvent($"Energy: {energy}  Mass: {mass}");
-        private static void RaiseCollectEvent(string info, bool research = false) =>
-            CollectEvent?.Invoke(null, new CollectEventArgs(info, research));
+        internal static void RaiseCollectEvent(Tile tile, int energy, int mass) =>
+            RaiseCollectEvent(tile, $"Energy: {energy}  Mass: {mass}");
+        private static void RaiseCollectEvent(Tile tile, string info, bool research = false) =>
+            CollectEvent?.Invoke(null, new CollectEventArgs(tile, info, research));
 
         public delegate void CollectEventHandler(object sender, CollectEventArgs e);
         public static event CollectEventHandler CollectEvent;
         public class CollectEventArgs
         {
-            public readonly string info;
-            public readonly bool research;
-            public CollectEventArgs(string info, bool research)
+            public readonly Tile Tile;
+            public readonly string Info;
+            public readonly bool Research;
+            public CollectEventArgs(Tile tile, string info, bool research)
             {
-                this.info = info;
-                this.research = research;
+                this.Tile = tile;
+                this.Info = info;
+                this.Research = research;
             }
         }
     }

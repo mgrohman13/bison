@@ -104,7 +104,7 @@ namespace ClassLibrary1.Pieces
         {
             if (Piece is IKillable.IRepairable repairable && DefenseCur < DefenseMax && CombatTypes.Repair(Type))
             {
-                hitsInc = GetRepair();
+                hitsInc = GetRepair(doEndTurn, DefenseMax - DefenseCur);
                 if (doEndTurn)
                     hitsInc = Game.Rand.Round(hitsInc);
                 hitsInc = Math.Min(hitsInc, DefenseMax - DefenseCur);
@@ -127,15 +127,16 @@ namespace ClassLibrary1.Pieces
                 massCost = 0;
             }
         }
-        internal double GetRepair()
+        internal double GetRepair(bool doEndTurn = false, int max = 0)
         {
             double repairInc = 0;
             if (Piece is IKillable.IRepairable repairable && repairable.CanRepair())
             {
                 //check blocks
-                double[] repairs = Piece.Side.PiecesOfType<IRepair>()
-                    .Where(r => Piece != r.Piece && Piece.Side == r.Piece.Side && Piece.Tile.GetDistance(r.Piece.Tile) <= r.Range)
-                    .Select(r => r?.Rate)
+                var repairers = Piece.Side.PiecesOfType<IRepair>()
+                    .Where(r => Piece != r.Piece && Piece.Side == r.Piece.Side && Piece.Tile.GetDistance(r.Piece.Tile) <= r.Range);
+                double[] repairs = repairers
+                    .Select(r => (r?.Rate))
                     .Concat(repairable.AutoRepair ? new double?[] { Consts.AutoRepair } : Array.Empty<double?>())
                     .Where(v => v.HasValue)
                     .Select(v => v.Value)
@@ -144,6 +145,14 @@ namespace ClassLibrary1.Pieces
                 //each additional repairer contributes a reduced amount 
                 for (int a = 0; a < repairs.Length; a++)
                     repairInc += repairs[a] / (a + 1.0);
+
+                if (doEndTurn)
+                {
+                    double pct = Math.Min(1, max / repairInc);
+                    foreach (var r in repairers)
+                        if (Game.Rand.Bool(pct))
+                            r.Repaired = true;
+                }
             }
             return repairInc;
         }

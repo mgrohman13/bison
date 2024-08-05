@@ -43,6 +43,7 @@ namespace ClassLibrary1
         public const double PortalExitDef = 390;
         public const double PortalEntranceDef = 169;
         public const double PortalDecayRate = 5.2;
+        public const double PortalRewardPct = .39;
 
         public const double MoveDev = .013;
         public const double MoveLimitPow = 1.3;
@@ -95,6 +96,7 @@ namespace ClassLibrary1
             * Math.Sqrt(EnergyForFabricateMass * BurnMassForEnergy);
 
         public const double BaseConstructorUpkeep = 5;
+        public const double BaseDroneUpkeep = 2;
         public const double BaseMechUpkeep = 1;
 
         public const double EnergyPerMove = 1 / 3.0;
@@ -111,6 +113,8 @@ namespace ClassLibrary1
         public const double EnergyRepairDiv = 2.1;
         public const int AutoRepair = 1;
         public const double ReplaceRefundPct = .8;
+
+        //StatValueDiff
 
         //public static double? StatValue(double? stat)
         //{
@@ -136,14 +140,11 @@ namespace ClassLibrary1
         //{
         //    return StatValueInverse(stats.Sum(StatValue));
         //}
-        public static double MoveValue(IMovable.Values? movable)
+        public static double MoveValue(IMovable.Values? movable) =>
+            MoveValue(movable?.MoveInc ?? 0, movable?.MoveMax ?? 0, movable?.MoveLimit ?? 0);
+        public static double MoveValue(double moveInc, double moveMax, double moveLimit)
         {
-            double move = 0;
-            if (movable.HasValue)
-            {
-                var m = movable.Value;
-                move = 8 * m.MoveInc / 1.0 + 2 * m.MoveMax / 2.1 + 1 * m.MoveLimit / 3.9;
-            }
+            double move = 8 * moveInc / 1.0 + 2 * moveMax / 2.1 + 1 * moveLimit / 3.9;
             move /= 8 + 2 + 1;
             return move;
         }

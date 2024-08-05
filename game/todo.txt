@@ -92,75 +92,36 @@ FEATURES
 	experience
 	power grid
 	research to automate mechs - big buff
-	
-build repair bot
-	built by constructor
-		can only move/operate inside constructor rage??
-		staying inside build range refreshes/keeps alive??
-	slow speed, 1 melee repair range
-	const cost? cost based on def+upgrades?
-	upgrades def/move with constructor?
-	expires
-		def? upgs?
-transform to repair mode
-	stationary
-		refund move?
-	reduce defenses?
-	costs some amt?
-		based on defenses?
-		refund small pct on xfer back?
-	always 1 repair
-constructor repair
-	bundle in constructor range upg with something else
-		bundle factory repair and new unit repair upg into one (bc  repair upgs very weak?)
-			factory repair and new unit research specific techs have no upg
-	transform to repair mode
-		defense values??
-			same as contructor? different? upgrades?
-		cost based on defense/repair
-			must be upgraded
-		transform back for no/small refund?
-	replace with new unit?
-		has to stand still to repair anything
-			switches between move/repair mode? 
-		more expensive, slower, tankier
-	teleport technology?
-	automatic repair drone??
-		like we were thinking for GW
 
+UI to build drones 
+
+combine factory repair and drone repair upgrades
+	specific techs have no upg - upg separate?
+add spawner to portal exit 
+
+alien att/def ratio long term
+retreat state not always attack, just more likely?
+weak generator buildings for foundations
+
+repair drone staying inside build range benefit? harm to moving out?
+disable/disband drone
+teleport technology?
 new high level overall enemy state that changes morale cutoffs?
 	e.g. increased rush mode when portals are placed
-portal
-	entrance probabilities should be based on str/value
-	add spawner to exit 
+portal entrance probabilities should be based on str/value
 research upg output for core hits
 BuildingDefense also add core hits?
-no max hits for core, portal, hive
-	or hive auto repair??
-research upg output for core hits
-BuildingDefense also add core hits?
-no max hits for core, portal, hive
-	or hive auto repair??
-make core non-reparable? only repairs through research?
-	tweak how building def affects though
-	remove efficiency entirely / no max def
-	core repair/range upgs?? maybe not...
-	
 extractors scale def loosely with value
 small weapon energy cost to go offline->online (~.25?)
 	other flag switches?
 info btn show upg values
-alien att/def ratio long term
-
-retreat state not always attack, just more likely?
-weak generator buildings for foundations
 aliens move towards mechs with range on them
 reduce mech costs slightly?
 	esp att/move too much??
 tweak UpgType values, update spreadsheet
 	repair range values 
-
 constructor range min
+
 fix Visible code crappiness with TEST_MAP_GEN & GameOver
 map - occasional caves farther out infinitely??
 replace func tell you cost even if you cant afford

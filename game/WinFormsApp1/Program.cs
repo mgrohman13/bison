@@ -125,8 +125,10 @@ namespace WinFormsApp1
 
         private static void Treasure_CollectEvent(object sender, Treasure.CollectEventArgs e)
         {
-            MessageBox.Show(e.info);
-            if (e.research)
+            if (e.Tile != null)
+                Form.MapMain.Center(e.Tile);
+            MessageBox.Show(e.Info);
+            if (e.Research)
                 ResearchForm.ShowForm();
         }
 

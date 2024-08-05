@@ -48,9 +48,15 @@ namespace ClassLibrary1
             { UpgType.ConstructorDefense, new(8, 0.50, 8 / 5.0) },
             { UpgType.ConstructorMove, new(Constructor.BASE_MOVE_INC * Constructor.MOVE_RAMP, 0.35, Constructor.MOVE_RAMP) },
             { UpgType.ConstructorVision, new(Constructor.BASE_VISION, 0.30) },
-            { UpgType.ConstructorRepair, new(1, 0.45) },
+            { UpgType.ConstructorRange, new(3.9, 0.45) },
+            //{ UpgType.ConstructorRepair, new(1, 0.45) },
             //{ UpgType.CoreDefense, new(11, 0.65, 11 / 10.0) },
             { UpgType.CoreShields, new(7.8, .85, 1.5) },
+            { UpgType.DroneCost, new(0.25, true) },
+            { UpgType.DroneDefense, new(13, 0.40) },
+            { UpgType.DroneMove, new(2.6, 0.30) },
+            { UpgType.DroneRepair, new(1.3, 0.75, start: -0.30) },
+            { UpgType.DroneTurns, new(16.9, 0.50) },
             /*UpgType.ExtractorResilience*/
             { UpgType.ExtractorCost, new(0.15, true) },
             { UpgType.ExtractorDefense, new(12, 0.60, 12 / 5.0) },
@@ -74,15 +80,16 @@ namespace ClassLibrary1
             { UpgType.TurretExplosivesRange, new(8, 0.48, 1.35, Attack.MIN_RANGED - 1) },
         }.AsReadOnly();
 
-        internal static double Calc(UpgType upgType, double researchMult) => UpgParams[upgType].CalcAvg(researchMult);
+        internal static double Calc(UpgType upgType, double researchMult) =>
+            UpgParams[upgType].CalcAvg(null, researchMult);
 
-        internal static string GetUpgInfo(Type type, double prevMult, double nextMult)
+        internal static string GetUpgInfo(Game game, Type type, double prevMult, double nextMult)
         {
             return UpgTypes[type].Where(u => !u.ToString().Contains("Vision")).Select(upgType =>
             {
                 var param = UpgParams[upgType];
-                double prev = CheckZero(upgType, prevMult, param.CalcAvg(prevMult));
-                return GetUpgInfo(upgType, prev, param.CalcAvg(nextMult), param.Pct);
+                double prev = CheckZero(upgType, prevMult, param.CalcAvg(game, prevMult));
+                return GetUpgInfo(upgType, prev, param.CalcAvg(game, nextMult), param.Pct);
             }).Aggregate("", (a, b) => a + (a.Length > 0 ? Environment.NewLine : string.Empty) + b);
         }
         private static double CheckZero(UpgType upgType, double prevMult, double prev)
@@ -99,6 +106,7 @@ namespace ClassLibrary1
 
         private class UpgParam
         {
+            //private Func<Game, double> GetRounding;
             private readonly double avg, start, ramp, pow;
             private readonly bool cost;
             public bool Pct => cost || avg == 1;
@@ -111,30 +119,38 @@ namespace ClassLibrary1
                 this.cost = cost;
             }
             public UpgParam(double avg, double pow, double ramp = 1, double start = 0, bool cost = false)
+            //, Func<Game, double> GetRounding = null)
             {
+                //this.GetRounding = GetRounding;
                 this.avg = avg;
                 this.start = start;
                 this.pow = pow;
                 this.ramp = ramp;
                 this.cost = cost;
             }
-            public double CalcAvg(double mult) => cost ? CalcCost(mult) : Calc(mult);
+            public double CalcAvg(Game game, double mult)
+            {
+                double avg = cost ? CalcCost(mult) : Calc(mult);
+                //if (GetRounding != null)
+                //    avg = MTRandom.Round(avg, GetRounding(game));
+                return avg;
+            }
             private double Calc(double mult) => start + avg * (mult < ramp ? mult / ramp : 1) * Math.Pow(mult, pow);
             private double CalcCost(double mult) => 1 / Math.Pow(mult, pow);
         }
 
-        private static readonly UpgType[] BaseZero = new[] { UpgType.ConstructorRepair, UpgType.CoreShields, UpgType.FactoryRepair,
+        private static readonly UpgType[] BaseZero = new[] { UpgType.CoreShields, UpgType.FactoryRepair, // UpgType.RepairDrone,
             UpgType.TurretLaserAttack, UpgType.TurretExplosivesAttack, UpgType.TurretShieldDefense,
             UpgType.TurretArmorDefense, UpgType.TurretLaserRange, UpgType.TurretExplosivesRange, };
 
         private static readonly IReadOnlyDictionary<Type, UpgType[]> UpgTypes = new Dictionary<Type, UpgType[]>() {
             { Type.BuildingCost, new[] { UpgType.ExtractorCost, UpgType.FactoryCost, UpgType.TurretCost, } },
             { Type.BuildingDefense, new[] { UpgType.ExtractorDefense, UpgType.ExtractorVision, UpgType.FactoryDefense, UpgType.FactoryVision, } },
-            { Type.ConstructorCost, new[] { UpgType.ConstructorCost } },
-            { Type.ConstructorDefense, new[] { UpgType.ConstructorDefense } },
-            { Type.ConstructorMove, new[] { UpgType.ConstructorMove, UpgType.ConstructorVision, } },
-            { Type.ConstructorRepair, new[] { UpgType.ConstructorRepair } },
-            { Type.CoreDefense, new[] { UpgType.CoreShields } },
+            { Type.ConstructorCost, new[] { UpgType.ConstructorCost, UpgType.DroneCost, } },
+            { Type.ConstructorDefense, new[] { UpgType.ConstructorDefense, UpgType.DroneDefense, } },
+            { Type.ConstructorMove, new[] { UpgType.ConstructorMove, UpgType.ConstructorVision, UpgType.ConstructorRange, UpgType.DroneMove, } },
+            { Type.RepairDrone, new[] { UpgType.DroneRepair, UpgType.DroneTurns, } },
+            { Type.CoreDefense, new[] { UpgType.CoreShields, } },
             { Type.ExtractorValue, new[] { UpgType.ExtractorValue, UpgType.ExtractorSustain, } },
             { Type.FactoryRepair, new[] { UpgType.FactoryRepair } },
             { Type.TurretAttack, new[] { UpgType.TurretAttack, UpgType.TurretLaserAttack, UpgType.TurretExplosivesAttack, } },
@@ -148,9 +164,14 @@ namespace ClassLibrary1
             ConstructorDefense,
             ConstructorMove,
             ConstructorVision,
-            ConstructorRepair,
+            ConstructorRange,
             //CoreDefense,
             CoreShields,
+            DroneCost,
+            DroneDefense,
+            DroneMove,
+            DroneRepair,
+            DroneTurns,
             //ExtractorResilience,
             ExtractorCost,
             ExtractorDefense,

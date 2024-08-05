@@ -227,5 +227,23 @@ namespace ClassLibrary1.Pieces
                     false, out energy, out mass);
             }
         }
+        [Serializable]
+        public class BuildDrone : Builder, IBuilder.IBuildDrone
+        {
+            public BuildDrone(Piece piece, IBuilder.Values values)
+                : base(piece, values)
+            {
+            }
+            public Drone Build(Tile tile)
+            {
+                if (Validate(tile, true))
+                {
+                    Drone.Cost(Piece.Game, out int energy, out int mass);
+                    if (Piece.Game.Player.Spend(energy, mass))
+                        return Drone.NewDrone(tile);
+                }
+                return null;
+            }
+        }
     }
 }

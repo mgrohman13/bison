@@ -140,10 +140,18 @@ namespace WinFormsApp1
 
                     lbl4.Show();
                     lblInf4.Show();
-                    lbl4.Text = killable.Hits.DefenseCur < killable.Hits.DefenseMax ? "Efficiency" : "Resilience";
-                    lblInf4.Text = string.Format("{0}{1}",
-                        FormatPct(killable.Hits.DefenseCur < killable.Hits.DefenseMax ? Consts.GetDamagedValue(killable.Piece, 1, 0) : killable.Resilience),
-                        killable.Hits.DefenseCur < killable.Hits.DefenseMax ? string.Format(" ({0})", FormatPct(killable.Resilience)) : "");
+                    if (playerPiece is Drone drone)
+                    {
+                        lbl4.Text = "Duration";
+                        lblInf4.Text = drone.Turns.ToString();
+                    }
+                    else
+                    {
+                        lbl4.Text = killable.Hits.DefenseCur < killable.Hits.DefenseMax ? "Efficiency" : "Resilience";
+                        lblInf4.Text = string.Format("{0}{1}",
+                            FormatPct(killable.Hits.DefenseCur < killable.Hits.DefenseMax ? Consts.GetDamagedValue(killable.Piece, 1, 0) : killable.Resilience),
+                            killable.Hits.DefenseCur < killable.Hits.DefenseMax ? string.Format(" ({0})", FormatPct(killable.Resilience)) : "");
+                    }
                 }
                 if (Selected.Piece.HasBehavior(out IMovable movable))
                 {
@@ -162,6 +170,7 @@ namespace WinFormsApp1
                     lbl6.Text = "Vision";
                     lblInf6.Text = string.Format("{0}{1}", FormatDown(playerPiece.Vision), CheckBase(playerPiece.VisionBase, playerPiece.Vision, FormatDown));
 
+                    //if ( playerPiece is Core)
                     if (playerPiece is not Extractor)
                     {
                         double energyInc, massInc, researchInc;

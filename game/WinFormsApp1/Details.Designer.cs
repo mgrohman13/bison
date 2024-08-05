@@ -44,6 +44,9 @@ namespace WinFormsApp1
             btnOK = new System.Windows.Forms.Button();
             label2 = new System.Windows.Forms.Label();
             txtVictory = new System.Windows.Forms.Label();
+            lblDM = new System.Windows.Forms.Label();
+            lblDE = new System.Windows.Forms.Label();
+            label8 = new System.Windows.Forms.Label();
             SuspendLayout();
             // 
             // label1
@@ -161,7 +164,7 @@ namespace WinFormsApp1
             btnCancel.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
             btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             btnCancel.Location = new System.Drawing.Point(178, 119);
-            btnCancel.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            btnCancel.Margin = new System.Windows.Forms.Padding(2);
             btnCancel.Name = "btnCancel";
             btnCancel.Size = new System.Drawing.Size(78, 20);
             btnCancel.TabIndex = 14;
@@ -173,7 +176,7 @@ namespace WinFormsApp1
             btnOK.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
             btnOK.DialogResult = System.Windows.Forms.DialogResult.OK;
             btnOK.Location = new System.Drawing.Point(95, 119);
-            btnOK.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            btnOK.Margin = new System.Windows.Forms.Padding(2);
             btnOK.Name = "btnOK";
             btnOK.Size = new System.Drawing.Size(78, 20);
             btnOK.TabIndex = 13;
@@ -203,11 +206,44 @@ namespace WinFormsApp1
             txtVictory.Text = "3/3";
             txtVictory.TextAlign = System.Drawing.ContentAlignment.TopRight;
             // 
+            // lblDM
+            // 
+            lblDM.Location = new System.Drawing.Point(165, 65);
+            lblDM.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            lblDM.Name = "lblDM";
+            lblDM.Size = new System.Drawing.Size(46, 20);
+            lblDM.TabIndex = 19;
+            lblDM.Text = "lblDM";
+            lblDM.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            // 
+            // lblDE
+            // 
+            lblDE.Location = new System.Drawing.Point(115, 65);
+            lblDE.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            lblDE.Name = "lblDE";
+            lblDE.Size = new System.Drawing.Size(46, 20);
+            lblDE.TabIndex = 18;
+            lblDE.Text = "lblDE";
+            lblDE.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            // 
+            // label8
+            // 
+            label8.Location = new System.Drawing.Point(8, 65);
+            label8.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            label8.Name = "label8";
+            label8.Size = new System.Drawing.Size(102, 20);
+            label8.TabIndex = 17;
+            label8.Text = "Drone";
+            label8.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+            // 
             // Details
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             ClientSize = new System.Drawing.Size(265, 146);
+            Controls.Add(lblDM);
+            Controls.Add(lblDE);
+            Controls.Add(label8);
             Controls.Add(txtVictory);
             Controls.Add(label2);
             Controls.Add(btnCancel);
@@ -224,7 +260,7 @@ namespace WinFormsApp1
             Controls.Add(lblCE);
             Controls.Add(label1);
             FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
-            Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            Margin = new System.Windows.Forms.Padding(2);
             Name = "Details";
             ShowIcon = false;
             Text = "Details";
@@ -249,5 +285,8 @@ namespace WinFormsApp1
         private System.Windows.Forms.Button btnOK;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label txtVictory;
+        private System.Windows.Forms.Label lblDM;
+        private System.Windows.Forms.Label lblDE;
+        private System.Windows.Forms.Label label8;
     }
 }

@@ -407,8 +407,6 @@ namespace WinFormsApp1
                         AddFill(Brushes.Green, rect);
                         letters.Add(rect, mech.Blueprint.BlueprintNum);
                     }
-                    else if (piece is Constructor)
-                        AddFill(Brushes.LightGreen, rect);
                     else if (piece is Core || piece is Factory)
                         AddFill(Brushes.Blue, rect);
                     else if (piece is Foundation)
@@ -428,6 +426,8 @@ namespace WinFormsApp1
                         if (extractor != null)
                             ellipses.Add(ellipse);
                     }
+                    else if (piece is PlayerPiece)
+                        AddFill(Brushes.LightGreen, rect);
 
                     if (Info.HasAnyUpgrade(piece.Tile))
                         polygons.Add(new PointF[] { new(rect.X + rect.Width / 2f, rect.Y), new(rect.Right, rect.Y), new(rect.Right, rect.Y + rect.Height / 2f) });

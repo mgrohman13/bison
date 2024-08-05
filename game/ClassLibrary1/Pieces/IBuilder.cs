@@ -35,6 +35,10 @@ namespace ClassLibrary1.Pieces
             public Turret Build(Foundation foundation);
             public bool Replace(bool doReplace, FoundationPiece foundationPiece, out int energy, out int mass);
         }
+        public interface IBuildDrone : IBuilder
+        {
+            public Drone Build(Tile tile);
+        }
 
         [Serializable]
         public readonly struct Values

@@ -137,7 +137,7 @@ namespace ClassLibrary1
                 return ResearchUpgValues.GetUpgInfo(Type.ResearchChoices, _numChoices, _numChoices + 1, v => v.ToString("0"));
             double prevMult = GetUpgMult(type, GetLast(type));
             double nextMult = GetUpgMult(type, _researchLast + _choices[type]);
-            return ResearchUpgValues.GetUpgInfo(type, prevMult, nextMult);
+            return ResearchUpgValues.GetUpgInfo(Game, type, prevMult, nextMult);
         }
         private static bool HasMin(Type type) => !NoUpgrades.Contains(type) && !IsMech(type);
 
@@ -418,7 +418,7 @@ namespace ClassLibrary1
             { Type.ConstructorCost, new Type[]      { Type.Constructor, } }, //quick
             { Type.ConstructorDefense, new Type[]   { Type.Constructor, Type.MechShields, Type.MechArmor, } },
             { Type.ConstructorMove, new Type[]      { Type.Constructor, Type.ConstructorDefense, Type.MechVision, Type.MechMove, } }, //end
-            { Type.ConstructorRepair, new Type[]    { Type.Constructor, Type.FactoryConstructor, Type.FabricateMass, } }, //end
+            { Type.RepairDrone, new Type[]          { Type.Constructor, Type.FactoryConstructor, Type.FabricateMass, } }, //end
 
             { Type.FactoryRepair, new Type[]        { Type.Factory, } },
             { Type.FactoryConstructor, new Type[]   { Type.Factory, Type.FactoryRepair, Type.ConstructorCost, } },
@@ -473,7 +473,7 @@ namespace ClassLibrary1
             ConstructorCost = 180, //quick
             ConstructorDefense = 190, //key
             ConstructorMove = 325, //end
-            ConstructorRepair = 520, //end
+            RepairDrone = 520, //end
 
             FactoryAutoRepair = 205,
             FactoryRepair = 240, //key

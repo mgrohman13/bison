@@ -11,6 +11,8 @@ namespace ClassLibrary1.Pieces
         public double Rate { get; }
         public int RateBase { get; }
 
+        internal bool Repaired { get; set; }
+
         internal void Upgrade(IRepair.Values values);
 
         [Serializable]
