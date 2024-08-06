@@ -170,7 +170,7 @@ namespace ClassLibrary1
 
             Portal portal = Portal.NewPortal(tile, GetDifficulty(Game), exit, out double cost);
             Spend(Game.Rand.Round(cost), 0);
-            this._portalSpawn -= .5;
+            this._portalSpawn -= exit ? .6 : .4;
             return true;
         }
 

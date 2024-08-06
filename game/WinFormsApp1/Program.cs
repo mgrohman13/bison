@@ -127,6 +127,7 @@ namespace WinFormsApp1
         {
             if (e.Tile != null)
                 Form.MapMain.Center(e.Tile);
+            Form.Refresh();
             MessageBox.Show(e.Info);
             if (e.Research)
                 ResearchForm.ShowForm();

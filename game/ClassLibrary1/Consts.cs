@@ -39,10 +39,10 @@ namespace ClassLibrary1
         public const double DifficultyAIPow = .52;
         public const double PortalSpawnTime = 52;
         public const double PortalSpawnStrMult = 1.69;
-        public const double PortalCost = 16.9;
-        public const double PortalExitDef = 390;
-        public const double PortalEntranceDef = 169;
-        public const double PortalDecayRate = 5.2;
+        public const double PortalCost = 11.7;
+        public const double PortalExitDef = 520;
+        public const double PortalEntranceDef = 210;
+        public const double PortalDecayRate = 6.5;
         public const double PortalRewardPct = .39;
 
         public const double MoveDev = .013;

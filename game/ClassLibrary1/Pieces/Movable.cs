@@ -125,8 +125,10 @@ namespace ClassLibrary1.Pieces
                     attacker.Attacked = true;
                 var exits = Piece.Side.PiecesOfType<Portal>().Where(p => p.Exit);
                 if (exits.Any())
+                {
                     Piece.SetTile(Game.Rand.SelectValue(exits).GetOutTile());
-                return true;
+                    return true;
+                }
             }
             return false;
         }

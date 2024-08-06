@@ -431,7 +431,7 @@ namespace ClassLibrary1
             if (moveTo.Piece is Portal portal && !portal.Exit)
             {
                 var ported = movePiece?.Port(portal);
-                if (!ported.HasValue || !ported.Value)
+                if (movePiece != null && (!ported.HasValue || !ported.Value))
                     ;
             }
             else if (piece.Tile != moveTo)
@@ -542,7 +542,7 @@ namespace ClassLibrary1
             if (killable.Piece.HasBehavior(out IRepair repairs))
                 repair += avgHp * (repairs.Range + 21) / 9.1 * (repairs.Rate + 1) * (inFight ? 3 : 1);
             if (killable.Piece.HasBehavior(out IBuilder builder))
-                repair += avgHp * (builder.Range + 21) / 9.1 * (state == AIState.Harass ? 3 : 1);
+                repair += avgHp * (builder.Range + 21) / 9.1 * (state == AIState.Harass ? 9 : 1);
 
             double mass = 0;
             if (killable.Piece is PlayerPiece playerPiece)

@@ -48,7 +48,7 @@ namespace ClassLibrary1
             { UpgType.ConstructorDefense, new(8, 0.50, 8 / 5.0) },
             { UpgType.ConstructorMove, new(Constructor.BASE_MOVE_INC * Constructor.MOVE_RAMP, 0.35, Constructor.MOVE_RAMP) },
             { UpgType.ConstructorVision, new(Constructor.BASE_VISION, 0.30) },
-            { UpgType.ConstructorRange, new(3.9, 0.45) },
+            { UpgType.ConstructorRange, new(5.2, 0.45) },
             //{ UpgType.ConstructorRepair, new(1, 0.45) },
             //{ UpgType.CoreDefense, new(11, 0.65, 11 / 10.0) },
             { UpgType.CoreShields, new(7.8, .85, 1.5) },

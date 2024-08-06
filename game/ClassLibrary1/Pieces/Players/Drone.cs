@@ -160,7 +160,7 @@ namespace ClassLibrary1.Pieces.Players
                 double move = Consts.MoveValue(moveInc, moveMax, moveLimit);
                 double repair = repairRate;
 
-                double cost = Math.Sqrt(13 * costMult * turn * (move + repair * 3.9));
+                double cost = Math.Sqrt(130 * costMult * turn * (move + repair * 3.9));
 
                 energy = MTRandom.Round(cost, costRounding);
                 mass = MTRandom.Round(cost * 1.69, costRounding);

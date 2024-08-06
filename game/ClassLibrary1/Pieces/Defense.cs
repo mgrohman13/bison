@@ -150,8 +150,11 @@ namespace ClassLibrary1.Pieces
                 {
                     double pct = Math.Min(1, max / repairInc);
                     foreach (var r in repairers)
-                        if (Game.Rand.Bool(pct))
+                        //not the best way to accomplish it, but the *.91 multiplier makes repairing multiple targets matter slightly
+                        if (Game.Rand.Bool(pct * .91))
                             r.Repaired = true;
+                        else
+                            ;
                 }
             }
             return repairInc;

@@ -78,7 +78,7 @@ namespace ClassLibrary1.Pieces.Enemies
             Defense hits = killable1.Hits;
             int def = hits.DefenseCur;
 
-            double pct = Math.Max(0, 1 - Consts.PortalDecayRate / Consts.StatValue(def));
+            double pct = Math.Max(0, 1 - Game.Rand.DoubleFull(Consts.PortalDecayRate) / Consts.StatValue(def));
             _range = MIN_RANGE + pct * (_range - MIN_RANGE);
             _collect *= 1 - Game.Rand.DoubleFull(Consts.PortalDecayRate) / Consts.PortalEntranceDef;
 

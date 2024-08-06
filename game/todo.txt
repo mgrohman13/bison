@@ -93,8 +93,16 @@ FEATURES
 	power grid
 	research to automate mechs - big buff
 
+portals cost when die not when placed, to keep energy for spawn point?
+	upkeep?
 UI to build drones 
+portal exit avoid turret max range
+	otherwise having injured turret taht can heal up and get more range is slight adv.
+	maybe exit only has chance to avoid based on att str??
+portal mostly just decaying refund some amt to enemy?
 
+make IRepair.Repaired double??
+	use elsewhere? for same piece being repaired?
 combine factory repair and drone repair upgrades
 	specific techs have no upg - upg separate?
 add spawner to portal exit 
@@ -110,7 +118,8 @@ new high level overall enemy state that changes morale cutoffs?
 	e.g. increased rush mode when portals are placed
 portal entrance probabilities should be based on str/value
 research upg output for core hits
-BuildingDefense also add core hits?
+BuildingDefense upgs too weak late?
+	also add core hits?
 extractors scale def loosely with value
 small weapon energy cost to go offline->online (~.25?)
 	other flag switches?
