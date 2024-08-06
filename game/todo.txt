@@ -93,13 +93,15 @@ FEATURES
 	power grid
 	research to automate mechs - big buff
 
-portals cost when die not when placed, to keep energy for spawn point?
-	upkeep?
 UI to build drones 
-portal exit avoid turret max range
-	otherwise having injured turret taht can heal up and get more range is slight adv.
-	maybe exit only has chance to avoid based on att str??
-portal mostly just decaying refund some amt to enemy?
+portals
+	pay cost when die not when placed, to keep energy for spawn point?
+		upkeep?
+	exit avoid turret max range?
+		otherwise having injured turret taht can heal up and get more range is slight adv.
+		maybe exit only has chance to avoid based on att str??
+	if mostly just decaying refund some amt to enemy?
+drone OP? cost more??
 
 make IRepair.Repaired double??
 	use elsewhere? for same piece being repaired?

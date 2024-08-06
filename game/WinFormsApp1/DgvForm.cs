@@ -37,21 +37,34 @@ namespace WinFormsApp1
         {
             if (selected != null)
             {
-                IBuilder.IBuildConstructor buildConstructor = GetBuilder<IBuilder.IBuildConstructor>(selected);
                 IBuilder.IBuildMech buildMech = GetBuilder<IBuilder.IBuildMech>(selected);
+                IBuilder.IBuildConstructor buildConstructor = GetBuilder<IBuilder.IBuildConstructor>(selected);
+                IBuilder.IBuildDrone buildDrone = GetBuilder<IBuilder.IBuildDrone>(selected);
                 IBuilder.IBuildExtractor buildExtractor = GetBuilder<IBuilder.IBuildExtractor>(selected);
                 IBuilder.IBuildFactory buildFactory = GetBuilder<IBuilder.IBuildFactory>(selected);
                 IBuilder.IBuildTurret buildTurret = GetBuilder<IBuilder.IBuildTurret>(selected);
-                if (buildConstructor != null && selected.Piece == null)
-                    return true;
-                if (buildMech != null && selected.Piece == null)
-                    return true;
-                if (buildExtractor != null && selected.Piece is Resource)
-                    return true;
-                if (buildFactory != null && selected.Piece is Foundation)
-                    return true;
-                if (buildTurret != null && selected.Piece is Foundation)
-                    return true;
+                Piece piece = selected.Piece;
+                if (piece is null)
+                {
+                    if (buildMech != null)
+                        return true;
+                    if (buildConstructor != null)
+                        return true;
+                    if (buildDrone != null)
+                        return true;
+                }
+                else if (piece is Resource)
+                {
+                    if (buildExtractor != null)
+                        return true;
+                }
+                else if (piece is Foundation)
+                {
+                    if (buildFactory != null)
+                        return true;
+                    if (buildTurret != null)
+                        return true;
+                }
             }
             return false;
         }
@@ -78,8 +91,9 @@ namespace WinFormsApp1
             rows = new List<BuildRow>();
             result = null;
 
-            IBuilder.IBuildConstructor buildConstructor = GetBuilder<IBuilder.IBuildConstructor>(selected);
             IBuilder.IBuildMech buildMech = GetBuilder<IBuilder.IBuildMech>(selected);
+            IBuilder.IBuildConstructor buildConstructor = GetBuilder<IBuilder.IBuildConstructor>(selected);
+            IBuilder.IBuildDrone buildDrone = GetBuilder<IBuilder.IBuildDrone>(selected);
             IBuilder.IBuildExtractor buildExtractor = GetBuilder<IBuilder.IBuildExtractor>(selected);
             IBuilder.IBuildFactory buildFactory = GetBuilder<IBuilder.IBuildFactory>(selected);
             IBuilder.IBuildTurret buildTurret = GetBuilder<IBuilder.IBuildTurret>(selected);
@@ -88,6 +102,12 @@ namespace WinFormsApp1
             {
                 Constructor.Cost(Program.Game, out int energy, out int mass);
                 BuildRow row = new(buildConstructor, "Constructor", energy, mass);
+                rows.Add(row);
+            }
+            if (buildDrone != null && selected.Piece == null)
+            {
+                Drone.Cost(Program.Game, out int energy, out int mass);
+                BuildRow row = new(buildDrone, "Drone", energy, mass);
                 rows.Add(row);
             }
             if (buildMech != null && selected.Piece == null)
@@ -201,10 +221,12 @@ namespace WinFormsApp1
             {
                 BuildRow row = (BuildRow)rows[e.RowIndex];
                 IBuilder builder = row.Builder;
-                if (builder is IBuilder.IBuildConstructor buildConstructor)
-                    this.result = buildConstructor.Build(selected);
                 if (builder is IBuilder.IBuildMech buildMech)
                     this.result = buildMech.Build(selected, row.Blueprint);
+                if (builder is IBuilder.IBuildConstructor buildConstructor)
+                    this.result = buildConstructor.Build(selected);
+                if (builder is IBuilder.IBuildDrone buildDrone)
+                    this.result = buildDrone.Build(selected);
                 if (builder is IBuilder.IBuildExtractor buildExtractor)
                     this.result = buildExtractor.Build(selected.Piece as Resource);
                 if (builder is IBuilder.IBuildFactory buildFactory)
@@ -243,6 +265,8 @@ namespace WinFormsApp1
                         return Program.GetNotify(Blueprint);
                     if (Builder is IBuilder.IBuildConstructor)
                         return Program.NotifyConstructor;
+                    if (Builder is IBuilder.IBuildDrone)
+                        return Program.NotifyDrone;
                     return true;
                 }
                 set
@@ -251,6 +275,8 @@ namespace WinFormsApp1
                         Program.SetNotify(Blueprint, value);
                     if (Builder is IBuilder.IBuildConstructor)
                         Program.NotifyConstructor = value;
+                    if (Builder is IBuilder.IBuildDrone)
+                        Program.NotifyDrone = value;
                 }
             }
             public MechBlueprint Blueprint { get; }

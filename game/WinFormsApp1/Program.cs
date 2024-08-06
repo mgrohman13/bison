@@ -32,6 +32,11 @@ namespace WinFormsApp1
             get { return data.NotifyConstructor; }
             set { data.NotifyConstructor = value; }
         }
+        public static bool NotifyDrone
+        {
+            get { return data.NotifyDrone; }
+            set { data.NotifyDrone = value; }
+        }
 
         public static string savePath;
 
@@ -268,6 +273,11 @@ namespace WinFormsApp1
                 Constructor.Cost(Game, out int e, out int m);
                 move = Game.Player.Has(e, m) && NotifyConstructor;
             }
+            if (!move && piece.HasBehavior<IBuilder.IBuildDrone>())
+            {
+                Drone.Cost(Game, out int e, out int m);
+                move = Game.Player.Has(e, m) && NotifyDrone;
+            }
             if (!move && piece.HasBehavior<IBuilder.IBuildExtractor>())
                 move = piece.Tile.GetVisibleTilesInRange(builder).Select(t => t.Piece as Resource).Where(r => r != null).Any(r =>
                 {
@@ -324,7 +334,7 @@ namespace WinFormsApp1
             public readonly HashSet<PlayerPiece> moved = new();
 
             public readonly HashSet<MechBlueprint> notifyOff = new();
-            public bool NotifyConstructor = true;
+            public bool NotifyConstructor = true, NotifyDrone = true;
 
             public bool AlertResearch = false;
             [NonSerialized]
