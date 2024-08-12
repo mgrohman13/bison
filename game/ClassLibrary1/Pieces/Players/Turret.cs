@@ -278,11 +278,11 @@ namespace ClassLibrary1.Pieces.Players
                     double attAvg = ResearchUpgValues.Calc(upgType, researchMult);
                     int attack = Game.Rand.Round(attAvg);
 
-                    double range = attacks[a].Range;
+                    //double range = attacks[a].Range;
                     //int reload = attacks[a].Reload;
-                    attacks[a] = new(type, attack, range);
+                    //attacks[a] = new(type, attack, range);
                     //reload = Math.Max(reload, Game.Rand.Round(1 + (attacks[a].Reload - 1) / 2.0)); //use in GetAttacks
-                    attacks[a] = new(type, attack, range, 1);
+                    attacks[a] = new(type, attack, attacks[a].Range, 1);
                 }
             }
         }

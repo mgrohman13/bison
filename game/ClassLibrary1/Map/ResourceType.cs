@@ -1,5 +1,4 @@
-﻿using ClassLibrary1.Pieces.Players;
-using System;
+﻿using System;
 
 namespace ClassLibrary1.Map
 {

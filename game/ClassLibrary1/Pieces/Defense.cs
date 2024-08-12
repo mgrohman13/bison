@@ -153,8 +153,6 @@ namespace ClassLibrary1.Pieces
                         //not the best way to accomplish it, but the *.91 multiplier makes repairing multiple targets matter slightly
                         if (Game.Rand.Bool(pct * .91))
                             r.Repaired = true;
-                        else
-                            ;
                 }
             }
             return repairInc;

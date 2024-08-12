@@ -123,7 +123,7 @@ namespace ClassLibrary1.Pieces
                 MechBlueprint.CalcCost(researchMult, 0, killable.AllDefenses.Select(d => new IKillable.Values(d)),
                     killable.Resilience, attacker.Attacks.Select(a => new IAttacker.Values(a)),
                     new IMovable.Values(movable), out double energy, out double mass);
-                return (energy + mass * Consts.MechMassDiv) * Consts.GetDamagedValue(killable.Piece, 1, 0);
+                return (energy + mass * Consts.EnergyMassRatio) * Consts.GetDamagedValue(killable.Piece, 1, 0);
             }
             return 0;
         }

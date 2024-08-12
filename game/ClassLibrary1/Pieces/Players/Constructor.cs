@@ -103,6 +103,8 @@ namespace ClassLibrary1.Pieces.Players
                 SetBehavior(new Builder.BuildFactory(this, GetBuilder(values)));
             if (!HasBehavior<IBuilder.IBuildDrone>() && research.HasType(Research.Type.RepairDrone))
                 SetBehavior(new Builder.BuildDrone(this, GetBuilder(values)));
+
+            Builder.UpgradeAll(this, new(GetBehavior<IBuilder.IBuildExtractor>()));
         }
         private static Values GetValues(Game game)
         {

@@ -122,8 +122,8 @@ namespace ClassLibrary1.Map
 
             //public void Turn(int turn) => _spawn.Turn(turn);
             public int SpawnChance(int turn, double? enemyMove) => _spawn.Chance;
-            public Tile SpawnTile(Map map, ResourceType? type, double deviationMult = 1)
-                => map.SpawnTile(ExploredPoint(), Consts.PathWidth * deviationMult, !type.HasValue);
+            public Tile SpawnTile(Map map)
+                => map.SpawnTile(ExploredPoint(), Consts.PathWidth * 1.69, true);
             public PointD ExploredPoint(double buffer = 0) => GetPoint(Angle, ExploredDist + buffer);
 
             public override string ToString() => "Path " + (float)Angle;

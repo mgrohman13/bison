@@ -53,7 +53,7 @@ namespace ClassLibrary1.Map
                     throw new Exception();
             }
 
-            public void Explore(Map map, Point point, double vision)
+            public void Explore(Point point, double vision)
             {
                 vision++;
                 explored |= GetDistSqr(new(point.X, point.Y), Center) < vision * vision;
@@ -128,6 +128,7 @@ namespace ClassLibrary1.Map
                     return Game.Rand.Round(_spawn.Chance * Math.Sqrt(2.1 + hives.Count));
                 return 0;
             }
+            public Tile SpawnTile(Map map) => SpawnTile(map, null, 1.69);
             public Tile SpawnTile(Map map, ResourceType? type, double deviationMult = 1)
             {
                 bool isEnemy = !type.HasValue;

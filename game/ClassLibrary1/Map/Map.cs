@@ -431,7 +431,10 @@ namespace ClassLibrary1.Map
             int RandCoord(double coord) => Game.Rand.Round(coord + Game.Rand.Gaussian(deviation));
             Tile tile;
             do
+            {
                 tile = GetTile(RandCoord(spawnCenter.X), RandCoord(spawnCenter.Y));
+                deviation += Game.Rand.DoubleFull(Consts.CavePathSize);
+            }
             while ((Valid != null && !Valid(tile)) || InvalidStartTile(tile, isEnemy));
 
             //Debug.WriteLine($"SpawnTile ({Angle:0.00}) {distance:0.0}: {spawnCenter} -> {tile}");
@@ -460,7 +463,7 @@ namespace ClassLibrary1.Map
                 Path explore = Game.Rand.Iterate(_paths).OrderBy(path => GetAngleDiff(path.Angle, angle)).First();
                 explore.Explore(this, point, vision);
                 foreach (Cave c in _caves)
-                    c.Explore(this, point, vision);
+                    c.Explore(point, vision);
             }
         }
         internal void GenResources(Func<ResourceType, Tile> GetTile, double foundationMult = 1, int numResources = 1)
@@ -507,13 +510,15 @@ namespace ClassLibrary1.Map
         }
         internal Tile GetEnemyTile(double enemyMove)
         {
-            var choices = _paths.Concat<IEnemySpawn>(_caves).ToDictionary(k => k, v => v.SpawnChance(Game.Turn, enemyMove));
+            var choices = _paths.Concat<IEnemySpawn>(_caves)
+                    .Concat(Game.Enemy.PiecesOfType<EnemyPiece>().Select(p => p.Spawn).Where(s => s is not null))
+                .ToDictionary(k => k, v => v.SpawnChance(Game.Turn, enemyMove));
             foreach (var choice in choices)
                 Debug.WriteLine($"choice - {choice.Key}: {choice.Value}");
             IEnemySpawn spawn = Game.Rand.SelectValue(choices);
             spawn.Spawner.Spawned();
             Debug.WriteLine($"GetEnemyTile: {spawn}");
-            return spawn.SpawnTile(this, null, 1.69);
+            return spawn.SpawnTile(this);
         }
 
         private static double GetAngle(PointD point) => GetAngle(point.X, point.Y);
@@ -619,6 +624,11 @@ namespace ClassLibrary1.Map
             return path;
         }
 
+        //internal Tile GetRetreatTo(Tile tile)
+        //{
+        //    throw new NotImplementedException();
+        //}
+
         private IEnumerable<Tile> FindRetreatTiles(Tile tile, Func<Tile, bool> ValidRetreat)
         {
             Dictionary<PointD, double> dists = new();
@@ -633,17 +643,17 @@ namespace ClassLibrary1.Map
                     return dists[p];
                 }).Select(point => SpawnTile(point, Consts.PathWidth + Consts.CaveSize, false, ValidRetreat));
         }
-        internal List<Point> PathFindRetreat(Tile from, Tile to, double movement, double defense, Dictionary<Tile, double> playerAttacks, Func<Tile, bool> ValidRetreat)
+        internal List<Point> PathFindRetreat(Tile from, IEnumerable<Tile> targets, double movement, double defense, Dictionary<Tile, double> playerAttacks, Func<Tile, bool> ValidRetreat)
         {
-            var options = new Tile[] { to }.Where(t => t != null).Concat(FindRetreatTiles(from, ValidRetreat)).ToList();
-            //for (int a = 0; a < 2; a++)
-            //{
+            var options = FindRetreatTiles(from, ValidRetreat);
+            if (targets != null)
+                options = options.Concat(targets);
+            options = options.OrderBy(t => from.GetDistance(t)).ToList();
             foreach (Tile tile in options)
             {
+                // Game.Rand.Bool();
                 var path = PathFind(from, tile, movement, false, movement, false, false, p =>
                 {
-                    //if (playerAttacks == null)
-                    //    return 0;
                     double att = 0;
                     Tile key = GetTile(p);
                     if (key != null)
@@ -653,12 +663,9 @@ namespace ClassLibrary1.Map
                     return Math.Sqrt((att + 1) / (defense + 1)) * Consts.PathWidth;
                 },
                 p => ValidRetreat(GetTile(p)),
-                out _);
-                //    out var blocked);
-                //    if (!blocked.Any())
-                //        return path;
-                //}
-                //playerAttacks = null;
+                out var blocked);
+                if (!blocked.Any())
+                    return path;
             }
             return null;
         }

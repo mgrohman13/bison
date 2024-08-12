@@ -81,58 +81,59 @@ FEATURES
 	fog
 	more units 
 		enemy defensive structures
-		mobile factory?000
+		mobile factory?
 		teleporter?
 		more interesting attacks (some not blocked by calc with lines)
 	more abilities
 	terrain
 		blockers
 		rubble/debris
-			harvest
-	experience
+			harvest?
+	experience!
 	power grid
-	research to automate mechs - big buff
+	research to automate mechs - big stat buff, less micromanagement
 
-UI to build drones 
-portals
-	pay cost when die not when placed, to keep energy for spawn point?
-		upkeep?
-	exit avoid turret max range?
-		otherwise having injured turret taht can heal up and get more range is slight adv.
-		maybe exit only has chance to avoid based on att str??
-	if mostly just decaying refund some amt to enemy?
-drone OP? cost more??
-
-make IRepair.Repaired double??
-	use elsewhere? for same piece being repaired?
-combine factory repair and drone repair upgrades
-	specific techs have no upg - upg separate?
-add spawner to portal exit 
-
-alien att/def ratio long term
-retreat state not always attack, just more likely?
 weak generator buildings for foundations
+windows scaling increases unit label text size
+too many 3 attack range mechs due to cap
+increase alien treasure chance?
+targetting constructor over core/extractor when in fight?
+move left for mech that can be killed deosnt account for friendly mech protecting
+slightly randomize resource extract amount
+tweak MoveValue to value max move higher?
+make sure enemy targeting group properly when can not hit best target, but adjacent 
+fix Consts.StatValue to div/2 
 
-repair drone staying inside build range benefit? harm to moving out?
-disable/disband drone
-teleport technology?
+portal entrance probabilities should be based on str/value
+mulitple enemy groups should be better at jumping into turret range?
 new high level overall enemy state that changes morale cutoffs?
 	e.g. increased rush mode when portals are placed
-portal entrance probabilities should be based on str/value
-research upg output for core hits
+aliens move towards mechs with range on them
+disable/disband drone
+move left when constructor can move to reach build extractor?
+backs of main paths occasionally visible in places 
+	
+combine factory repair and drone repair upgrades
+	specific techs have no upg - upg separate?
 BuildingDefense upgs too weak late?
-	also add core hits?
-extractors scale def loosely with value
+	also add core hits??
+	
+alien att/def ratio long term?
+make IRepair.Repaired double??
+	use elsewhere? for same piece being repaired?
+repair drone staying inside build range benefit? harm to moving out?
+teleport technology?
+research upg output for core hits
 small weapon energy cost to go offline->online (~.25?)
 	other flag switches?
 info btn show upg values
-aliens move towards mechs with range on them
 reduce mech costs slightly?
-	esp att/move too much??
-tweak UpgType values, update spreadsheet
-	repair range values 
-constructor range min
+	esp att/move too much?? 
 
+replace foundation with small multiple tile island
+	max 1 turret, factory, portal
+		or special subset of tiles??
+	unlimited generators
 fix Visible code crappiness with TEST_MAP_GEN & GameOver
 map - occasional caves farther out infinitely??
 replace func tell you cost even if you cant afford
@@ -155,7 +156,17 @@ resilience
 	cost?	
 	movement sqrt?
 SpawnChance Turn - sign use rate  
-increase deviation in loop for all do..while tile selection
+
+keep cache of target tiles for IMovable, IAttacker at game level
+	targeted updates when something changes
+	use to performantly implement move/range blocking
+	refactor existing calcs to use
+	anything else?
+
+extended ranges
+	show with enemy attacks? toggle? on selected?
+		
+on game over show visiual distinction for visible tiles
 
 pathfinding to portal (and retreat) has issues
 Points/Tiles??
@@ -165,7 +176,7 @@ full move always tries to move to edge
 	fix wonky +1 inner range logic too?
 click on alien 2 centers alien 22
 implement vision for aliens?
-more treasure
+more treasure types
 blockRadius needs to be Math.Sqrt(2) / 2 ??
 improve/fix combat log.....
 	font awesome??

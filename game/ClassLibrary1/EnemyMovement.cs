@@ -93,8 +93,6 @@ namespace ClassLibrary1
                 moveTiles = piece.Tile.GetTilesInRange(movePiece, movePiece.MoveCur + (melee.Any() ? Attack.MELEE_RANGE : 0)).ToHashSet();
             bool seePortal = moveTiles.Any(t => t.Piece is Portal portal && !portal.Exit)
                 && piece.Side.PiecesOfType<Portal>().Where(p => p.Exit).Any();
-            if (seePortal)
-                ;
             bool filteredMoves = false;
             void FilterMoves()
             {
@@ -124,8 +122,6 @@ namespace ClassLibrary1
 
             AIState state = piece.TurnState(difficulty, clearPaths, playerAttacks, moveTiles, extendedTargets, out List<Point> fullPath);
             seePortal &= (state == AIState.Fight || state == AIState.Patrol || state == AIState.Rush);
-            if (seePortal)
-                ;
 
             IKillable target = null;
             if (attPiece != null && state != AIState.Retreat)
@@ -155,8 +151,6 @@ namespace ClassLibrary1
             if (movePiece != null && state != AIState.Heal)
             {
                 bool seeCore = targets.Any(k => k.Piece is Core);
-                if (seeCore)
-                    ;
                 List<Tile> pathTiles = new();
                 if (fullPath != null && (fullPath.Count > 2 || piece.Game.Map.GetTile(fullPath[^1]).Piece is Portal))
                 {
@@ -474,21 +468,22 @@ namespace ClassLibrary1
 
                         if (target != null && allTargets.TryGetValue(target, out var trgGrp))
                         {
-                            if (state != AIState.Retreat)
+                            //if (state != AIState.Retreat)
+                            //{
+                            double def = 0;
+                            foreach (var pair in trgGrp)
                             {
-                                double def = 0;
-                                foreach (var pair in trgGrp)
-                                {
-                                    var defenses = pair.Key.AllDefenses.ToDictionary(d => d, CombatTypes.GetDefenceChance);
-                                    double tDef = defenses.Sum(p => Consts.StatValue(p.Key.DefenseCur) * p.Value) / (double)defenses.Values.Sum();
-                                    if (!pair.Key.Piece.HasBehavior<IAttacker>())
-                                        tDef *= Game.Rand.DoubleHalf();
-                                    def += tDef * pair.Value;
-                                }
-                                int defense = Game.Rand.Round(Consts.StatValueInverse(def / (double)trgGrp.Values.Sum()));
-                                if (!(IsFull(attack) || attack.AttackCur > Game.Rand.RangeInt(0, defense)))
-                                    continue;
+                                var defenses = pair.Key.AllDefenses.ToDictionary(d => d, CombatTypes.GetDefenceChance);
+                                double tDef = defenses.Sum(p => Consts.StatValue(p.Key.DefenseCur) * p.Value) / (double)defenses.Values.Sum();
+                                if (!pair.Key.Piece.HasBehavior<IAttacker>())
+                                    tDef *= Game.Rand.DoubleHalf();
+                                def += tDef * pair.Value;
                             }
+                            int defense = Game.Rand.Round(Consts.StatValueInverse(def / (double)trgGrp.Values.Sum()));
+                            double defWeight = state == AIState.Retreat ? .13 : .5;
+                            if (!(IsFull(attack) || attack.AttackCur > Game.Rand.WeightedInt(defense, defWeight)))
+                                continue;
+                            //}
 
                             if (attPiece.EnemyFire(target, attack))
                             {
@@ -539,10 +534,16 @@ namespace ClassLibrary1
                 attacks += attacker.Attacks.Sum(a => Consts.StatValue(a.AttackCur)
                     * (Math.Max(a.Range, Attack.MIN_RANGED) + Attack.MIN_RANGED) / Attack.MIN_RANGED / 2.0);
 
+            double ConstructorValue(double range) => avgHp * (range + 21) / 9.1;
             if (killable.Piece.HasBehavior(out IRepair repairs))
-                repair += avgHp * (repairs.Range + 21) / 9.1 * (repairs.Rate + 1) * (inFight ? 3 : 1);
+                repair += ConstructorValue(repairs.Range) * (repairs.Rate + 1) * (inFight ? 3 : 1);
             if (killable.Piece.HasBehavior(out IBuilder builder))
-                repair += avgHp * (builder.Range + 21) / 9.1 * (state == AIState.Harass ? 9 : 1);
+            {
+                double buildTrg = ConstructorValue(builder.Range) * (state == AIState.Harass ? 3 : 1); ;
+                if (killable.Piece.HasBehavior<IBuilder.IBuildDrone>())
+                    buildTrg *= inFight ? 9 : 3;
+                repair += buildTrg;
+            }
 
             double mass = 0;
             if (killable.Piece is PlayerPiece playerPiece)
@@ -557,7 +558,7 @@ namespace ClassLibrary1
                     mass += Consts.CoreMass / div;
                     r += Consts.CoreResearch / div;
                 }
-                mass += e / Consts.MechMassDiv + r * Consts.ResearchMassConversion;
+                mass += e / Consts.EnergyMassRatio + r * Consts.ResearchMassConversion;
             }
             double massDiv = state switch
             {

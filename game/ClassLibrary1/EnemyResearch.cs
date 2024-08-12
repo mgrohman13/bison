@@ -84,7 +84,7 @@ namespace ClassLibrary1
                     mult = 1.1;
                     break;
                 case Type.MechLasers:
-                    start = 0.7;
+                    start = 0.6;
                     mult = 1.3;
                     break;
                 case Type.MechExplosives:
@@ -95,7 +95,7 @@ namespace ClassLibrary1
                     mult = 0.9;
                     break;
                 case Type.MechDefense:
-                    start = 0.9;
+                    start = 0.7;
                     mult = 1.0;
                     break;
                 case Type.MechShields:
@@ -126,34 +126,34 @@ namespace ClassLibrary1
             switch (type)
             {
                 case Type.MechEnergyWeapons:
-                    start = 1;
-                    mult = 1.3;
+                    start = .91;
+                    mult = .91;
                     break;
                 case Type.MechLasers:
                     start = .13;
-                    mult = .65;
+                    mult = .39;
                     break;
                 case Type.MechExplosives:
                     start = 0;
-                    mult = 1;
+                    mult = .65;
                     break;
                 case Type.MechRange:
                     start = .52;
-                    mult = .78;
+                    mult = .52;
                     break;
                 case Type.MechShields:
-                    start = 1.3;
-                    mult = .91;
+                    start = 1;
+                    mult = .78;
                     break;
                 case Type.MechArmor:
                     start = .39;
-                    mult = 1.13;
+                    mult = 1;
                     break;
                 default: throw new Exception();
             }
 
             double difficulty = start + mult * (_difficulty - 1);
-            return TypeVailable(type) && Game.Rand.Bool(.91 * Math.Pow(difficulty / (difficulty + 1), 1.3));
+            return TypeVailable(type) && Game.Rand.Bool(.78 * Math.Pow(difficulty / (difficulty + 1), 1.3));
         }
 
         Type IResearch.GetType()

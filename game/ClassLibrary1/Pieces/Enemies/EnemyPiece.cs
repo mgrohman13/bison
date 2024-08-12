@@ -3,6 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using static ClassLibrary1.Map.Map;
+using IEnemySpawn = ClassLibrary1.Map.Map.IEnemySpawn;
 using Tile = ClassLibrary1.Map.Map.Tile;
 
 namespace ClassLibrary1.Pieces.Enemies
@@ -15,6 +17,7 @@ namespace ClassLibrary1.Pieces.Enemies
 
         //cant use these tiles as references...
         private Tile lastMove = null, curMove = null;
+        private readonly IEnemySpawn _spawn;
         //should be Point?
         public Tile LastMove => lastMove;
 
@@ -22,10 +25,13 @@ namespace ClassLibrary1.Pieces.Enemies
         private readonly List<Tuple<Tile, Tile>> lastAttacks = new();
         public List<Tuple<Tile, Tile>> LastAttacks => lastAttacks;
 
-        internal EnemyPiece(Tile tile, AIState state)
+        internal IEnemySpawn Spawn => _spawn;
+
+        internal EnemyPiece(Tile tile, AIState state, IEnemySpawn spawn = null)
             : base(tile.Map.Game.Enemy, tile)
         {
             this._state = state;
+            this._spawn = spawn;
 
             OnDeserialization(this);
         }
@@ -88,6 +94,15 @@ namespace ClassLibrary1.Pieces.Enemies
             Patrol,
             Harass,
             Rush,
+        }
+        internal class PieceSpawn : IEnemySpawn
+        {
+            private readonly SpawnChance _spawn = new();
+            private Func<Tile> GetTile;
+            public SpawnChance Spawner => _spawn;
+            public void OnDeserialization(Func<Tile> SpawnTile) => this.GetTile = SpawnTile;
+            public int SpawnChance(int turn, double? enemyMove) => Spawner.Chance;
+            public Tile SpawnTile(Map.Map map) => GetTile();
         }
     }
 }

@@ -15,11 +15,13 @@ namespace ClassLibrary1.Pieces.Enemies
         //private readonly SpawnChance spawner;
 
         private readonly IKillable killable;
+        private readonly PieceSpawn spawn;
         //private readonly IAttacker attacker;
 
         private readonly bool _exit;
         private int _decay;
         private double _range, _collect;
+        private readonly double _total;
 
         //internal readonly double Cost;
         //private double energy;
@@ -27,22 +29,30 @@ namespace ClassLibrary1.Pieces.Enemies
         public bool Exit => _exit;
         public bool Dead => killable.Dead;
 
-        private Portal(Tile tile, bool exit, IEnumerable<IKillable.Values> killable, double resilience, double range, double collect)
-            : base(tile, AIState.Fight)
+        private Portal(Tile tile, bool exit, IEnumerable<IKillable.Values> killable,
+            double resilience, double range, double collect, PieceSpawn spawn)
+            : base(tile, AIState.Fight, spawn)
         {
             this._exit = exit;
             this._decay = 0;
             this._range = range;
             this._collect = collect;
+            this._total = collect;
 
             //this.Cost = cost + energy;
             //this.energy = energy;
 
             this.killable = new Killable(this, killable, resilience);
+            this.spawn = spawn;
             //this.attacker = new Attacker(this, attacks);
             SetBehavior(this.killable);
 
-            //OnDeserialization(this);
+            OnDeserialization(this);
+        }
+        public override void OnDeserialization(object sender)
+        {
+            base.OnDeserialization(sender);
+            spawn?.OnDeserialization(GetOutTile);
         }
         internal static Portal NewPortal(Tile tile, double difficulty, bool exit, out double cost)
         {
@@ -58,7 +68,9 @@ namespace ClassLibrary1.Pieces.Enemies
             double range = Game.Rand.GaussianCapped(avgRange, .13, MIN_RANGE);
             cost = Consts.PortalCost * (Consts.StatValue(killable.First().Defense) + Consts.PortalDecayRate * range);
 
-            Portal obj = new(tile, exit, killable, 1, range, cost * Consts.PortalRewardPct);
+            PieceSpawn spawn = exit ? new PieceSpawn() : null;
+            spawn?.Spawner?.Mult(3.9);
+            Portal obj = new(tile, exit, killable, 1, range, cost * Consts.PortalRewardPct, spawn);
             tile.Map.Game.AddPiece(obj);
 
             //if (exit)
@@ -80,9 +92,13 @@ namespace ClassLibrary1.Pieces.Enemies
 
             double pct = Math.Max(0, 1 - Game.Rand.DoubleFull(Consts.PortalDecayRate) / Consts.StatValue(def));
             _range = MIN_RANGE + pct * (_range - MIN_RANGE);
-            _collect *= 1 - Game.Rand.DoubleFull(Consts.PortalDecayRate) / Consts.PortalEntranceDef;
+            int decay = Game.Rand.OEInt(Consts.PortalDecayRate);
+            _collect *= 1 - decay / (decay + Consts.PortalEntranceDef);
 
-            this._decay += Game.Rand.OEInt(Consts.PortalDecayRate);
+            pct = 2 / (1 + pct);
+            spawn.Spawner.Mult(pct * pct);
+
+            this._decay += decay;
             // use StatValueDiff
             while (_decay >= def && def > 0)
             {
@@ -101,16 +117,22 @@ namespace ClassLibrary1.Pieces.Enemies
             Tile tile = this.Tile;
             base.Die();
             Treasure.NewTreasure(tile, _collect);
+            Game.Enemy.AddEnergy(Game.Rand.GaussianInt(_total - _collect, .13));
         }
 
         private static IEnumerable<IKillable.Values> GenKillable(double difficulty, bool exit)
         {
-            double avg = exit ? Consts.PortalExitDef : Consts.PortalEntranceDef;
-            avg = Consts.StatValueInverse(avg * difficulty);
+            double avg = GetDefAvg(difficulty, exit);
             IKillable.Values hits = new(DefenseType.Hits, Game.Rand.GaussianOEInt(avg, .13, .13, 10));
 
             List<IKillable.Values> defenses = new() { hits };
             return defenses;
+        }
+        internal static double GetDefAvg(double difficulty, bool exit)
+        {
+            double avg = exit ? Consts.PortalExitDef : Consts.PortalEntranceDef;
+            avg = Consts.StatValueInverse(avg * difficulty);
+            return avg;
         }
 
         internal Tile GetOutTile()

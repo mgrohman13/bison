@@ -133,7 +133,7 @@ namespace ClassLibrary1.Pieces.Enemies
                     if (MoraleCheck(1, true))
                         goto case AIState.Fight;
                     if (moveTiles.Any() && NeedsRetreatPath())
-                        RetreatPath = Game.Map.PathFindRetreat(Tile, GetRetreatTo(), GetPathFindingMovement(), GetCurDefenseValue(), playerAttacks, ValidRetreatTile);
+                        RetreatPath = Game.Map.PathFindRetreat(Tile, GetRetreatTiles(), GetPathFindingMovement(), GetCurDefenseValue(), playerAttacks, ValidRetreatTile);
                     break;
                 case AIState.Fight:
                     state = AIState.Fight;
@@ -192,12 +192,7 @@ namespace ClassLibrary1.Pieces.Enemies
             bool NeedsRetreatPath() => RetreatPath == null || !RetreatPath.Any() || !ValidRetreat(RetreatPath[^1]) || !SeePath(RetreatPath);
             bool ValidRetreat(Point point) => ValidRetreatTile(Game.Map.GetTile(point));
             bool ValidRetreatTile(Tile tile) => tile != null && (Game.TEST_MAP_GEN.HasValue || Game.GameOver || !tile.ShowMove()) && !playerAttacks.ContainsKey(tile);
-            Tile GetRetreatTo()
-            {
-                if (RetreatPath != null && Game.Rand.Bool())
-                    return Game.Rand.Iterate(RetreatPath.Where(ValidRetreat)).Select(Game.Map.GetTile).FirstOrDefault();
-                return null;
-            }
+            IEnumerable<Tile> GetRetreatTiles() => RetreatPath?.Where(ValidRetreat).Select(Game.Map.GetTile);
         }
         private bool MoraleCheck(double check, bool sign)
         {
@@ -224,7 +219,7 @@ namespace ClassLibrary1.Pieces.Enemies
         {
             double pct = Consts.GetDamagedValue(this, 1, 0);
             pct *= pct;
-            double defCur = killable.AllDefenses.Sum(d => Consts.StatValue(d.DefenseCur));
+            double defCur = GetCurDefenseValue();
             double defMax = killable.AllDefenses.Sum(d => Consts.StatValue(d.DefenseMax));
             pct *= Math.Sqrt(defCur / defMax);
             return Math.Sqrt(pct);

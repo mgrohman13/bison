@@ -2,12 +2,12 @@
 {
     public partial class Map
     {
-        private interface IEnemySpawn
+        internal interface IEnemySpawn
         {
             public SpawnChance Spawner { get; }
             //public void Turn(int turn);
             int SpawnChance(int turn, double? enemyMove);
-            Tile SpawnTile(Map map, ResourceType? type, double deviationMult);
+            Tile SpawnTile(Map map);
         }
     }
 }

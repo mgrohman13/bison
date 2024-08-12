@@ -1,4 +1,5 @@
 ﻿using ClassLibrary1.Pieces.Terrain;
+using MattUtil;
 using System;
 using DefenseType = ClassLibrary1.Pieces.CombatTypes.DefenseType;
 using Tile = ClassLibrary1.Map.Map.Tile;
@@ -12,14 +13,17 @@ namespace ClassLibrary1.Pieces.Players
         public readonly Resource Resource;
 
         public double Sustain => Resource.Sustain * GetValues(Game).SustainMult;
+        private double _rounding;
 
         private Extractor(Tile tile, Resource Resource, Values values)
             : base(tile, values.Vision)
         {
-            SetBehavior(new Killable(this, values.Killable, values.Resilience));
-
             this.Resource = Resource;
+            this._rounding = Game.Rand.NextDouble();
+
+            SetBehavior(new Killable(this, values.GetKillable(HitsMult(), _rounding), values.Resilience));
         }
+
         internal static Extractor NewExtractor(Resource resource)
         {
             Tile tile = resource.Tile;
@@ -36,10 +40,14 @@ namespace ClassLibrary1.Pieces.Players
 
         internal override void OnResearch(Research.Type type)
         {
+            if (type == Research.Type.BuildingDefense || type == Research.Type.ExtractorValue)
+                // || type == Research.Type.BuildingCost
+                this._rounding = Game.Rand.NextDouble();
+
             Values values = GetValues(Game);
 
             this.Vision = values.Vision;
-            GetBehavior<IKillable>().Upgrade(new[] { values.Killable }, values.Resilience);
+            GetBehavior<IKillable>().Upgrade(new[] { values.GetKillable(HitsMult(), _rounding) }, values.Resilience);
         }
         private static Values GetValues(Game game)
         {
@@ -73,7 +81,7 @@ namespace ClassLibrary1.Pieces.Players
             else
             {
                 Resource.GetCost(1, out int energy, out int mass);
-                Treasure.NewTreasure(tile, energy + mass * Consts.MechMassDiv);
+                Treasure.NewTreasure(tile, energy + mass * Consts.EnergyMassRatio);
             }
         }
 
@@ -81,7 +89,19 @@ namespace ClassLibrary1.Pieces.Players
         {
             base.StartTurn();
             if (VanishStr() < Math.Min(Game.Rand.OEInt(), Game.Rand.OE()))
+            {
                 Die(false);
+            }
+            else
+            {
+                IKillable killable = GetBehavior<IKillable>();
+                Defense hits = killable.Hits;
+                int max = GetValues(Game).GetHits(HitsMult(), _rounding);
+                int cur = MTRandom.Round(max * hits.DefenseCur / (double)hits.DefenseMax, _rounding);
+                if (cur < 1)
+                    cur = 1;
+                killable.SetHits(cur, max);
+            }
         }
         private double VanishStr()
         {
@@ -91,6 +111,17 @@ namespace ClassLibrary1.Pieces.Players
             return Math.Abs(energyInc) + Math.Abs(massInc) + Math.Abs(researchInc);
         }
 
+        private double HitsMult()
+        {
+            const double avg = (Consts.BiomassExtractorEnergyCost
+                + Consts.MetalExtractorEnergyCost + Consts.ArtifactExtractorEnergyCost
+                + (Consts.BiomassExtractorMassCost + Consts.MetalExtractorMassCost
+                    + Consts.ArtifactExtractorMassCost) * Consts.EnergyMassRatio) / 3.0;
+
+            Resource.GetCost(1, out int energy, out int mass);
+            double cost = energy + mass * Consts.EnergyMassRatio;
+            return Math.Pow(cost / avg, Consts.ExtractorHitsPow);
+        }
 
         internal override void GenerateResources(ref double energyInc, ref double massInc, ref double researchInc)
         {
@@ -116,11 +147,11 @@ namespace ClassLibrary1.Pieces.Players
         {
             private const double resilience = .3;//resilienceBase
 
-            private double costMult, vision, valueMult, sustainMult;//, resilience;
-            private IKillable.Values killable;
+            private double costMult, vision, valueMult, sustainMult, hits;//, resilience;
+            //private IKillable.Values killable;
             public Values()
             {
-                this.killable = new(DefenseType.Hits, -1);
+                //this.killable = new(DefenseType.Hits, -1);
                 UpgradeBuildingCost(1);
                 UpgradeBuildingHits(1);
                 UpgradeExtractorValue(1);
@@ -131,7 +162,13 @@ namespace ClassLibrary1.Pieces.Players
             public double Vision => vision;
             public double ValueMult => valueMult;
             public double SustainMult => sustainMult;
-            public IKillable.Values Killable => killable;
+            public double Hits => hits;
+            //public IKillable.Values Killable => killable;
+
+            public IKillable.Values GetKillable(double hitsMult, double rounding)
+                => new(DefenseType.Hits, GetHits(hitsMult, rounding));
+            public int GetHits(double hitsMult, double rounding)
+                => MTRandom.Round(hits * hitsMult, rounding);
 
             public void Upgrade(Research.Type type, double researchMult)
             {
@@ -149,9 +186,9 @@ namespace ClassLibrary1.Pieces.Players
             private void UpgradeBuildingHits(double researchMult)
             {
                 double defAvg = ResearchUpgValues.Calc(UpgType.ExtractorDefense, researchMult);
-                int defense = Game.Rand.Round(defAvg);
+                //int defense = Game.Rand.Round(defAvg);
                 this.vision = ResearchUpgValues.Calc(UpgType.ExtractorVision, researchMult);
-                this.killable = new(DefenseType.Hits, defense);
+                this.hits = defAvg;// new(DefenseType.Hits, defense);
             }
             private void UpgradeExtractorValue(double researchMult)
             {

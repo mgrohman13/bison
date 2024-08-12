@@ -116,7 +116,7 @@ namespace ClassLibrary1.Map
 
                 List<Point> block = Game.Rand.Iterate(GetPointsInRangeUnblocked(map, point, range).Where(p => map.GetTile(p) == null))
                     .OrderBy(b => GetDistance(point, b)).ToList();
-                double blockRadius = (.5 + Math.Sqrt(2) / 2) / 2.0;// Math.Sqrt(2) / 2
+                double blockRadius = (1 + Math.Sqrt(2)) / 4.0;// Math.Sqrt(2) / 2
 
                 int max = (int)Math.Ceiling(range);
                 foreach (Point add in Game.Rand.Iterate(-max, max, -max, max))

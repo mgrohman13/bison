@@ -53,6 +53,9 @@ namespace WinFormsApp1
         [STAThread]
         static void Main()
         {
+            //if (MTRandom.GetOEIntMax(Consts.PortalDecayRate) > Consts.PortalEntranceDef)
+            //    throw new Exception();
+
             //void bp(int blueprintNum)
             //{
             //    Debug.Write(blueprintNum + "\t");
@@ -300,8 +303,16 @@ namespace WinFormsApp1
                 }
 
             if (!move && piece.HasBehavior(out IMovable movable))
+            {
                 //need to support rallying long distances to uncomment this enhancement
                 move |= movable.CanMove && movable.MoveCur > 1 && movable.MoveCur + movable.MoveInc > movable.MoveMax;// + (movable.MoveLimit - movable.MoveMax > 1 ? 1 : 0);
+                if (!move && piece.HasBehavior(out IKillable killable))
+                    // optimize?
+                    move |= killable.AllDefenses.Sum(d => Consts.StatValue(d.DefenseCur)) <=
+                        (Game.Enemy.VisiblePieces.Select(p => p.GetBehavior<IAttacker>()).Where(a => a != null)
+                            .Where(a => a.Attacks.Any(att => a.Piece.Tile.GetDistance(piece.Tile) <= att.Range))
+                            .Sum(a => a.Attacks.Sum(att => (double?)Consts.StatValue(att.AttackCur))) ?? 0);
+            }
             if (!move && piece.HasBehavior(out IAttacker attacker))
             {
                 static double GetRange(Attack a) => a.CanAttack() ? a.Range : 0;

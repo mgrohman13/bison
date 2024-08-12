@@ -39,10 +39,10 @@ namespace ClassLibrary1
         public const double DifficultyAIPow = .52;
         public const double PortalSpawnTime = 52;
         public const double PortalSpawnStrMult = 1.69;
-        public const double PortalCost = 11.7;
+        public const double PortalCost = 13;
         public const double PortalExitDef = 520;
         public const double PortalEntranceDef = 210;
-        public const double PortalDecayRate = 6.5;
+        public const double PortalDecayRate = 7.8;
         public const double PortalRewardPct = .39;
 
         public const double MoveDev = .013;
@@ -56,6 +56,10 @@ namespace ClassLibrary1
         public const double CoreResearch = 20;
         public const double CoreExtractTurns = 91;//0.98901098901098901098901098901099
 
+        public const double DroneCost = 16.9;
+        public const double DroneMassCostMult = 1.69;
+        public const double DroneRefund = .65;
+
         public const double ResourceDistAdd = 21;
         public const double ResourceDistDiv = 65;
         public const double ResourceDistPow = .52;
@@ -64,8 +68,9 @@ namespace ClassLibrary1
         //ExtractPow=x/(1-x) where x is desired exponent when sustain=1 
         //inverse: x=ExtractPow/(ExtractPow+1)
         public const double ExtractPow = 3.5; //x=0.77777777777777777777777777777778
-        public const double ExtractSustainPow = .39;
+        public const double ExtractSustainPow = .26;//.39?
         public const double ExtractorSustainCostPow = .65;
+        public const double ExtractorHitsPow = .39;//.26?
         public const double ResourceDev = .21;
         public const double ResourceOE = .26;
 
@@ -106,7 +111,7 @@ namespace ClassLibrary1
         public const double RegenCostPassiveDiv = 2;
 
         public const double MechCostMult = .13;
-        public const double MechMassDiv = 1.69;
+        public const double EnergyMassRatio = 1.69;
 
         public const double RepairCost = .169;
         public const double PassiveRepairCost = .13;

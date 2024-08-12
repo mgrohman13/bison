@@ -81,10 +81,10 @@ namespace ClassLibrary1
             return num;
         }
 
-        internal void CollectResources(Tile tile,double value, out int energy, out int mass)
+        internal void CollectResources(Tile tile, double value, out int energy, out int mass)
         {
-            const double massWeight = Consts.MechMassDiv / (1 + Consts.MechMassDiv);
-            double massMax = value / Consts.MechMassDiv;
+            const double massWeight = Consts.EnergyMassRatio / (1 + Consts.EnergyMassRatio);
+            double massMax = value / Consts.EnergyMassRatio;
             double massAvg;
             if (Game.Rand.Bool())
                 massAvg = Game.Rand.Weighted(massMax, massWeight);
@@ -92,7 +92,7 @@ namespace ClassLibrary1
                 massAvg = Game.Rand.Bool() ? massMax : 0;
 
             mass = Consts.IncomeRounding(massAvg);
-            energy = Consts.IncomeRounding(value - mass * Consts.MechMassDiv);
+            energy = Consts.IncomeRounding(value - mass * Consts.EnergyMassRatio);
             if (energy < 0)
                 ;
 
@@ -103,6 +103,8 @@ namespace ClassLibrary1
         {
             if (++_victory >= POINTS_TO_WIN)
                 End(true);
+            else
+                Enemy.VictoryPoint();
         }
         internal void End(bool win = false)
         {

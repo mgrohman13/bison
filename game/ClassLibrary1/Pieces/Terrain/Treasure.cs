@@ -9,9 +9,9 @@ namespace ClassLibrary1.Pieces.Terrain
     [Serializable]
     public class Treasure : Piece
     {
-        internal static readonly double ConvertResearch = Consts.ResearchMassConversion * Consts.MechMassDiv;
+        internal static readonly double ConvertResearch = Consts.ResearchMassConversion * Consts.EnergyMassRatio;
 
-        private double? _value;
+        private readonly double? _value;
 
         internal Treasure(Tile tile, double? value) : base(null, tile)
         {
@@ -42,10 +42,10 @@ namespace ClassLibrary1.Pieces.Terrain
             this.Die();
 
             Dictionary<Func<Tile, double, double>, int> choices = new() {
-                { Research, 5 },
-                { NewResource, 4 },
-                { Alien, 3 },
-                { Mech, 2 },
+                { Alien, 6 },
+                { NewResource, 5  },
+                { Research, 4 },
+                { Mech, 3 },
             };
             choices.Add(CollectResources, choices.Values.Sum() * 2 + 3);
             var Func = Game.Rand.SelectValue(choices);
@@ -64,7 +64,7 @@ namespace ClassLibrary1.Pieces.Terrain
         {
             Game.CollectResources(tile, value, out int energy, out int mass);
             //RaiseCollectEvent($"Energy: {energy}  Mass: {mass}");
-            return energy + mass * Consts.MechMassDiv;
+            return energy + mass * Consts.EnergyMassRatio;
         }
         private double Research(Tile tile, double value)
         {
@@ -113,7 +113,7 @@ namespace ClassLibrary1.Pieces.Terrain
             Players.Mech.NewMech(tile, blueprint);
 
             RaiseCollectEvent(tile, $"Research Level: {researchLevel}");
-            return blueprint.Energy + blueprint.Mass * Consts.MechMassDiv + researchCost;
+            return blueprint.EnergyEquivalent() + researchCost;
         }
 
         public override string ToString() => _value.HasValue ? "Resources ~ " + _value.Value.ToString("0") : "Unknown Object";

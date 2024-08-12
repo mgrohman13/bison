@@ -46,7 +46,7 @@ namespace ClassLibrary1.Pieces.Players
 
             CalcCost(out double energy, out double mass);
             this.Energy = Game.Rand.Round(energy / 10.0) * 10;
-            this.Mass = Game.Rand.Round((mass + (energy - this.Energy) / Consts.MechMassDiv) / 5.0) * 5;
+            this.Mass = Game.Rand.Round((mass + (energy - this.Energy) / Consts.EnergyMassRatio) / 5.0) * 5;
         }
         private void CalcCost(out double energy, out double mass)
         {
@@ -100,16 +100,16 @@ namespace ClassLibrary1.Pieces.Players
             energyPct = Math.Sqrt(energyPct);
 
             energy = total * energyPct;
-            mass = (total - energy) / Consts.MechMassDiv;
+            mass = (total - energy) / Consts.EnergyMassRatio;
         }
 
         public int TotalCost()
         {
             return Energy + Mass;
         }
-        public double AlienCost()
+        public double EnergyEquivalent()
         {
-            return Energy + Mass * Consts.MechMassDiv;
+            return Energy + Mass * Consts.EnergyMassRatio;
         }
 
         internal static MechBlueprint MechOneOff(IResearch research, int researchLevel)
@@ -604,14 +604,14 @@ namespace ClassLibrary1.Pieces.Players
                 if (researchType == Type.MechAttack || researchType == Type.MechEnergyWeapons || researchType == Type.MechExplosives
                     || researchType == Type.MechLasers || researchType == Type.MechRange)
                 {
-                    const int rangedAtt = 3;
+                    int rangedAtt = Game.Rand.RangeInt(Game.Rand.RangeInt(0, 2), Game.Rand.RangeInt(4, 6));
                     attAvg += rangedAtt;
                     cap += rangedAtt;
                 }
 
                 if (research is EnemyResearch)
                 {
-                    const int enemyAtt = 2;
+                    int enemyAtt = Game.Rand.RangeInt(Game.Rand.RangeInt(0, 2), Game.Rand.RangeInt(2, 4));
                     attAvg += enemyAtt;
                     cap += enemyAtt;
                 }
@@ -658,10 +658,11 @@ namespace ClassLibrary1.Pieces.Players
                 rangeAvg = range;
                 if (ranged)
                 {
-                    rangeAvg += 7.8;
-                    double dev = .39, oe = .104;
-                    ModValues(researchType == Type.MechRange, 2.1, ref rangeAvg, ref dev, ref oe);
+                    rangeAvg += 5.2;
+                    double dev = .39, oe = .39;
+                    ModValues(researchType == Type.MechRange, 1.69, ref rangeAvg, ref dev, ref oe);
                     rangeAvg *= research.GetMult(Type.MechRange, Blueprint_Range_Pow);
+                    rangeAvg += 6.5;
                     oe /= Math.Sqrt(rangeAvg);
                     range = Game.Rand.GaussianOE(rangeAvg, dev, oe, Attack.MIN_RANGED);
                 }

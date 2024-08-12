@@ -138,7 +138,7 @@ namespace ClassLibrary1.Pieces.Players
                 this.shield = null;//new(CombatTypes.DefenseType.Hits, -1);
 
                 //UpgradeBuildingHits(1);
-                UpgradeCoreShields(1);
+                //UpgradeCoreShields(1);
             }
 
             public double HitsResearchMult => hitsResearchMult;

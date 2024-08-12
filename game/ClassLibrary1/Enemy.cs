@@ -1,12 +1,14 @@
 ﻿using ClassLibrary1.Pieces;
 using ClassLibrary1.Pieces.Enemies;
 using ClassLibrary1.Pieces.Players;
+using ClassLibrary1.Pieces.Terrain;
 using MattUtil;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Tile = ClassLibrary1.Map.Map.Tile;
+using UpgType = ClassLibrary1.ResearchUpgValues.UpgType;
 
 namespace ClassLibrary1
 {
@@ -16,7 +18,7 @@ namespace ClassLibrary1
         private readonly EnemyResearch _research;
         private MechBlueprint _nextAlien;
         private MechBlueprint NextAlien => _nextAlien;
-        private double _portalSpawn;
+        private double _portalSpawn, _debt, _payment;
 
         public IEnumerable<Piece> VisiblePieces => _pieces.Where(p => p.Tile.Visible);
 
@@ -29,10 +31,14 @@ namespace ClassLibrary1
             this._research = new EnemyResearch(game);
             this._nextAlien = MechBlueprint.Alien(_research);
             this._portalSpawn = 0;
+            this._debt = 0;
+            this._payment = 0;
         }
 
         internal void PlayTurn(Action<Tile, double> UpdateProgress)
         {
+            PayDebt();
+
             double difficulty = GetDifficulty(Game);
 
             bool portal = false;
@@ -45,11 +51,11 @@ namespace ClassLibrary1
             double energy = GetEneryIncome(Game);
             if (Game.Turn < Consts.EnemyEnergyRampTurns)
                 energy *= Game.Turn / Consts.EnemyEnergyRampTurns;
-            AddEnergy(Game.Rand.OEInt(energy) + Game.Rand.Round((this.Mass - massUpk) * Consts.MechMassDiv - energyUpk));
+            AddEnergy(Game.Rand.OEInt(energy) + Game.Rand.Round((this.Mass - massUpk) * Consts.EnergyMassRatio - energyUpk));
             this._mass = 0;
 
             int spawns = Game.Rand.OEInt(Game.Turn / 13.0);
-            for (int a = 0; a < spawns && NextAlien.AlienCost() + 13 < this.Energy; a++)
+            for (int a = 0; a < spawns && NextAlien.EnergyEquivalent() + 13 < this.Energy; a++)
                 SpawnAlien(() => Game.Map.GetEnemyTile(Alien.GetPathFindingMovement(NextAlien.Movable)));
 
             Debug.WriteLine($"Enemy energy: {_energy}");
@@ -62,15 +68,17 @@ namespace ClassLibrary1
 
         private bool BuildPortals()
         {
+            PortalIncome();
+
             int researchLevel = Game.Rand.Round((_research.GetBlueprintLevel() + Game.Player.Research.GetBlueprintLevel()) / 2.0);
 
             Game.Player.GetIncome(out double energyInc, out double massInc, out double researchInc);
-            double pInc = energyInc + Consts.MechMassDiv * (massInc + researchInc * Consts.ResearchMassConversion);
-            double pRes = Game.Player.Energy + Game.Player.Mass * Consts.MechMassDiv;
+            double pInc = energyInc + Consts.EnergyMassRatio * (massInc + researchInc * Consts.ResearchMassConversion);
+            double pRes = Game.Player.Energy + Game.Player.Mass * Consts.EnergyMassRatio;
             double pStr = Game.Player.Pieces.Sum(p => p.Strength(researchLevel, false));
 
             double eInc = GetEneryIncome(Game);
-            double eRes = this.Energy + this.Mass * Consts.MechMassDiv;
+            double eRes = this.Energy + this.Mass * Consts.EnergyMassRatio;
             double eStr = this.Pieces.Sum(p => p.Strength(researchLevel, false));
 
             pStr += pRes;
@@ -119,33 +127,55 @@ namespace ClassLibrary1
         private bool BuildPortal(bool exit)
         {
             Tile tile;
+            var pieces = Game.AllPieces;
+            double difficulty = GetDifficulty(Game);
             if (exit)
             {
-                //exits always place near core, avoiding immediate player attacks 
-                Core core = Game.Player.Core;
+                Map.Map map = Game.Map;
+                Player player = Game.Player;
+                Core core = player.Core;
+
+                //exits place near core, avoiding stronger immediate player attacks and potential turret range
+                double turretRange = (new[] { UpgType.TurretRange, UpgType.TurretLaserRange, UpgType.TurretExplosivesRange, })
+                    .Max(u => ResearchUpgValues.Calc(u, player.Research.ResearchCur));
+                IEnumerable<FoundationPiece> turrets = player.PiecesOfType<Turret>();
+                if (turrets.Any())
+                    turretRange = Math.Max(turretRange,
+                         turrets.Max(t => t.GetBehavior<IAttacker>().Attacks.Max(att => att.RangeBase)));
+
                 double deviation = core.GetBehavior<IRepair>().Range + Game.Rand.Range(Attack.MELEE_RANGE, Attack.MIN_RANGED);
-                var avoid = EnemyMovement.GetPlayerAttacks(Game).Keys
-                    .Concat(core.Tile.GetAllPointsInRange(deviation).Select(Game.Map.GetTile))
+
+                double portalDef = Portal.GetDefAvg(difficulty, exit);
+                var avoid = EnemyMovement.GetPlayerAttacks(Game)
+                        .Where(p => Game.Rand.DoubleHalf(portalDef) < Game.Rand.DoubleFull(p.Value)).Select(p => p.Key)
+                    .Concat(core.Tile.GetAllPointsInRange(deviation)
+                        .Concat(player.PiecesOfType<FoundationPiece>().Select(t => t.Tile)
+                            .Concat(pieces.OfType<Foundation>().Select(f => f.Tile))
+                            .SelectMany(t => t.GetAllPointsInRange(turretRange)))
+                        .Select(map.GetTile))
                     .Where(t => t is not null).ToHashSet();
+
                 do
                 {
                     deviation += Game.Rand.DoubleFull(Math.Sqrt(Consts.PathWidth));
-                    tile = Game.Map.GetTile(core.Tile.X + Game.Rand.GaussianInt(deviation), core.Tile.Y + Game.Rand.GaussianInt(deviation));
+                    tile = map.GetTile(core.Tile.X + Game.Rand.GaussianInt(deviation), core.Tile.Y + Game.Rand.GaussianInt(deviation));
                 }
-                while (tile is null || tile.Piece is not null || avoid.Contains(tile));
+                while (tile is null || tile.Piece is not null || avoid.Remove(tile));
             }
             else
             {
+                //pieces.Select(p => p.Strength());
+
                 //entrances chosen based on prioximity to aliens and distance from player pieces or resources
                 static bool CanPlace(Tile t) => t.Piece is null;
-                var pieces = Pieces.Where(p => p.HasBehavior<IMovable>() && p.Tile.GetAdjacentTiles().Any(CanPlace));
-                if (pieces.Any())
+                var enemies = Pieces.Where(p => p.HasBehavior<IMovable>() && p.Tile.GetAdjacentTiles().Any(CanPlace));
+                if (enemies.Any())
                 {
                     Dictionary<Piece, int> select = new();
-                    foreach (var piece in Game.Rand.Iterate(pieces))
+                    foreach (var piece in Game.Rand.Iterate(enemies))
                     {
                         double mult = 3.9, div = 1;
-                        foreach (var check in Game.Rand.Iterate(Game.AllPieces))
+                        foreach (var check in Game.Rand.Iterate(pieces))
                             if (piece != check)
                             {
                                 double factor = 2.1 * Consts.PathWidth / (Consts.CavePathSize + piece.Tile.GetDistance(check.Tile));
@@ -168,20 +198,73 @@ namespace ClassLibrary1
                 }
             }
 
-            Portal portal = Portal.NewPortal(tile, GetDifficulty(Game), exit, out double cost);
-            Spend(Game.Rand.Round(cost), 0);
+            Portal portal = Portal.NewPortal(tile, difficulty, exit, out double cost);
+            AddDebt(cost);
             this._portalSpawn -= exit ? .6 : .4;
             return true;
         }
+        private void PortalIncome()
+        {
+            var portals = PiecesOfType<Portal>();
+            double energy = portals.Any(p => p.Exit) ? Math.Sqrt(GetEneryIncome(Game)) : 0;
+            Loan(portals.Count() * energy);
+        }
+        private void IncPortals(Hive hive)
+        {
+            const double amt = 1 / 4.0;
+            double inc = 0;
+            if (hive == null)
+                inc = amt;
+            else if (!hive.Dead)
+                inc = amt / PiecesOfType<Hive>().Average(h =>
+                    h.GetBehavior<IKillable>().AllDefenses.Sum(d => d.DefenseMax));
+            else
+                ;
+            this._portalSpawn += Game.Rand.Gaussian(inc, .039 / Math.Sqrt(inc));
+
+            Loan(13 / amt * inc * GetEneryIncome(Game));
+        }
+        internal void VictoryPoint() => IncPortals(null);
 
         internal static double GetDifficulty(Game game) =>
             (game.Turn + Consts.DifficultyIncTurns) / Consts.DifficultyIncTurns;
         internal static double GetEneryIncome(Game game) =>
             Math.Pow(GetDifficulty(game), Consts.DifficultyEnergyPow) * Consts.EnemyEnergy;
 
+        private void Loan(double energy)
+        {
+            int loan = Game.Rand.GaussianOEInt(energy, .13, .13);
+            AddEnergy(loan);
+            AddDebt(loan);
+        }
+        private void AddDebt(double loan)
+        {
+            this._debt += loan;
+        }
+        private void PayDebt()
+        {
+            double inc = Math.Sqrt(GetEneryIncome(Game));
+
+            double interest = Math.Sqrt(_debt + 1) - 1;
+            AddDebt(interest);
+
+            double payment = Math.Min(_debt, _payment);
+            ;
+            if (Math.Min(interest, payment) > Game.Rand.DoubleFull(inc))
+            {
+                Spend(Game.Rand.Round(payment), 0);
+                AddDebt(-payment);
+            }
+
+            double trgPayment = (1 + interest) * inc;
+            this._payment = Math.Max(0, _payment + Game.Rand.DoubleHalf(_payment < trgPayment ? inc : -inc));
+        }
+
         internal void HiveDamaged(Hive hive, Tile defTile, Map.Map.SpawnChance spawn, ref double energy,
             int hits, double hitsPct, double dev)
         {
+            IncPortals(hive);
+
             hitsPct = 1 - hitsPct;
             int xfer = Game.Rand.Round(energy);
             if (hive.Dead)
@@ -202,9 +285,12 @@ namespace ClassLibrary1
                 SpawnAlien(() =>
                 {
                     Tile tile;
-                    int RandCoord(double coord) => Game.Rand.Round(coord + Game.Rand.Gaussian(dev)); //push up to caller
+                    int RandCoord(double coord) => Game.Rand.Round(coord + Game.Rand.Gaussian(dev));
                     do
+                    {
                         tile = Game.Map.GetTile(RandCoord(defTile.X), RandCoord(defTile.Y));
+                        dev += Game.Rand.DoubleFull(Consts.CavePathSize);
+                    }
                     while (tile == null || tile.Piece != null);
 
                     while (Alien.GetPathFindingMovement(NextAlien.Movable) < Game.Map.GetMinSpawnMove(tile))
@@ -233,7 +319,7 @@ namespace ClassLibrary1
                     research = new ResearchMinMaxCost(research, min, max);
                 }
                 this._nextAlien = MechBlueprint.Alien(research);
-            };
+            }
 
             if (value.HasValue)
                 GenAlien();
@@ -250,16 +336,17 @@ namespace ClassLibrary1
                     break;
             }
 
-            double energy = NextAlien.AlienCost();
+            double energy = NextAlien.EnergyEquivalent();
             this._energy -= Game.Rand.Round(energy);
             Alien.NewAlien(tile, path, energy, NextAlien.Killable, NextAlien.Resilience, NextAlien.Attacker, NextAlien.Movable);
+            value = null;
             GenAlien();
 
             return energy;
         }
         internal override bool Spend(int energy, int mass)
         {
-            this._energy = Game.Rand.Round(this.Energy - energy - mass * Consts.MechMassDiv);
+            this._energy = Game.Rand.Round(this.Energy - energy - mass * Consts.EnergyMassRatio);
             return true;
         }
     }

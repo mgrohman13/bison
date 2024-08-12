@@ -48,6 +48,7 @@ namespace ClassLibrary1.Pieces
             {
                 this._range = range;
             }
+            public Values(IBuilder builder) : this(builder.RangeBase) { }
             public double Range => _range;
         }
     }

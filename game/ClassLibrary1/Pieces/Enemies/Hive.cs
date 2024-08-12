@@ -46,7 +46,7 @@ namespace ClassLibrary1.Pieces.Enemies
             IEnumerable<IAttacker.Values> attacks = GenAttacker(hiveIdx);
             double strInc = Math.Pow(1.5, hiveIdx);
             MechBlueprint.CalcCost(3.9 + strInc / 2.1, 0, killable, resilience, attacks, null, out double energy, out double mass);
-            double cost = energy + mass * Consts.MechMassDiv;
+            double cost = energy + mass * Consts.EnergyMassRatio;
             energy = Game.Rand.Gaussian(Consts.EnemyEnergy * (52 + 2.6 * strInc) - cost, .13);
             Debug.WriteLine($"hiveCost #{hiveIdx + 1}: {cost} ({energy})");
 
@@ -156,6 +156,6 @@ namespace ClassLibrary1.Pieces.Enemies
         public override string ToString()
         {
             return "Hive " + PieceNum;
-        } 
+        }
     }
 }

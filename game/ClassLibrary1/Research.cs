@@ -1,6 +1,7 @@
 ﻿using ClassLibrary1.Pieces.Players;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace ClassLibrary1
@@ -337,7 +338,7 @@ namespace ClassLibrary1
                 if (GetAllDependencies(type).Count > 2)
                     min = Game.Rand.GaussianCappedInt(research, dev / Math.Sqrt(research));
                 else
-                    ;
+                    Debug.WriteLine($"Early type: {type}");
                 if (keyTechs.Contains(type))
                     min = Game.Rand.Round(Math.Pow(min, .91));
                 retVal.Add(type, min);
