@@ -115,20 +115,16 @@ namespace ClassLibrary1.Pieces
 
         bool IMovable.Port(Portal portal)
         {
-            double dist = Piece.Tile.GetDistance(portal.Tile);
-            if (Piece.IsEnemy && CanMove && dist <= MoveCur)
+            if (portal.CanPort(this, out Portal exit, out double dist))
             {
                 this._moveCur -= dist;
-                // Piece.DrainMove();
                 this._moved = true;
                 if (Piece.HasBehavior(out IAttacker attacker))
                     attacker.Attacked = true;
-                var exits = Piece.Side.PiecesOfType<Portal>().Where(p => p.Exit);
-                if (exits.Any())
-                {
-                    Piece.SetTile(Game.Rand.SelectValue(exits).GetOutTile());
-                    return true;
-                }
+                // Piece.DrainMove();
+
+                Piece.SetTile(exit.GetOutTile());
+                return true;
             }
             return false;
         }

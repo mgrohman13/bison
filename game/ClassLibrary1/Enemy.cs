@@ -200,9 +200,15 @@ namespace ClassLibrary1
 
             Portal portal = Portal.NewPortal(tile, difficulty, exit, out double cost);
             AddDebt(cost);
-            this._portalSpawn -= exit ? .6 : .4;
+            this._portalSpawn -= GetPct(exit);
             return true;
         }
+        private static double GetPct(bool exit)
+        {
+            const double total = 2 * Consts.PortalEntranceDef + Consts.PortalExitDef;
+            return (exit ? Consts.PortalExitDef : Consts.PortalEntranceDef) / total;
+        }
+
         private void PortalIncome()
         {
             var portals = PiecesOfType<Portal>();

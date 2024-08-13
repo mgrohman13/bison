@@ -91,13 +91,15 @@ namespace ClassLibrary1
             HashSet<Tile> moveTiles = new();
             if (movePiece != null)
                 moveTiles = piece.Tile.GetTilesInRange(movePiece, movePiece.MoveCur + (melee.Any() ? Attack.MELEE_RANGE : 0)).ToHashSet();
-            bool seePortal = moveTiles.Any(t => t.Piece is Portal portal && !portal.Exit)
-                && piece.Side.PiecesOfType<Portal>().Where(p => p.Exit).Any();
+
+            bool usePortal = true;
+            bool HasPortal(Tile t) => usePortal && t.Piece is Portal portal && portal.CanPort(movePiece, out _, out _);
+            usePortal = moveTiles.Any(HasPortal);
             bool filteredMoves = false;
             void FilterMoves()
             {
                 if (!filteredMoves)
-                    moveTiles.RemoveWhere(t => t.Piece != null && t.Piece != piece && (!seePortal || t.Piece is not Portal));
+                    moveTiles.RemoveWhere(t => t.Piece != null && t.Piece != piece && !HasPortal(t));
                 filteredMoves = true;
             }
 
@@ -121,7 +123,7 @@ namespace ClassLibrary1
             HashSet<IKillable> extendedTargets = allTargets.Keys.Where(k => k.Piece.Tile.GetDistance(piece.Tile) < maxMoveAttRange).SelectMany(k => allTargets[k].Keys).ToHashSet();
 
             AIState state = piece.TurnState(difficulty, clearPaths, playerAttacks, moveTiles, extendedTargets, out List<Point> fullPath);
-            seePortal &= (state == AIState.Fight || state == AIState.Patrol || state == AIState.Rush);
+            usePortal &= (state == AIState.Fight || state == AIState.Patrol || state == AIState.Rush);
 
             IKillable target = null;
             if (attPiece != null && state != AIState.Retreat)
@@ -240,8 +242,7 @@ namespace ClassLibrary1
 
                     double pathWeight = 1;
                     double padding = Math.Sqrt(moveValue + 1);
-                    if (moveTile.Piece is Portal entrance && !entrance.Exit
-                        && seePortal)
+                    if (HasPortal(moveTile))
                     {
                         // consolidate
                         Tile final = moveTile;
@@ -338,7 +339,7 @@ namespace ClassLibrary1
                                 count++;
                             }
                             defWeight = (1 + Math.Pow(defWeight, 2.0 / count)) * count;
-                            if (!seePortal && (friendly.OfType<Hive>().Any() || friendly.OfType<Portal>().Any()))
+                            if (!usePortal && (friendly.OfType<Hive>().Any() || friendly.OfType<Portal>().Any()))
                                 defWeight *= Math.Sqrt(defWeight);
                             defWeight = Math.Pow(defWeight, Math.Sqrt(.25 / playerAttWeight));
                         }
@@ -422,7 +423,7 @@ namespace ClassLibrary1
                 moveTo = Game.Rand.SelectValue(dictInt);
             }
 
-            if (moveTo.Piece is Portal portal && !portal.Exit)
+            if (moveTo.Piece is Portal portal)
             {
                 var ported = movePiece?.Port(portal);
                 if (movePiece != null && (!ported.HasValue || !ported.Value))
