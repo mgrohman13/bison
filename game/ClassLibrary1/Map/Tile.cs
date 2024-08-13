@@ -57,6 +57,7 @@ namespace ClassLibrary1.Map
 
             public IEnumerable<Tile> GetVisibleTilesInRange(IBuilder builder) => GetVisibleTilesInRange(builder.Range, true, null);
             public IEnumerable<Tile> GetVisibleTilesInRange(Attack attack) => GetVisibleTilesInRange(attack.Range, true, attack.Piece);
+            public IEnumerable<Tile> GetVisibleAdjacentTiles() => GetVisibleTilesInRange(Attack.MELEE_RANGE, false, null);
             private IEnumerable<Tile> GetVisibleTilesInRange(double range, bool blockMap, Piece blockFor) => GetPointsInRange(range, blockMap, blockFor)
                 .Where(Map.Visible).Select(Map.GetTile).Where(t => t != null);
 

@@ -103,6 +103,8 @@ slightly randomize resource extract amount
 tweak MoveValue to value max move higher?
 make sure enemy targeting group properly when can not hit best target, but adjacent 
 fix Consts.StatValue to div/2 
+increase extractor defense?
+aliens somewhat avoid attacking if healing 
 
 portal entrance probabilities should be based on str/value
 mulitple enemy groups should be better at jumping into turret range?

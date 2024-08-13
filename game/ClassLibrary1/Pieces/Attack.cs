@@ -78,7 +78,7 @@ namespace ClassLibrary1.Pieces
             {
                 var adjacent = AdjacentPieces(target).Where(p => CanAttack(p, true));
                 if (adjacent.Any())
-                    target = Game.Rand.SelectValue(adjacent);
+                    target = Game.Rand.SelectValue(adjacent); // remove randomness?
                 else
                     return new();
             }

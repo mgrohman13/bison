@@ -307,11 +307,23 @@ namespace WinFormsApp1
                 //need to support rallying long distances to uncomment this enhancement
                 move |= movable.CanMove && movable.MoveCur > 1 && movable.MoveCur + movable.MoveInc > movable.MoveMax;// + (movable.MoveLimit - movable.MoveMax > 1 ? 1 : 0);
                 if (!move && piece.HasBehavior(out IKillable killable))
+                {
                     // optimize?
-                    move |= killable.AllDefenses.Sum(d => Consts.StatValue(d.DefenseCur)) <=
-                        (Game.Enemy.VisiblePieces.Select(p => p.GetBehavior<IAttacker>()).Where(a => a != null)
-                            .Where(a => a.Attacks.Any(att => a.Piece.Tile.GetDistance(piece.Tile) <= att.Range))
-                            .Sum(a => a.Attacks.Sum(att => (double?)Consts.StatValue(att.AttackCur))) ?? 0);
+                    var friendly = piece.Tile.GetVisibleAdjacentTiles().Select(t => t.Piece).Where(p => p is not null && p.IsPlayer);
+                    var a = Game.Enemy.VisiblePieces
+                        .Select(p => p.GetBehavior<IAttacker>())
+                        .Where(a => a is not null)
+                        .SelectMany(a => a.Attacks)
+                        .SelectMany(a => friendly.Select(f => Tuple.Create(a, a.GetDefenders(f))))
+                        .Where(t => t.Item2.ContainsKey(killable));
+                    var b = a.Select(t => t.Item2.Keys
+                            .Select(k => Tuple.Create(t.Item1, k, k.AllDefenses.Sum(d => Consts.StatValue(d.DefenseCur))))
+                            .OrderByDescending(t => t.Item3).ThenBy(t => t.Item2.Piece.PieceNum).ThenBy(t => t.Item2.Piece.GetType().ToString()).First());
+                    var c = b.GroupBy(t => t.Item2)
+                        .Select(g => Tuple.Create(g.Select(t => t.Item1).Distinct().Sum(a => Consts.StatValue(a.AttackCur)), g.Max(t => t.Item3)))
+                        .Any(t => t.Item1 >= t.Item2);
+                    move |= c;
+                }
             }
             if (!move && piece.HasBehavior(out IAttacker attacker))
             {
