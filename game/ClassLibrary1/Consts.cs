@@ -56,7 +56,7 @@ namespace ClassLibrary1
         public const double CoreResearch = 20;
         public const double CoreExtractTurns = 91;//0.98901098901098901098901098901099
 
-        public const double DroneCost = 16.9;
+        public const double DroneCost = 21;
         public const double DroneMassCostMult = 1.69;
         public const double DroneRefund = .65;
 
@@ -112,7 +112,7 @@ namespace ClassLibrary1
 
         public const double EnergyPerMove = 1 / 3.0;
         public const double EnergyPerAttack = EnergyPerShield / 2.0;
-        public const double EnergyPerShield = .5;
+        public const double EnergyPerShield = 1;
         public const double MassPerArmor = EnergyPerShield / 2.0;
         public const double RegenCostPassiveDiv = 2;
 
@@ -125,23 +125,15 @@ namespace ClassLibrary1
         public const int AutoRepair = 1;
         public const double ReplaceRefundPct = .8;
 
-        //StatValueDiff
-
-        //public static double? StatValue(double? stat)
-        //{
-        //    if (stat.HasValue)
-        //        return StatValue(stat.Value);
-        //    return null;
-        //}
         public static double StatValue(double stat)
         {
             if (stat < 0) throw new Exception();
-            return stat * stat + stat;
+            return (stat * stat + stat) / 2.0;
         }
         public static double StatValueInverse(double value)
         {
             if (value < 0) throw new Exception();
-            return (Math.Sqrt(4 * value + 1) - 1) / 2.0;
+            return (Math.Sqrt(8 * value + 1) - 1) / 2.0;
         }
         //public static double SumStats(IEnumerable<int> stats)
         //{
@@ -231,7 +223,6 @@ namespace ClassLibrary1
                 newValue = Math.Min(max, cur + regen);
                 if (doEndTurn)
                     newValue = Game.Rand.Round(newValue);
-                // use StatValueDiff
                 double cost = StatValue(newValue) - StatValue(cur);
                 cost *= upkeepRate;
                 upkeep += cost;

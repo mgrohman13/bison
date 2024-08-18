@@ -33,7 +33,7 @@ namespace ClassLibrary1.Pieces.Players
             if (blueprintNum > 0)
             {
                 int num = 1 + blueprintNum / 26;
-                BlueprintNum = (char)(blueprintNum % 26 +   65) + (num > 1 ? num.ToString() : "");
+                BlueprintNum = (char)(blueprintNum % 26 + 65) + (num > 1 ? num.ToString() : "");
             }
 
             this.UpgradeFrom = upgrade;
@@ -75,8 +75,8 @@ namespace ClassLibrary1.Pieces.Players
             static double DefCost(IKillable.Values d) => Consts.StatValue(d.Defense) * CombatTypes.Cost(d.Type);
 
             double r = Math.Pow(Math.Pow(resilience, Math.Log(3) / Math.Log(2)) * 1.5 + 0.5, .39);
-            double att = Math.Pow(attacker.Sum(AttCost), attPow) / researchMult;
-            double def = killable.Sum(DefCost) * r / researchMult;
+            double att = Math.Pow(attacker.Sum(AttCost), attPow) / researchMult * 2.1;
+            double def = killable.Sum(DefCost) * r / researchMult * 2.1;
 
             double mult = Math.Sqrt(researchMult);
             double move = (baseMove + 2.6) * moveMult / mult;

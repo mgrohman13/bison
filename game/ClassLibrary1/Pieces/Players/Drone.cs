@@ -100,9 +100,8 @@ namespace ClassLibrary1.Pieces.Players
                 int def = killable.Hits.DefenseCur;
                 int max = killable.Hits.DefenseMax;
 
-                // use StatValueDiff
                 double baseDef = Consts.StatValue(_baseDef);
-                MultTreasure(def + 1, baseDef / 2.0);
+                MultTreasure(def + 1, baseDef);
 
                 double mult = Consts.StatValue(def) / Consts.StatValue(max);
                 this._turns = Math.Max(Math.Min(2, Turns), Game.Rand.Round(Turns * mult));

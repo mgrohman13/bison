@@ -99,7 +99,6 @@ namespace ClassLibrary1.Pieces.Enemies
             spawn.Spawner.Mult(pct * pct);
 
             this._decay += decay;
-            // use StatValueDiff
             while (_decay >= def && def > 0)
             {
                 _decay -= def;
