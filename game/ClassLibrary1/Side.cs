@@ -18,10 +18,8 @@ namespace ClassLibrary1
 
         public Game Game => _game;
         internal IReadOnlyList<Piece> Pieces => _pieces;
-        internal IEnumerable<T> PiecesOfType<T>() where T : class, IBehavior
-        {
-            return Pieces.Select(p => p is T t ? t : p.GetBehavior<T>()).Where(b => b != null);
-        }
+        public bool IsPlayer => this == Game.Player;
+        public bool IsEnemy => this == Game.Enemy;
 
         protected Side(Game game, int energy, int mass)
         {
@@ -29,6 +27,11 @@ namespace ClassLibrary1
             this._pieces = new List<Piece>();
             this._energy = energy;
             this._mass = mass;
+        }
+
+        internal IEnumerable<T> PiecesOfType<T>() where T : class, IBehavior
+        {
+            return Pieces.Select(p => p is T t ? t : p.GetBehavior<T>()).Where(b => b != null);
         }
 
         internal void AddPiece(Piece piece)

@@ -77,8 +77,8 @@ namespace ClassLibrary1.Pieces
             if (!CanAttack(target, true))
             {
                 var adjacent = AdjacentPieces(target).Where(p => CanAttack(p, true));
-                if (adjacent.Any())
-                    target = Game.Rand.SelectValue(adjacent); // remove randomness?
+                if (adjacent.Any() && attacker.IsEnemy)
+                    target = Game.Rand.SelectValue(adjacent);
                 else
                     return new();
             }
@@ -89,7 +89,7 @@ namespace ClassLibrary1.Pieces
 
             if (!defenders.Any())
                 defenders = new[] { target.GetBehavior<IKillable>() };
-            return defenders.ToDictionary(k => k, v => v.AllDefenses.Max(CombatTypes.GetDefenceChance));
+            return defenders.ToDictionary(k => k, v => v.AllDefenses.Sum(CombatTypes.GetDefenceChance));
 
             bool CanAttack(Piece target, bool checkRange) => target != null && target.Side != attacker
                 && target.HasBehavior(out IKillable killable) && !killable.Dead

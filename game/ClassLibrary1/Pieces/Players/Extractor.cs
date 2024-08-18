@@ -10,6 +10,11 @@ namespace ClassLibrary1.Pieces.Players
     [Serializable]
     public class Extractor : PlayerPiece, IKillable.IRepairable
     {
+        public const double AvgCost = (Consts.BiomassExtractorEnergyCost
+            + Consts.MetalExtractorEnergyCost + Consts.ArtifactExtractorEnergyCost
+            + (Consts.BiomassExtractorMassCost + Consts.MetalExtractorMassCost
+                + Consts.ArtifactExtractorMassCost) * Consts.EnergyMassRatio) / 3.0;
+
         public readonly Resource Resource;
 
         public double Sustain => Resource.Sustain * GetValues(Game).SustainMult;
@@ -74,7 +79,7 @@ namespace ClassLibrary1.Pieces.Players
             Tile tile = this.Tile;
             base.Die();
 
-            if (resource && VanishStr() > Game.Rand.GaussianOE(6.5, .39, .39))
+            if (resource && VanishStr() > Game.Rand.GaussianOE(13, .26, .13))
             {
                 Resource.SetTile(tile);
             }
@@ -88,7 +93,7 @@ namespace ClassLibrary1.Pieces.Players
         internal override void StartTurn()
         {
             base.StartTurn();
-            if (VanishStr() < Math.Min(Game.Rand.OEInt(), Game.Rand.OE()))
+            if (VanishStr() <= Math.Min(Game.Rand.OEInt(), Game.Rand.OE()))
             {
                 Die(false);
             }
@@ -113,15 +118,10 @@ namespace ClassLibrary1.Pieces.Players
 
         private double HitsMult()
         {
-            const double avg = (Consts.BiomassExtractorEnergyCost
-                + Consts.MetalExtractorEnergyCost + Consts.ArtifactExtractorEnergyCost
-                + (Consts.BiomassExtractorMassCost + Consts.MetalExtractorMassCost
-                    + Consts.ArtifactExtractorMassCost) * Consts.EnergyMassRatio) / 3.0;
-
             Resource.GetCost(1, out int energy, out int mass);
-            double cost = energy + mass * Consts.EnergyMassRatio;
-            return Math.Pow(cost / avg, Consts.ExtractorHitsPow);
+            return HitsMult(energy + mass * Consts.EnergyMassRatio);
         }
+        internal static double HitsMult(double cost) => Math.Pow(cost / Extractor.AvgCost, Consts.ExtractorHitsPow);
 
         internal override void GenerateResources(ref double energyInc, ref double massInc, ref double researchInc)
         {

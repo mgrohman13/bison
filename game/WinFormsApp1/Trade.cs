@@ -20,9 +20,9 @@ namespace WinFormsApp1
             form.pnlScrap.Visible = Program.Game.Player.CanScrapResearch();
 
             form.nudBurn.Value = 0;
-            form.nudBurn.Maximum = Program.Game.Player.Mass / Consts.BurnMassForEnergy;
+            form.nudBurn.Maximum = Math.Max(0, Program.Game.Player.Mass / Consts.BurnMassForEnergy);
             form.nudFabricate.Value = 0;
-            form.nudFabricate.Maximum = Program.Game.Player.Energy / Consts.EnergyForFabricateMass;
+            form.nudFabricate.Maximum = Math.Max(0, Program.Game.Player.Energy / Consts.EnergyForFabricateMass);
             form.nudScrap.Value = 0;
             form.nudScrap.Increment = Consts.MassForScrapResearch;
             form.nudScrap.Maximum = Program.Game.Player.Research.GetProgress(Program.Game.Player.Research.Researching) * Consts.MassForScrapResearch;

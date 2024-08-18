@@ -57,7 +57,8 @@ namespace ClassLibrary1.Pieces.Terrain
             sustainMult *= Sustain;
             double pow = Consts.ExtractPow / (Consts.ExtractPow + Math.Pow(sustainMult, Consts.ExtractSustainPow));
             double extract = Math.Pow(GetValue(extractor, valueMult) / sustainMult / Consts.ExtractTurns + 1, pow) - 1;
-            this._value -= extract;
+            double cap = Math.Max(0, 2 * extract - this._value);
+            this._value -= Game.Rand.GaussianCapped(extract, .13, cap);
         }
 
         protected void GetCost(double costMult, double inc, double baseEnergy, double baseMass, out int energy, out int mass)

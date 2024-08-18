@@ -693,7 +693,7 @@ namespace WinFormsApp1
 
                 IEnumerable<Point> allAttacks = Enumerable.Empty<Point>();
                 foreach (IAttacker enemy in Program.Game.Enemy.VisiblePieces.Select(e => e.GetBehavior<IAttacker>()).Where(b => b != null))
-                    allAttacks = allAttacks.Union(AddAttacks(enemy, AddAttStr).SelectMany(hs => hs));
+                    allAttacks = allAttacks.Union(AddAttacks(enemy, false, AddAttStr).SelectMany(hs => hs));
                 ranges[Red].Add(allAttacks.ToHashSet());
 
                 attacks.Clear();
@@ -751,7 +751,7 @@ namespace WinFormsApp1
                 //Debug.WriteLine("4 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
 
                 if (SelTile.Piece != null && SelTile.Piece.HasBehavior(out IAttacker attacker))
-                    ranges[Red].AddRange(AddAttacks(attacker, null));
+                    ranges[Red].AddRange(AddAttacks(attacker, true, null));
 
 
                 //Debug.WriteLine("5 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
@@ -881,7 +881,7 @@ namespace WinFormsApp1
                 .ToHashSet();
         }
 
-        private IEnumerable<HashSet<Point>> AddAttacks(IAttacker attacker, Action<IEnumerable<Point>, float> AddAttStr)
+        private IEnumerable<HashSet<Point>> AddAttacks(IAttacker attacker, bool showAll, Action<IEnumerable<Point>, float> AddAttStr)
         {
             Tile tile = attacker.Piece.Tile;
             HashSet<Point> moveTiles = (attacker.HasBehavior(out IMovable movable)
@@ -943,11 +943,12 @@ namespace WinFormsApp1
             }
             else
             {
-                foreach (var a in ar)
-                    if (MouseTile != null && moveTiles.Contains(new Point(MouseTile.X, MouseTile.Y)))
-                        retVal.Add(MouseTile.GetPointsInRange(a).ToHashSet());
-                    else
-                        retVal.Add(SelTile.GetPointsInRange(a).ToHashSet());
+                foreach (var a in attacker.Attacks)
+                    if (a.CanAttack() || showAll)
+                        if (MouseTile != null && moveTiles.Contains(new Point(MouseTile.X, MouseTile.Y)))
+                            retVal.Add(MouseTile.GetPointsInRange(a).ToHashSet());
+                        else if (a.CanAttack())
+                            retVal.Add(SelTile.GetPointsInRange(a).ToHashSet());
             }
 
             foreach (var result in retVal)

@@ -109,7 +109,7 @@ namespace ClassLibrary1.Pieces.Enemies
             base.Die();
             Game.VictoryPoint();
             tile.Map.GenResources(_ => tile, .065);
-            Game.CollectResources(tile, Cost / 1.69, out _, out _);
+            Game.CollectResources(tile, Cost / 2.1, out _, out _);
         }
 
         private static IEnumerable<IKillable.Values> GenKillable(int hiveIdx)

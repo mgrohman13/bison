@@ -70,7 +70,7 @@ namespace ClassLibrary1
         public const double ExtractPow = 3.5; //x=0.77777777777777777777777777777778
         public const double ExtractSustainPow = .26;//.39?
         public const double ExtractorSustainCostPow = .65;
-        public const double ExtractorHitsPow = .39;//.26?
+        public const double ExtractorHitsPow = .39;//.26??
         public const double ResourceDev = .21;
         public const double ResourceOE = .26;
 
@@ -94,11 +94,17 @@ namespace ClassLibrary1
         public const double ArtifactExtractorEnergyCost = 1300;
         public const double ArtifactExtractorMassCost = 300;
 
+        public const double GeneratorEnergyInc = 35;
+        public const double GeneratorResearchUpk = .5;
+        public const double GeneratorEnergyCost = 225;
+        public const double GeneratorMassCost = 550;
+
         public const int EnergyForFabricateMass = 10;
         public const int BurnMassForEnergy = 2;
         public const int MassForScrapResearch = 5; //inverted value from the other two
         public static readonly double ResearchMassConversion = MassForScrapResearch
             * Math.Sqrt(EnergyForFabricateMass * BurnMassForEnergy);
+        public static readonly double ResearchEnergyConversion = ResearchMassConversion * EnergyMassRatio;
 
         public const double BaseConstructorUpkeep = 5;
         public const double BaseDroneUpkeep = 2;
@@ -149,8 +155,9 @@ namespace ClassLibrary1
             MoveValue(movable?.MoveInc ?? 0, movable?.MoveMax ?? 0, movable?.MoveLimit ?? 0);
         public static double MoveValue(double moveInc, double moveMax, double moveLimit)
         {
-            double move = 8 * moveInc / 1.0 + 2 * moveMax / 2.1 + 1 * moveLimit / 3.9;
-            move /= 8 + 2 + 1;
+            const double mi = 25, mm = 10, ml = 4;
+            double move = mi * moveInc / 1.0 + mm * moveMax / 2.1 + ml * moveLimit / 3.9;
+            move /= mi + mm + ml;
             return move;
         }
 

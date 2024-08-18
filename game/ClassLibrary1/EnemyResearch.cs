@@ -34,7 +34,7 @@ namespace ClassLibrary1
         private static Dictionary<Type, int> GenUnlockTurns()
         {
             //in order of liklihood
-            Type[] unlocks = new Type[] { Type.MechEnergyWeapons, Type.MechShields, Type.MechRange, PortalType, Type.MechArmor, Type.MechLasers, Type.MechExplosives, };
+            Type[] unlocks = new Type[] { Type.MechEnergyWeapons, PortalType, Type.MechShields, Type.MechRange, Type.MechArmor, Type.MechLasers, Type.MechExplosives, };
             int count = unlocks.Length;
             Dictionary<Type, int> chances = unlocks.ToDictionary(t => t, t =>
                 Game.Rand.Round(Math.Pow(1 + count - Array.IndexOf(unlocks, t), 2.1)));

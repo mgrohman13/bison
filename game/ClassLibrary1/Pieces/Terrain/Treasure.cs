@@ -9,8 +9,6 @@ namespace ClassLibrary1.Pieces.Terrain
     [Serializable]
     public class Treasure : Piece
     {
-        internal static readonly double ConvertResearch = Consts.ResearchMassConversion * Consts.EnergyMassRatio;
-
         private readonly double? _value;
 
         internal Treasure(Tile tile, double? value) : base(null, tile)
@@ -27,6 +25,17 @@ namespace ClassLibrary1.Pieces.Terrain
                 obj.Collect();
                 obj = null;
             }
+
+            if (!tile.Visible)
+            {
+                if (!value.HasValue)
+                {
+                    throw new Exception();
+                }
+                else
+                    ;
+            }
+
             return obj;
         }
 
@@ -72,9 +81,9 @@ namespace ClassLibrary1.Pieces.Terrain
             //Game.Player.Research.FreeTech(research);
             //return research * ConvertResearch;
 
-            var type = Game.Player.Research.AddResearch(value / ConvertResearch, out int add);
+            var type = Game.Player.Research.AddResearch(value / Consts.ResearchEnergyConversion, out int add);
             RaiseCollectEvent(tile, $"Research: {add}", type.HasValue);
-            return add * ConvertResearch;
+            return add * Consts.ResearchEnergyConversion;
         }
         private double NewResource(Tile tile, double value)
         {
@@ -95,7 +104,7 @@ namespace ClassLibrary1.Pieces.Terrain
             int min = Game.Rand.Round(value / rangeMult);
             int max = Game.Rand.Round(value * rangeMult);
 
-            double convert = Math.Sqrt(ConvertResearch);
+            double convert = Math.Sqrt(Consts.ResearchEnergyConversion);
             value /= convert;
 
             Research research = Game.Player.Research;

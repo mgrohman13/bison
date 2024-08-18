@@ -30,10 +30,10 @@ namespace ClassLibrary1.Pieces.Players
             IEnumerable<IKillable.Values> killable, double resilience, IEnumerable<IAttacker.Values> attacker, IMovable.Values movable)
         {
             this.BlueprintNum = "";
-            while (blueprintNum > 0)
+            if (blueprintNum > 0)
             {
-                BlueprintNum += (char)(--blueprintNum % 26 + 65);
-                blueprintNum /= 26;
+                int num = 1 + blueprintNum / 26;
+                BlueprintNum = (char)(blueprintNum % 26 +   65) + (num > 1 ? num.ToString() : "");
             }
 
             this.UpgradeFrom = upgrade;
@@ -509,7 +509,7 @@ namespace ClassLibrary1.Pieces.Players
         private static double GenVision(IResearch research)
         {
             const double avgVision = 5.2;
-            double avg = avgVision, dev = .39, oe = .091;
+            double avg = avgVision, dev = .39, oe = .169;
             bool isVision = research.GetType() == Type.MechVision;
             ModValues(isVision, 2.1, ref avg, ref dev, ref oe);
             avg *= research.GetMult(Type.MechVision, Blueprint_Vision_Pow);
@@ -625,17 +625,23 @@ namespace ClassLibrary1.Pieces.Players
 
             AttackType GetAttackType(Type researchType, out bool isLaser)
             {
-                isLaser = researchType == Type.MechLasers || research.MakeType(Type.MechLasers);
+                bool explosive = research.MakeType(Type.MechExplosives);
+                bool MakeType(Type t) => research.MakeType(t) && !explosive;
+
+                isLaser = researchType == Type.MechLasers || MakeType(Type.MechLasers);
+
                 AttackType type = AttackType.Kinetic;
                 if (researchType == Type.MechExplosives)
                     type = AttackType.Explosive;
-                else if (isLaser || researchType == Type.MechEnergyWeapons || research.MakeType(Type.MechEnergyWeapons))
+                else if (isLaser || researchType == Type.MechEnergyWeapons || MakeType(Type.MechEnergyWeapons))
                     type = AttackType.Energy;
-                else if (research.MakeType(Type.MechExplosives))
+                else if (explosive)
                     type = AttackType.Explosive;
+
                 if (used.Contains(type) && Game.Rand.Bool())
                     type = AttackType.Kinetic;
                 used.Add(type);
+
                 return type;
             }
             bool IsRanged(Type researchType, bool isLaser, ref AttackType type)
@@ -688,10 +694,10 @@ namespace ClassLibrary1.Pieces.Players
 
         private static IMovable.Values GenMovable(IResearch research)
         {
-            double avg = 6.5, dev = .169, oe = .13;
+            double avg = 7.8, dev = .169, oe = .13;
 
             double researchMult = research.GetMult(Type.MechMove, 1);
-            const double lowPenalty = 1.69;
+            const double lowPenalty = .21;
             if (researchMult < lowPenalty)
                 avg *= researchMult / lowPenalty;
 

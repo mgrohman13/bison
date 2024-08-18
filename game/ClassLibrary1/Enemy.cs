@@ -86,6 +86,11 @@ namespace ClassLibrary1
 
             pStr *= Consts.PortalSpawnStrMult;
 
+            eStr = Math.Max(0, eStr);
+            pStr = Math.Max(0, pStr);
+            eInc = Math.Max(0, eInc);
+            pInc = Math.Max(0, pInc);
+
             static double Inc(double e, double p) => 2 * e / (e + p) - 1;
             double inc = 0;
             bool str = eStr > pStr;
@@ -226,9 +231,12 @@ namespace ClassLibrary1
                     h.GetBehavior<IKillable>().AllDefenses.Sum(d => d.DefenseMax));
             else
                 ;
-            this._portalSpawn += Game.Rand.Gaussian(inc, .039 / Math.Sqrt(inc));
 
-            Loan(13 / amt * inc * GetEneryIncome(Game));
+            if (inc > 0)
+            {
+                this._portalSpawn += Game.Rand.Gaussian(inc, .039 / Math.Sqrt(inc));
+                Loan(13 / amt * inc * GetEneryIncome(Game));
+            }
         }
         internal void VictoryPoint() => IncPortals(null);
 
