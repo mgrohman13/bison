@@ -27,6 +27,7 @@ namespace ClassLibrary1
         public static readonly double ResourceAvgDist = Math.Sqrt(Scale) * 21;
         public static readonly double TreasureDiv = Scale * 21;
         public const double ResearchFactor = 2600;
+        public const int ExploreForResearch = 39;
 
         public const double EnemyStartEnergy = 10400;
         public const double EnemyEnergy = 520;
@@ -56,7 +57,7 @@ namespace ClassLibrary1
         public const double CoreResearch = 20;
         public const double CoreExtractTurns = 91;//0.98901098901098901098901098901099
 
-        public const double DroneCost = 21;
+        public const double DroneCost = 16.9;
         public const double DroneMassCostMult = 1.69;
         public const double DroneRefund = .65;
 
@@ -178,13 +179,17 @@ namespace ClassLibrary1
             return 1 - Math.Pow(1 - pct, mult);
         }
 
-        internal static bool CanRepair(Piece piece) => !(piece.GetBehavior<IMovable>()?.Moved ?? false)
-            && !(piece.GetBehavior<IKillable>()?.Defended ?? false)
-            && !(piece.GetBehavior<IAttacker>()?.Attacked ?? false);
+        internal static bool CanRepair(Piece piece)
+        {
+            bool canRepair = !(piece.GetBehavior<IMovable>()?.Moved ?? false) && !(piece.GetBehavior<IKillable>()?.Defended ?? false) && !(piece.GetBehavior<IAttacker>()?.Attacked ?? false);
+            if (canRepair && piece.Side.Mass < 0)
+                canRepair = false;
+            return canRepair;
+        }
         public static double GetRepairCost(Piece piece, double energy, double mass)
         {
-            double costMult = piece.HasBehavior<IAttacker>() ? Consts.RepairCost : Consts.PassiveRepairCost;
-            return (mass + energy / Consts.EnergyRepairDiv) * costMult;
+            double costMult = piece.HasBehavior<IAttacker>() ? RepairCost : PassiveRepairCost;
+            return (mass + energy / EnergyRepairDiv) * costMult;
         }
 
         public static double GetDamagedValue(Piece piece, double value, double min) =>

@@ -93,39 +93,34 @@ FEATURES
 	power grid
 	research to automate mechs - big stat buff, less micromanagement
 
-windows scaling increases unit label text size
-targetting constructor over core/extractor when in fight?
-make sure enemy targeting group properly when can not hit best target, but adjacent 
-fix Consts.StatValue to div/2 
-increase extractor defense??
-	lower scaling exponent??
-aliens somewhat avoid attacking if healing 
-save research dialog checkbox settings
-all explored tiles give small amount of reasearch???
-some upgs dramatically reduce in usefullness late
-	categorize, analyse
-	combine some? separate more unlocks/upgs
-give aliens a mult to avg attack for kinetic over energy?
-alien heal state check armor too?
-	might switch out when hp max but armor not
+indication when mech can be repaired
+	slightly different if in range/not
+
+treasure placed in hidden areas???
+	
+create log file
 swap e and a?
-energy generator for foundations
-	also mass fabricator, but needs to be disable-able
 alien late game ways to bust mech packs?
 core repair range shrink over time?
-drone defense kinda meaningless...
-tie drone decay rate to def stat value?
 BPs get more expensive the more you make??
 	ones you dont make get cheaper over time???
 	how does this work with upgrades?
+
+some upgs dramatically reduce in usefullness late
+	categorize, analyse
+	combine some? separate more unlocks/upgs
+targetting constructor over core/extractor when in fight?
+make sure enemy targeting group properly when can not hit best target, but adjacent 
+save research dialog checkbox settings?
+
+windows scaling increases unit label text size
+increase extractor defense??
+	lower scaling exponent??
+mass fabricator for foundations, but needs to be disable-able
 negative mass/energy
-	mass prevents repair
-	energy shuts down mechs
-		+extractors?
-indication when mech can be repaired
-	slightly different if in range/not
-treasure placed in hidden areas???
-create log file
+	resources still extract when not used
+	ensure random order
+	display values dont line up properly with actual values 
 
 portal entrance probabilities should be based on str/value
 mulitple enemy groups should be better at jumping into turret range?

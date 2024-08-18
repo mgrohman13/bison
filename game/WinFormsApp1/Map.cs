@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
+using static ClassLibrary1.Pieces.IKillable;
 using AttackType = ClassLibrary1.Pieces.CombatTypes.AttackType;
 using DefenseType = ClassLibrary1.Pieces.CombatTypes.DefenseType;
 using DPoint = System.Drawing.Point;
@@ -434,6 +435,20 @@ namespace WinFormsApp1
 
                     if (piece != null && piece.HasBehavior(out IKillable killable))
                     {
+                        if (piece is PlayerPiece playerPiece && piece is IRepairable repairable)
+                        {
+                            if (playerPiece.GetRepairInc() > 0 || killable.Protection.SingleOrDefault(d => d.Type == CombatTypes.DefenseType.Armor && d.DefenseCur < d.DefenseMax)?.GetRegen() > 0)
+                            {
+                                //PointF[] indicator = new PointF[] { new(rect.X + rect.Width / 2f, rect.Y), new(rect.Right, rect.Y), new(rect.Right, rect.Y + rect.Height / 2f) };
+                                //polygons.Add(indicator);
+                            }
+                            else if (repairable.CanRepair())
+                            {
+                                //RectangleF indicator = new RectangleF(rect.X, rect.Y, rect.Width / 2f, rect.Height / 2f);
+                                //ellipses.Add(indicator);
+                            }
+                        }
+
                         float barSize = defHeight * rect.Height;
                         //statBarPow makes smaller bars bigger which helps visual clarity 
                         //float widthTotal = (float)Math.Pow(killable.AllDefenses.Sum(k => StatValue(k.DefenseMax)) / defenseMax, statBarPow);

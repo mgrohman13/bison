@@ -87,7 +87,7 @@ namespace ClassLibrary1.Pieces.Players
             {
                 double mult = Turns / (Turns + 1.0);
                 // use stat value??
-                int def = Math.Max(1, Game.Rand.Round(killable.Hits.DefenseCur * mult));
+                int def = Math.Max(1, Game.Rand.Round(Consts.StatValueInverse(Consts.StatValue(killable.Hits.DefenseCur) * mult)));
                 killable.SetHits(def, def);
 
                 base.StartTurn();
@@ -156,7 +156,7 @@ namespace ClassLibrary1.Pieces.Players
 
             public void GetCost(out int energy, out int mass)
             {
-                double turn = turns * 2.1 + Math.Sqrt(Consts.StatValue(hits));
+                double turn = turns * 2.6 + Math.Sqrt(Consts.StatValue(hits));
                 double repair = repairRate * 3.9 + Consts.MoveValue(moveInc, moveMax, moveLimit);
 
                 double cost = Consts.DroneCost * costMult * Math.Sqrt(turn * repair);

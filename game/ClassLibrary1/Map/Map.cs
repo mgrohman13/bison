@@ -372,6 +372,9 @@ namespace ClassLibrary1.Map
             foreach (Point p in Tile.GetPointsInRangeBlocked(this, point, range))
                 if (_explored.Add(p))
                 {
+                    if (Game.Rand.Next(Consts.ExploreForResearch) == 0)
+                        Game.Player.Research.AddBackground();
+
                     Tile explored = GetTile(p);
                     CreateTreasure(explored);
                     found |= explored != null && explored.Piece != null && explored.Piece is not Terrain;

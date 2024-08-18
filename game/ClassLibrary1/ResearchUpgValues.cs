@@ -55,7 +55,7 @@ namespace ClassLibrary1
             //{ UpgType.CoreDefense, new(11, 0.65, 11 / 10.0) },
             { UpgType.CoreShields, new(7.8, .85, 1.5) },
             { UpgType.DroneCost, new(0.10, true) },
-            { UpgType.DroneDefense, new(14.3, 0.30) },
+            { UpgType.DroneDefense, new(21, 0.30, 1.1) },
             { UpgType.DroneMove, new(2.6, 0.40) },
             { UpgType.DroneRepair, new(1.3, 0.75, start: -0.3) },
             { UpgType.DroneTurns, new(11.7, 0.50) },

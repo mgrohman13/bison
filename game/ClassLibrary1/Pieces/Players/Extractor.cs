@@ -121,12 +121,15 @@ namespace ClassLibrary1.Pieces.Players
             Resource.GetCost(1, out int energy, out int mass);
             return HitsMult(energy + mass * Consts.EnergyMassRatio);
         }
-        internal static double HitsMult(double cost) => Math.Pow(cost / Extractor.AvgCost, Consts.ExtractorHitsPow);
+        internal static double HitsMult(double cost) => Math.Pow(cost / AvgCost, Consts.ExtractorHitsPow);
 
         internal override void GenerateResources(ref double energyInc, ref double massInc, ref double researchInc)
         {
-            base.GenerateResources(ref energyInc, ref massInc, ref researchInc);
             Resource.GenerateResources(this, GetValues(Game).ValueMult, ref energyInc, ref massInc, ref researchInc);
+            if (energyInc < 0 && Side.Energy < 0)
+                energyInc = massInc = researchInc = 0;
+
+            base.GenerateResources(ref energyInc, ref massInc, ref researchInc);
         }
         internal override void EndTurn(ref double energyUpk, ref double massUpk)
         {

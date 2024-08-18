@@ -454,7 +454,7 @@ namespace ClassLibrary1
             void Fire(bool useMelee)
             {
                 var attacks = GetAttacks(attPiece).Where(a => useMelee || a.Range > Attack.MELEE_RANGE);
-                if (attacks.Any())
+                if (attacks.Any() && (state != AIState.Heal || Game.Rand.Bool()))
                 {
                     //foreach (double range in attacks.Where(a => inRetreat || IsFull(a)).Select(a => a.Range).Order())
                     foreach (var attack in Game.Rand.Iterate(attacks))

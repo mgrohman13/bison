@@ -113,6 +113,24 @@ namespace ClassLibrary1
 
             return result;
         }
+        internal void AddBackground()
+        {
+            const int add = 1;
+            var types = Enumerable.Empty<KeyValuePair<Type, int>>();
+
+            int pool = Game.Rand.Next(2);
+            for (int a = 0; a < 2 && !types.Any(); a++)
+                if (a == pool)
+                    types = _choices.Where(p => _progress[p.Key] + add < p.Value);
+                else
+                    types = _progress.Where(p => p.Value > 0);
+
+            if (!types.Any())
+                types = _choices;
+
+            Type select = Game.Rand.SelectValue(types.ToDictionary(p => p.Key, p => p.Value));
+            _progress[select] += add;
+        }
         //internal Type FreeTech(int value)
         //{            
         //}
