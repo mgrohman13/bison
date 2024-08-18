@@ -97,10 +97,12 @@ namespace ClassLibrary1.Pieces.Players
             Research research = Game.Player.Research;
             IBuilder.Values GetBuilder(Values values) => values.GetBuilder(_rangeMult);
 
-            if (!HasBehavior<IBuilder.IBuildTurret>() && research.HasType(Research.Type.Turret))
-                SetBehavior(new Builder.BuildTurret(this, GetBuilder(values)));
             if (!HasBehavior<IBuilder.IBuildFactory>() && research.HasType(Research.Type.Factory))
                 SetBehavior(new Builder.BuildFactory(this, GetBuilder(values)));
+            if (!HasBehavior<IBuilder.IBuildTurret>() && research.HasType(Research.Type.Turret))
+                SetBehavior(new Builder.BuildTurret(this, GetBuilder(values)));
+            if (!HasBehavior<IBuilder.IBuildGenerator>() && research.HasType(Research.Type.AmbientGenerator))
+                SetBehavior(new Builder.BuildGenerator(this, GetBuilder(values)));
             if (!HasBehavior<IBuilder.IBuildDrone>() && research.HasType(Research.Type.RepairDrone))
                 SetBehavior(new Builder.BuildDrone(this, GetBuilder(values)));
 

@@ -170,7 +170,6 @@ namespace WinFormsApp1
                     lbl6.Text = "Vision";
                     lblInf6.Text = string.Format("{0}{1}", FormatDown(playerPiece.Vision), CheckBase(playerPiece.VisionBase, playerPiece.Vision, FormatDown));
 
-                    //if ( playerPiece is Core)
                     if (playerPiece is not Extractor)
                     {
                         double energyInc, massInc, researchInc;
@@ -197,8 +196,12 @@ namespace WinFormsApp1
                             lbl9.Text = "Research";
                             lblInf9.Text = FormatInc(researchInc, Consts.CoreResearch);
                         }
-                        string FormatInc(double inc, double coreValue) =>
-                            string.Format("{1}{0}{2}", Format(inc), inc < 0 ? "" : "+", playerPiece is Core core ? $" ({FormatPct(inc / coreValue)})" : "");
+                        string FormatInc(double inc, double coreValue)
+                        {
+                            if (playerPiece is not Core)
+                                coreValue = inc;
+                            return string.Format("{1}{0}{2}", Format(inc), inc < 0 ? "" : "+", playerPiece is Core core ? $" ({FormatPct(inc / coreValue)})" : "");
+                        }
                     }
                 }
                 //if (Selected.Piece is Alien alien)
@@ -768,16 +771,24 @@ namespace WinFormsApp1
                 {
                     IBuilder.IBuildFactory buildFactory = builder.GetBehavior<IBuilder.IBuildFactory>();
                     IBuilder.IBuildTurret buildTurret = builder.GetBehavior<IBuilder.IBuildTurret>();
+                    IBuilder.IBuildGenerator buildGenerator = builder.GetBehavior<IBuilder.IBuildGenerator>();
                     bool done = false;
-                    for (int a = 0; a < 2 && !done; a++)
-                    {
-                        if ((a == 0) == (Selected.Piece is Turret))
-                            done = buildFactory != null && Replace("Factory", (bool doReplace, out int energy, out int mass) =>
-                                buildFactory.Replace(doReplace, foundationPiece, out energy, out mass));
-                        else
-                            done = buildTurret != null && Replace("Turret", (bool doReplace, out int energy, out int mass) =>
-                                buildTurret.Replace(doReplace, foundationPiece, out energy, out mass));
-                    }
+                    for (int a = 0; a < 3 && !done; a++)
+                        switch (a)
+                        {
+                            case 0:
+                                done = buildFactory != null && Replace("Factory", (bool doReplace, out int energy, out int mass) =>
+                                    buildFactory.Replace(doReplace, foundationPiece, out energy, out mass));
+                                break;
+                            case 1:
+                                done = buildTurret != null && Replace("Turret", (bool doReplace, out int energy, out int mass) =>
+                                    buildTurret.Replace(doReplace, foundationPiece, out energy, out mass));
+                                break;
+                            case 2:
+                                done = buildGenerator != null && Replace("Generator", (bool doReplace, out int energy, out int mass) =>
+                                    buildGenerator.Replace(doReplace, foundationPiece, out energy, out mass));
+                                break;
+                        }
                 }
             }
         }
@@ -827,9 +838,10 @@ namespace WinFormsApp1
                 }
                 if (Selected.Piece is FoundationPiece)
                 {
-                    IBuilder.IBuildFactory buildFactory = DgvForm.GetBuilder<IBuilder.IBuildFactory>(Selected);
-                    IBuilder.IBuildTurret buildTurret = DgvForm.GetBuilder<IBuilder.IBuildTurret>(Selected);
-                    builder = (IBuilder)buildFactory ?? buildTurret;
+                    IBuilder buildFactory = DgvForm.GetBuilder<IBuilder.IBuildFactory>(Selected);
+                    IBuilder buildTurret = DgvForm.GetBuilder<IBuilder.IBuildTurret>(Selected);
+                    IBuilder buildGenerator = DgvForm.GetBuilder<IBuilder.IBuildGenerator>(Selected);
+                    builder = buildFactory ?? buildTurret ?? buildGenerator;
                 }
             }
             piece = builder?.Piece;

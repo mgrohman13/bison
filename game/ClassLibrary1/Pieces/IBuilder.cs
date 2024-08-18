@@ -35,6 +35,11 @@ namespace ClassLibrary1.Pieces
             public Turret Build(Foundation foundation);
             public bool Replace(bool doReplace, FoundationPiece foundationPiece, out int energy, out int mass);
         }
+        public interface IBuildGenerator : IBuilder
+        {
+            public Generator Build(Foundation foundation);
+            public bool Replace(bool doReplace, FoundationPiece foundationPiece, out int energy, out int mass);
+        }
         public interface IBuildDrone : IBuilder
         {
             public Drone Build(Tile tile);

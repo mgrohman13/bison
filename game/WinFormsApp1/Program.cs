@@ -300,6 +300,11 @@ namespace WinFormsApp1
                         Turret.Cost(Game, out int e, out int m);
                         move = Game.Player.Has(e, m);
                     }
+                    if (!move && piece.HasBehavior<IBuilder.IBuildGenerator>())
+                    {
+                        Generator.Cost(Game, out int e, out int m);
+                        move = Game.Player.Has(e, m);
+                    }
                 }
 
             if (!move && piece.HasBehavior(out IMovable movable))
@@ -320,9 +325,8 @@ namespace WinFormsApp1
                             .Select(k => Tuple.Create(t.Item1, k, k.AllDefenses.Sum(d => Consts.StatValue(d.DefenseCur))))
                             .OrderByDescending(t => t.Item3).ThenBy(t => t.Item2.Piece.PieceNum).ThenBy(t => t.Item2.Piece.GetType().ToString()).First());
                     var c = b.GroupBy(t => t.Item2)
-                        .Select(g => Tuple.Create(g.Select(t => t.Item1).Distinct().Sum(a => Consts.StatValue(a.AttackCur)), g.Max(t => t.Item3)))
-                        .Any(t => t.Item1 >= t.Item2);
-                    move |= c;
+                        .Select(g => Tuple.Create(g.Select(t => t.Item1).Distinct().Sum(a => Consts.StatValue(a.AttackCur)), g.Max(t => t.Item3)));
+                    move |= c.Any(t => t.Item1 >= t.Item2);
                 }
             }
             if (!move && piece.HasBehavior(out IAttacker attacker))

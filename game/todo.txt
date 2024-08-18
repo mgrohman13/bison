@@ -93,18 +93,39 @@ FEATURES
 	power grid
 	research to automate mechs - big stat buff, less micromanagement
 
-weak generator buildings for foundations
 windows scaling increases unit label text size
-too many 3 attack range mechs due to cap
-increase alien treasure chance?
 targetting constructor over core/extractor when in fight?
-move left for mech that can be killed deosnt account for friendly mech protecting
-slightly randomize resource extract amount
-tweak MoveValue to value max move higher?
 make sure enemy targeting group properly when can not hit best target, but adjacent 
 fix Consts.StatValue to div/2 
-increase extractor defense?
+increase extractor defense??
+	lower scaling exponent??
 aliens somewhat avoid attacking if healing 
+save research dialog checkbox settings
+all explored tiles give small amount of reasearch???
+some upgs dramatically reduce in usefullness late
+	categorize, analyse
+	combine some? separate more unlocks/upgs
+give aliens a mult to avg attack for kinetic over energy?
+alien heal state check armor too?
+	might switch out when hp max but armor not
+swap e and a?
+energy generator for foundations
+	also mass fabricator, but needs to be disable-able
+alien late game ways to bust mech packs?
+core repair range shrink over time?
+drone defense kinda meaningless...
+tie drone decay rate to def stat value?
+BPs get more expensive the more you make??
+	ones you dont make get cheaper over time???
+	how does this work with upgrades?
+negative mass/energy
+	mass prevents repair
+	energy shuts down mechs
+		+extractors?
+indication when mech can be repaired
+	slightly different if in range/not
+treasure placed in hidden areas???
+create log file
 
 portal entrance probabilities should be based on str/value
 mulitple enemy groups should be better at jumping into turret range?

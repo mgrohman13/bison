@@ -54,7 +54,8 @@ namespace ClassLibrary1.Pieces
             //check blocks
             return (tile != null && (!empty || tile.Piece == null) && tile.Visible && tile.GetDistance(this.Piece.Tile) <= Range);
         }
-        private bool Replace(bool doReplace, PlayerPiece piece, CostFunc GetNewCost, Func<double> GetRounding, Action NewPiece, bool validateHits, out int energy, out int mass)
+        private bool Replace(bool doReplace, PlayerPiece piece, CostFunc GetNewCost, Func<double> GetRounding, Action NewPiece, bool validateHits,
+            out int energy, out int mass)
         {
             if (piece != null && Validate(piece.Tile, false) && piece.HasBehavior(out IKillable killable)
                 && (!validateHits || killable.Hits.DefenseCur < killable.Hits.DefenseMax))
@@ -93,17 +94,16 @@ namespace ClassLibrary1.Pieces
                 double mult = totStart == 0 ? 1 : ((totCur / totStart) + 1.0) / 2.0;
 
                 mult *= Consts.ReplaceRefundPct * Consts.StatValue(killable.Hits.DefenseCur) / Consts.StatValue(killable.Hits.DefenseMax);
-                double rounding = 1 - GetRounding();
+                double rounding = GetRounding();
                 energy = MTRandom.Round(newEnergy - energy * mult - addEnergy, 1 - rounding);
                 mass = MTRandom.Round(newMass - mass * mult, rounding);
 
-                if (Piece.Game.Player.Has(energy, mass))
+                if (doReplace && Piece.Game.Player.Has(energy, mass))
                 {
-                    if (doReplace && Piece.Game.Player.Spend(energy, mass))
-                    {
-                        piece.Die();
+                    Tile tile = piece.Tile;
+                    piece.Die();
+                    if (tile.Piece is not null && tile.Piece is not Treasure && Piece.Game.Player.Spend(energy, mass))
                         NewPiece();
-                    }
                     return true;
                 }
             }
@@ -224,6 +224,33 @@ namespace ClassLibrary1.Pieces
                     (out int e, out int m) => Turret.Cost(Piece.Game, out e, out m),
                     () => Turret.GetRounding(Piece.Game),
                     () => Turret.NewTurret((Foundation)tile.Piece),
+                    false, out energy, out mass);
+            }
+        }
+        [Serializable]
+        public class BuildGenerator : Builder, IBuilder.IBuildGenerator
+        {
+            public BuildGenerator(Piece piece, IBuilder.Values values)
+               : base(piece, values)
+            {
+            }
+            public Generator Build(Foundation foundation)
+            {
+                if (foundation != null && Validate(foundation.Tile, false))
+                {
+                    Generator.Cost(Piece.Game, out int energy, out int mass);
+                    if (Piece.Game.Player.Spend(energy, mass))
+                        return Generator.NewGenerator(foundation);
+                }
+                return null;
+            }
+            public bool Replace(bool doReplace, FoundationPiece foundationPiece, out int energy, out int mass)
+            {
+                Tile tile = foundationPiece?.Tile;
+                return Replace(doReplace, foundationPiece,
+                    (out int e, out int m) => Generator.Cost(Piece.Game, out e, out m),
+                    () => Generator.GetRounding(Piece.Game),
+                    () => Generator.NewGenerator((Foundation)tile.Piece),
                     false, out energy, out mass);
             }
         }

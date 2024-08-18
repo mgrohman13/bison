@@ -43,6 +43,7 @@ namespace WinFormsApp1
                 IBuilder.IBuildExtractor buildExtractor = GetBuilder<IBuilder.IBuildExtractor>(selected);
                 IBuilder.IBuildFactory buildFactory = GetBuilder<IBuilder.IBuildFactory>(selected);
                 IBuilder.IBuildTurret buildTurret = GetBuilder<IBuilder.IBuildTurret>(selected);
+                IBuilder.IBuildGenerator buildGenerator = GetBuilder<IBuilder.IBuildGenerator>(selected);
                 Piece piece = selected.Piece;
                 if (piece is null)
                 {
@@ -63,6 +64,8 @@ namespace WinFormsApp1
                     if (buildFactory != null)
                         return true;
                     if (buildTurret != null)
+                        return true;
+                    if (buildGenerator != null)
                         return true;
                 }
             }
@@ -97,6 +100,7 @@ namespace WinFormsApp1
             IBuilder.IBuildExtractor buildExtractor = GetBuilder<IBuilder.IBuildExtractor>(selected);
             IBuilder.IBuildFactory buildFactory = GetBuilder<IBuilder.IBuildFactory>(selected);
             IBuilder.IBuildTurret buildTurret = GetBuilder<IBuilder.IBuildTurret>(selected);
+            IBuilder.IBuildGenerator buildGenerator = GetBuilder<IBuilder.IBuildGenerator>(selected);
 
             if (buildConstructor != null && selected.Piece == null)
             {
@@ -131,6 +135,12 @@ namespace WinFormsApp1
             {
                 Turret.Cost(Program.Game, out int energy, out int mass);
                 BuildRow row = new(buildTurret, "Turret", energy, mass);
+                rows.Add(row);
+            }
+            if (buildGenerator != null && foundation != null)
+            {
+                Generator.Cost(Program.Game, out int energy, out int mass);
+                BuildRow row = new(buildGenerator, "Generator", energy, mass);
                 rows.Add(row);
             }
 
@@ -233,6 +243,8 @@ namespace WinFormsApp1
                     this.result = buildFactory.Build(selected.Piece as Foundation);
                 if (builder is IBuilder.IBuildTurret buildTurret)
                     this.result = buildTurret.Build(selected.Piece as Foundation);
+                if (builder is IBuilder.IBuildGenerator buildGenerator)
+                    this.result = buildGenerator.Build(selected.Piece as Foundation);
                 if (result != null)
                     this.Close();
             }

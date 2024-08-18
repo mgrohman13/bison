@@ -18,6 +18,7 @@ namespace WinFormsApp1
             Constructor.Cost(Program.Game, out int ce, out int cm);
             Factory.Cost(Program.Game, out int fe, out int fm);
             Turret.Cost(Program.Game, out int te, out int tm);
+            Generator.Cost(Program.Game, out int ge, out int gm);
             Drone.Cost(Program.Game, out int de, out int dm);
 
             this.lblCE.Text = ce.ToString();
@@ -26,6 +27,8 @@ namespace WinFormsApp1
             this.lblFM.Text = fm.ToString();
             this.lblTE.Text = te.ToString();
             this.lblTM.Text = tm.ToString();
+            this.lblGE.Text = ge.ToString();
+            this.lblGM.Text = gm.ToString();
             this.lblDE.Text = de.ToString();
             this.lblDM.Text = dm.ToString();
 

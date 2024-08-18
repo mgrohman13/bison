@@ -47,6 +47,9 @@ namespace WinFormsApp1
             lblDM = new System.Windows.Forms.Label();
             lblDE = new System.Windows.Forms.Label();
             label8 = new System.Windows.Forms.Label();
+            lblGM = new System.Windows.Forms.Label();
+            lblGE = new System.Windows.Forms.Label();
+            label10 = new System.Windows.Forms.Label();
             SuspendLayout();
             // 
             // label1
@@ -185,6 +188,7 @@ namespace WinFormsApp1
             // 
             // label2
             // 
+            label2.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
             label2.AutoSize = true;
             label2.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
             label2.Location = new System.Drawing.Point(11, 102);
@@ -197,6 +201,7 @@ namespace WinFormsApp1
             // 
             // txtVictory
             // 
+            txtVictory.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
             txtVictory.AutoSize = true;
             txtVictory.Location = new System.Drawing.Point(117, 102);
             txtVictory.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
@@ -208,7 +213,7 @@ namespace WinFormsApp1
             // 
             // lblDM
             // 
-            lblDM.Location = new System.Drawing.Point(165, 65);
+            lblDM.Location = new System.Drawing.Point(165, 82);
             lblDM.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             lblDM.Name = "lblDM";
             lblDM.Size = new System.Drawing.Size(46, 20);
@@ -218,7 +223,7 @@ namespace WinFormsApp1
             // 
             // lblDE
             // 
-            lblDE.Location = new System.Drawing.Point(115, 65);
+            lblDE.Location = new System.Drawing.Point(115, 82);
             lblDE.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             lblDE.Name = "lblDE";
             lblDE.Size = new System.Drawing.Size(46, 20);
@@ -228,7 +233,7 @@ namespace WinFormsApp1
             // 
             // label8
             // 
-            label8.Location = new System.Drawing.Point(8, 65);
+            label8.Location = new System.Drawing.Point(8, 82);
             label8.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             label8.Name = "label8";
             label8.Size = new System.Drawing.Size(102, 20);
@@ -236,11 +241,44 @@ namespace WinFormsApp1
             label8.Text = "Drone";
             label8.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             // 
+            // lblGM
+            // 
+            lblGM.Location = new System.Drawing.Point(165, 65);
+            lblGM.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            lblGM.Name = "lblGM";
+            lblGM.Size = new System.Drawing.Size(46, 20);
+            lblGM.TabIndex = 22;
+            lblGM.Text = "lblGM";
+            lblGM.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            // 
+            // lblGE
+            // 
+            lblGE.Location = new System.Drawing.Point(115, 65);
+            lblGE.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            lblGE.Name = "lblGE";
+            lblGE.Size = new System.Drawing.Size(46, 20);
+            lblGE.TabIndex = 21;
+            lblGE.Text = "lblGE";
+            lblGE.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            // 
+            // label10
+            // 
+            label10.Location = new System.Drawing.Point(8, 65);
+            label10.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            label10.Name = "label10";
+            label10.Size = new System.Drawing.Size(102, 20);
+            label10.TabIndex = 20;
+            label10.Text = "Generator";
+            label10.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+            // 
             // Details
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             ClientSize = new System.Drawing.Size(265, 146);
+            Controls.Add(lblGM);
+            Controls.Add(lblGE);
+            Controls.Add(label10);
             Controls.Add(lblDM);
             Controls.Add(lblDE);
             Controls.Add(label8);
@@ -288,5 +326,8 @@ namespace WinFormsApp1
         private System.Windows.Forms.Label lblDM;
         private System.Windows.Forms.Label lblDE;
         private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.Label lblGM;
+        private System.Windows.Forms.Label lblGE;
+        private System.Windows.Forms.Label label10;
     }
 }

@@ -14,7 +14,7 @@ namespace ClassLibrary1
         internal const double Blueprint_Defense_Pow = 0.70;
         internal const double Blueprint_Move_Pow = 0.35;
         internal const double Blueprint_Range_Pow = 0.55;
-        internal const double Blueprint_Vision_Pow = 0.45;
+        internal const double Blueprint_Vision_Pow = 0.65;
 
         //internal const double Constructor_Cost_Pow = ;
         //internal const double Constructor_Defense_Pow = ;
@@ -44,6 +44,8 @@ namespace ClassLibrary1
         //internal const double Turret_Vision_Pow = ;
 
         private static readonly IReadOnlyDictionary<UpgType, UpgParam> UpgParams = new Dictionary<UpgType, UpgParam>() {
+            { UpgType.AmbientGenerator, new(Consts.GeneratorEnergyInc, .45) },
+            { UpgType.AmbientGeneratorCost, new(.20, true) },
             { UpgType.ConstructorCost, new(0.70, true) },
             { UpgType.ConstructorDefense, new(8, 0.50, 8 / 5.0) },
             { UpgType.ConstructorMove, new(Constructor.BASE_MOVE_INC * Constructor.MOVE_RAMP, 0.35, Constructor.MOVE_RAMP) },
@@ -144,7 +146,8 @@ namespace ClassLibrary1
             UpgType.TurretArmorDefense, UpgType.TurretLaserRange, UpgType.TurretExplosivesRange, };
 
         private static readonly IReadOnlyDictionary<Type, UpgType[]> UpgTypes = new Dictionary<Type, UpgType[]>() {
-            { Type.BuildingCost, new[] { UpgType.ExtractorCost, UpgType.FactoryCost, UpgType.TurretCost, } },
+            { Type.AmbientGenerator, new[] { UpgType.AmbientGenerator, } },
+            { Type.BuildingCost, new[] { UpgType.ExtractorCost, UpgType.FactoryCost, UpgType.TurretCost, UpgType.AmbientGeneratorCost, } },
             { Type.BuildingDefense, new[] { UpgType.ExtractorDefense, UpgType.ExtractorVision, UpgType.FactoryDefense, UpgType.FactoryVision, } },
             { Type.ConstructorCost, new[] { UpgType.ConstructorCost, UpgType.DroneCost, } },
             { Type.ConstructorDefense, new[] { UpgType.ConstructorDefense, UpgType.DroneDefense, } },
@@ -160,6 +163,10 @@ namespace ClassLibrary1
 
         internal enum UpgType
         {
+            AmbientGenerator,
+            AmbientGeneratorCost,
+            //AmbientGeneratorDefense,
+            //AmbientGeneratorVision,
             ConstructorCost,
             ConstructorDefense,
             ConstructorMove,

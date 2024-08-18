@@ -111,7 +111,7 @@ namespace ClassLibrary1
         }
         public bool Has(double energy, double mass)
         {
-            return ((Energy >= energy || energy < 0) && (Mass >= mass || mass < 0));
+            return ((Energy >= energy || energy <= 0) && (Mass >= mass || mass <= 0));
         }
 
         public void GetIncome(out double energyInc, out double massInc, out double researchInc)
@@ -119,6 +119,7 @@ namespace ClassLibrary1
             energyInc = massInc = researchInc = 0;
             foreach (PlayerPiece piece in Game.Rand.Iterate(Pieces.Cast<PlayerPiece>()))
                 piece.GetIncome(ref energyInc, ref massInc, ref researchInc);
+            PostProcess(ref energyInc, ref massInc, ref researchInc);
         }
         private void GenerateResources(out double energyInc, out double massInc, out double researchInc)
         {
@@ -135,11 +136,21 @@ namespace ClassLibrary1
             GenerateResources(out double energyInc, out double massInc, out double researchInc);
 
             base.EndTurn(out double energyUpk, out double massUpk);
+            PostProcess(ref energyInc, ref massInc, ref researchInc);
 
             this._energy = Consts.Income(Energy, energyInc - energyUpk);
             this._mass = Consts.Income(Mass, massInc - massUpk);
 
             return this.Research.AddResearch(researchInc, out _);
+        }
+
+        private static void PostProcess(ref double energyInc, ref double massInc, ref double researchInc)
+        {
+            if (researchInc < 0)
+            {
+                energyInc += researchInc * Consts.ResearchEnergyConversion;
+                researchInc = 0;
+            }
         }
     }
 }

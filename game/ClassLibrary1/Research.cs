@@ -414,7 +414,7 @@ namespace ClassLibrary1
             { Type.TurretShields, new Type[]        { Type.Turret, } }, //quick
             { Type.TurretDefense, new Type[]        { Type.Turret, Type.MechDefense, } },
             { Type.TurretArmor, new Type[]          { Type.Turret, Type.TurretDefense, Type.MechArmor, } },
-            { Type.TurretAutoRepair, new Type[]     { Type.Turret, Type.TurretArmor, Type.FactoryAutoRepair, } }, //end
+            { Type.TurretAutoRepair, new Type[]     { Type.Turret, Type.TurretArmor, Type.FactoryAutoRepair, } },
 
             { Type.ConstructorCost, new Type[]      { Type.Constructor, } }, //quick
             { Type.ConstructorDefense, new Type[]   { Type.Constructor, Type.MechShields, Type.MechArmor, } },
@@ -426,14 +426,15 @@ namespace ClassLibrary1
             { Type.FactoryAutoRepair, new Type[]    { Type.Factory, Type.FactoryRepair, Type.ExtractorAutoRepair, } },
 
             { Type.BuildingDefense, new Type[]      { Type.Constructor } }, //quick
-            { Type.ExtractorAutoRepair, new Type[]  { Type.BuildingDefense, } },
             { Type.BuildingCost, new Type[]         { Type.BuildingDefense, Type.ConstructorCost, } },
+            { Type.ExtractorAutoRepair, new Type[]  { Type.BuildingDefense, } },
+            { Type.AmbientGenerator, new Type[]     { Type.BuildingCost, Type.TurretAutoRepair, } }, //end
             { Type.ResearchChoices, new Type[]      { Type.Turret, } },
             { Type.ScrapResearch, new Type[]        { Type.ResearchChoices, } },
             { Type.BurnMass, new Type[]             { Type.Factory, } },
             { Type.FabricateMass, new Type[]        { Type.ScrapResearch, Type.BurnMass, Type.FactoryAutoRepair, } },
             { Type.ExtractorValue, new Type[]       { Type.ExtractorAutoRepair, Type.BuildingCost, Type.ScrapResearch, Type.BurnMass, } }, //end
-            
+                                 
             //Type.BuildingResilience - not extractor??
             // Constructor resilience ?
         };
@@ -469,7 +470,7 @@ namespace ClassLibrary1
             TurretArmor = 150,
             TurretExplosives = 160, //end
             TurretAttack = 170, //delay
-            TurretAutoRepair = 245, //end
+            TurretAutoRepair = 245,
 
             ConstructorCost = 180, //quick
             ConstructorDefense = 190, //key
@@ -487,6 +488,7 @@ namespace ClassLibrary1
             BurnMass = 165,
             BuildingCost = 175,
             ExtractorAutoRepair = 285, //key
+            AmbientGenerator = 310, //end   
             ExtractorValue = 350, //end   
         }
     }
