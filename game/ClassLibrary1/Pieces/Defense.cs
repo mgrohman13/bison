@@ -45,7 +45,7 @@ namespace ClassLibrary1.Pieces
             this._values = values;
             //if (Type != DefenseType.Shield) //move to CombatTypes
             this._defenseCur = Game.Rand.Round(Consts.StatValueInverse(Consts.StatValue(DefenseMax) * defPct));
-            if (DefenseCur < 1)
+            if (DefenseCur < 1 && Type == DefenseType.Hits)
                 this._defenseCur = 1;
         }
 
@@ -102,29 +102,29 @@ namespace ClassLibrary1.Pieces
 
         internal void Repair(bool doEndTurn, out double hitsInc, out double massCost)
         {
+            hitsInc = 0;
+            massCost = 0;
             if (Piece is IKillable.IRepairable repairable && DefenseCur < DefenseMax && CombatTypes.Repair(Type))
             {
                 hitsInc = GetRepair(doEndTurn, DefenseMax - DefenseCur);
-                if (doEndTurn)
-                    hitsInc = Game.Rand.Round(hitsInc);
-                hitsInc = Math.Min(hitsInc, DefenseMax - DefenseCur);
-
-                double valCur = Consts.StatValue(DefenseCur);
-                double valAfter = Consts.StatValue(DefenseCur + hitsInc);
-                double valMax = Consts.StatValue(DefenseMax);
-                massCost = repairable.RepairCost * (valAfter - valCur) / valMax;
-
-                if (doEndTurn)
+                if (hitsInc > 0)
                 {
-                    _defenseCur += (int)hitsInc;
-                    if ((int)hitsInc != hitsInc || _defenseCur > DefenseMax)
-                        throw new Exception();
+                    if (doEndTurn)
+                        hitsInc = Game.Rand.Round(hitsInc);
+                    hitsInc = Math.Min(hitsInc, DefenseMax - DefenseCur);
+
+                    double valCur = Consts.StatValue(DefenseCur);
+                    double valAfter = Consts.StatValue(DefenseCur + hitsInc);
+                    double valMax = Consts.StatValue(DefenseMax);
+                    massCost = repairable.RepairCost * (valAfter - valCur) / valMax;
+
+                    if (doEndTurn)
+                    {
+                        _defenseCur += (int)hitsInc;
+                        if ((int)hitsInc != hitsInc || _defenseCur > DefenseMax)
+                            throw new Exception();
+                    }
                 }
-            }
-            else
-            {
-                hitsInc = 0;
-                massCost = 0;
             }
         }
         internal double GetRepair(bool doEndTurn = false, int max = 0)

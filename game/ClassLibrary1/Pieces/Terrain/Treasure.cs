@@ -9,6 +9,8 @@ namespace ClassLibrary1.Pieces.Terrain
     [Serializable]
     public class Treasure : Piece
     {
+        private static readonly double ConvertResearch = Consts.ResearchMassConversion * Consts.EnergyMassRatio / 1.5;
+
         private readonly double? _value;
 
         internal Treasure(Tile tile, double? value) : base(null, tile)
@@ -81,9 +83,9 @@ namespace ClassLibrary1.Pieces.Terrain
             //Game.Player.Research.FreeTech(research);
             //return research * ConvertResearch;
 
-            var type = Game.Player.Research.AddResearch(value / Consts.ResearchEnergyConversion, out int add);
+            var type = Game.Player.Research.AddResearch(value / ConvertResearch, out int add);
             RaiseCollectEvent(tile, $"Research: {add}", type.HasValue);
-            return add * Consts.ResearchEnergyConversion;
+            return add * ConvertResearch;
         }
         private double NewResource(Tile tile, double value)
         {
@@ -104,7 +106,7 @@ namespace ClassLibrary1.Pieces.Terrain
             int min = Game.Rand.Round(value / rangeMult);
             int max = Game.Rand.Round(value * rangeMult);
 
-            double convert = Math.Sqrt(Consts.ResearchEnergyConversion);
+            double convert = Math.Sqrt(ConvertResearch);
             value /= convert;
 
             Research research = Game.Player.Research;
@@ -117,7 +119,7 @@ namespace ClassLibrary1.Pieces.Terrain
             MechBlueprint blueprint;
             do
                 blueprint = MechBlueprint.MechOneOff(new ResearchMinMaxCost(research, min, max), researchLevel);
-            while (Game.Map.PathFindCore(tile, GetMove(blueprint.Movable), _ => false) == null);
+            while (Game.Map.PathFindCore(tile, GetMove(blueprint.Movable), blocked => !blocked.Any()) == null);
             static double GetMove(IMovable.Values movable) => (movable.MoveMax + movable.MoveLimit) / 2.0;
             Players.Mech.NewMech(tile, blueprint);
 

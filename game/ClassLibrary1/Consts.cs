@@ -38,11 +38,13 @@ namespace ClassLibrary1
         public const double DifficultyEnergyPow = 1.3;
         public const double DifficultyResearchPow = 3.9 / Math.E;
         public const double DifficultyAIPow = .52;
+
+        public static readonly double PortalMinDist = Math.Sqrt(Scale) * 78;
         public const double PortalSpawnTime = 52;
         public const double PortalSpawnStrMult = 1.69;
         public const double PortalCost = 13;
-        public const double PortalExitDef = 520;
-        public const double PortalEntranceDef = 210;
+        public const double PortalExitDef = 210;
+        public const double PortalEntranceDef = 91;
         public const double PortalDecayRate = 7.8;
         public const double PortalRewardPct = .39;
 
@@ -95,17 +97,17 @@ namespace ClassLibrary1
         public const double ArtifactExtractorEnergyCost = 1300;
         public const double ArtifactExtractorMassCost = 300;
 
-        public const double GeneratorEnergyInc = 35;
+        public const double GeneratorEnergyInc = 30;
         public const double GeneratorResearchUpk = .5;
-        public const double GeneratorEnergyCost = 225;
-        public const double GeneratorMassCost = 550;
+        public const double GeneratorEnergyCost = 280;
+        public const double GeneratorMassCost = 450;
 
-        public const int EnergyForFabricateMass = 10;
-        public const int BurnMassForEnergy = 2;
+        public const int EnergyPerFabricateMass = 10;
+        public const int BurnMassPerEnergy = 2;
         public const int MassForScrapResearch = 5; //inverted value from the other two
         public static readonly double ResearchMassConversion = MassForScrapResearch
-            * Math.Sqrt(EnergyForFabricateMass * BurnMassForEnergy);
-        public static readonly double ResearchEnergyConversion = ResearchMassConversion * EnergyMassRatio;
+            * Math.Sqrt(EnergyPerFabricateMass * BurnMassPerEnergy);
+        //public static readonly double ResearchEnergyConversion = ResearchMassConversion * EnergyMassRatio;
 
         public const double BaseConstructorUpkeep = 5;
         public const double BaseDroneUpkeep = 2;

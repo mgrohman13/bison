@@ -44,10 +44,10 @@ namespace ClassLibrary1
         //internal const double Turret_Vision_Pow = ;
 
         private static readonly IReadOnlyDictionary<UpgType, UpgParam> UpgParams = new Dictionary<UpgType, UpgParam>() {
-            { UpgType.AmbientGenerator, new(Consts.GeneratorEnergyInc, .45) },
+            { UpgType.AmbientGenerator, new(Consts.GeneratorEnergyInc, 0.65) },
             { UpgType.AmbientGeneratorCost, new(.20, true) },
             { UpgType.ConstructorCost, new(0.70, true) },
-            { UpgType.ConstructorDefense, new(8, 0.50, 8 / 5.0) },
+            { UpgType.ConstructorDefense, new(8, 0.55, 8 / 5.0) },
             { UpgType.ConstructorMove, new(Constructor.BASE_MOVE_INC * Constructor.MOVE_RAMP, 0.35, Constructor.MOVE_RAMP) },
             { UpgType.ConstructorVision, new(Constructor.BASE_VISION, 0.30) },
             { UpgType.ConstructorRange, new(5.2, 0.45) },
@@ -69,17 +69,17 @@ namespace ClassLibrary1
             { UpgType.FactoryDefense, new(9, 0.55, 9 / 5.0) },
             { UpgType.FactoryVision, new(6.5, 0.95, 6.5 / 4.5 ) },
             { UpgType.FactoryRepair, new(1, 0.50, Math.E, .65) },
-            { UpgType.TurretCost, new(0.50, true) },
-            { UpgType.TurretAttack, new(7, 0.65, 1.69) },
-            { UpgType.TurretLaserAttack, new(4, 0.68) },
-            { UpgType.TurretExplosivesAttack, new(6, 0.62) },
-            { UpgType.TurretDefense, new(10, 0.35) },
-            { UpgType.TurretShieldDefense, new(6, 0.38, 1.25) },
-            { UpgType.TurretArmorDefense, new(11, 0.32, 5.2) },
-            { UpgType.TurretVision, new(10.4, 0.35, 1.7) },
-            { UpgType.TurretRange, new(13, 0.45, 1.4, Attack.MIN_RANGED) },
-            { UpgType.TurretLaserRange, new(15, 0.42, 1.45, Attack.MIN_RANGED + 1) },
-            { UpgType.TurretExplosivesRange, new(8, 0.48, 1.35, Attack.MIN_RANGED - 1) },
+            { UpgType.TurretCost, new(0.40, true) },
+            { UpgType.TurretAttack, new(8, 0.70, 1.69, .39) },
+            { UpgType.TurretLaserAttack, new(4, 0.75) },
+            { UpgType.TurretExplosivesAttack, new(6, 0.65) },
+            { UpgType.TurretDefense, new(7, 0.30, 8) },
+            { UpgType.TurretShieldDefense, new(5, 0.35, 1.25, 1) },
+            { UpgType.TurretArmorDefense, new(11, 0.60, 5.2, 1.69) },
+            { UpgType.TurretRange, new(13, 0.50, 1.4, Attack.MIN_RANGED) },
+            { UpgType.TurretLaserRange, new(15, 0.55, 1.45, Attack.MIN_RANGED + 1) },
+            { UpgType.TurretExplosivesRange, new(9, 0.40, 1.35, Attack.MIN_RANGED - 1) },
+            { UpgType.TurretVision, new(10, 0.45, 1.7) },
         }.AsReadOnly();
 
         internal static double Calc(UpgType upgType, double researchMult) =>
@@ -197,10 +197,10 @@ namespace ClassLibrary1
             TurretDefense,
             TurretShieldDefense,
             TurretArmorDefense,
-            TurretVision,
             TurretRange,
             TurretLaserRange,
             TurretExplosivesRange,
+            TurretVision,
         }
     }
 }

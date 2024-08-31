@@ -371,6 +371,7 @@ namespace WinFormsApp1
                     Extractor extractor = piece as Extractor;
                     if (resource == null && extractor != null)
                         resource = extractor.Resource;
+
                     if (piece is EnemyPiece)
                     {
                         if (piece is Alien)
@@ -410,10 +411,6 @@ namespace WinFormsApp1
                     }
                     else if (piece is Core || piece is Factory)
                         AddFill(Brushes.Blue, rect);
-                    else if (piece is Foundation)
-                        AddFill(Brushes.Aqua, rect);
-                    else if (piece is Turret)
-                        ellipses.Add(ellipse);
                     else if (piece is Treasure)
                         AddFill(Brushes.CornflowerBlue, RectangleF.Inflate(rect, rect.Width * -.26f, rect.Height * -.26f));
                     else if (resource != null)
@@ -427,8 +424,15 @@ namespace WinFormsApp1
                         if (extractor != null)
                             ellipses.Add(ellipse);
                     }
-                    else if (piece is PlayerPiece)
-                        AddFill(Brushes.LightGreen, rect);
+                    else
+                    {
+                        if (piece is Foundation or Generator)
+                            AddFill(Brushes.Aqua, rect);
+                        if (piece is Turret or Generator)
+                            ellipses.Add(ellipse);
+                        else if (piece is PlayerPiece)
+                            AddFill(Brushes.LightGreen, rect);
+                    }
 
                     if (Info.HasAnyUpgrade(piece.Tile))
                         polygons.Add(new PointF[] { new(rect.X + rect.Width / 2f, rect.Y), new(rect.Right, rect.Y), new(rect.Right, rect.Y + rect.Height / 2f) });

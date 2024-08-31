@@ -2,7 +2,7 @@
 {
     public partial class Map
     {
-        internal interface IEnemySpawn
+        public interface IEnemySpawn
         {
             public SpawnChance Spawner { get; }
             //public void Turn(int turn);

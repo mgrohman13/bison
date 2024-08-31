@@ -56,7 +56,7 @@ namespace ClassLibrary1.Pieces.Players
         public static void CalcCost(double researchMult, double vision, IEnumerable<IKillable.Values> killable, double resilience,
             IEnumerable<IAttacker.Values> attacker, IMovable.Values? movable, out double energy, out double mass)
         {
-            const double moveMult = 13;
+            const double moveMult = 6.5;
             double baseMove = Math.Pow(Consts.MoveValue(movable), 1.69);
 
             const double attPow = 1.13;
@@ -64,9 +64,9 @@ namespace ClassLibrary1.Pieces.Players
             {
                 double rangeMult = 1;
                 if (a.Range > Attack.MELEE_RANGE)
-                    rangeMult = (a.Range + Attack.MELEE_RANGE) / (2.6 * Attack.MIN_RANGED);
+                    rangeMult = (a.Range + Attack.MELEE_RANGE) / (Math.PI * Attack.MIN_RANGED);
                 if (rangeMult > 1)
-                    rangeMult = Math.Pow(rangeMult, Math.Sqrt(1 + (moveMult + baseMove) / 3.9 / moveMult));
+                    rangeMult = Math.Pow(rangeMult, Math.Sqrt(1 + (moveMult + baseMove) / 5.2 / moveMult));
                 return Consts.StatValue(a.Attack)
                     * CombatTypes.Cost(a.Type)
                     * Math.Sqrt(a.Reload / CombatTypes.ReloadAvg(a.Attack))
@@ -79,7 +79,7 @@ namespace ClassLibrary1.Pieces.Players
             double def = killable.Sum(DefCost) * r / researchMult * 2.1;
 
             double mult = Math.Sqrt(researchMult);
-            double move = (baseMove + 2.6) * moveMult / mult;
+            double move = (baseMove + 3.9) * moveMult / mult;
             double v = vision;
             v = (v + 6.5) * 3.9 / mult;
 
@@ -124,7 +124,16 @@ namespace ClassLibrary1.Pieces.Players
         {
             int researchLevel = research.GetBlueprintLevel();
 
-            MechBlueprint upgrade = Game.Rand.SelectValue(new object[] { "" }.Concat(blueprints), b =>
+            IEnumerable<MechBlueprint> select = blueprints;
+            if (Game.Rand.Bool())
+            {
+                var existing = research.Game.Player.PiecesOfType<Mech>().Select(m => m.Blueprint);
+                if (Game.Rand.Bool())
+                    select = select.Concat(existing);
+                else
+                    select = existing;
+            }
+            MechBlueprint upgrade = Game.Rand.SelectValue(new object[] { "" }.Concat(select), b =>
             {
                 double chance;
                 if (b is MechBlueprint blueprint)
@@ -469,7 +478,14 @@ namespace ClassLibrary1.Pieces.Players
             {
                 Debug.WriteLine($"ModStat: {blueprint.TotalCost()} ({minTotal}-{maxTotal})");
 
-                int sum = blueprint.Killable.Where(CanModDef).Select(k => (int?)k.Defense)
+                IMovable.Values movable = blueprint.Movable;
+                double moveValue = Consts.MoveValue(movable);
+                double moveDiv = 1.69;
+                if (increase)
+                    moveDiv *= Math.Sqrt(moveValue);
+                int move = movable.MoveInc >= 2 ? Game.Rand.Round(moveValue / moveDiv) : 0;
+
+                int sum = move + blueprint.Killable.Where(CanModDef).Select(k => (int?)k.Defense)
                     .Concat(blueprint.Attacker.Where(CanModAtt).Select(a => (int?)a.Attack))
                     .Sum() ?? 0;
                 if (sum == 0)
@@ -483,7 +499,10 @@ namespace ClassLibrary1.Pieces.Players
                 {
                     select -= CanModDef(k) ? k.Defense : 0;
                     if (select < 0)
+                    {
+                        select = int.MaxValue;
                         killable.Add(new(k.Type, Math.Max(1, k.Defense + mod)));
+                    }
                     else
                         killable.Add(k);
                 }
@@ -491,12 +510,21 @@ namespace ClassLibrary1.Pieces.Players
                 {
                     select -= CanModAtt(a) ? a.Attack : 0;
                     if (select < 0)
+                    {
+                        select = int.MaxValue;
                         attacker.Add(UpgAttack(a, a.Type, Math.Max(1, a.Attack + mod), a.Range));
+                    }
                     else
                         attacker.Add(a);
                 }
+                select -= move;
+                if (select < 0)
+                {
+                    select = int.MaxValue;
+                    movable = new IMovable.Values(movable.MoveInc + mod, movable.MoveMax + mod, movable.MoveLimit + mod);
+                }
 
-                blueprint = new(blueprintNum, blueprint.UpgradeFrom, blueprint.ResearchLevel, blueprint.Vision, killable, blueprint.Resilience, attacker, blueprint.Movable);
+                blueprint = new(blueprintNum, blueprint.UpgradeFrom, blueprint.ResearchLevel, blueprint.Vision, killable, blueprint.Resilience, attacker, movable);
                 return true;
 
                 bool CanModDef(IKillable.Values k) => increase || k.Defense > 1;

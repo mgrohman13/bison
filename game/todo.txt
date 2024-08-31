@@ -93,13 +93,19 @@ FEATURES
 	power grid
 	research to automate mechs - big stat buff, less micromanagement
 
+portal exit heal aliens? retreat to?
+buff portal def, inc decay, reduce cost??
+check math for extractors expiring sooner rather than later?
+	break even point with dropped treasure
+	extracted amount > treasure difference
+show portal active/dormant status
+	
 indication when mech can be repaired
 	slightly different if in range/not
 
 treasure placed in hidden areas???
 	
 create log file
-swap e and a?
 alien late game ways to bust mech packs?
 core repair range shrink over time?
 BPs get more expensive the more you make??

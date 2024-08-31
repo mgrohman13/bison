@@ -11,7 +11,7 @@ namespace ClassLibrary1.Pieces.Enemies
     [Serializable]
     public class Portal : EnemyPiece, IDeserializationCallback
     {
-        private const double avgRange = 6.5, MIN_RANGE = Attack.MELEE_RANGE;// Attack.MIN_RANGED;
+        internal const double AvgRange = 6.5, MIN_RANGE = Attack.MELEE_RANGE;// Attack.MIN_RANGED;
         //private readonly SpawnChance spawner;
 
         private readonly IKillable killable;
@@ -65,7 +65,7 @@ namespace ClassLibrary1.Pieces.Enemies
             //energy = Game.Rand.Gaussian(Consts.EnemyEnergy * (52 + 2.6 * strInc) - cost, .13);
             //Debug.WriteLine($"hiveCost #{hiveIdx + 1}: {cost} ({energy})");
 
-            double range = Game.Rand.GaussianCapped(avgRange, .13, MIN_RANGE);
+            double range = Game.Rand.GaussianCapped(AvgRange, .13, MIN_RANGE);
             cost = Consts.PortalCost * (Consts.StatValue(killable.First().Defense) + Consts.PortalDecayRate * range);
 
             PieceSpawn spawn = exit ? new PieceSpawn() : null;
@@ -81,11 +81,16 @@ namespace ClassLibrary1.Pieces.Enemies
         internal override void StartTurn()
         {
             base.StartTurn();
-            Decay();
+            if (Side.PiecesOfType<Portal>().Any(p => p.Exit != Exit))
+                Decay();
+            else
+                base._spawn = null;
         }
 
         private void Decay()
         {
+            base._spawn = spawn;
+
             IKillable killable1 = GetBehavior<IKillable>();
             Defense hits = killable1.Hits;
             int def = hits.DefenseCur;
@@ -93,10 +98,10 @@ namespace ClassLibrary1.Pieces.Enemies
             double pct = Math.Max(0, 1 - Game.Rand.DoubleFull(Consts.PortalDecayRate) / Consts.StatValue(def));
             _range = MIN_RANGE + pct * (_range - MIN_RANGE);
             int decay = Game.Rand.OEInt(Consts.PortalDecayRate);
-            _collect *= 1 - decay / (decay + Consts.PortalEntranceDef);
+            _collect *= 1 - decay / (decay + Consts.PortalExitDef);
 
             pct = 2 / (1 + pct);
-            spawn.Spawner.Mult(pct * pct);
+            spawn?.Spawner.Mult(pct * pct);
 
             this._decay += decay;
             while (_decay >= def && def > 0)

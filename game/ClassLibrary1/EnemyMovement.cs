@@ -345,8 +345,12 @@ namespace ClassLibrary1
                         }
                     }
 
-                    //string logWeights = string.Format("attWeight:{1}{0}pathWeight:{2}{0}coreWeight:{3}{0}playerAttWeight:{4}{0}moveWeight:{5}{0}repairWeight:{6}{0}defWeight:{7}",
-                    //        Environment.NewLine, attWeight, pathWeight, coreWeight, playerAttWeight, moveWeight, repairWeight, defWeight);
+                    //if (piece.ToString() == "Alien 36")
+                    //{
+                    //    string logWeights = string.Format("attWeight:{1}{0}pathWeight:{2}{0}coreWeight:{3}{0}playerAttWeight:{4}{0}moveWeight:{5}{0}repairWeight:{6}{0}defWeight:{7}",
+                    //          Environment.NewLine, attWeight, pathWeight, coreWeight, playerAttWeight, moveWeight, repairWeight, defWeight);
+                    //    Debug.WriteLine(logWeights);
+                    //}
 
                     void Inc(ref double weight, double pow)
                     {
@@ -355,10 +359,10 @@ namespace ClassLibrary1
                     switch (state)
                     {
                         case AIState.Retreat:
-                            Inc(ref attWeight, 1 / 3.5);
-                            Inc(ref pathWeight, 3);
+                            Inc(ref attWeight, 1 / 4.5);
+                            Inc(ref pathWeight, 5);
                             Inc(ref playerAttWeight, 4);
-                            Inc(ref repairWeight, 3);
+                            Inc(ref repairWeight, 5);
                             Inc(ref defWeight, 4);
                             break;
                         case AIState.Patrol:
@@ -420,6 +424,8 @@ namespace ClassLibrary1
                 foreach (var p in dictDbl)
                     dictInt.Add(p.Key, Game.Rand.Round(p.Value * multiplier));
 
+                if (piece.ToString() == "Alien 36")
+                    ;
                 moveTo = Game.Rand.SelectValue(dictInt);
             }
 
@@ -481,7 +487,7 @@ namespace ClassLibrary1
                                 def += tDef * pair.Value;
                             }
                             int defense = Game.Rand.Round(Consts.StatValueInverse(def / (double)trgGrp.Values.Sum()));
-                            double defWeight = state == AIState.Retreat ? .13 : .5;
+                            double defWeight = state == AIState.Retreat ? .169 : .5;
                             if (!(IsFull(attack) || attack.AttackCur > Game.Rand.WeightedInt(defense, defWeight)))
                                 continue;
                             //}

@@ -48,7 +48,7 @@ namespace ClassLibrary1.Pieces
                     attack = 1;
                 this._attack = attack;
                 this._range = range;
-                this._reload = reload ?? CombatTypes.GetReloadBase(type, attack);
+                this._reload = reload ?? CombatTypes.GetReload(type, attack);
                 if (Attack < 1 || Range < 1 || Reload < 1 || Attack < Reload)
                     throw new Exception();
             }

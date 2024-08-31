@@ -98,12 +98,15 @@ namespace ClassLibrary1.Pieces
                 energy = MTRandom.Round(newEnergy - energy * mult - addEnergy, 1 - rounding);
                 mass = MTRandom.Round(newMass - mass * mult, rounding);
 
-                if (doReplace && Piece.Game.Player.Has(energy, mass))
+                if (Piece.Game.Player.Has(energy, mass))
                 {
-                    Tile tile = piece.Tile;
-                    piece.Die();
-                    if (tile.Piece is not null && tile.Piece is not Treasure && Piece.Game.Player.Spend(energy, mass))
-                        NewPiece();
+                    if (doReplace)
+                    {
+                        Tile tile = piece.Tile;
+                        piece.Die();
+                        if (tile.Piece is not null && tile.Piece is not Treasure && Piece.Game.Player.Spend(energy, mass))
+                            NewPiece();
+                    }
                     return true;
                 }
             }

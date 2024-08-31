@@ -71,6 +71,8 @@ namespace ClassLibrary1
             Constructor.NewConstructor(Map.GetTile(Player.Core.Tile.X + constructor.X, Player.Core.Tile.Y + constructor.Y), true);
 
             Map.NewGame();
+
+            Player.Research.NewGame();
         }
 
         internal int GetPieceNum(Type type)
