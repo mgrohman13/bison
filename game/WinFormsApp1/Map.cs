@@ -25,17 +25,17 @@ namespace WinFormsApp1
 
         private float xStart, yStart, _scale;
         private Tile _selected, _moused;
-        private bool viewAttacks = true;
+        private bool viewAttacks = true, viewMoves = false;
 
         private readonly Timer timer;
         private readonly Stopwatch watch = new();
         private bool scrollDown, scrollLeft, scrollUp, scrollRight;
 
         private readonly HashSet<Point> nullTiles = new();
-        private static Pen Red, Green, Blue, White;
-        private Pen[] rgbw = new[] { Red, Green, Blue, White };
+        private static Pen Red, Green, Blue, White, AltGreen;
+        private Pen[] rgbw = new[] { Red, Green, Blue, White, AltGreen };
         private Dictionary<Pen, List<HashSet<Point>>> ranges;
-        private readonly Dictionary<Point, float> attacks = new();
+        private readonly Dictionary<Point, float> numbers = new();
 
         private new float Scale
         {
@@ -52,11 +52,12 @@ namespace WinFormsApp1
                         Green = new(Color.Green, size);
                         Blue = new(Color.Blue, size);
                         White = new(Color.White, size);
-                        Pen[] rgbwNew = new Pen[] { Red, Green, Blue, White };
+                        AltGreen = new(Color.LimeGreen, size);
+                        Pen[] rgbwNew = new Pen[] { Red, Green, Blue, White, AltGreen };
                         if (ranges != null)
                             ranges = ranges.ToDictionary(p => rgbwNew[Array.IndexOf(rgbw, p.Key)], p => p.Value);
                         rgbw = rgbwNew;
-                        ranges ??= new Pen[] { Blue, Red, Green, White }.ToDictionary(p => p, p => new List<HashSet<Point>>());
+                        ranges ??= rgbw.ToDictionary(p => p, p => new List<HashSet<Point>>());
                     }
                 }
 
@@ -139,21 +140,36 @@ namespace WinFormsApp1
                 this.Invalidate();
             }
         }
-        private bool ViewAttacks
-        {
-            get { return viewAttacks; }
-            set
-            {
-                if (viewAttacks != value)
-                {
-                    viewAttacks = value;
-                    RefreshRanges();
-                }
-            }
-        }
+        //private bool ViewAttacks
+        //{
+        //    get { return viewAttacks; }
+        //    set
+        //    {
+        //        if (viewAttacks != value)
+        //        {
+        //            viewAttacks = value;
+        //            RefreshRanges();
+        //        }
+        //    }
+        //}
         internal void ToggleViewAttacks()
         {
-            ViewAttacks = !ViewAttacks;
+            if (viewAttacks)
+            {
+                if (viewMoves)
+                    viewAttacks = false;
+                else
+                    viewMoves = true;
+            }
+            else
+            {
+                if (viewMoves)
+                    viewMoves = false;
+                else
+                    viewAttacks = true;
+            }
+
+            RefreshRanges();
         }
 
         public Map()
@@ -568,7 +584,7 @@ namespace WinFormsApp1
             if (viewAttacks && Scale > scaleCutoff)
             {
                 using Font f = new(FontFamily.GenericMonospace, Scale / 3.9f);
-                foreach (var p in attacks)
+                foreach (var p in numbers)
                 {
                     int x = p.Key.X, y = p.Key.Y;
                     if (mapCoords.Contains(p.Key.X, p.Key.Y))
@@ -642,10 +658,10 @@ namespace WinFormsApp1
                 e.Graphics.DrawRectangle(sel, GetX(SelTile.X), GetY(SelTile.Y), Scale, Scale);
             }
 
-            if (viewAttacks && Scale > 21f)
+            if ((viewAttacks || viewMoves) && Scale > 21f)
             {
                 using Font f = new(FontFamily.GenericMonospace, Scale / 3.9f);
-                foreach (var p in attacks)
+                foreach (var p in numbers)
                     if (mapCoords.Contains(p.Key.X, p.Key.Y))
                     {
                         string value = p.Value.ToString("0");
@@ -697,6 +713,8 @@ namespace WinFormsApp1
 
             //Debug.WriteLine("3 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
 
+            numbers.Clear();
+
             if (viewAttacks)
             {
                 Dictionary<Tile, float> attStr = new();
@@ -711,13 +729,30 @@ namespace WinFormsApp1
                 }
 
                 IEnumerable<Point> allAttacks = Enumerable.Empty<Point>();
-                foreach (IAttacker enemy in Program.Game.Enemy.VisiblePieces.Select(e => e.GetBehavior<IAttacker>()).Where(b => b != null))
+                foreach (IAttacker enemy in Program.Game.Enemy.VisiblePieces.Select(e => e.GetBehavior<IAttacker>()).Where(a => a != null))
                     allAttacks = allAttacks.Union(AddAttacks(enemy, false, AddAttStr).SelectMany(hs => hs));
                 ranges[Red].Add(allAttacks.ToHashSet());
 
-                attacks.Clear();
                 foreach (var p in attStr)
-                    attacks.Add(new Point(p.Key.X, p.Key.Y), (float)Consts.StatValueInverse(p.Value));
+                    numbers.Add(new Point(p.Key.X, p.Key.Y), (float)Consts.StatValueInverse(p.Value));
+            }
+
+            if (viewMoves)
+            {
+                //var pen = Pens.GreenYellow;
+                //if (!ranges.ContainsKey(pen))
+                //    ranges.Add(pen, new());
+                foreach (IMovable enemy in Program.Game.Enemy.VisiblePieces.Select(e => e.GetBehavior<IMovable>()).Where(m => m != null))
+                {
+                    HashSet<Point> moves = enemy.Piece.Tile.GetAllPointsInRange(enemy.MoveCur).ToHashSet();
+                    ranges[AltGreen].Add(moves);
+                    if (!viewAttacks)
+                        foreach (var t in moves)
+                        {
+                            numbers.TryGetValue(t, out float count);
+                            numbers[t] = count + 1;
+                        }
+                }
             }
 
             //Debug.WriteLine("4 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
