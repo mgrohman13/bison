@@ -313,13 +313,22 @@ namespace WinFormsApp1
                 move |= movable.CanMove && movable.MoveCur > 1 && movable.MoveCur + movable.MoveInc > movable.MoveMax;// + (movable.MoveLimit - movable.MoveMax > 1 ? 1 : 0);
                 if (!move && piece.HasBehavior(out IKillable killable))
                 {
+                    Dictionary<IKillable, int> GetDefenders(Attack attack, Piece friendly)
+                    {
+                        Piece attacker = attack.Piece;
+                        Tile attackFrom = attacker.Tile;
+                        if (attack.Range == Attack.MELEE_RANGE && attacker.HasBehavior(out IMovable movable))
+                            attackFrom = friendly.Tile.GetVisibleAdjacentTiles().Where(t => t.Piece is null || t.Piece.HasBehavior<IMovable>())
+                                .FirstOrDefault(t => t.GetDistance(attackFrom) <= movable.MoveCur);
+                        return attack.GetDefenders(friendly, attackFrom);
+                    }
                     // optimize?
                     var friendly = piece.Tile.GetVisibleAdjacentTiles().Select(t => t.Piece).Where(p => p is not null && p.IsPlayer);
                     var a = Game.Enemy.VisiblePieces
                         .Select(p => p.GetBehavior<IAttacker>())
                         .Where(a => a is not null)
                         .SelectMany(a => a.Attacks)
-                        .SelectMany(a => friendly.Select(f => Tuple.Create(a, a.GetDefenders(f))))
+                        .SelectMany(a => friendly.Select(f => Tuple.Create(a, GetDefenders(a, f))))
                         .Where(t => t.Item2.ContainsKey(killable));
                     var b = a.Select(t => t.Item2.Keys
                             .Select(k => Tuple.Create(t.Item1, k, k.AllDefenses.Sum(d => Consts.StatValue(d.DefenseCur))))

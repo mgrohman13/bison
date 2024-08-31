@@ -47,7 +47,7 @@ namespace ClassLibrary1
             { UpgType.AmbientGenerator, new(Consts.GeneratorEnergyInc, 0.65) },
             { UpgType.AmbientGeneratorCost, new(.20, true) },
             { UpgType.ConstructorCost, new(0.70, true) },
-            { UpgType.ConstructorDefense, new(8, 0.55, 8 / 5.0) },
+            { UpgType.ConstructorDefense, new(8, 0.65, add: 2) },
             { UpgType.ConstructorMove, new(Constructor.BASE_MOVE_INC * Constructor.MOVE_RAMP, 0.35, Constructor.MOVE_RAMP) },
             { UpgType.ConstructorVision, new(Constructor.BASE_VISION, 0.30) },
             { UpgType.ConstructorRange, new(5.2, 0.45) },
@@ -55,13 +55,13 @@ namespace ClassLibrary1
             //{ UpgType.CoreDefense, new(11, 0.65, 11 / 10.0) },
             { UpgType.CoreShields, new(7.8, .85, 1.5) },
             { UpgType.DroneCost, new(0.10, true) },
-            { UpgType.DroneDefense, new(21, 0.30, 1.1) },
+            { UpgType.DroneDefense, new(21, 0.35, 1.1) },
             { UpgType.DroneMove, new(2.6, 0.40) },
-            { UpgType.DroneRepair, new(1.3, 0.75, start: -0.3) },
+            { UpgType.DroneRepair, new(1.3, 0.75, add: -0.3) },
             { UpgType.DroneTurns, new(11.7, 0.50) },
             /*UpgType.ExtractorResilience*/
             { UpgType.ExtractorCost, new(0.15, true) },
-            { UpgType.ExtractorDefense, new(16.9, 0.60, 3.90) },
+            { UpgType.ExtractorDefense, new(16.9, 0.60, 3.90, 1.3) },
             { UpgType.ExtractorVision, new(5, 0.75) },
             { UpgType.ExtractorValue, new(1, 0.25) },
             { UpgType.ExtractorSustain, new(1, 0.10) },
@@ -73,7 +73,7 @@ namespace ClassLibrary1
             { UpgType.TurretAttack, new(8, 0.70, 1.69, .39) },
             { UpgType.TurretLaserAttack, new(4, 0.75) },
             { UpgType.TurretExplosivesAttack, new(6, 0.65) },
-            { UpgType.TurretDefense, new(7, 0.30, 8) },
+            { UpgType.TurretDefense, new(7, 0.30, add: 8) },
             { UpgType.TurretShieldDefense, new(5, 0.35, 1.25, 1) },
             { UpgType.TurretArmorDefense, new(11, 0.60, 5.2, 1.69) },
             { UpgType.TurretRange, new(13, 0.50, 1.4, Attack.MIN_RANGED) },
@@ -96,8 +96,8 @@ namespace ClassLibrary1
         }
         private static double CheckZero(UpgType upgType, double prevMult, double prev)
         {
-            if (prevMult == 1 && BaseZero.Contains(upgType))
-                prev = 0;
+            //if (prevMult == 1 && BaseZero.Contains(upgType))
+            //    prev = 0;
             return prev;
         }
 
@@ -109,23 +109,23 @@ namespace ClassLibrary1
         private class UpgParam
         {
             //private Func<Game, double> GetRounding;
-            private readonly double avg, start, ramp, pow;
+            private readonly double avg, add, ramp, pow;
             private readonly bool cost;
             public bool Pct => cost || avg == 1;
             public UpgParam(double pow, bool cost)
             {
                 this.avg = 0;
-                this.start = 0;
+                this.add = 0;
                 this.pow = pow;
                 this.ramp = 0;
                 this.cost = cost;
             }
-            public UpgParam(double avg, double pow, double ramp = 1, double start = 0, bool cost = false)
+            public UpgParam(double avg, double pow, double ramp = 1, double add = 0, bool cost = false)
             //, Func<Game, double> GetRounding = null)
             {
                 //this.GetRounding = GetRounding;
                 this.avg = avg;
-                this.start = start;
+                this.add = add;
                 this.pow = pow;
                 this.ramp = ramp;
                 this.cost = cost;
@@ -137,7 +137,7 @@ namespace ClassLibrary1
                 //    avg = MTRandom.Round(avg, GetRounding(game));
                 return avg;
             }
-            private double Calc(double mult) => start + avg * (mult < ramp ? mult / ramp : 1) * Math.Pow(mult, pow);
+            private double Calc(double mult) => add + avg * (mult < ramp ? mult / ramp : 1) * Math.Pow(mult, pow);
             private double CalcCost(double mult) => 1 / Math.Pow(mult, pow);
         }
 

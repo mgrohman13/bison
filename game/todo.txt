@@ -93,6 +93,15 @@ FEATURES
 	power grid
 	research to automate mechs - big stat buff, less micromanagement
 
+handle multiple mech upg paths
+
+combine factory/drone repair upgs?
+make map evaluate dropoffs more consistent across caves, paths, cave paths
+analyze/fix avgs and min/max mech costs
+
+melee mechs need speed min/cheaper cost if low move?
+	max move more impt??
+
 portal exit heal aliens? retreat to?
 buff portal def, inc decay, reduce cost??
 check math for extractors expiring sooner rather than later?

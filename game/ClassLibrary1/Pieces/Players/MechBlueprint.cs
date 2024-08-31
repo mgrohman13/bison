@@ -32,6 +32,7 @@ namespace ClassLibrary1.Pieces.Players
             this.BlueprintNum = "";
             if (blueprintNum > 0)
             {
+                blueprintNum--;
                 int num = 1 + blueprintNum / 26;
                 BlueprintNum = (char)(blueprintNum % 26 + 65) + (num > 1 ? num.ToString() : "");
             }
@@ -124,12 +125,12 @@ namespace ClassLibrary1.Pieces.Players
         {
             int researchLevel = research.GetBlueprintLevel();
 
-            IEnumerable<MechBlueprint> select = blueprints;
+            IEnumerable<object> select = blueprints;
             if (Game.Rand.Bool())
             {
                 var existing = research.Game.Player.PiecesOfType<Mech>().Select(m => m.Blueprint);
                 if (Game.Rand.Bool())
-                    select = select.Concat(existing);
+                    select = select.Concat(existing).Append("");
                 else
                     select = existing;
             }
@@ -182,8 +183,8 @@ namespace ClassLibrary1.Pieces.Players
                     Type.MechShields => blueprint.Killable.Any(k => k.Type == DefenseType.Shield),
                     //Type.MechResilience =>,
                     //Type.MechVision =>,
-                    Type.MechAttack => blueprint.Attacker.Max(a => a.Attack) >= blueprint.Killable.Max(k => k.Defense),
-                    Type.MechDefense => blueprint.Attacker.Max(a => a.Attack) <= blueprint.Killable.Max(k => k.Defense),
+                    Type.MechAttack => blueprint.Attacker.Sum(a => Consts.StatValue(a.Attack)) * 2.1 >= blueprint.Killable.Max(k => Consts.StatValue(k.Defense)),
+                    Type.MechDefense => blueprint.Attacker.Sum(a => Consts.StatValue(a.Attack)) * 2.1 <= blueprint.Killable.Max(k => Consts.StatValue(k.Defense)),
                     Type.MechLasers => blueprint.Attacker.Any(a => a.Type == AttackType.Energy && a.Range > Attack.MELEE_RANGE),
                     //Type.MechMove =>,
                     Type.MechRange => blueprint.Attacker.Any(a => a.Range > Attack.MELEE_RANGE),
@@ -539,7 +540,7 @@ namespace ClassLibrary1.Pieces.Players
             const double avgVision = 5.2;
             double avg = avgVision, dev = .39, oe = .169;
             bool isVision = research.GetType() == Type.MechVision;
-            ModValues(isVision, 2.1, ref avg, ref dev, ref oe);
+            ModValues(isVision, 1.7, ref avg, ref dev, ref oe);
             avg *= research.GetMult(Type.MechVision, Blueprint_Vision_Pow);
             if (isVision)
                 avg += 1.3;
@@ -576,9 +577,7 @@ namespace ClassLibrary1.Pieces.Players
             IKillable.Values GenType(DefenseType type, Type? additionalResearch, double mult)
             {
                 double avg = 5.2, dev = .26, oe = .078;
-                ModValues(research.GetType() == Type.MechDefense, 1.69, ref avg, ref dev, ref oe);
-                if (additionalResearch.HasValue)
-                    ModValues(research.GetType() == additionalResearch, 1.69, ref avg, ref dev, ref oe);
+                ModValues(research.GetType() == Type.MechDefense || research.GetType() == additionalResearch, 1.4, ref avg, ref dev, ref oe);
 
                 double researchMult = research.GetMult(Type.MechDefense, Blueprint_Defense_Pow);
                 if (additionalResearch.HasValue)
@@ -613,7 +612,7 @@ namespace ClassLibrary1.Pieces.Players
                 //modify for current research type
                 double attAvg = 3.9, dev = .26, oe = .13;
                 foreach (var item in apply)//Game.Rand.Iterate(apply))
-                    ModValues(researchType == item, 2.1, ref attAvg, ref dev, ref oe);
+                    ModValues(researchType == item, 1.5, ref attAvg, ref dev, ref oe);
 
                 //modify for research totals
                 double researchMult = 1;
@@ -694,7 +693,7 @@ namespace ClassLibrary1.Pieces.Players
                 {
                     rangeAvg += 5.2;
                     double dev = .39, oe = .39;
-                    ModValues(researchType == Type.MechRange, 1.69, ref rangeAvg, ref dev, ref oe);
+                    ModValues(researchType == Type.MechRange, 1.6, ref rangeAvg, ref dev, ref oe);
                     rangeAvg *= research.GetMult(Type.MechRange, Blueprint_Range_Pow);
                     rangeAvg += 6.5;
                     oe /= Math.Sqrt(rangeAvg);
