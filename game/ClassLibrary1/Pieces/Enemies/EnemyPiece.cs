@@ -13,11 +13,11 @@ namespace ClassLibrary1.Pieces.Enemies
     public abstract class EnemyPiece : Piece, IDeserializationCallback
     {
         protected AIState _state;
-        //private AIState State => _state;// hide behind research
+        internal AIState State => _state;// hide behind research
 
         //cant use these tiles as references...
         private Tile lastMove = null, curMove = null;
-        private readonly IEnemySpawn _spawn;
+        protected IEnemySpawn _spawn;
         //should be Point?
         public Tile LastMove => lastMove;
 
@@ -95,9 +95,11 @@ namespace ClassLibrary1.Pieces.Enemies
             Harass,
             Rush,
         }
+        [Serializable]
         internal class PieceSpawn : IEnemySpawn
         {
             private readonly SpawnChance _spawn = new();
+            [NonSerialized]
             private Func<Tile> GetTile;
             public SpawnChance Spawner => _spawn;
             public void OnDeserialization(Func<Tile> SpawnTile) => this.GetTile = SpawnTile;

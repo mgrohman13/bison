@@ -70,15 +70,19 @@ namespace ClassLibrary1
             this._researching = Type.Mech;
             this._lastSeen = new();
             this._researchedTypes = new();
-            this._progress = new() { { _researching, StartResearch } };
+            this._progress = new();
             this._choices = new() { { _researching, 50 } };
 
             this._researchLast = 0;
-            this._nextAvg = 26;
+            this._nextAvg = 39;
 
             this._blueprints = new();
 
             this._minResearch = CalcMinResearch();
+        }
+        internal void NewGame()
+        {
+            this._progress.Add(_researching, StartResearch);
         }
 
         internal bool HasScrap(int amt)
@@ -115,21 +119,62 @@ namespace ClassLibrary1
         }
         internal void AddBackground()
         {
-            const int add = 1;
-            var types = Enumerable.Empty<KeyValuePair<Type, int>>();
+            //skip only when starting a new game
+            if (_progress.Any())
+            {
+                var types = _progress.Select(p => p.Key).Where(CanResearch);
+                if (!types.Any())
+                    types = new[] { _researching };
+                bool P1(Type t) => _progress[t] > 0;
+                bool P2(Type t) => !(_choices.TryGetValue(t, out int v) && _progress[t] + 1 >= v);
+                bool P3(Type t) => !_choices.ContainsKey(t);
 
-            int pool = Game.Rand.Next(2);
-            for (int a = 0; a < 2 && !types.Any(); a++)
-                if (a == pool)
-                    types = _choices.Where(p => _progress[p.Key] + add < p.Value);
+                var filtered = types.Where(P1).Where(P2);
+                if (!filtered.Any())
+                {
+                    filtered = types.Where(P3);
+                    if (!filtered.Any())
+                    {
+                        filtered = types.Where(P2);
+                        if (!filtered.Any())
+                            filtered = types.Where(P1);
+                        else
+                            ;
+                    }
+                    else
+                        ;
+                }
                 else
-                    types = _progress.Where(p => p.Value > 0);
+                    ;
+                if (filtered.Any())
+                    types = filtered;
+                else
+                    ;
 
-            if (!types.Any())
-                types = _choices;
+                int max = _choices.Values.Max();
+                var dict = types.ToDictionary(t => t, t =>
+                {
+                    int p = _progress[t];
+                    double pLimit = max / 2.0;
+                    if (p > pLimit)
+                    {
+                        double factor = pLimit / (double)p;
+                        p = Game.Rand.Round(pLimit * factor * factor);
+                    }
+                    else
+                        ;
+                    if (!_choices.TryGetValue(t, out int c))
+                        c = max * 2;
+                    else
+                        ;
+                    return 6 * p + c + 1;
+                });
 
-            Type select = Game.Rand.SelectValue(types.ToDictionary(p => p.Key, p => p.Value));
-            _progress[select] += add;
+                Type select = Game.Rand.SelectValue(dict);
+                _progress[select]++;
+            }
+            else
+                ;
         }
         //internal Type FreeTech(int value)
         //{            
@@ -145,6 +190,10 @@ namespace ClassLibrary1
                 MechBlueprint.OnResearch(this, _blueprints);
             if (_researching == Type.ResearchChoices)
                 _numChoices++;
+
+            if (_progress.Any(p => !CanResearch(p.Key) && p.Value > 0))
+                throw new Exception();
+
             return _researching;
         }
         private double GetUpgMult(Type type, int research) => GetResearchMult(research > _minResearch[type] ? research - _minResearch[type] : 0);
@@ -174,66 +223,71 @@ namespace ClassLibrary1
                 {
                     Type available = Game.Rand.SelectValue(types);
                     types.Remove(available);
-                    //cannot have the same research you just did immediately available again
-                    if (available == result)
-                        continue;
-                    //limit max research choices
-                    if (available == Type.ResearchChoices && _numChoices == MaxChoices)
-                        continue;
-                    //certain types can only be researched once
-                    bool noUpg = NoUpgrades.Contains(available);
-                    if (HasType(available) && noUpg)
-                        continue;
-                    //ensure always at least one mech and one non-mech option
-                    if (_choices.Count == _numChoices - 1 && (IsMech(available) ? _choices.Keys.All(IsMech) : !_choices.Keys.Any(IsMech)))
-                        continue;
-                    //enforce minimums
-                    if (_researchLast <= _minResearch[available])
-                        continue;
-                    if (Dependencies[available].All(d => HasType(d)))
+                    if (CanResearch(available))
                     {
+                        //cannot have the same research you just did immediately available again
+                        if (available == result)
+                            continue;
+                        //ensure always at least one mech and one non-mech option
+                        if (_choices.Count == _numChoices - 1 && (IsMech(available) ? _choices.Keys.All(IsMech) : !_choices.Keys.Any(IsMech)))
+                            continue;
+
                         this._progress.TryAdd(available, 0);
                         this._choices.Add(available, CalcCost(available, nextAvg, nextDev, nextOE, nextMin));
                     }
                 }
-            }
 
-            this._researching = Game.Rand.SelectValue(_choices.Keys);
-            this._progress[_researching] += excess;
+                this._researching = Game.Rand.SelectValue(_choices.Keys);
+                this._progress[_researching] += excess;
+            }
+        }
+        private bool CanResearch(Type type)
+        {
+            //enforce minimums
+            if (_researchLast <= _minResearch[type])
+                return false;
+            //limit max research choices
+            if (type == Type.ResearchChoices && _numChoices == MaxChoices)
+                return false;
+            //certain types can only be researched once
+            if (HasType(type) && NoUpgrades.Contains(type))
+                return false;
+            //check dependencies
+            return Dependencies[type].All(HasType);
         }
         private Dictionary<Type, int> GetTypeChances(double nextAvg)
         {
             return Enum.GetValues<Type>().ToDictionary(t => t, type =>
-            {
-                int lastSeen = TurnLastAvailable(type);
-                double mult = lastSeen > 0 ? 1 : 1.3;
-                mult *= 1.3 - lastSeen / ((double)Game.Turn + 16.9);
+           {
+               int lastSeen = TurnLastAvailable(type);
+               double mult = lastSeen > 0 ? 1 : 1.3;
+               mult *= 1.3 - lastSeen / ((double)Game.Turn + 16.9);
 
-                int last = GetLast(type);
-                bool hasType = last > 0;
-                mult *= (_researchLast + Consts.ResearchFactor) / (last + Consts.ResearchFactor);
+               int last = GetLast(type);
+               bool hasType = last > 0;
+               mult *= (_researchLast + Consts.ResearchFactor) / (last + Consts.ResearchFactor);
 
-                if (!hasType)
-                {
-                    int min = _minResearch[type];
-                    double minMult = (_researchLast - min) * 16.9 / (min + _minResearch.Values.Average() + Consts.ResearchFactor);
-                    if (minMult > 0)
-                        minMult = Math.Sqrt(minMult);
-                    mult *= minMult;
-                }
+               if (!hasType)
+               {
+                   int min = _minResearch[type];
+                   double minMult = (_researchLast - min) * 16.9 / (min + _minResearch.Values.Average() + Consts.ResearchFactor);
+                   if (minMult > 0)
+                       minMult = Math.Sqrt(minMult);
+                   mult *= minMult;
+               }
 
-                if (IsUpgradeOnly(type, last) && (hasType || GetAllUnlocks(type).All(t => IsUpgradeOnly(t, GetLast(t)))))
-                {
-                    double upgMult = (_researchLast - last) / Consts.ResearchFactor;
-                    upgMult = Math.Pow(upgMult, upgMult > 1 ? .39 : .78);
-                    mult *= upgMult;
-                }
+               if (IsUpgradeOnly(type, last) && (hasType || GetAllUnlocks(type).All(t => IsUpgradeOnly(t, GetLast(t)))))
+               {
+                   double upgMult = (_researchLast - last) / Consts.ResearchFactor;
+                   upgMult = Math.Pow(upgMult, upgMult > 1 ? .39 : .78);
+                   mult *= upgMult;
+               }
 
-                int progress = GetProgress(type);
-                mult *= Math.Sqrt((nextAvg + progress) / nextAvg);
+               int progress = GetProgress(type);
+               mult *= Math.Sqrt((nextAvg + progress) / nextAvg);
 
-                return Game.Rand.Round(byte.MaxValue * mult);
-            }).Where(p => p.Value > 0).ToDictionary(p => p.Key, p => p.Value);
+               return Game.Rand.Round(byte.MaxValue * mult);
+           }).Where(p => p.Value > 0).ToDictionary(p => p.Key, p => p.Value);
         }
         private void GetCostParams(int excess, int previous, out double nextAvg, out double nextDev, out double nextOE, out double nextMin)
         {
@@ -444,13 +498,13 @@ namespace ClassLibrary1
             { Type.FactoryAutoRepair, new Type[]    { Type.Factory, Type.FactoryRepair, Type.ExtractorAutoRepair, } },
 
             { Type.BuildingDefense, new Type[]      { Type.Constructor } }, //quick
-            { Type.BuildingCost, new Type[]         { Type.BuildingDefense, Type.ConstructorCost, } },
             { Type.ExtractorAutoRepair, new Type[]  { Type.BuildingDefense, } },
+            { Type.BuildingCost, new Type[]         { Type.BuildingDefense, Type.Turret, Type.Factory, Type.ConstructorCost, } },
             { Type.AmbientGenerator, new Type[]     { Type.BuildingCost, Type.TurretAutoRepair, } }, //end
-            { Type.ResearchChoices, new Type[]      { Type.Turret, } },
-            { Type.ScrapResearch, new Type[]        { Type.ResearchChoices, } },
+            { Type.ScrapResearch, new Type[]        { Type.Turret, } },
+            { Type.ResearchChoices, new Type[]      { Type.ScrapResearch, } },
             { Type.BurnMass, new Type[]             { Type.Factory, } },
-            { Type.FabricateMass, new Type[]        { Type.ScrapResearch, Type.BurnMass, Type.FactoryAutoRepair, } },
+            { Type.FabricateMass, new Type[]        { Type.ResearchChoices, Type.BurnMass, Type.FactoryAutoRepair, } },
             { Type.ExtractorValue, new Type[]       { Type.ExtractorAutoRepair, Type.BuildingCost, Type.ScrapResearch, Type.BurnMass, } }, //end
                                  
             //Type.BuildingResilience - not extractor??
@@ -483,11 +537,11 @@ namespace ClassLibrary1
 
             TurretShields = 110, //quick
             TurretRange = 120,
-            TurretLasers = 130, //end
-            TurretDefense = 140,
-            TurretArmor = 150,
-            TurretExplosives = 160, //end
-            TurretAttack = 170, //delay
+            TurretLasers = 140, //end
+            TurretDefense = 150,
+            TurretExplosives = 170, //end
+            TurretAttack = 180, //delay
+            TurretArmor = 190, //delay
             TurretAutoRepair = 245,
 
             ConstructorCost = 180, //quick
@@ -500,11 +554,11 @@ namespace ClassLibrary1
             FactoryConstructor = 290, //key
 
             BuildingDefense = 115, //quick
-            FabricateMass = 125,
-            ScrapResearch = 145,
-            ResearchChoices = 155,
-            BurnMass = 165,
-            BuildingCost = 175,
+            FabricateMass = 135,
+            ResearchChoices = 145,
+            ScrapResearch = 165,
+            BurnMass = 175,
+            BuildingCost = 225, //delay
             ExtractorAutoRepair = 285, //key
             AmbientGenerator = 310, //end   
             ExtractorValue = 350, //end   

@@ -31,7 +31,14 @@ namespace ClassLibrary1.Pieces
             AttackType.Explosive => 1.3,
             _ => throw new Exception()
         };
-        internal static int GetReloadBase(AttackType attackType, int attack)
+        internal static int GetReload(AttackType attackType, int attack)
+        {
+            double avg = ReloadAvg(attackType, attack);
+            int lowerCap = 1;
+            int upperCap = Math.Max(attack - 1, lowerCap);
+            return Math.Min(Math.Max(lowerCap, Game.Rand.GaussianInt(avg, .13)), upperCap);
+        }
+        internal static double ReloadAvg(AttackType attackType, int attack)
         {
             double avg = ReloadAvg(attack) - 1;
             avg *= attackType switch
@@ -42,10 +49,7 @@ namespace ClassLibrary1.Pieces
                 _ => throw new Exception(),
             };
             avg++;
-
-            int lowerCap = 1;
-            int upperCap = Math.Max(attack - 1, lowerCap);
-            return Math.Min(Math.Max(lowerCap, Game.Rand.GaussianInt(avg, .13)), upperCap);
+            return avg;
         }
         internal static double ReloadAvg(int attack) => Math.Sqrt(attack);
 

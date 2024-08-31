@@ -58,7 +58,9 @@ namespace ClassLibrary1.Pieces.Players
             Values values = GetValues(Game);
 
             this.Vision = values.Vision;
-            GetBehavior<IKillable>().Upgrade(values.GetKillable(killable.Hits.DefenseCur, ref _hitsResearchMult), values.Resilience);
+            //must check research type because defense could drop below rounding threshold from being attacked
+            if (type == Research.Type.CoreDefense)
+                GetBehavior<IKillable>().Upgrade(values.GetKillable(killable.Hits.DefenseCur, ref _hitsResearchMult), values.Resilience);
             GetBehavior<IRepair>().Upgrade(values.Repair);
             Builder.UpgradeAll(this, values.Repair.Builder);
 

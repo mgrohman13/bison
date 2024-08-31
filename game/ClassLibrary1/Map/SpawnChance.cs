@@ -6,7 +6,7 @@ namespace ClassLibrary1.Map
     public partial class Map
     {
         [Serializable]
-        internal class SpawnChance
+        public class SpawnChance
         {
             private int chance, target;
             private double rate;

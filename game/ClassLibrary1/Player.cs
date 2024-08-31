@@ -89,7 +89,7 @@ namespace ClassLibrary1
             if (scrapResearch <= 0 || !CanScrapResearch())
                 scrapResearch = 0;
 
-            if (Research.HasScrap(scrapResearch) && Spend(fabricateMass * Consts.EnergyForFabricateMass, burnMass * Consts.BurnMassForEnergy))
+            if (Research.HasScrap(scrapResearch) && Spend(fabricateMass * Consts.EnergyPerFabricateMass, burnMass * Consts.BurnMassPerEnergy))
             {
                 Research.Scrap(scrapResearch);
                 this._energy += burnMass;
@@ -148,7 +148,7 @@ namespace ClassLibrary1
         {
             if (researchInc < 0)
             {
-                energyInc += researchInc * Consts.ResearchEnergyConversion;
+                energyInc += researchInc * Consts.MassForScrapResearch * Consts.EnergyPerFabricateMass;
                 researchInc = 0;
             }
         }

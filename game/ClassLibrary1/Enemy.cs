@@ -115,8 +115,12 @@ namespace ClassLibrary1
             this._portalSpawn += Game.Rand.OE(inc);
 
             bool portal = false;
-            double needed = hasEntrance && !hasExit ? Game.Rand.DoubleHalf() : 1;
-            if ((hasExit && !hasEntrance) || _portalSpawn > needed)
+            double needed = 1;
+            if (hasExit && !hasEntrance)
+                needed = .5 - Game.Rand.OE();
+            else if (hasEntrance && !hasExit)
+                needed = Game.Rand.DoubleHalf();
+            if (_portalSpawn > needed)
                 if (hasExit)
                 {
                     portal |= BuildPortal(false);
@@ -132,17 +136,18 @@ namespace ClassLibrary1
         private bool BuildPortal(bool exit)
         {
             Tile tile;
+            Player player = Game.Player;
+            Core core = player.Core;
+            Tile coreTile = core.Tile;
             var pieces = Game.AllPieces;
             double difficulty = GetDifficulty(Game);
             if (exit)
             {
                 Map.Map map = Game.Map;
-                Player player = Game.Player;
-                Core core = player.Core;
 
                 //exits place near core, avoiding stronger immediate player attacks and potential turret range
                 double turretRange = (new[] { UpgType.TurretRange, UpgType.TurretLaserRange, UpgType.TurretExplosivesRange, })
-                    .Max(u => ResearchUpgValues.Calc(u, player.Research.ResearchCur));
+                    .Max(u => ResearchUpgValues.Calc(u, Research.GetResearchMult(player.Research.ResearchCur)));
                 IEnumerable<FoundationPiece> turrets = player.PiecesOfType<Turret>();
                 if (turrets.Any())
                     turretRange = Math.Max(turretRange,
@@ -153,7 +158,7 @@ namespace ClassLibrary1
                 double portalDef = Portal.GetDefAvg(difficulty, exit);
                 var avoid = EnemyMovement.GetPlayerAttacks(Game)
                         .Where(p => Game.Rand.DoubleHalf(portalDef) < Game.Rand.DoubleFull(p.Value)).Select(p => p.Key)
-                    .Concat(core.Tile.GetAllPointsInRange(deviation)
+                    .Concat(coreTile.GetAllPointsInRange(deviation)
                         .Concat(player.PiecesOfType<FoundationPiece>().Select(t => t.Tile)
                             .Concat(pieces.OfType<Foundation>().Select(f => f.Tile))
                             .SelectMany(t => t.GetAllPointsInRange(turretRange)))
@@ -162,8 +167,8 @@ namespace ClassLibrary1
 
                 do
                 {
-                    deviation += Game.Rand.DoubleFull(Math.Sqrt(Consts.PathWidth));
-                    tile = map.GetTile(core.Tile.X + Game.Rand.GaussianInt(deviation), core.Tile.Y + Game.Rand.GaussianInt(deviation));
+                    deviation += Game.Rand.DoubleHalf(Math.Sqrt(Consts.PathWidth));
+                    tile = map.GetTile(coreTile.X + Game.Rand.GaussianInt(deviation), coreTile.Y + Game.Rand.GaussianInt(deviation));
                 }
                 while (tile is null || tile.Piece is not null || avoid.Remove(tile));
             }
@@ -173,34 +178,37 @@ namespace ClassLibrary1
 
                 //entrances chosen based on prioximity to aliens and distance from player pieces or resources
                 static bool CanPlace(Tile t) => t.Piece is null;
-                var enemies = Pieces.Where(p => p.HasBehavior<IMovable>() && p.Tile.GetAdjacentTiles().Any(CanPlace));
-                if (enemies.Any())
-                {
-                    Dictionary<Piece, int> select = new();
-                    foreach (var piece in Game.Rand.Iterate(enemies))
+                Dictionary<Piece, int> select = new();
+                foreach (EnemyPiece piece in Game.Rand.Iterate(PiecesOfType<EnemyPiece>()))
+                    if (piece is not Portal && piece.HasBehavior<IMovable>())
                     {
-                        double mult = 3.9, div = 1;
-                        foreach (var check in Game.Rand.Iterate(pieces))
-                            if (piece != check)
-                            {
-                                double factor = 2.1 * Consts.PathWidth / (Consts.CavePathSize + piece.Tile.GetDistance(check.Tile));
-                                factor *= factor;
-                                if (check.IsEnemy && check is not Portal)
-                                    mult += factor;
-                                else
-                                    div += factor;
-                            }
-                        mult /= div;
-                        mult *= mult;
-                        select.Add(piece, Game.Rand.Round(mult + 1));
+                        Tile portalTile = piece.Tile;
+                        if (portalTile.GetAdjacentTiles().Any(CanPlace)
+                            && PiecesOfType<Portal>().All(p => p.Tile.GetDistance(portalTile) > Game.Rand.GaussianCapped(Consts.PortalMinDist, .13, Portal.AvgRange * 3.9)))
+                        {
+                            double mult = 2.6, div = 1;
+                            if (piece.State == EnemyPiece.AIState.Rush)
+                                mult *= mult;
+                            foreach (var check in Game.Rand.Iterate(pieces))
+                                if (piece != check)
+                                {
+                                    double factor = 2.1 * Consts.PathWidth / (Consts.CavePathSize + portalTile.GetDistance(check.Tile));
+                                    factor *= factor * (check is EnemyPiece enemy && enemy.State == EnemyPiece.AIState.Rush ? factor : 1);
+                                    if (check.IsEnemy && check is not Portal)
+                                        mult += factor;
+                                    else
+                                        div += factor;
+                                }
+                            mult /= div;
+                            mult *= portalTile.GetDistance(coreTile) / Consts.PortalMinDist;
+                            mult *= mult;
+                            select.Add(piece, Game.Rand.Round(mult + 1));
+                        }
                     }
-                    tile = Game.Rand.SelectValue(Game.Rand.SelectValue(select).Tile
-                        .GetAdjacentTiles().Where(CanPlace));
-                }
+                if (select.Any())
+                    tile = Game.Rand.SelectValue(Game.Rand.SelectValue(select).Tile.GetAdjacentTiles().Where(CanPlace));
                 else
-                {
                     return false;
-                }
             }
 
             Portal portal = Portal.NewPortal(tile, difficulty, exit, out double cost);

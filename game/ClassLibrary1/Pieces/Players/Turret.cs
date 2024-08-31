@@ -132,7 +132,7 @@ namespace ClassLibrary1.Pieces.Players
                 {
                     IKillable.Values defense = defenses[a];
                     double mult = a switch { 0 => hitsMult, 1 => shieldMult, 2 => armorMult, _ => throw new Exception() };
-                    int def = Math.Max(1, MTRandom.Round(defense.Defense * mult, 1 - rounding));
+                    int def = Math.Max(1, MTRandom.Round(Consts.StatValueInverse(Consts.StatValue(defense.Defense) * mult), 1 - rounding));
                     results.Add(new(defense.Type, def));
 
                     hitsMult *= Consts.StatValueInverse(Consts.StatValue(defense.Defense) / Consts.StatValue(def));
@@ -161,7 +161,7 @@ namespace ClassLibrary1.Pieces.Players
                         att = 1;
                     double mult = Math.Sqrt(Consts.StatValue(baseAtt) / Consts.StatValue(att));
 
-                    double baseReload = (1 + CombatTypes.GetReloadBase(type, baseAtt)) / 2.0;
+                    double baseReload = (1 + CombatTypes.ReloadAvg(type, baseAtt)) / 2.0;
                     int reload = MTRandom.Round(baseReload * mult, rounding);
                     if (reload < 1)
                         reload = 1;
@@ -253,7 +253,7 @@ namespace ClassLibrary1.Pieces.Players
 
                     double range = ResearchUpgValues.Calc(upgType, researchMult);
                     IAttacker.Values attack = attacks[a];
-                    attacks[a] = new(attack.Type, attack.Attack, range, attack.Reload);
+                    attacks[a] = new(attack.Type, attack.Attack, range, 1);
                 }
             }
             private void UpgradeTurretAttack(double researchMult)
