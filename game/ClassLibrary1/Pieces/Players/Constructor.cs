@@ -11,7 +11,7 @@ namespace ClassLibrary1.Pieces.Players
     [Serializable]
     public class Constructor : PlayerPiece, IKillable.IRepairable
     {
-        public const double BASE_VISION = 5.5, MOVE_RAMP = 1.3, BASE_MOVE_INC = 4.5, BASE_MOVE_MAX = 10 * MOVE_RAMP;
+        public const double BASE_VISION = 6.5, MOVE_RAMP = 1.3, BASE_MOVE_INC = 4.5, BASE_MOVE_MAX = 10 * MOVE_RAMP;
 
         private bool _canUpgrade;
         private readonly bool _defenseType;
