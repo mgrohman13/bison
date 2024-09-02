@@ -47,6 +47,7 @@ namespace ClassLibrary1.Pieces.Players
                 killable.GetHitsRepair(out result, out _);
             return result;
         }
+        public bool IsRepairing() => HasBehavior(out IKillable killable) && killable.IsRepairing();
 
         internal abstract void OnResearch(Research.Type type);
     }

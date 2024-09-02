@@ -157,6 +157,9 @@ namespace WinFormsApp1
                 SaveGame();
                 CopyAutoSave("e");
 
+                IEnumerable<PlayerPiece> GetRepairs() => data.sleep.Where(p => p.IsRepairing()); ;
+                var repairs = GetRepairs();
+
                 Form.UpdateProgress(null, 0);
                 Type? researched = Game.EndTurn(Form.UpdateProgress);
                 Form.UpdateProgress(null, 2);
@@ -171,6 +174,8 @@ namespace WinFormsApp1
                     CopyAutoSave("s");
                 }
                 data.moved.Clear();
+                data.sleep.RemoveWhere(p => !p.IsPlayer || p.Tile == null || (p.HasBehavior(out IKillable k) && k.Dead));
+                data.sleep.ExceptWith(repairs.Except(GetRepairs()));
 
                 data.AlertResearch = researched.HasValue;
                 if (researched.HasValue && (researched.Value == Type.Mech || Research.IsMech(researched.Value)))
@@ -198,14 +203,28 @@ namespace WinFormsApp1
 
         public static void Hold()
         {
-            if (Form.MapMain.SelTile != null && Form.MapMain.SelTile.Piece is PlayerPiece playerPiece)
-                if (data.moved.Contains(playerPiece))
-                    data.moved.Remove(playerPiece);
+            PlayerPiece playerPiece = Toggle(data.moved);
+            data.sleep.Remove(playerPiece);
+        }
+        public static void Sleep()
+        {
+            PlayerPiece playerPiece = Toggle(data.sleep);
+            data.moved.Remove(playerPiece);
+        }
+        private static PlayerPiece Toggle(HashSet<PlayerPiece> set)
+        {
+            PlayerPiece playerPiece = Form.MapMain.SelTile?.Piece as PlayerPiece;
+            if (playerPiece is not null)
+                if (set.Contains(playerPiece))
+                {
+                    set.Remove(playerPiece);
+                }
                 else
                 {
-                    data.moved.Add(playerPiece);
+                    set.Add(playerPiece);
                     Next(true);
                 }
+            return playerPiece;
         }
         public static void Next(bool dir)
         {
@@ -268,76 +287,90 @@ namespace WinFormsApp1
                 return false;
 
             bool move = false;
-            IBuilder builder = piece.GetBehavior<IBuilder>();
-            if (!move && piece.HasBehavior<IBuilder.IBuildMech>())
-                move = Game.Player.Research.Blueprints.Any(b => Game.Player.Has(b.Energy, b.Mass) && GetNotify(b));
-            if (!move && piece.HasBehavior<IBuilder.IBuildConstructor>())
+
+            piece.HasBehavior(out IKillable killable);
+            // optimize?
+            var friendly = piece.Tile.GetVisibleAdjacentTiles().Select(t => t.Piece).Where(p => p is not null && p.IsPlayer);
+            var attacks = Game.Enemy.VisiblePieces
+                .Select(p => p.GetBehavior<IAttacker>())
+                .Where(a => a is not null)
+                .SelectMany(a => a.Attacks)
+                .SelectMany(a => friendly.Select(f => Tuple.Create(a, GetDefenders(a, f))))
+                .Where(t => t.Item2.ContainsKey(killable));
+            Dictionary<IKillable, int> GetDefenders(Attack attack, Piece friendly)
             {
-                Constructor.Cost(Game, out int e, out int m);
-                move = Game.Player.Has(e, m) && NotifyConstructor;
+                Piece attacker = attack.Piece;
+                Tile attackFrom = attacker.Tile;
+                if (attack.Range == Attack.MELEE_RANGE && attacker.HasBehavior(out IMovable movable))
+                    attackFrom = friendly.Tile.GetVisibleAdjacentTiles().Where(t => t.Piece is null || t.Piece.HasBehavior<IMovable>())
+                        .FirstOrDefault(t => t.GetDistance(attackFrom) <= movable.MoveCur);
+                return attack.GetDefenders(friendly, attackFrom);
             }
-            if (!move && piece.HasBehavior<IBuilder.IBuildDrone>())
+
+            if (data.sleep.Contains(piece))
             {
-                Drone.Cost(Game, out int e, out int m);
-                move = Game.Player.Has(e, m) && NotifyDrone;
+                move = attacks.Any();
             }
-            if (!move && piece.HasBehavior<IBuilder.IBuildExtractor>())
-                move = piece.Tile.GetVisibleTilesInRange(builder).Select(t => t.Piece as Resource).Where(r => r != null).Any(r =>
+            else
+            {
+                IBuilder builder = piece.GetBehavior<IBuilder>();
+                if (!move && piece.HasBehavior<IBuilder.IBuildMech>())
+                    move = Game.Player.Research.Blueprints.Any(b => Game.Player.Has(b.Energy, b.Mass) && GetNotify(b));
+                if (!move && piece.HasBehavior<IBuilder.IBuildConstructor>())
                 {
-                    Extractor.Cost(out int e, out int m, r);
-                    return Game.Player.Has(e, m);
-                });
-            if (!move)
-                if (builder != null && piece.Tile.GetVisibleTilesInRange(builder).Select(t => t.Piece as Foundation).Any(f => f != null))
+                    Constructor.Cost(Game, out int e, out int m);
+                    move = Game.Player.Has(e, m) && NotifyConstructor;
+                }
+                if (!move && piece.HasBehavior<IBuilder.IBuildDrone>())
                 {
-                    if (piece.HasBehavior<IBuilder.IBuildFactory>())
+                    Drone.Cost(Game, out int e, out int m);
+                    move = Game.Player.Has(e, m) && NotifyDrone;
+                }
+                if (!move && piece.HasBehavior<IBuilder.IBuildExtractor>())
+                    move = piece.Tile.GetVisibleTilesInRange(builder).Select(t => t.Piece as Resource).Where(r => r != null).Any(r =>
                     {
-                        Factory.Cost(Game, out int e, out int m);
-                        move = Game.Player.Has(e, m);
+                        Extractor.Cost(out int e, out int m, r);
+                        return Game.Player.Has(e, m);
+                    });
+                if (!move)
+                    if (builder != null && piece.Tile.GetVisibleTilesInRange(builder).Select(t => t.Piece as Foundation).Any(f => f != null))
+                    {
+                        if (piece.HasBehavior<IBuilder.IBuildFactory>())
+                        {
+                            Factory.Cost(Game, out int e, out int m);
+                            move = Game.Player.Has(e, m);
+                        }
+                        if (!move && piece.HasBehavior<IBuilder.IBuildTurret>())
+                        {
+                            Turret.Cost(Game, out int e, out int m);
+                            move = Game.Player.Has(e, m);
+                        }
+                        if (!move && piece.HasBehavior<IBuilder.IBuildGenerator>())
+                        {
+                            Generator.Cost(Game, out int e, out int m);
+                            move = Game.Player.Has(e, m);
+                        }
                     }
-                    if (!move && piece.HasBehavior<IBuilder.IBuildTurret>())
+
+                if (!move && piece.HasBehavior(out IMovable movable))
+                {
+                    //need to support rallying long distances to uncomment this enhancement
+                    move |= movable.CanMove && movable.MoveCur > 1 && movable.MoveCur + movable.MoveInc > movable.MoveMax;// + (movable.MoveLimit - movable.MoveMax > 1 ? 1 : 0);
+                    if (!move && killable != null)
                     {
-                        Turret.Cost(Game, out int e, out int m);
-                        move = Game.Player.Has(e, m);
-                    }
-                    if (!move && piece.HasBehavior<IBuilder.IBuildGenerator>())
-                    {
-                        Generator.Cost(Game, out int e, out int m);
-                        move = Game.Player.Has(e, m);
+                        var flattenedDef = attacks.Select(t => t.Item2.Keys
+                                .Select(k => Tuple.Create(t.Item1, k, k.AllDefenses.Sum(d => Consts.StatValue(d.DefenseCur))))
+                                .OrderByDescending(t => t.Item3).ThenBy(t => t.Item2.Piece.PieceNum).ThenBy(t => t.Item2.Piece.GetType().ToString()).First());
+                        var attDefPairs = flattenedDef.GroupBy(t => t.Item2)
+                            .Select(g => Tuple.Create(g.Select(t => t.Item1).Distinct().Sum(a => Consts.StatValue(a.AttackCur)), g.Max(t => t.Item3)));
+                        move |= attDefPairs.Any(t => t.Item1 >= t.Item2);
                     }
                 }
 
-            if (!move && piece.HasBehavior(out IMovable movable))
-            {
-                //need to support rallying long distances to uncomment this enhancement
-                move |= movable.CanMove && movable.MoveCur > 1 && movable.MoveCur + movable.MoveInc > movable.MoveMax;// + (movable.MoveLimit - movable.MoveMax > 1 ? 1 : 0);
-                if (!move && piece.HasBehavior(out IKillable killable))
-                {
-                    Dictionary<IKillable, int> GetDefenders(Attack attack, Piece friendly)
-                    {
-                        Piece attacker = attack.Piece;
-                        Tile attackFrom = attacker.Tile;
-                        if (attack.Range == Attack.MELEE_RANGE && attacker.HasBehavior(out IMovable movable))
-                            attackFrom = friendly.Tile.GetVisibleAdjacentTiles().Where(t => t.Piece is null || t.Piece.HasBehavior<IMovable>())
-                                .FirstOrDefault(t => t.GetDistance(attackFrom) <= movable.MoveCur);
-                        return attack.GetDefenders(friendly, attackFrom);
-                    }
-                    // optimize?
-                    var friendly = piece.Tile.GetVisibleAdjacentTiles().Select(t => t.Piece).Where(p => p is not null && p.IsPlayer);
-                    var a = Game.Enemy.VisiblePieces
-                        .Select(p => p.GetBehavior<IAttacker>())
-                        .Where(a => a is not null)
-                        .SelectMany(a => a.Attacks)
-                        .SelectMany(a => friendly.Select(f => Tuple.Create(a, GetDefenders(a, f))))
-                        .Where(t => t.Item2.ContainsKey(killable));
-                    var b = a.Select(t => t.Item2.Keys
-                            .Select(k => Tuple.Create(t.Item1, k, k.AllDefenses.Sum(d => Consts.StatValue(d.DefenseCur))))
-                            .OrderByDescending(t => t.Item3).ThenBy(t => t.Item2.Piece.PieceNum).ThenBy(t => t.Item2.Piece.GetType().ToString()).First());
-                    var c = b.GroupBy(t => t.Item2)
-                        .Select(g => Tuple.Create(g.Select(t => t.Item1).Distinct().Sum(a => Consts.StatValue(a.AttackCur)), g.Max(t => t.Item3)));
-                    move |= c.Any(t => t.Item1 >= t.Item2);
-                }
+                if (piece is Mech mech)
+                    move |= mech.CanUpgrade(out _, out _, out _);
             }
+
             if (!move && piece.HasBehavior(out IAttacker attacker))
             {
                 static double GetRange(Attack a) => a.CanAttack() ? a.Range : 0;
@@ -346,8 +379,8 @@ namespace WinFormsApp1
                 move |= maxRange > 0 && piece.Tile.GetVisibleTilesInRange(max).Any(t => t.Piece != null && t.Piece.HasBehavior<IKillable>() && t.Piece.IsEnemy);
             }
 
-            if (piece is Mech mech)
-                move |= mech.CanUpgrade(out _, out _, out _);
+            if (move)
+                data.sleep.Remove(piece as PlayerPiece);
 
             return move;
         }
@@ -367,7 +400,7 @@ namespace WinFormsApp1
         [Serializable]
         private class UIData // : ISerializable
         {
-            public readonly HashSet<PlayerPiece> moved = new();
+            public readonly HashSet<PlayerPiece> moved = new(), sleep = new();
 
             public readonly HashSet<MechBlueprint> notifyOff = new();
             public bool NotifyConstructor = true, NotifyDrone = true;

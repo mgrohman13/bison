@@ -106,6 +106,14 @@ namespace ClassLibrary1.Pieces
         {
             Hits.Repair(false, out hitsInc, out massCost);
         }
+        bool IKillable.IsRepairing()
+        {
+            ((IKillable)this).GetHitsRepair(out double hitsInc, out _);
+            var armor = Protection.SingleOrDefault(d => d.Type == CombatTypes.DefenseType.Armor && d.DefenseCur < d.DefenseMax);
+            if (armor != null)
+                hitsInc += armor.GetRegen();
+            return hitsInc > 0;
+        }
 
         void IBehavior.GetUpkeep(ref double energyUpk, ref double massUpk)
         {

@@ -71,6 +71,8 @@ namespace WinFormsApp1
                 Info.BtnBuild_Click(sender, e);
             else if (e.KeyCode == Keys.T)
                 Info.BtnViewAtt_Click(sender, e);
+            else if (e.KeyCode == Keys.Z)
+                Program.Sleep();
             else
                 e.SuppressKeyPress = false;
 

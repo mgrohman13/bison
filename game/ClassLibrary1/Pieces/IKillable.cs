@@ -26,7 +26,7 @@ namespace ClassLibrary1.Pieces
         internal void Upgrade(IEnumerable<Values> defenses, double resilience);
         internal void OnAttacked();
         internal void GetHitsRepair(out double hitsInc, out double massCost);
-
+        internal bool IsRepairing();
         public Events Event { get; }
         internal void RaiseDamagedEvent(Attack attack, Defense defense, Tile defTile);
 

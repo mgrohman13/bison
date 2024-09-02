@@ -16,29 +16,29 @@ namespace ClassLibrary1.Pieces
         {
             public Constructor Build(Tile tile);
         }
-        public interface IBuildExtractor : IBuilder
+        public interface IBuildExtractor : IBuilder, IReplaceable<Extractor>
         {
             public Extractor Build(Resource resource);
-            public bool Replace(bool doReplace, Extractor extractor, out int energy, out int mass);
         }
         public interface IBuildMech : IBuilder
         {
             public Mech Build(Tile tile, MechBlueprint blueprint);
         }
-        public interface IBuildFactory : IBuilder
+        public interface IBuildFactory : IBuilder, IReplaceable<FoundationPiece>
         {
             public Factory Build(Foundation foundation);
-            public bool Replace(bool doReplace, FoundationPiece foundationPiece, out int energy, out int mass);
         }
-        public interface IBuildTurret : IBuilder
+        public interface IBuildTurret : IBuilder, IReplaceable<FoundationPiece>
         {
             public Turret Build(Foundation foundation);
-            public bool Replace(bool doReplace, FoundationPiece foundationPiece, out int energy, out int mass);
         }
-        public interface IBuildGenerator : IBuilder
+        public interface IBuildGenerator : IBuilder, IReplaceable<FoundationPiece>
         {
             public Generator Build(Foundation foundation);
-            public bool Replace(bool doReplace, FoundationPiece foundationPiece, out int energy, out int mass);
+        }
+        public interface IReplaceable<T>
+        {
+            public bool Replace(bool doReplace, T old, out int energy, out int mass, out bool couldReplace);
         }
         public interface IBuildDrone : IBuilder
         {

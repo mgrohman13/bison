@@ -313,12 +313,12 @@ namespace WinFormsApp1
         private void Tiles(PaintEventArgs e)
         {
             //move letters up
-            const float defHeight = .26f;//, statBarPow = 1;// .39f;
+            const float defHeight = .26f;//, statBarPow = 1;// .39f; 
 
             List<RectangleF> tileRects = new();
             List<RectangleF> rectangles = new();
-            List<RectangleF> ellipses = new();
-            List<PointF[]> polygons = new();
+            Dictionary<Brush, List<RectangleF>> ellipses = new();
+            Dictionary<Brush, List<PointF[]>> polygons = new();
             Dictionary<Pen, List<Tuple<PointF, PointF>>> lines = new()
             {
                 { Pens.Black, new() }
@@ -329,6 +329,16 @@ namespace WinFormsApp1
 
             Pen movePen = new(Color.DarkGreen, penSize);
             Pen attPen = new(Color.DarkRed, penSize);
+
+            Brush playerBrush = Brushes.Blue;
+            Brush indicatorBrush = Brushes.Black;
+            Brush healBrush = Brushes.DeepPink;
+            ellipses.Add(playerBrush, new());
+            ellipses.Add(indicatorBrush, new());
+            ellipses.Add(healBrush, new());
+            polygons.Add(playerBrush, new());
+            polygons.Add(indicatorBrush, new());
+            polygons.Add(healBrush, new());
 
             List<List<Point>> paths = new();
 
@@ -347,8 +357,8 @@ namespace WinFormsApp1
             //static float? SumAttacksCur(IAttacker attacker) => SumAttacks(attacker, a => a.AttackCur);
             static float? SumAttacksMax(IAttacker attacker) => SumAttacks(attacker, a => a.AttackMax);
             static float? SumAttacks(IAttacker attacker, Func<Attack, int> Stat) => attacker.Attacks.Sum(a => StatValue(Stat(a)));
-            static float StatValue(float stat) => stat;// (float)Consts.StatValue(stat); 
-            static float StatValueInverse(float stat) => stat;// (float)Consts.StatValue(stat); 
+            static float StatValue(float stat) => (float)Consts.StatValue(stat);
+            static float StatValueInverse(float stat) => (float)Consts.StatValueInverse(stat);
             const float padding = 1.3f; // 1.69f;  
             float attackMax = (GetPieces<IAttacker>().Where(k => k.Piece.HasBehavior<IKillable>() && k.Piece.HasBehavior<IMovable>())
                 .Max<IAttacker>(SumAttacksMax) ?? 1) * padding;
@@ -438,34 +448,40 @@ namespace WinFormsApp1
                         else if (resource is Artifact)
                             AddFill(Brushes.Magenta, rect);
                         if (extractor != null)
-                            ellipses.Add(ellipse);
+                            ellipses[playerBrush].Add(ellipse);
                     }
                     else
                     {
                         if (piece is Foundation or Generator)
                             AddFill(Brushes.Aqua, rect);
                         if (piece is Turret or Generator)
-                            ellipses.Add(ellipse);
+                            ellipses[playerBrush].Add(ellipse);
                         else if (piece is PlayerPiece)
                             AddFill(Brushes.LightGreen, rect);
                     }
 
                     if (Info.HasAnyUpgrade(piece.Tile))
-                        polygons.Add(new PointF[] { new(rect.X + rect.Width / 2f, rect.Y), new(rect.Right, rect.Y), new(rect.Right, rect.Y + rect.Height / 2f) });
+                        polygons[indicatorBrush].Add(new PointF[] { new(rect.X + rect.Width / 2f, rect.Y), new(rect.Right, rect.Y), new(rect.Right, rect.Y + rect.Height / 2f) });
 
                     if (piece != null && piece.HasBehavior(out IKillable killable))
                     {
                         if (piece is PlayerPiece playerPiece && piece is IRepairable repairable)
                         {
-                            if (playerPiece.GetRepairInc() > 0 || killable.Protection.SingleOrDefault(d => d.Type == CombatTypes.DefenseType.Armor && d.DefenseCur < d.DefenseMax)?.GetRegen() > 0)
+                            if (playerPiece.IsRepairing())
                             {
-                                //PointF[] indicator = new PointF[] { new(rect.X + rect.Width / 2f, rect.Y), new(rect.Right, rect.Y), new(rect.Right, rect.Y + rect.Height / 2f) };
-                                //polygons.Add(indicator);
+                                const float div = 7.8f;
+                                float w = rect.Width / div, h = rect.Height / div;
+                                PointF[] indicator = new PointF[] { new(2, 1), new(3, 1), new(3, 2), new(4, 2), new(4, 3),
+                                    new(3, 3), new(3, 4), new(2, 4), new(2, 3), new(1, 3), new(1, 2), new(2, 2), };
+                                indicator = indicator.Select(p => new PointF(rect.X + p.X * w, rect.Y + p.Y * h)).ToArray();
+                                polygons[healBrush].Add(indicator);
                             }
-                            else if (repairable.CanRepair())
+                            else if (repairable.CanRepair() && (piece.HasBehavior<IMovable>() || piece.HasBehavior<IAttacker>()))
                             {
-                                //RectangleF indicator = new RectangleF(rect.X, rect.Y, rect.Width / 2f, rect.Height / 2f);
-                                //ellipses.Add(indicator);
+                                const float div = 16.9f;
+                                float xPad = rect.Width / div, yPad = rect.Height / div;
+                                RectangleF indicator = new(rect.X + xPad, rect.Y + yPad, rect.Width / 2f - xPad * 2f, rect.Height / 2f - yPad * 2f);
+                                ellipses[indicatorBrush].Add(indicator);
                             }
                         }
 
@@ -638,13 +654,15 @@ namespace WinFormsApp1
             foreach (var p in Game.Rand.Iterate(fill))
                 if (!afterBrushes.Contains(p.Key))
                     e.Graphics.FillRectangles(p.Key, p.Value.ToArray());
-            foreach (var ellipse in ellipses)
-                e.Graphics.FillEllipse(Brushes.Blue, ellipse);
+            foreach (var p in ellipses)
+                foreach (var ellipse in p.Value)
+                    e.Graphics.FillEllipse(p.Key, ellipse);
             foreach (var p in Game.Rand.Iterate(fill))
                 if (afterBrushes.Contains(p.Key))
                     e.Graphics.FillRectangles(p.Key, p.Value.ToArray());
             foreach (var p in polygons)
-                e.Graphics.FillPolygon(Brushes.Black, p);
+                foreach (var polygon in p.Value)
+                    e.Graphics.FillPolygon(p.Key, polygon);
 
             var rs = Scale > scaleCutoff ? allrects : rects;
             if (rs.Length > 0)// && Scale > scaleCutoff)
@@ -1371,13 +1389,13 @@ namespace WinFormsApp1
                 }
             }
 
-            if (SelTile == orig)
-            {
-                if (SelTile != null && SelTile == clicked)
-                    Program.Hold();
-                else
-                    Program.Next(true);
-            }
+            //if (SelTile == orig)
+            //{
+            //    if (SelTile != null && SelTile == clicked)
+            //        Program.Hold();
+            //    else
+            //        Program.Next(true);
+            //}
         }
 
         private static double LimitedMove(IMovable movable, out bool limitMove)

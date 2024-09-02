@@ -111,10 +111,6 @@ namespace ClassLibrary1.Pieces.Enemies
                 PathToCore.Clear();
 
             AIState state = base.TurnState(difficulty, clearPaths, playerAttacks, moveTiles, killables, out path);
-            killable.GetHitsRepair(out double hitsInc, out _);
-            var armor = killable.Protection.SingleOrDefault(d => d.Type == CombatTypes.DefenseType.Armor && d.DefenseCur < d.DefenseMax);
-            if (armor != null)
-                hitsInc += armor.GetRegen();
 
             if (MoraleCheck(0, false))
                 state = AIState.Retreat;
@@ -123,12 +119,12 @@ namespace ClassLibrary1.Pieces.Enemies
             {
                 case AIState.Heal:
                     state = AIState.Heal;
-                    if (hitsInc <= 0 || PlayerThreat())
+                    if (!killable.IsRepairing() || PlayerThreat())
                         goto case AIState.Retreat;
                     break;
                 case AIState.Retreat:
                     state = AIState.Retreat;
-                    if (hitsInc > 0 && !PlayerThreat())
+                    if (killable.IsRepairing() && !PlayerThreat())
                         goto case AIState.Heal;
                     if (MoraleCheck(1, true))
                         goto case AIState.Fight;
@@ -146,7 +142,7 @@ namespace ClassLibrary1.Pieces.Enemies
                         goto case AIState.Rush;
                     if (PlayerThreat())
                         goto case AIState.Fight;
-                    if (hitsInc > 0)
+                    if (killable.IsRepairing())
                         goto case AIState.Heal;
                     if (PlayerPassive())
                         goto case AIState.Harass;
@@ -195,6 +191,7 @@ namespace ClassLibrary1.Pieces.Enemies
                 && (Game.TEST_MAP_GEN.HasValue || Game.GameOver || !tile.ShowMove()) && !playerAttacks.ContainsKey(tile);
             IEnumerable<Tile> GetRetreatTiles() => RetreatPath?.Where(ValidRetreat).Select(Game.Map.GetTile);
         }
+
         private bool MoraleCheck(double check, bool sign)
         {
             double morale = _morale;

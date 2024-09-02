@@ -749,23 +749,28 @@ namespace WinFormsApp1
             {
                 static bool Replace(string type, ReplaceFunc ReplaceFunc)
                 {
-                    if (ReplaceFunc(false, out int energy, out int mass)
-                        && MessageBox.Show(string.Format("Replace with {0} for {1} energy {2} mass?",
-                                type, DispCost(energy), DispCost(mass)), "Replace", MessageBoxButtons.YesNo)
-                            == DialogResult.Yes)
+                    bool canReplace = ReplaceFunc(false, out int energy, out int mass, out bool couldReplace);
+                    if (canReplace)
                     {
-                        if (ReplaceFunc(true, out _, out _))
+                        if (DialogResult.Yes == MessageBox.Show(
+                                $"Replace with {type} for{DispCost(energy)} energy {DispCost(mass)} mass?",
+                                "Replace", MessageBoxButtons.YesNo)
+                            && ReplaceFunc(true, out _, out _, out _))
                         {
                             Program.RefreshChanged();
                             return true;
                         }
                     }
+                    else if (couldReplace)
+                    {
+                        MessageBox.Show(string.Format($"Replacing with {type} costs {DispCost(energy)} energy {DispCost(mass)} mass"));
+                    }
                     return false;
                 }
                 if (builder.HasBehavior(out IBuilder.IBuildExtractor buildExtractor) && Selected.Piece is Extractor extractor)
                 {
-                    Replace("Extractor", (bool doReplace, out int energy, out int mass) =>
-                        buildExtractor.Replace(doReplace, extractor, out energy, out mass));
+                    Replace("Extractor", (bool doReplace, out int energy, out int mass, out bool couldReplace) =>
+                        buildExtractor.Replace(doReplace, extractor, out energy, out mass, out couldReplace));
                 }
                 else if (Selected.Piece is FoundationPiece foundationPiece)
                 {
@@ -777,22 +782,22 @@ namespace WinFormsApp1
                         switch (a)
                         {
                             case 0:
-                                done = buildFactory != null && Replace("Factory", (bool doReplace, out int energy, out int mass) =>
-                                    buildFactory.Replace(doReplace, foundationPiece, out energy, out mass));
+                                done = buildFactory != null && Replace("Factory", (bool doReplace, out int energy, out int mass, out bool couldReplace) =>
+                                    buildFactory.Replace(doReplace, foundationPiece, out energy, out mass, out couldReplace));
                                 break;
                             case 1:
-                                done = buildTurret != null && Replace("Turret", (bool doReplace, out int energy, out int mass) =>
-                                    buildTurret.Replace(doReplace, foundationPiece, out energy, out mass));
+                                done = buildTurret != null && Replace("Turret", (bool doReplace, out int energy, out int mass, out bool couldReplace) =>
+                                    buildTurret.Replace(doReplace, foundationPiece, out energy, out mass, out couldReplace));
                                 break;
                             case 2:
-                                done = buildGenerator != null && Replace("Generator", (bool doReplace, out int energy, out int mass) =>
-                                    buildGenerator.Replace(doReplace, foundationPiece, out energy, out mass));
+                                done = buildGenerator != null && Replace("Generator", (bool doReplace, out int energy, out int mass, out bool couldReplace) =>
+                                    buildGenerator.Replace(doReplace, foundationPiece, out energy, out mass, out couldReplace));
                                 break;
                         }
                 }
             }
         }
-        private delegate bool ReplaceFunc(bool doReplace, out int energy, out int mass);
+        private delegate bool ReplaceFunc(bool doReplace, out int energy, out int mass, out bool couldReplace);
         public static bool HasAnyUpgrade(Tile tile)
         {
             return HasUpgrade(tile, out _, out _, out _) || HasConstructorUpgrade(tile);
