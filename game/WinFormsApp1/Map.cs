@@ -332,7 +332,7 @@ namespace WinFormsApp1
 
             Brush playerBrush = Brushes.Blue;
             Brush indicatorBrush = Brushes.Black;
-            Brush healBrush = Brushes.DeepPink;
+            Brush healBrush = Brushes.HotPink;
             ellipses.Add(playerBrush, new());
             ellipses.Add(indicatorBrush, new());
             ellipses.Add(healBrush, new());

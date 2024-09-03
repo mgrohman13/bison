@@ -93,13 +93,16 @@ FEATURES
 	power grid
 	research to automate mechs - big stat buff, less micromanagement
 
-allow sleep to be used for healing 
+allow sleep to be used for reloading? 
 
+repair drone efficiency/resilience
 enemy catch-up mechanism when behind??
-	give enemy a small fraction of player income?
+	give enemy a small fraction of player income? (see spreadsheet)
+		starting playerIncome	1728.290976394929	 (550,250,20)
 		higher pct when income higher?
 		only extractors, generators?
 		if all income, what about upkeep??
+	make researches cost more when inc higher?
 replace dialog should pop up build form
 
 fix move next order algorithm

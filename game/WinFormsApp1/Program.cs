@@ -158,7 +158,7 @@ namespace WinFormsApp1
                 CopyAutoSave("e");
 
                 IEnumerable<PlayerPiece> GetRepairs() => data.sleep.Where(p => p.IsRepairing()); ;
-                var repairs = GetRepairs();
+                var repairs = GetRepairs().ToHashSet();
 
                 Form.UpdateProgress(null, 0);
                 Type? researched = Game.EndTurn(Form.UpdateProgress);
