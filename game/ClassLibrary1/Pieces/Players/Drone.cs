@@ -26,7 +26,7 @@ namespace ClassLibrary1.Pieces.Players
             double defMult = Game.Rand.GaussianCapped(1, .078, .65);
             double moveMult = Game.Rand.GaussianCapped(1, .117, .65);
 
-            this.killable = new Killable(this, new[] { values.GetKillable(defMult) }, 1);
+            this.killable = new Killable(this, new[] { values.GetKillable(defMult) }, values.Resilience);
             this.repair = new Repair(this, values.GetRepair(moveMult));
             SetBehavior(
                 killable,
@@ -86,9 +86,8 @@ namespace ClassLibrary1.Pieces.Players
             else
             {
                 double mult = Turns / (Turns + 1.0);
-                // use stat value??
                 int def = Math.Max(1, Game.Rand.Round(Consts.StatValueInverse(Consts.StatValue(killable.Hits.DefenseCur) * mult)));
-                killable.SetHits(def, def);
+                killable.SetHits(def, killable.Hits.DefenseMax + def - killable.Hits.DefenseCur);
 
                 base.StartTurn();
             }
@@ -98,15 +97,14 @@ namespace ClassLibrary1.Pieces.Players
             if (!killable.Dead)
             {
                 int def = killable.Hits.DefenseCur;
-                int max = killable.Hits.DefenseMax;
 
                 double baseDef = Consts.StatValue(_baseDef);
                 MultTreasure(def + 1, baseDef);
 
-                double mult = Consts.StatValue(def) / Consts.StatValue(max);
+                double mult = Consts.StatValue(def) / Consts.StatValue(def + 1);
                 this._turns = Math.Max(Math.Min(2, Turns), Game.Rand.Round(Turns * mult));
 
-                killable.SetHits(def, def);
+                killable.SetHits(def, killable.Hits.DefenseMax);
             }
         }
 
@@ -144,6 +142,8 @@ namespace ClassLibrary1.Pieces.Players
         [Serializable]
         private class Values : IUpgradeValues
         {
+            private const double resilience = .7;
+
             private double turns, hits, repairRate, moveInc, moveMax, moveLimit, costMult, energyRounding, massRounding;
             public Values()
             {
@@ -153,6 +153,8 @@ namespace ClassLibrary1.Pieces.Players
                 UpgradeRepairDrone(1);
                 energyRounding = massRounding = .5;
             }
+
+            public double Resilience => resilience;
 
             public void GetCost(out int energy, out int mass)
             {

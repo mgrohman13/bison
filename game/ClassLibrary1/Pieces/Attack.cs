@@ -89,7 +89,7 @@ namespace ClassLibrary1.Pieces
 
             if (!defenders.Any())
                 defenders = new[] { target.GetBehavior<IKillable>() };
-            return defenders.ToDictionary(k => k, v => v.AllDefenses.Sum(CombatTypes.GetDefenceChance));
+            return defenders.ToDictionary(k => k, CombatTypes.GetPieceDefenceChance);
 
             bool CanAttack(Piece target, bool checkRange) => target != null && target.Side != attacker
                 && target.HasBehavior(out IKillable killable) && !killable.Dead

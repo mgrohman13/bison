@@ -35,7 +35,7 @@ namespace ClassLibrary1
                 .OfType<IUpgradeValues>()
                 .ToArray();
         }
-        internal void CreateCore(Point constructorOffset)
+        internal void NewGame(Point constructorOffset)
         {
             const double stdDev = Consts.PathWidth / 1.3;
             Tile tile;
@@ -121,7 +121,7 @@ namespace ClassLibrary1
                 piece.GetIncome(ref energyInc, ref massInc, ref researchInc);
             PostProcess(ref energyInc, ref massInc, ref researchInc);
         }
-        private void GenerateResources(out double energyInc, out double massInc, out double researchInc)
+        internal void GenerateResources(out double energyInc, out double massInc, out double researchInc)
         {
             energyInc = massInc = researchInc = 0;
             foreach (PlayerPiece piece in Game.Rand.Iterate(Pieces.Cast<PlayerPiece>()))

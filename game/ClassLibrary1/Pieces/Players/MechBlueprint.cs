@@ -115,11 +115,11 @@ namespace ClassLibrary1.Pieces.Players
 
         internal static MechBlueprint MechOneOff(IResearch research, int researchLevel)
         {
-            return GenBlueprint(null, research, research.Game.GetPieceNum(typeof(MechBlueprint)), researchLevel);
+            return GenBlueprint(null, research, research.Game.GetPieceNum(typeof(MechBlueprint)), researchLevel, false);
         }
         internal static MechBlueprint Alien(IResearch research)
         {
-            return GenBlueprint(null, research, 0, research.GetBlueprintLevel());
+            return GenBlueprint(null, research, 0, research.GetBlueprintLevel(), true);
         }
         internal static MechBlueprint OnResearch(IResearch research, SortedSet<MechBlueprint> blueprints)
         {
@@ -136,14 +136,17 @@ namespace ClassLibrary1.Pieces.Players
             }
             MechBlueprint upgrade = Game.Rand.SelectValue(new object[] { "" }.Concat(select), b =>
             {
-                double chance;
+                double chance = 0;
                 if (b is MechBlueprint blueprint)
                 {
-                    chance = researchLevel - blueprint.ResearchLevel;
-                    if (chance > 0)
-                        chance *= chance;
-                    else
-                        chance = 0;
+                    if (blueprint.UpgradeTo == null)
+                    {
+                        chance = researchLevel - blueprint.ResearchLevel;
+                        if (chance > 0)
+                            chance *= chance;
+                        else
+                            chance = 0;
+                    }
                 }
                 else
                 {
@@ -152,7 +155,7 @@ namespace ClassLibrary1.Pieces.Players
                 return Game.Rand.Round(chance);
             }) as MechBlueprint;
 
-            MechBlueprint newBlueprint = GenBlueprint(upgrade, research, research.Game.GetPieceNum(typeof(MechBlueprint)), researchLevel);
+            MechBlueprint newBlueprint = GenBlueprint(upgrade, research, research.Game.GetPieceNum(typeof(MechBlueprint)), researchLevel, false);
             blueprints.Add(newBlueprint);
             if (upgrade != null)
             {
@@ -161,7 +164,7 @@ namespace ClassLibrary1.Pieces.Players
             }
             return newBlueprint;
         }
-        private static MechBlueprint GenBlueprint(MechBlueprint upgrade, IResearch research, int blueprintNum, int researchLevel)
+        private static MechBlueprint GenBlueprint(MechBlueprint upgrade, IResearch research, int blueprintNum, int researchLevel, bool alien)
         {
             MechBlueprint blueprint;
 
@@ -169,11 +172,11 @@ namespace ClassLibrary1.Pieces.Players
             do
             {
                 if (upgrade == null)
-                    blueprint = CheckCost(NewBlueprint(research, blueprintNum, researchLevel),
-                        upgrade, research, blueprintNum, researchLevel);
+                    blueprint = CheckCost(NewBlueprint(research, blueprintNum, researchLevel, alien),
+                        upgrade, research, blueprintNum, researchLevel, alien);
                 else do
                         blueprint = CheckCost(UpgradeBlueprint(upgrade, research, blueprintNum, researchLevel),
-                            upgrade, research, blueprintNum, researchLevel);
+                            upgrade, research, blueprintNum, researchLevel, alien);
                     while (!UpgradeValid(blueprint, upgrade, research));
 
                 valid = research.GetType() switch
@@ -199,9 +202,9 @@ namespace ClassLibrary1.Pieces.Players
             return blueprint;
         }
 
-        private static MechBlueprint NewBlueprint(IResearch research, int blueprintNum, int researchLevel)
+        private static MechBlueprint NewBlueprint(IResearch research, int blueprintNum, int researchLevel, bool alien)
         {
-            double vision = GenVision(research);
+            double vision = alien ? 0 : GenVision(research);
             double resilience = GenResilience(research);
             IReadOnlyList<IKillable.Values> killable = GenKillable(research);
             IReadOnlyList<IAttacker.Values> attacker = GenAttacker(research);
@@ -436,7 +439,7 @@ namespace ClassLibrary1.Pieces.Players
             return valid;
         }
 
-        private static MechBlueprint CheckCost(MechBlueprint blueprint, MechBlueprint upgrade, IResearch research, int blueprintNum, int researchLevel)
+        private static MechBlueprint CheckCost(MechBlueprint blueprint, MechBlueprint upgrade, IResearch research, int blueprintNum, int researchLevel, bool alien)
         {
             Type researching = research.GetType();
             int minTotal, maxTotal;
@@ -471,7 +474,7 @@ namespace ClassLibrary1.Pieces.Players
                 Debug.WriteLine($"blueprint ({(blueprint.BlueprintNum == "" ? "Alien" : blueprint.BlueprintNum)}) {oldCost} -> {newCost}");
 
             if ((!canKeep || research.GetType() == Type.Mech || Game.Rand.Bool()) && (newCost < minTotal || newCost > maxTotal))
-                blueprint = GenBlueprint(upgrade, research, blueprintNum, researchLevel);
+                blueprint = GenBlueprint(upgrade, research, blueprintNum, researchLevel, alien);
 
             return blueprint;
 

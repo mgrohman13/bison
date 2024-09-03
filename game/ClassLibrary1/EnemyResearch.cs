@@ -33,25 +33,32 @@ namespace ClassLibrary1
         }
         private static Dictionary<Type, int> GenUnlockTurns()
         {
+            Type[] Skips = new[] { Type.ConstructorCost, Type.ConstructorDefense, Type.ConstructorMove };
             //in order of liklihood
-            Type[] unlocks = new Type[] { Type.MechEnergyWeapons, PortalType, Type.MechShields, Type.MechRange, Type.MechArmor, Type.MechLasers, Type.MechExplosives, };
+            Type[] unlocks = new Type[] { Type.MechEnergyWeapons, Type.MechShields, PortalType, Skips[0],
+                Type.MechRange, Type.MechArmor, Skips[1], Type.MechLasers, Type.MechExplosives, Skips[2] };
             int count = unlocks.Length;
             Dictionary<Type, int> chances = unlocks.ToDictionary(t => t, t =>
-                Game.Rand.Round(Math.Pow(1 + count - Array.IndexOf(unlocks, t), 2.1)));
+                Game.Rand.Round(Math.Pow(1.69, count - Array.IndexOf(unlocks, t))));
 
             Dictionary<Type, int> result = new();
             for (int a = 0; a < count; a++)
             {
-                Type next = Game.Rand.SelectValue(chances);
+                Type next;
+                do next = Game.Rand.SelectValue(chances);
+                while (Skips.Contains(next) && a < Game.Rand.Next(count));
                 chances.Remove(next);
 
-                double avg = (a + 1) * Consts.EnemyUnlockTurns / count;
-                double dev = (1 + count - a) * .39 / (count + 1);
-                if (avg < 13) throw new Exception();
-                int min = Game.Rand.RangeInt(Game.Rand.RangeInt(1, 13), Game.Rand.RangeInt(13, Game.Rand.Round(avg / Math.PI)));
-                int value = Game.Rand.GaussianOEInt(avg, dev, dev / Math.E, min);
+                if (!Skips.Contains(next))
+                {
+                    double avg = (a + 1) * Consts.EnemyUnlockTurns / count;
+                    double dev = (1 + count - a) * .39 / (count + 1);
+                    if (avg < 13) throw new Exception();
+                    int min = Game.Rand.RangeInt(Game.Rand.RangeInt(1, 13), Game.Rand.RangeInt(13, Game.Rand.Round(avg / Math.PI)));
+                    int value = Game.Rand.GaussianOEInt(avg, dev, dev / Math.E, min);
 
-                result.Add(next, value);
+                    result.Add(next, value);
+                }
             }
             return result;
         }

@@ -104,11 +104,9 @@ namespace WinFormsApp1
         internal void UpdateProgress(Tile center, double progress)
         {
             bool visible = progress >= 0 && progress <= 1;
-            mapMain.MouseMove -= mapMain.Map_MouseMove;
-            if (!visible)
-                mapMain.MouseMove += mapMain.Map_MouseMove;
 
-            mapMain.SelTile = null;
+            mapMain.ToggleEnemyTurn(visible);
+
             Debug.WriteLine($"UpdateProgress: {progress}");
             if (visible)
             {

@@ -67,6 +67,8 @@ namespace ClassLibrary1.Pieces.Players
         {
             energyInc += Consts.GetDamagedValue(this, GetValues(Game).EnergyInc, 0);
             researchInc -= Consts.GeneratorResearchUpk;
+
+            base.GenerateResources(ref energyInc, ref massInc, ref researchInc);
         }
 
         private static double HitsMult() =>

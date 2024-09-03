@@ -219,7 +219,7 @@ namespace ClassLibrary1.Pieces.Players
             private void UpgradeConstructorDefense(double researchMult)
             {
                 this.hits = Gen(1);//DefenseType.Hits
-                this.shield = Gen(1.23);//DefenseType.Shield
+                this.shield = Gen(1.17);//DefenseType.Shield
                 this.armor = Gen(1.69);//DefenseType.Armor
 
                 double Gen(double mult) =>

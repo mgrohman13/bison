@@ -29,18 +29,19 @@ namespace ClassLibrary1
         public const double ResearchFactor = 2600;
         public const int ExploreForResearch = 39;
 
-        public const double EnemyStartEnergy = 10400;
-        public const double EnemyEnergy = 520;
+        public const double EnemyStartEnergy = 910;
+        public const double EnemyEnergy = 390;
+        public const double EnemyIncomeMatchFactor = 6500;
         public const double ExploreEnergy = 6500;
-        public const double EnemyEnergyRampTurns = EnemyUnlockTurns;
-        public const double EnemyUnlockTurns = 169;
+        public const double EnemyEnergyRampTurns = 169;
+        public const double EnemyUnlockTurns = 210;
         public const double DifficultyIncTurns = 91;
         public const double DifficultyEnergyPow = 1.3;
         public const double DifficultyResearchPow = 3.9 / Math.E;
         public const double DifficultyAIPow = .52;
 
         public static readonly double PortalMinDist = Math.Sqrt(Scale) * 78;
-        public const double PortalSpawnTime = 52;
+        public const double PortalSpawnTime = 39;
         public const double PortalSpawnStrMult = 1.69;
         public const double PortalCost = 13;
         public const double PortalExitDef = 210;

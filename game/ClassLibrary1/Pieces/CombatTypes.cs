@@ -53,30 +53,52 @@ namespace ClassLibrary1.Pieces
         }
         internal static double ReloadAvg(int attack) => Math.Sqrt(attack);
 
+
+        internal static int GetPieceDefenceChance(IKillable killable)//double attackValue)
+        {
+            return killable.AllDefenses.Sum(GetDefenceChance);
+        }
         internal static int GetDefenceChance(Defense defense)
         {
             if (defense.DefenseCur == 0)
                 return 0;
 
-            bool hits = defense.Type == DefenseType.Hits;
-            double offset = hits ? .5 : 0;
+            double offset = defense.Type == DefenseType.Hits ? .5 : 0;
             double cur = Consts.StatValue(defense.DefenseCur - offset);
             double pct = cur / Consts.StatValue(defense.DefenseMax - offset);
+            double mult = 1 + pct;
 
             double chance = cur;
             switch (defense.Type)
             {
                 case DefenseType.Hits:
                     chance /= 4.0;
+                    chance *= LowMult(cur);
                     break;
                 case DefenseType.Shield:
-                    double mult = (1 + pct);
                     chance *= mult * mult;
                     if (pct >= 1)
                         chance *= 2;
                     break;
+                case DefenseType.Armor:
+                    chance *= Math.Sqrt(mult);
+                    if (pct >= 1)
+                        chance *= Math.Sqrt(2);
+                    break;
             }
-            return Game.Rand.Round(1 + chance);
+
+            double piece = defense.Piece.GetBehavior<IKillable>().AllDefenses.Sum(d => Consts.StatValue(d.DefenseCur));
+            chance *= LowMult(piece);
+            static double LowMult(double value)
+            {
+                const double cutoff = 52; //9.7102889283310685360406675469372
+                double m = 1;
+                if (value < cutoff)
+                    m = (1 + value / cutoff) / 2.0;
+                return m * m;
+            }
+
+            return Game.Rand.Round(1 + 13 * chance);
         }
 
         internal static IReadOnlyList<IAttacker.Values> OrderAtt(IEnumerable<IAttacker.Values> attacks) =>

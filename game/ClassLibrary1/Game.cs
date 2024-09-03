@@ -67,8 +67,10 @@ namespace ClassLibrary1
                 new( 2,  1),
             });
 
-            Player.CreateCore(constructor);
+            Player.NewGame(constructor);
             Constructor.NewConstructor(Map.GetTile(Player.Core.Tile.X + constructor.X, Player.Core.Tile.Y + constructor.Y), true);
+
+            Enemy.NewGame();
 
             Map.NewGame();
 
@@ -91,12 +93,10 @@ namespace ClassLibrary1
             if (Game.Rand.Bool())
                 massAvg = Game.Rand.Weighted(massMax, massWeight);
             else
-                massAvg = Game.Rand.Bool() ? massMax : 0;
+                massAvg = Game.Rand.Bool(massWeight) ? massMax : 0;
 
             mass = Consts.IncomeRounding(massAvg);
             energy = Consts.IncomeRounding(value - mass * Consts.EnergyMassRatio);
-            if (energy < 0)
-                ;
 
             Treasure.RaiseCollectEvent(tile, energy, mass);
             Player.AddResources(energy, mass);
@@ -122,10 +122,13 @@ namespace ClassLibrary1
             if (this.GameOver)
                 return null;
 
+            Player.GenerateResources(out double energyInc, out double massInc, out double researchInc);
+            double playerIncome = energyInc + Consts.EnergyMassRatio * (massInc + researchInc * Consts.ResearchMassConversion);
+
             Research.Type? researched = Player.EndTurn();
             _turn++;
             Map.PlayTurn(Turn);
-            Enemy.PlayTurn(UpdateProgress);
+            Enemy.PlayTurn(UpdateProgress, playerIncome);
             Player.StartTurn();
 
             SaveGame();

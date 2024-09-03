@@ -1,6 +1,7 @@
 ﻿using MattUtil;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Runtime.Serialization;
 using static ClassLibrary1.Map.Map;
@@ -23,7 +24,7 @@ namespace ClassLibrary1.Pieces.Enemies
 
         private int numAtts = 0;
         private readonly List<Tuple<Tile, Tile>> lastAttacks = new();
-        public List<Tuple<Tile, Tile>> LastAttacks => lastAttacks;
+        public ReadOnlyCollection<Tuple<Tile, Tile>> LastAttacks => lastAttacks.AsReadOnly();
 
         internal IEnemySpawn Spawn => _spawn;
 

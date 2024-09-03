@@ -34,8 +34,12 @@ namespace ClassLibrary1
             this._debt = 0;
             this._payment = 0;
         }
+        internal void NewGame()
+        {
+            SpawnAlien();
+        }
 
-        internal void PlayTurn(Action<Tile, double> UpdateProgress)
+        internal void PlayTurn(Action<Tile, double> UpdateProgress, double playerIncome)
         {
             PayDebt();
 
@@ -48,15 +52,19 @@ namespace ClassLibrary1
             EnemyMovement.PlayTurn(Game, Math.Pow(difficulty, Consts.DifficultyAIPow), portal, UpdateProgress);
 
             base.EndTurn(out double energyUpk, out double massUpk);
+
             double energy = GetEneryIncome(Game);
             if (Game.Turn < Consts.EnemyEnergyRampTurns)
                 energy *= Game.Turn / Consts.EnemyEnergyRampTurns;
+
+            energy += GetPlayerIncMatch(playerIncome);
+
             AddEnergy(Game.Rand.OEInt(energy) + Game.Rand.Round((this.Mass - massUpk) * Consts.EnergyMassRatio - energyUpk));
             this._mass = 0;
 
             int spawns = Game.Rand.OEInt(Game.Turn / 13.0);
             for (int a = 0; a < spawns && NextAlien.EnergyEquivalent() + 13 < this.Energy; a++)
-                SpawnAlien(() => Game.Map.GetEnemyTile(Alien.GetPathFindingMovement(NextAlien.Movable)));
+                SpawnAlien();
 
             Debug.WriteLine($"Enemy energy: {_energy}");
 
@@ -77,8 +85,8 @@ namespace ClassLibrary1
             double pRes = Game.Player.Energy + Game.Player.Mass * Consts.EnergyMassRatio;
             double pStr = Game.Player.Pieces.Sum(p => p.Strength(researchLevel, false));
 
-            double eInc = GetEneryIncome(Game);
-            double eRes = this.Energy + this.Mass * Consts.EnergyMassRatio;
+            double eInc = GetEneryIncome(Game) + GetPlayerIncMatch(pInc) - GetPayment();
+            double eRes = this.Energy + this.Mass * Consts.EnergyMassRatio - _debt;
             double eStr = this.Pieces.Sum(p => p.Strength(researchLevel, false));
 
             pStr += pRes;
@@ -102,7 +110,6 @@ namespace ClassLibrary1
                 if (str)
                     inc *= inc + 1;
             }
-            inc /= Consts.PortalSpawnTime;
 
             var portals = PiecesOfType<Portal>();
             bool hasEntrance = portals.Any(p => !p.Exit);
@@ -112,7 +119,7 @@ namespace ClassLibrary1
                 count *= count - 1;
             inc /= count;
 
-            this._portalSpawn += Game.Rand.OE(inc);
+            this._portalSpawn += Game.Rand.OE(inc / Consts.PortalSpawnTime);
 
             bool portal = false;
             double needed = 1;
@@ -253,6 +260,9 @@ namespace ClassLibrary1
         internal static double GetEneryIncome(Game game) =>
             Math.Pow(GetDifficulty(game), Consts.DifficultyEnergyPow) * Consts.EnemyEnergy;
 
+        private static double GetPlayerIncMatch(double playerIncome) =>
+            playerIncome * playerIncome / (playerIncome + Consts.EnemyIncomeMatchFactor);
+
         private void Loan(double energy)
         {
             int loan = Game.Rand.GaussianOEInt(energy, .13, .13);
@@ -269,9 +279,7 @@ namespace ClassLibrary1
 
             double interest = Math.Sqrt(_debt + 1) - 1;
             AddDebt(interest);
-
-            double payment = Math.Min(_debt, _payment);
-            ;
+            double payment = GetPayment();
             if (Math.Min(interest, payment) > Game.Rand.DoubleFull(inc))
             {
                 Spend(Game.Rand.Round(payment), 0);
@@ -281,6 +289,7 @@ namespace ClassLibrary1
             double trgPayment = (1 + interest) * inc;
             this._payment = Math.Max(0, _payment + Game.Rand.DoubleHalf(_payment < trgPayment ? inc : -inc));
         }
+        private double GetPayment() => Math.Min(_debt, _payment);
 
         internal void HiveDamaged(Hive hive, Tile defTile, Map.Map.SpawnChance spawn, ref double energy,
             int hits, double hitsPct, double dev)
@@ -329,6 +338,7 @@ namespace ClassLibrary1
         }
         internal void AddEnergy(int energy) => this._energy += energy;
 
+        private void SpawnAlien() => SpawnAlien(() => Game.Map.GetEnemyTile(Alien.GetPathFindingMovement(NextAlien.Movable)));
         internal double SpawnAlien(Func<Tile> GetTile, double? value = null)
         {
             void GenAlien()

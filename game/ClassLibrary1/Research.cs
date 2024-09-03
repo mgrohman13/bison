@@ -258,42 +258,44 @@ namespace ClassLibrary1
         private Dictionary<Type, int> GetTypeChances(double nextAvg)
         {
             return Enum.GetValues<Type>().ToDictionary(t => t, type =>
-           {
-               int lastSeen = TurnLastAvailable(type);
-               double mult = lastSeen > 0 ? 1 : 1.3;
-               mult *= 1.3 - lastSeen / ((double)Game.Turn + 16.9);
+            {
+                int lastSeen = TurnLastAvailable(type);
+                double mult = lastSeen > 0 ? 1 : 1.3;
+                mult *= 1.3 - lastSeen / ((double)Game.Turn + 16.9);
 
-               int last = GetLast(type);
-               bool hasType = last > 0;
-               mult *= (_researchLast + Consts.ResearchFactor) / (last + Consts.ResearchFactor);
+                int last = GetLast(type);
+                bool hasType = last > 0;
+                mult *= (_researchLast + Consts.ResearchFactor) / (last + Consts.ResearchFactor);
 
-               if (!hasType)
-               {
-                   int min = _minResearch[type];
-                   double minMult = (_researchLast - min) * 16.9 / (min + _minResearch.Values.Average() + Consts.ResearchFactor);
-                   if (minMult > 0)
-                       minMult = Math.Sqrt(minMult);
-                   mult *= minMult;
-               }
+                if (!hasType)
+                {
+                    int min = _minResearch[type];
+                    double minMult = (_researchLast - min) * 16.9 / (min + _minResearch.Values.Average() + Consts.ResearchFactor);
+                    if (minMult > 0)
+                        minMult = Math.Sqrt(minMult);
+                    mult *= minMult;
+                }
 
-               if (IsUpgradeOnly(type, last) && (hasType || GetAllUnlocks(type).All(t => IsUpgradeOnly(t, GetLast(t)))))
-               {
-                   double upgMult = (_researchLast - last) / Consts.ResearchFactor;
-                   upgMult = Math.Pow(upgMult, upgMult > 1 ? .39 : .78);
-                   mult *= upgMult;
-               }
+                if (IsUpgradeOnly(type, last) && (hasType || GetAllUnlocks(type).All(t => IsUpgradeOnly(t, GetLast(t)))))
+                {
+                    double upgMult = (_researchLast - last) / Consts.ResearchFactor;
+                    upgMult = Math.Pow(upgMult, upgMult > 1 ? .39 : .78);
+                    mult *= upgMult;
+                }
 
-               int progress = GetProgress(type);
-               mult *= Math.Sqrt((nextAvg + progress) / nextAvg);
+                int progress = GetProgress(type);
+                mult *= Math.Sqrt((nextAvg + progress) / nextAvg);
 
-               return Game.Rand.Round(byte.MaxValue * mult);
-           }).Where(p => p.Value > 0).ToDictionary(p => p.Key, p => p.Value);
+                return Game.Rand.Round(byte.MaxValue * mult);
+            }).Where(p => p.Value > 0).ToDictionary(p => p.Key, p => p.Value);
         }
         private void GetCostParams(int excess, int previous, out double nextAvg, out double nextDev, out double nextOE, out double nextMin)
         {
             double mult = (1 - Math.Pow(previous / (double)_researchLast, _researchLast / Consts.ResearchFactor));
             if (IsUpgradeOnly(_researching, previous))
                 mult *= .65;
+            mult *= Math.Sqrt(((_researchLast + _progress.Values.Sum() + Consts.CoreResearch) /
+                (1.0 + Game.Turn) + Consts.CoreResearch) / (39.0 + .169 * Game.Turn));
             nextAvg = GetNext(_nextAvg) * mult;
             this._nextAvg += nextAvg;
 
@@ -401,9 +403,11 @@ namespace ClassLibrary1
 
             double research = 0;//StartResearch;
             double dev = Math.E * _avgTypeCost / (double)all.Min();
+            double count = all.Count;
             while (all.Any())
             {
-                Type type = Game.Rand.SelectValue(all.Where(t1 => Dependencies[t1].All(t2 => retVal.ContainsKey(t2))));
+                Type type = Game.Rand.SelectValue(all.Where(t1 => Dependencies[t1].All(t2 => retVal.ContainsKey(t2))),
+                    type => Game.Rand.Round(count / Math.Sqrt((Math.Sqrt(count) + GetAllDependencies(type).Count))));
                 all.Remove(type);
                 research += .78 * GetNext(research) * (double)type / _avgTypeCost;
                 int min = 0;

@@ -93,58 +93,40 @@ FEATURES
 	power grid
 	research to automate mechs - big stat buff, less micromanagement
 
-allow sleep to be used for reloading? 
+re-asses early alien spawn count throttling, check initial explore distance for starting alien spawn
+keyTechs - remove mech move?
 
-repair drone efficiency/resilience
-enemy catch-up mechanism when behind??
-	give enemy a small fraction of player income? (see spreadsheet)
-		starting playerIncome	1728.290976394929	 (550,250,20)
-		higher pct when income higher?
-		only extractors, generators?
-		if all income, what about upkeep??
-	make researches cost more when inc higher?
-replace dialog should pop up build form
+add slight difference to can heal indicater when can move
+	3rd option for can heal but not in move list?
 
-fix move next order algorithm
-	x/y coords no longer apply to random maps
-	exposes info on actual map center
+resilience matter more in cost calc when def is higher
 
-alien visions cost 0 for cost calc?
-reduce piece def chance when def < att
+research nextDev/nextOE?
+allow/handle multiple mech upg paths/branches, allow interim upg?
+stop move/att after treasure collect?
+	randomly??
 
-enemy research unlocks
-	swap shields, portal
-	add dummy tech, cant be first or last (maybe 2?)
-	
+melee mechs need speed min/cheaper cost if low move?
+	max move more impt??
+combine factory/drone repair upgs?
 calc generator roi when going turret->gen->turret
 	different refund pcts for different buildings
 	ensure auto-repair before replace is always efficient
 	
-CollectResources not exactly balanced 1:1
-	see spreadsheet
-
-CalcMinResearch weight types based on number of total dependencies?
-swap PortalType, Type.MechShields in enemy research
-	decrease portal turns??
-
-UpgradeConstructorDefense shield 1.23??
-
-stop move/att after treasure collect?
-	randomly??
+allow sleep to be used for reloading? 
+replace dialog should pop up build form
+fix move next order algorithm
+	x/y coords no longer apply to random maps
+	exposes info on actual map center
+		
 treasure global events
 	mess with energy/shield, etc?
 
 tie notify to specific pieces
 	need way to override global/starting point?
-GetDefenceChance use pct for slight buff to armor chance
-handle multiple mech upg paths
 
-combine factory/drone repair upgs?
 make map evaluate dropoffs more consistent across caves, paths, cave paths
 analyze/fix avgs and min/max mech costs
-
-melee mechs need speed min/cheaper cost if low move?
-	max move more impt??
 
 portal exit heal aliens? retreat to?
 buff portal def, inc decay, reduce cost??

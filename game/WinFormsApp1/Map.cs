@@ -25,7 +25,7 @@ namespace WinFormsApp1
 
         private float xStart, yStart, _scale;
         private Tile _selected, _moused;
-        private bool viewAttacks = true, viewMoves = false;
+        private bool viewAttacks = true, viewMoves = false, inEnemyTurn = false;
 
         private readonly Timer timer;
         private readonly Stopwatch watch = new();
@@ -36,6 +36,27 @@ namespace WinFormsApp1
         private Pen[] rgbw = new[] { Red, Green, Blue, White, AltGreen };
         private Dictionary<Pen, List<HashSet<Point>>> ranges;
         private readonly Dictionary<Point, float> numbers = new();
+
+        public Map()
+        {
+            InitializeComponent();
+            lblMouse.Text = "";
+            //lblMouse.AutoSize\
+            //lblMouse.
+
+            this.SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.UserPaint |
+                ControlStyles.AllPaintingInWmPaint, true);
+            this.ResizeRedraw = true;
+
+            this.MouseWheel += Map_MouseWheel;
+
+            timer = new()
+            {
+                Interval = Game.Rand.Round(scrollTime)
+            };
+            timer.Tick += Timer_Tick;
+            //watch = new();
+        }
 
         private new float Scale
         {
@@ -172,25 +193,14 @@ namespace WinFormsApp1
             RefreshRanges();
         }
 
-        public Map()
+
+        internal void ToggleEnemyTurn(bool inTurn)
         {
-            InitializeComponent();
-            lblMouse.Text = "";
-            //lblMouse.AutoSize\
-            //lblMouse.
-
-            this.SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.UserPaint |
-                ControlStyles.AllPaintingInWmPaint, true);
-            this.ResizeRedraw = true;
-
-            this.MouseWheel += Map_MouseWheel;
-
-            timer = new()
-            {
-                Interval = Game.Rand.Round(scrollTime)
-            };
-            timer.Tick += Timer_Tick;
-            //watch = new();
+            SelTile = null;
+            MouseMove -= Map_MouseMove;
+            if (!inTurn)
+                MouseMove += Map_MouseMove;
+            inEnemyTurn = inTurn;
         }
 
         private void ShowMouseInfo()
@@ -267,7 +277,8 @@ namespace WinFormsApp1
                 if (Program.Game != null)
                 {
                     Tiles(e);
-                    Ranges(e);
+                    if (!inEnemyTurn)
+                        Ranges(e);
                     DrawMove(e);
 
                     if (Program.Game.Map.EnemyPaths != null)
@@ -331,13 +342,16 @@ namespace WinFormsApp1
             Pen attPen = new(Color.DarkRed, penSize);
 
             Brush playerBrush = Brushes.Blue;
-            Brush indicatorBrush = Brushes.Black;
+            Brush indicatorBase = Brushes.Black;
+            Brush indicatorAccent = Brushes.DarkGray;
             Brush healBrush = Brushes.HotPink;
             ellipses.Add(playerBrush, new());
-            ellipses.Add(indicatorBrush, new());
+            ellipses.Add(indicatorBase, new());
+            ellipses.Add(indicatorAccent, new());
             ellipses.Add(healBrush, new());
             polygons.Add(playerBrush, new());
-            polygons.Add(indicatorBrush, new());
+            polygons.Add(indicatorBase, new());
+            polygons.Add(indicatorAccent, new());
             polygons.Add(healBrush, new());
 
             List<List<Point>> paths = new();
@@ -366,15 +380,18 @@ namespace WinFormsApp1
                 .Max(k => k.AllDefenses.Sum(d => (float?)StatValue(d.DefenseMax))) ?? 1) * padding;
             attackMax = defenseMax = (float)StatValueInverse(Math.Max(attackMax, defenseMax));
 
-            foreach (var attack in Program.Game.Enemy.LastAttacks)
+            if (!inEnemyTurn)
             {
-                lines.TryAdd(attPen, new());
-                lines[attPen].Add(new(GetCenter(attack.Item1), GetCenter(attack.Item2)));
-            }
-            foreach (var move in Program.Game.Enemy.LastMoves)
-            {
-                lines.TryAdd(movePen, new());
-                lines[movePen].Add(new(GetCenter(move.Item1), GetCenter(move.Item2)));
+                foreach (var attack in Program.Game.Enemy.LastAttacks)
+                {
+                    lines.TryAdd(attPen, new());
+                    lines[attPen].Add(new(GetCenter(attack.Item1), GetCenter(attack.Item2)));
+                }
+                foreach (var move in Program.Game.Enemy.LastMoves)
+                {
+                    lines.TryAdd(movePen, new());
+                    lines[movePen].Add(new(GetCenter(move.Item1), GetCenter(move.Item2)));
+                }
             }
 
             foreach (Piece piece in Program.Game.Map.GetVisiblePieces())
@@ -461,27 +478,34 @@ namespace WinFormsApp1
                     }
 
                     if (Info.HasAnyUpgrade(piece.Tile))
-                        polygons[indicatorBrush].Add(new PointF[] { new(rect.X + rect.Width / 2f, rect.Y), new(rect.Right, rect.Y), new(rect.Right, rect.Y + rect.Height / 2f) });
+                        polygons[indicatorBase].Add(new PointF[] { new(rect.X + rect.Width / 2f, rect.Y), new(rect.Right, rect.Y), new(rect.Right, rect.Y + rect.Height / 2f) });
 
                     if (piece != null && piece.HasBehavior(out IKillable killable))
                     {
-                        if (piece is PlayerPiece playerPiece && piece is IRepairable repairable)
+                        if (piece is PlayerPiece playerPiece)
                         {
-                            if (playerPiece.IsRepairing())
-                            {
-                                const float div = 7.8f;
-                                float w = rect.Width / div, h = rect.Height / div;
-                                PointF[] indicator = new PointF[] { new(2, 1), new(3, 1), new(3, 2), new(4, 2), new(4, 3),
+                            if (piece is IRepairable repairable)
+                                if (playerPiece.IsRepairing())
+                                {
+                                    const float div = 7.8f;
+                                    float w = rect.Width / div, h = rect.Height / div;
+                                    PointF[] indicator = new PointF[] { new(2, 1), new(3, 1), new(3, 2), new(4, 2), new(4, 3),
                                     new(3, 3), new(3, 4), new(2, 4), new(2, 3), new(1, 3), new(1, 2), new(2, 2), };
-                                indicator = indicator.Select(p => new PointF(rect.X + p.X * w, rect.Y + p.Y * h)).ToArray();
-                                polygons[healBrush].Add(indicator);
-                            }
-                            else if (repairable.CanRepair() && (piece.HasBehavior<IMovable>() || piece.HasBehavior<IAttacker>()))
+                                    indicator = indicator.Select(p => new PointF(rect.X + p.X * w, rect.Y + p.Y * h)).ToArray();
+                                    polygons[healBrush].Add(indicator);
+                                }
+                                else if (repairable.CanRepair() && (piece.HasBehavior<IMovable>() || piece.HasBehavior<IAttacker>()))
+                                {
+                                    AddEllipse(indicatorAccent, 6.5f);
+                                }
+                            if (Program.MoveLeft(playerPiece))
+                                AddEllipse(indicatorBase, 16.9f);
+
+                            void AddEllipse(Brush brush, float padDiv)
                             {
-                                const float div = 16.9f;
-                                float xPad = rect.Width / div, yPad = rect.Height / div;
+                                float xPad = rect.Width / padDiv, yPad = rect.Height / padDiv;
                                 RectangleF indicator = new(rect.X + xPad, rect.Y + yPad, rect.Width / 2f - xPad * 2f, rect.Height / 2f - yPad * 2f);
-                                ellipses[indicatorBrush].Add(indicator);
+                                ellipses[brush].Add(indicator);
                             }
                         }
 
@@ -597,7 +621,7 @@ namespace WinFormsApp1
                 }
             }
 
-            if (viewAttacks && Scale > scaleCutoff)
+            if (viewAttacks && !inEnemyTurn && Scale > scaleCutoff)
             {
                 using Font f = new(FontFamily.GenericMonospace, Scale / 3.9f);
                 foreach (var p in numbers)
@@ -676,7 +700,7 @@ namespace WinFormsApp1
                 e.Graphics.DrawRectangle(sel, GetX(SelTile.X), GetY(SelTile.Y), Scale, Scale);
             }
 
-            if ((viewAttacks || viewMoves) && Scale > 21f)
+            if ((viewAttacks || viewMoves) && !inEnemyTurn && Scale > 21f)
             {
                 using Font f = new(FontFamily.GenericMonospace, Scale / 3.9f);
                 foreach (var p in numbers)
@@ -733,43 +757,46 @@ namespace WinFormsApp1
 
             numbers.Clear();
 
-            if (viewAttacks)
+            if (!inEnemyTurn)
             {
-                Dictionary<Tile, float> attStr = new();
-                void AddAttStr(IEnumerable<Point> range, float damage)
+                if (viewAttacks)
                 {
-                    foreach (Tile t in range.Select(Program.Game.Map.GetVisibleTile).Where(t => t != null))
-                        if (t.Piece == null || !t.Piece.IsEnemy)
-                        {
-                            attStr.TryGetValue(t, out float total);
-                            attStr[t] = (float)(total + Consts.StatValue(damage));
-                        }
+                    Dictionary<Tile, float> attStr = new();
+                    void AddAttStr(IEnumerable<Point> range, float damage)
+                    {
+                        foreach (Tile t in range.Select(Program.Game.Map.GetVisibleTile).Where(t => t != null))
+                            if (t.Piece == null || !t.Piece.IsEnemy)
+                            {
+                                attStr.TryGetValue(t, out float total);
+                                attStr[t] = (float)(total + Consts.StatValue(damage));
+                            }
+                    }
+
+                    IEnumerable<Point> allAttacks = Enumerable.Empty<Point>();
+                    foreach (IAttacker enemy in Program.Game.Enemy.VisiblePieces.Select(e => e.GetBehavior<IAttacker>()).Where(a => a != null))
+                        allAttacks = allAttacks.Union(AddAttacks(enemy, false, AddAttStr).SelectMany(hs => hs));
+                    ranges[Red].Add(allAttacks.ToHashSet());
+
+                    foreach (var p in attStr)
+                        numbers.Add(new Point(p.Key.X, p.Key.Y), (float)Consts.StatValueInverse(p.Value));
                 }
 
-                IEnumerable<Point> allAttacks = Enumerable.Empty<Point>();
-                foreach (IAttacker enemy in Program.Game.Enemy.VisiblePieces.Select(e => e.GetBehavior<IAttacker>()).Where(a => a != null))
-                    allAttacks = allAttacks.Union(AddAttacks(enemy, false, AddAttStr).SelectMany(hs => hs));
-                ranges[Red].Add(allAttacks.ToHashSet());
-
-                foreach (var p in attStr)
-                    numbers.Add(new Point(p.Key.X, p.Key.Y), (float)Consts.StatValueInverse(p.Value));
-            }
-
-            if (viewMoves)
-            {
-                //var pen = Pens.GreenYellow;
-                //if (!ranges.ContainsKey(pen))
-                //    ranges.Add(pen, new());
-                foreach (IMovable enemy in Program.Game.Enemy.VisiblePieces.Select(e => e.GetBehavior<IMovable>()).Where(m => m != null))
+                if (viewMoves)
                 {
-                    HashSet<Point> moves = enemy.Piece.Tile.GetAllPointsInRange(enemy.MoveCur).ToHashSet();
-                    ranges[AltGreen].Add(moves);
-                    if (!viewAttacks)
-                        foreach (var t in moves)
-                        {
-                            numbers.TryGetValue(t, out float count);
-                            numbers[t] = count + 1;
-                        }
+                    //var pen = Pens.GreenYellow;
+                    //if (!ranges.ContainsKey(pen))
+                    //    ranges.Add(pen, new());
+                    foreach (IMovable enemy in Program.Game.Enemy.VisiblePieces.Select(e => e.GetBehavior<IMovable>()).Where(m => m != null))
+                    {
+                        HashSet<Point> moves = enemy.Piece.Tile.GetAllPointsInRange(enemy.MoveCur).ToHashSet();
+                        ranges[AltGreen].Add(moves);
+                        if (!viewAttacks && !inEnemyTurn)
+                            foreach (var t in moves)
+                            {
+                                numbers.TryGetValue(t, out float count);
+                                numbers[t] = count + 1;
+                            }
+                    }
                 }
             }
 
@@ -1355,6 +1382,8 @@ namespace WinFormsApp1
                     //{
                     bool DoMove(Tile dest)
                     {
+                        if (dest.Piece is Treasure)
+                            dest = dest.GetVisibleAdjacentTiles().OrderBy(t => SelTile.GetDistance(t)).FirstOrDefault(dest);
                         bool moved = movable.Move(dest);
                         if (moved)
                         {
