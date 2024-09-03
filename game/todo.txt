@@ -93,6 +93,18 @@ FEATURES
 	power grid
 	research to automate mechs - big stat buff, less micromanagement
 
+gray???
+	Brushes.DarkGray	{Color = "{Name=DarkGray, ARGB=(255, 169, 169, 169)}"}	System.Drawing.Brush {System.Drawing.SolidBrush}
+	Brushes.Gray	{Color = "{Name=Gray, ARGB=(255, 128, 128, 128)}"}	System.Drawing.Brush {System.Drawing.SolidBrush}
+
+map indicator when attack can be used??
+
+100% ensure blank start
+	use union of constructor vision, core range
+	place core/constructor first, avoiding terrain
+	place everything else normally
+	move any pieces in range 
+
 re-asses early alien spawn count throttling, check initial explore distance for starting alien spawn
 keyTechs - remove mech move?
 

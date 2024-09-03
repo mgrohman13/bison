@@ -328,13 +328,15 @@ namespace WinFormsApp1
 
             List<RectangleF> tileRects = new();
             List<RectangleF> rectangles = new();
+            List<RectangleF> rectsAlt = new();
             Dictionary<Brush, List<RectangleF>> ellipses = new();
             Dictionary<Brush, List<PointF[]>> polygons = new();
-            Dictionary<Pen, List<Tuple<PointF, PointF>>> lines = new()
-            {
-                { Pens.Black, new() }
+            Dictionary<Pen, List<Tuple<PointF, PointF>>> lines = new() {
+                { Pens.Black, new() },
+                { Pens.White, new() },
+                { Pens.Yellow, new() },
             };
-            Dictionary<int, Brush> hitsBrushes = new();
+            //Dictionary<int, Brush> hitsBrushes = new();
             Dictionary<Brush, List<RectangleF>> fill = new();
             Dictionary<RectangleF, string> letters = new();
 
@@ -529,7 +531,7 @@ namespace WinFormsApp1
                             (float)StatValueInverse(killable.AllDefenses.Where(d => d.Type == type).Sum(a => StatValue(GetStat(a) ?? 0)));//StatValue?
 
                         DrawBar(1, new float[] { cur1, cur2, cur3 }, new float[] { max1, max2, max3 },
-                            new Brush[] { Brushes.DarkGray, Brushes.LightGray, Brushes.SkyBlue, }, barSize, widthTotal);
+                            new Brush[] { Brushes.DarkGray, Brushes.SlateGray, Brushes.SkyBlue, }, barSize, widthTotal);
                     }
                     if (piece != null && piece.HasBehavior(out IAttacker attacker))
                     {
@@ -552,13 +554,13 @@ namespace WinFormsApp1
                             (float)StatValueInverse(attacker.Attacks.Where(d => d.Type == type).Sum(a => StatValue(GetStat(a) ?? 0)));//StatValue?
 
                         DrawBar(2, new float[] { cur1, cur2, cur3 }, new float[] { max1, max2, max3 },
-                            new Brush[] { Brushes.Silver, Brushes.SandyBrown, Brushes.MediumPurple, }, barSize, widthTotal);
+                            new Brush[] { Brushes.DarkGray, Brushes.SandyBrown, Brushes.Purple, }, barSize, widthTotal);
                     }
 
                     void DrawBar(int barNum, float[] curs, float[] maxes, Brush[] brushes, float barSize, float widthTotal)
                     {
                         RectangleF defBar = new(rect.X, rect.Bottom - barSize * barNum, widthTotal, barSize);
-                        rectangles.Add(defBar);
+                        rectsAlt.Add(defBar);
                         float curX = defBar.X;
 
                         float total = maxes.Sum();
@@ -570,10 +572,10 @@ namespace WinFormsApp1
                             AddFill(brushes[b], new(curX, defBar.Y, cur, defBar.Height));
                             curX += cur;
                             if (cur < max)
-                                AddFill(Brushes.White, new(curX, defBar.Y, max - cur, defBar.Height));
+                                AddFill(Brushes.Black, new(curX, defBar.Y, max - cur, defBar.Height));
                             curX += max - cur;
                             if (b + 1 < curs.Length)
-                                lines[Pens.Black].Add(new(new(curX, defBar.Y), new(curX, defBar.Bottom)));
+                                lines[Pens.Yellow].Add(new(new(curX, defBar.Y), new(curX, defBar.Bottom)));
                         }
                     }
 
@@ -672,20 +674,20 @@ namespace WinFormsApp1
             if (allrects.Length > 0)
                 e.Graphics.FillRectangles(Brushes.White, allrects);
 
-            HashSet<Brush> afterBrushes = hitsBrushes.Values.Concat(new[] { Brushes.White,
-                Brushes.DarkGray, Brushes.LightGray, Brushes.SkyBlue, Brushes.Silver, Brushes.SandyBrown , Brushes.MediumPurple,
-            }).ToHashSet();
+            HashSet<Brush> afterBrushes = new[] { Brushes.White, Brushes.Black,
+                Brushes.DarkGray, Brushes.SlateGray, Brushes.SkyBlue, Brushes.DarkGray, Brushes.SandyBrown, Brushes.Purple,
+            }.ToHashSet();
             foreach (var p in Game.Rand.Iterate(fill))
                 if (!afterBrushes.Contains(p.Key))
                     e.Graphics.FillRectangles(p.Key, p.Value.ToArray());
             foreach (var p in ellipses)
-                foreach (var ellipse in p.Value)
+                foreach (var ellipse in Game.Rand.Iterate(p.Value))
                     e.Graphics.FillEllipse(p.Key, ellipse);
             foreach (var p in Game.Rand.Iterate(fill))
                 if (afterBrushes.Contains(p.Key))
                     e.Graphics.FillRectangles(p.Key, p.Value.ToArray());
             foreach (var p in polygons)
-                foreach (var polygon in p.Value)
+                foreach (var polygon in Game.Rand.Iterate(p.Value))
                     e.Graphics.FillPolygon(p.Key, polygon);
 
             var rs = Scale > scaleCutoff ? allrects : rects;
@@ -694,6 +696,7 @@ namespace WinFormsApp1
             foreach (var l in lines)
                 foreach (var t in l.Value)
                     e.Graphics.DrawLine(l.Key, t.Item1.X, t.Item1.Y, t.Item2.X, t.Item2.Y);
+            e.Graphics.DrawRectangles(Pens.Yellow, rectsAlt.ToArray());
             if (SelTile != null)
             {
                 using Pen sel = new(Color.Black, penSize + 2);
@@ -719,8 +722,8 @@ namespace WinFormsApp1
                     e.Graphics.DrawString(p.Value, f, Brushes.Black, p.Key.X + (Scale - size.Width) / 2f, p.Key.Y);
                 }
 
-            foreach (IDisposable d in hitsBrushes.Values)
-                d.Dispose();
+            //foreach (IDisposable d in hitsBrushes.Values)
+            //    d.Dispose();
         }
 
         public void RefreshRanges()

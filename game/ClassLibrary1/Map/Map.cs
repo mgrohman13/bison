@@ -450,7 +450,7 @@ namespace ClassLibrary1.Map
 
             bool visible = tile.Visible && !tile.Map.Game.GameOver && !Game.TEST_MAP_GEN.HasValue;
             bool hiveRange = isEnemy && tile.Map._pieces.OfType<Hive>().Any(h => tile.GetDistance(h.Tile) <= h.MaxRange);
-            Core core = tile.Map.Game.Player.Core;
+            Core core = tile.Map.Game.Player.Core; //
             bool coreRange = core != null && tile.GetDistance(core.Tile) <= core.GetBehavior<IRepair>().Range;
             bool invalid = (visible && !hiveRange) || tile.Piece != null || coreRange;
             //if (!invalid)

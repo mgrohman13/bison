@@ -134,25 +134,21 @@ namespace ClassLibrary1.Pieces.Players
                 else
                     select = existing;
             }
-            MechBlueprint upgrade = Game.Rand.SelectValue(new object[] { "" }.Concat(select), b =>
+
+            MechBlueprint upgrade = Game.Rand.SelectValue(select.Append(""), b =>
             {
-                double chance = 0;
+                double chance;
                 if (b is MechBlueprint blueprint)
                 {
-                    if (blueprint.UpgradeTo == null)
-                    {
-                        chance = researchLevel - blueprint.ResearchLevel;
-                        if (chance > 0)
-                            chance *= chance;
-                        else
-                            chance = 0;
-                    }
+                    chance = researchLevel - blueprint.ResearchLevel;
+                    if (chance < 0 || blueprint.UpgradeTo is not null)
+                        chance = 0;
                 }
                 else
                 {
-                    chance = Consts.ResearchFactor * Consts.ResearchFactor;
+                    chance = Consts.ResearchFactor;
                 }
-                return Game.Rand.Round(chance);
+                return Game.Rand.Round(chance * chance);
             }) as MechBlueprint;
 
             MechBlueprint newBlueprint = GenBlueprint(upgrade, research, research.Game.GetPieceNum(typeof(MechBlueprint)), researchLevel, false);
@@ -758,7 +754,10 @@ namespace ClassLibrary1.Pieces.Players
 
         public int CompareTo(MechBlueprint other)
         {
-            return Math.Sign(this.ResearchLevel - other.ResearchLevel);
+            int sign = this.ResearchLevel - other.ResearchLevel;
+            if (sign == 0)
+                sign = this.BlueprintNum.CompareTo(other.BlueprintNum);
+            return sign;
         }
 
         public override string ToString()
