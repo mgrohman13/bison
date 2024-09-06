@@ -218,6 +218,7 @@ namespace WinFormsApp1
                 if (set.Contains(playerPiece))
                 {
                     set.Remove(playerPiece);
+                    RefreshSelected();
                 }
                 else
                 {

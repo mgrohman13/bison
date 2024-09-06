@@ -93,6 +93,16 @@ FEATURES
 	power grid
 	research to automate mechs - big stat buff, less micromanagement
 
+alienmovement fire check for passive not correctly handing group
+
+decrease hive str??
+
+prevent doing things during enemy move
+	turn off mouse click events, buttons, keys OK??
+
+bold research button when will pop up at turn end
+	other buttons? build/upg?
+
 gray???
 	Brushes.DarkGray	{Color = "{Name=DarkGray, ARGB=(255, 169, 169, 169)}"}	System.Drawing.Brush {System.Drawing.SolidBrush}
 	Brushes.Gray	{Color = "{Name=Gray, ARGB=(255, 128, 128, 128)}"}	System.Drawing.Brush {System.Drawing.SolidBrush}
@@ -107,6 +117,10 @@ map indicator when attack can be used??
 
 re-asses early alien spawn count throttling, check initial explore distance for starting alien spawn
 keyTechs - remove mech move?
+make min research more affected by dependencies count
+
+GetCostParams avg turn reserach mult lower to account for exploring?
+	analyse when we want research tree to finish?
 
 add slight difference to can heal indicater when can move
 	3rd option for can heal but not in move list?
@@ -121,6 +135,7 @@ stop move/att after treasure collect?
 melee mechs need speed min/cheaper cost if low move?
 	max move more impt??
 combine factory/drone repair upgs?
+	+core?? (rangle only???)
 calc generator roi when going turret->gen->turret
 	different refund pcts for different buildings
 	ensure auto-repair before replace is always efficient
