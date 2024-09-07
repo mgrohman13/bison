@@ -233,33 +233,36 @@ namespace WinFormsApp1
             var tiles = Game.Player.Pieces.Where(MoveLeft).Select(p => p.Tile);
             if (tiles.Any() && Form.MapMain.SelTile != null)
                 tiles = tiles.Concat(new Tile[] { Form.MapMain.SelTile });
+
             var moveLeft = tiles.Distinct().OrderBy(t =>
             {
+                var tiles = Game.Player.Pieces.Where(MoveLeft).Select(p => p.Tile);
+                Point p = new(t.X - Game.Player.Core.Tile.X, t.Y - Game.Player.Core.Tile.Y);
                 int main, secondary;
-                if (t.X > t.Y && t.X < -t.Y)
+                if (p.X > p.Y && p.X < -p.Y)
                 {
                     main = 1;
-                    secondary = t.Y * gameRect.Width + t.X;
+                    secondary = p.Y * gameRect.Width + p.X;
                 }
-                else if (t.X < t.Y && t.X < -t.Y)
+                else if (p.X < p.Y && p.X < -p.Y)
                 {
                     main = 2;
-                    secondary = t.X * gameRect.Height + t.Y;
+                    secondary = p.X * gameRect.Height + p.Y;
                 }
-                else if (t.X > t.Y && t.X > -t.Y)
+                else if (p.X > p.Y && p.X > -p.Y)
                 {
                     main = 4;
-                    secondary = -t.X * gameRect.Height + t.Y;
+                    secondary = -p.X * gameRect.Height + p.Y;
                 }
-                else if (t.X < t.Y && t.X > -t.Y)
+                else if (p.X < p.Y && p.X > -p.Y)
                 {
                     main = 5;
-                    secondary = -t.Y * gameRect.Width + t.X;
+                    secondary = -p.Y * gameRect.Width + p.X;
                 }
                 else
                 {
                     main = 3;
-                    secondary = t.Y * gameRect.Width + t.X;
+                    secondary = p.Y * gameRect.Width + p.X;
                 }
                 main *= 2 * gameRect.Width * gameRect.Height;
                 return main + secondary;

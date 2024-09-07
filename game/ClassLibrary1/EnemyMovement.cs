@@ -482,8 +482,10 @@ namespace ClassLibrary1
                             {
                                 var defenses = pair.Key.AllDefenses.ToDictionary(d => d, CombatTypes.GetDefenceChance);
                                 double tDef = defenses.Sum(p => Consts.StatValue(p.Key.DefenseCur) * p.Value) / (double)defenses.Values.Sum();
-                                if (!pair.Key.Piece.HasBehavior<IAttacker>())
+                                if (!pair.Key.Piece.HasBehavior<IAttacker>()) //?
                                     tDef *= Game.Rand.DoubleHalf();
+                                else if (trgGrp.Count > 1)
+                                    ;
                                 def += tDef * pair.Value;
                             }
                             int defense = Game.Rand.Round(Consts.StatValueInverse(def / (double)trgGrp.Values.Sum()));

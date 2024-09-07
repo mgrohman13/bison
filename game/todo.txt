@@ -92,84 +92,49 @@ FEATURES
 	experience!
 	power grid
 	research to automate mechs - big stat buff, less micromanagement
-
-alienmovement fire check for passive not correctly handing group
-
+		
+calc generator roi when going turret->gen->turret
+	different refund pcts for different buildings
+	ensure auto-repair before replace is always efficient	
 decrease hive str??
-
-prevent doing things during enemy move
-	turn off mouse click events, buttons, keys OK??
-
-bold research button when will pop up at turn end
-	other buttons? build/upg?
-
-gray???
-	Brushes.DarkGray	{Color = "{Name=DarkGray, ARGB=(255, 169, 169, 169)}"}	System.Drawing.Brush {System.Drawing.SolidBrush}
-	Brushes.Gray	{Color = "{Name=Gray, ARGB=(255, 128, 128, 128)}"}	System.Drawing.Brush {System.Drawing.SolidBrush}
-
-map indicator when attack can be used??
-
-100% ensure blank start
-	use union of constructor vision, core range
-	place core/constructor first, avoiding terrain
-	place everything else normally
-	move any pieces in range 
-
-re-asses early alien spawn count throttling, check initial explore distance for starting alien spawn
-keyTechs - remove mech move?
-make min research more affected by dependencies count
-
-GetCostParams avg turn reserach mult lower to account for exploring?
-	analyse when we want research tree to finish?
-
-add slight difference to can heal indicater when can move
-	3rd option for can heal but not in move list?
-
-resilience matter more in cost calc when def is higher
-
-research nextDev/nextOE?
+combine factory/drone repair upgs?
+	+core?? (rangle only???)
 allow/handle multiple mech upg paths/branches, allow interim upg?
 stop move/att after treasure collect?
 	randomly??
+make map evaluate dropoffs more consistent across caves, paths, cave paths
 
-melee mechs need speed min/cheaper cost if low move?
-	max move more impt??
-combine factory/drone repair upgs?
-	+core?? (rangle only???)
-calc generator roi when going turret->gen->turret
-	different refund pcts for different buildings
-	ensure auto-repair before replace is always efficient
-	
+prevent doing things during enemy move
+	turn off mouse click events, buttons, keys OK??
+bold research button when will pop up at turn end
+	other buttons? build/upg?	
+move left for constructor that can be targeted at all?
+	any ibuilder?
+add slight difference to can heal indicater when can move
+	3rd option for can heal but not in move list?
 allow sleep to be used for reloading? 
 replace dialog should pop up build form
-fix move next order algorithm
-	x/y coords no longer apply to random maps
-	exposes info on actual map center
-		
-treasure global events
-	mess with energy/shield, etc?
-
+fix move next order algorithm - x/y coords no longer apply to random maps 
 tie notify to specific pieces
 	need way to override global/starting point?
-
-make map evaluate dropoffs more consistent across caves, paths, cave paths
-analyze/fix avgs and min/max mech costs
-
-portal exit heal aliens? retreat to?
+		
 buff portal def, inc decay, reduce cost??
 check math for extractors expiring sooner rather than later?
 	break even point with dropped treasure
 	extracted amount > treasure difference
 show portal active/dormant status
 	
-indication when mech can be repaired
-	slightly different if in range/not
+treasure global events
+	mess with energy/shield, etc?
+analyze/fix avgs and min/max mech costs
+portal exit heal aliens? retreat to?
 
 treasure placed in hidden areas???
 	
 create log file
 alien late game ways to bust mech packs?
 core repair range shrink over time?
+	need to not be annoying when reapiring on edge...
 BPs get more expensive the more you make??
 	ones you dont make get cheaper over time???
 	how does this work with upgrades?
@@ -185,10 +150,6 @@ windows scaling increases unit label text size
 increase extractor defense??
 	lower scaling exponent??
 mass fabricator for foundations, but needs to be disable-able
-negative mass/energy
-	resources still extract when not used
-	ensure random order
-	display values dont line up properly with actual values 
 
 portal entrance probabilities should be based on str/value
 mulitple enemy groups should be better at jumping into turret range?
@@ -213,8 +174,6 @@ research upg output for core hits
 small weapon energy cost to go offline->online (~.25?)
 	other flag switches?
 info btn show upg values
-reduce mech costs slightly?
-	esp att/move too much?? 
 
 replace foundation with small multiple tile island
 	max 1 turret, factory, portal
@@ -222,10 +181,7 @@ replace foundation with small multiple tile island
 	unlimited generators
 fix Visible code crappiness with TEST_MAP_GEN & GameOver
 map - occasional caves farther out infinitely??
-replace func tell you cost even if you cant afford
-mech cost capping should decrease move speed (and attack range?)
-mech costs
-	add const val to att/def so extreme mechs arent so good??
+mech cost capping should decrease attack range?
 show area you will scout on mouseover when can move to target
 make path edges less sharp??
 turret randomness??
@@ -238,9 +194,6 @@ randomize more consts every game
 	ResearchUpgValues
 	EnemyResearch GetMult & MakeType 
 randomize tech tree	
-resilience
-	cost?	
-	movement sqrt?
 SpawnChance Turn - sign use rate  
 
 keep cache of target tiles for IMovable, IAttacker at game level

@@ -124,7 +124,7 @@ namespace ClassLibrary1.Pieces
 
                             if (Game.Rand.Next(AttackCur + defense.DefenseCur) < AttackCur)
                             {
-                                defense.Damage(this);
+                                defense.DoDamage(this);
                             }
                             else
                             {

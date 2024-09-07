@@ -21,10 +21,11 @@ namespace ClassLibrary1.Pieces.Terrain
             GetCost(costMult, Consts.BiomassEnergyInc, Consts.BiomassExtractorEnergyCost, Consts.BiomassExtractorMassCost, out energy, out mass);
         }
 
-        protected override void GenerateResources(double value, ref double energyInc, ref double massInc, ref double researchInc)
+        protected override void GenerateResources(double value, out double energyInc, out double massInc, out double researchInc)
         {
-            energyInc += value;
-            researchInc += Math.Pow(value / Consts.BiomassResearchDiv + 1, Consts.BiomassResearchPow) - 1;
+            energyInc = value;
+            massInc = 0;
+            researchInc = Math.Pow(value / Consts.BiomassResearchDiv + 1, Consts.BiomassResearchPow) - 1;
         }
         public override string GetResourceName()
         {

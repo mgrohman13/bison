@@ -88,17 +88,19 @@ namespace ClassLibrary1.Pieces.Enemies
         }
         protected override void OnDeath(EnemyPiece enemyPiece)
         {
-            double cost = Consts.EnemyEnergy;
-            double offset = enemyPiece is Hive ? Consts.EnemyEnergy : Enemy.GetEneryIncome(Game);
+            double offset = Game.Enemy.IncomeReference() * 3.9;
+            double cost;
             if (enemyPiece is Hive hive)
                 cost = 1.69 * hive.Cost + offset;
             else if (enemyPiece is IRepairable reparable)
-                cost = reparable.RepairCost;
+                cost = reparable.RepairCost / Consts.RepairCost;
+            else
+                cost = offset;
 
-            offset += ((IRepairable)this).RepairCost;
-            double distance = Tile.GetDistance(enemyPiece.Tile);
-
+            offset += ((IRepairable)this).RepairCost / Consts.RepairCost;
             double pct = offset / (cost + offset);
+
+            double distance = Tile.GetDistance(enemyPiece.Tile);
             pct = Math.Pow(pct, Math.Sqrt(Consts.CaveSize / (distance + 1)));
 
             this._morale *= Game.Rand.Weighted(pct);

@@ -69,9 +69,9 @@ namespace ClassLibrary1.Map
 
                     _spawn.Mult(1 + mult);
 
-                    int energy = Game.Rand.Round(mult * Consts.ExploreEnergy);
+                    double energy = mult * Consts.ExploreEnergy;
                     Debug.WriteLine($"ExploreEnergy: {energy}");
-                    map.Game.Enemy.AddEnergy(energy);
+                    map.Game.Enemy.Income(energy);
 
                     ExploredDist = dist;
 

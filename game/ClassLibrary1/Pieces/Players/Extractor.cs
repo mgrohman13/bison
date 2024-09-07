@@ -110,9 +110,7 @@ namespace ClassLibrary1.Pieces.Players
         }
         private double VanishStr()
         {
-            double energyInc, massInc, researchInc;
-            energyInc = massInc = researchInc = 0;
-            Resource.GenerateResources(ref energyInc, ref massInc, ref researchInc);
+            Resource.GenerateResources(out double energyInc, out double massInc, out double researchInc);
             return Math.Abs(energyInc) + Math.Abs(massInc) + Math.Abs(researchInc);
         }
 
@@ -125,19 +123,28 @@ namespace ClassLibrary1.Pieces.Players
 
         internal override void GenerateResources(ref double energyInc, ref double massInc, ref double researchInc)
         {
-            Resource.GenerateResources(this, GetValues(Game).ValueMult, ref energyInc, ref massInc, ref researchInc);
-            if (energyInc < 0 && Side.Energy < 0)
-                energyInc = massInc = researchInc = 0;
+            Resource.GenerateResources(this, GetValues(Game).ValueMult, out double e, out double m, out double r);
+            if (ShutOff())
+                e = m = r = 0;
+            energyInc += e;
+            massInc += m;
+            researchInc += r;
 
             base.GenerateResources(ref energyInc, ref massInc, ref researchInc);
         }
         internal override void EndTurn(ref double energyUpk, ref double massUpk)
         {
             Values values = GetValues(Game);
-            Resource.Extract(this, values.ValueMult, values.SustainMult);
+            if (!ShutOff())
+                Resource.Extract(this, values.ValueMult, values.SustainMult);
 
             //will end up being slightly cheaper to repair than in GetUpkeep because of extracted resource value
             base.EndTurn(ref energyUpk, ref massUpk);
+        }
+        private bool ShutOff()
+        {
+            Resource.GenerateResources(out double energyInc, out double massInc, out double researchInc);
+            return energyInc < 0 && Side.Energy < 0;
         }
 
         public override string ToString()

@@ -29,12 +29,15 @@ namespace ClassLibrary1
         public const double ResearchFactor = 2600;
         public const int ExploreForResearch = 39;
 
-        public const double EnemyStartEnergy = 910;
-        public const double EnemyEnergy = 390;
+        public const double DifficultySetting = 2.6 / Math.PI;
+        public const double EnemyStartEnergy = 1690;
+        public const double ExploreEnergy = 5200;
+        public const double EnemyTreasureMatch = .52;
         public const double EnemyIncomeMatchFactor = 6500;
-        public const double ExploreEnergy = 6500;
+        public const double EnemyEnergy = 390;
         public const double EnemyEnergyRampTurns = 169;
         public const double EnemyUnlockTurns = 210;
+
         public const double DifficultyIncTurns = 91;
         public const double DifficultyEnergyPow = 1.3;
         public const double DifficultyResearchPow = 3.9 / Math.E;

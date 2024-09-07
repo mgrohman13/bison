@@ -69,12 +69,12 @@ namespace ClassLibrary1
 
             Player.NewGame(constructor);
             Constructor.NewConstructor(Map.GetTile(Player.Core.Tile.X + constructor.X, Player.Core.Tile.Y + constructor.Y), true);
-
-            Enemy.NewGame();
+            Player.Research.NewGame();
 
             Map.NewGame();
+            Enemy.NewGame();
 
-            Player.Research.NewGame();
+            Map.CheckStart();
         }
 
         internal int GetPieceNum(Type type)
@@ -123,12 +123,11 @@ namespace ClassLibrary1
                 return null;
 
             Player.GenerateResources(out double energyInc, out double massInc, out double researchInc);
-            double playerIncome = energyInc + Consts.EnergyMassRatio * (massInc + researchInc * Consts.ResearchMassConversion);
 
             Research.Type? researched = Player.EndTurn();
             _turn++;
             Map.PlayTurn(Turn);
-            Enemy.PlayTurn(UpdateProgress, playerIncome);
+            Enemy.PlayTurn(UpdateProgress, Enemy.EnergyEquivalent(energyInc, massInc, researchInc));
             Player.StartTurn();
 
             SaveGame();

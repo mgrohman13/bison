@@ -43,26 +43,23 @@ namespace ClassLibrary1
         {
             PayDebt();
 
-            double difficulty = GetDifficulty(Game);
-
             bool portal = false;
             if (this._research.TypeVailable(EnemyResearch.PortalType))
                 portal = BuildPortals();
 
+            double difficulty = GetDifficulty();
             EnemyMovement.PlayTurn(Game, Math.Pow(difficulty, Consts.DifficultyAIPow), portal, UpdateProgress);
 
             base.EndTurn(out double energyUpk, out double massUpk);
-
-            double energy = GetEneryIncome(Game);
-            if (Game.Turn < Consts.EnemyEnergyRampTurns)
-                energy *= Game.Turn / Consts.EnemyEnergyRampTurns;
-
-            energy += GetPlayerIncMatch(playerIncome);
-
-            AddEnergy(Game.Rand.OEInt(energy) + Game.Rand.Round((this.Mass - massUpk) * Consts.EnergyMassRatio - energyUpk));
+            AddEnergy((this.Mass - massUpk) * Consts.EnergyMassRatio - energyUpk);
             this._mass = 0;
 
-            int spawns = Game.Rand.OEInt(Game.Turn / 13.0);
+            Income(GetEnergyIncome());
+            Income(GetPlayerIncMatch(playerIncome));
+
+            RandIncome();
+
+            int spawns = Game.Rand.OEInt(Math.Sqrt(Math.Sqrt(Math.Max(0, Energy / 13.0)) + Game.Turn) / 6.5);
             for (int a = 0; a < spawns && NextAlien.EnergyEquivalent() + 13 < this.Energy; a++)
                 SpawnAlien();
 
@@ -81,17 +78,18 @@ namespace ClassLibrary1
             int researchLevel = Game.Rand.Round((_research.GetBlueprintLevel() + Game.Player.Research.GetBlueprintLevel()) / 2.0);
 
             Game.Player.GetIncome(out double energyInc, out double massInc, out double researchInc);
-            double pInc = energyInc + Consts.EnergyMassRatio * (massInc + researchInc * Consts.ResearchMassConversion);
+            double pInc = EnergyEquivalent(energyInc, massInc, researchInc);
             double pRes = Game.Player.Energy + Game.Player.Mass * Consts.EnergyMassRatio;
             double pStr = Game.Player.Pieces.Sum(p => p.Strength(researchLevel, false));
 
-            double eInc = GetEneryIncome(Game) + GetPlayerIncMatch(pInc) - GetPayment();
+            double eInc = GetEnergyIncome() + GetPlayerIncMatch(pInc) - GetPayment();
             double eRes = this.Energy + this.Mass * Consts.EnergyMassRatio - _debt;
             double eStr = this.Pieces.Sum(p => p.Strength(researchLevel, false));
 
             pStr += pRes;
             eStr += eRes;
 
+            eInc *= Consts.DifficultySetting;
             pStr *= Consts.PortalSpawnStrMult;
 
             eStr = Math.Max(0, eStr);
@@ -140,6 +138,7 @@ namespace ClassLibrary1
                 }
             return portal;
         }
+
         private bool BuildPortal(bool exit)
         {
             Tile tile;
@@ -147,7 +146,7 @@ namespace ClassLibrary1
             Core core = player.Core;
             Tile coreTile = core.Tile;
             var pieces = Game.AllPieces;
-            double difficulty = GetDifficulty(Game);
+            double difficulty = GetDifficulty();
             if (exit)
             {
                 Map.Map map = Game.Map;
@@ -232,7 +231,7 @@ namespace ClassLibrary1
         private void PortalIncome()
         {
             var portals = PiecesOfType<Portal>();
-            double energy = portals.Any(p => p.Exit) ? Math.Sqrt(GetEneryIncome(Game)) : 0;
+            double energy = portals.Any(p => p.Exit) ? Math.Sqrt(IncomeReference()) : 0;
             Loan(portals.Count() * energy);
         }
         private void IncPortals(Hive hive)
@@ -250,18 +249,29 @@ namespace ClassLibrary1
             if (inc > 0)
             {
                 this._portalSpawn += Game.Rand.Gaussian(inc, .039 / Math.Sqrt(inc));
-                Loan(13 / amt * inc * GetEneryIncome(Game));
+                Loan(13 / amt * inc * IncomeReference());
             }
         }
         internal void VictoryPoint() => IncPortals(null);
 
-        internal static double GetDifficulty(Game game) =>
-            (game.Turn + Consts.DifficultyIncTurns) / Consts.DifficultyIncTurns;
-        internal static double GetEneryIncome(Game game) =>
-            Math.Pow(GetDifficulty(game), Consts.DifficultyEnergyPow) * Consts.EnemyEnergy;
+        private double GetDifficulty() =>
+            (Game.Turn + Consts.DifficultyIncTurns) / Consts.DifficultyIncTurns;
 
+        private double GetEnergyIncome() =>
+            Math.Pow(GetDifficulty(), Consts.DifficultyEnergyPow) * Consts.EnemyEnergy * Math.Min(Game.Turn / Consts.EnemyEnergyRampTurns, 1);
         private static double GetPlayerIncMatch(double playerIncome) =>
             playerIncome * playerIncome / (playerIncome + Consts.EnemyIncomeMatchFactor);
+
+        internal double IncomeReference()
+        {
+            double energyInc, massInc, researchInc;
+            energyInc = massInc = researchInc = 0;
+            Game.Player.Core.GenerateResources(ref energyInc, ref massInc, ref researchInc);
+            double energy = GetEnergyIncome() + GetPlayerIncMatch(EnergyEquivalent(energyInc, massInc, researchInc));
+            return energy * Consts.DifficultySetting;
+        }
+        internal static double EnergyEquivalent(double energyInc, double massInc, double researchInc) =>
+            energyInc + Consts.EnergyMassRatio * (massInc + researchInc * Consts.ResearchMassConversion);
 
         private void Loan(double energy)
         {
@@ -275,7 +285,7 @@ namespace ClassLibrary1
         }
         private void PayDebt()
         {
-            double inc = Math.Sqrt(GetEneryIncome(Game));
+            double inc = Math.Sqrt(IncomeReference());
 
             double interest = Math.Sqrt(_debt + 1) - 1;
             AddDebt(interest);
@@ -336,7 +346,14 @@ namespace ClassLibrary1
                 spawn.Mult(1 + hitsPct);
             }
         }
-        internal void AddEnergy(int energy) => this._energy += energy;
+
+        internal void Income(double energy) => AddEnergy(energy * Consts.DifficultySetting);
+        private void AddEnergy(double energy) => this._energy += Game.Rand.Round(energy);
+        private void RandIncome()
+        {
+            double modify = Math.Min(Math.Max(0, Energy), IncomeReference());
+            AddEnergy(Game.Rand.OEInt(modify) - modify);
+        }
 
         private void SpawnAlien() => SpawnAlien(() => Game.Map.GetEnemyTile(Alien.GetPathFindingMovement(NextAlien.Movable)));
         internal double SpawnAlien(Func<Tile> GetTile, double? value = null)
@@ -369,7 +386,7 @@ namespace ClassLibrary1
             }
 
             double energy = NextAlien.EnergyEquivalent();
-            this._energy -= Game.Rand.Round(energy);
+            Spend(Game.Rand.Round(energy), 0);
             Alien.NewAlien(tile, path, energy, NextAlien.Killable, NextAlien.Resilience, NextAlien.Attacker, NextAlien.Movable);
             value = null;
             GenAlien();

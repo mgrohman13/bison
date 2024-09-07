@@ -258,7 +258,7 @@ namespace WinFormsApp1
                     double energyInc, massInc, researchInc;
                     energyInc = massInc = researchInc = 0;
                     if (extractor == null)
-                        resource.GenerateResources(ref energyInc, ref massInc, ref researchInc);
+                        resource.GenerateResources(out energyInc, out massInc, out researchInc);
                     else
                         extractor.GetIncome(ref energyInc, ref massInc, ref researchInc);
 

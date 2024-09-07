@@ -137,6 +137,23 @@ namespace ClassLibrary1.Map
                     CreateTreasure(GetTile(p));
             }
         }
+        internal void CheckStart()
+        {
+            Core core = Game.Player.Core;
+            foreach (Point p in Game.Rand.Iterate(_explored.Concat(core.Tile.GetAllPointsInRange(core.GetBehavior<IBuilder>().Range))))
+            {
+                Piece piece = GetTile(p).Piece;
+                if (piece is Terrain)
+                {
+                    if (piece.Tile.Visible)
+                        throw new Exception();
+                }
+                else if (piece != null && !piece.IsPlayer)
+                {
+                    piece.SetTile(StartTile(p));
+                }
+            }
+        }
 
         private void GenerateStartResources()
         {
@@ -284,9 +301,9 @@ namespace ClassLibrary1.Map
             if (!clearTerrain.Contains(p))
             {
                 terrain = Evaluate(p);//, out float lineDist);
-                //also use dist from center?
-                // (5 * terrain * Consts.PathWidth + lineDist) / 2.0 % Consts.PathWidth < 1;
-                //double dist = Tile.GetDistance(p, new(0, 0));
+                                      //also use dist from center?
+                                      // (5 * terrain * Consts.PathWidth + lineDist) / 2.0 % Consts.PathWidth < 1;
+                                      //double dist = Tile.GetDistance(p, new(0, 0));
                 bool clear = false;// Math.Abs(noise.Evaluate(p.X, p.Y) - .5) < Consts.CaveDistance / dist / dist;
                 if (!chasm && !clear && terrain < 1 / 4.0)
                     return null;
@@ -428,14 +445,15 @@ namespace ClassLibrary1.Map
             }
         }
 
-        internal Tile StartTile() => SpawnTile(new(0, 0), Consts.PathWidth + Consts.ResourceAvgDist, false);
-        private Tile SpawnTile(PointD spawnCenter, double deviation, bool isEnemy, Func<Tile, bool> Valid = null)
+        internal Tile StartTile() => StartTile(new(0, 0));
+        internal Tile StartTile(Point center) => SpawnTile(new(center.X, center.Y), Consts.PathWidth + Consts.ResourceAvgDist, false);
+        private Tile SpawnTile(PointD center, double deviation, bool isEnemy, Func<Tile, bool> Valid = null)
         {
             int RandCoord(double coord) => Game.Rand.Round(coord + Game.Rand.Gaussian(deviation));
             Tile tile;
             do
             {
-                tile = GetTile(RandCoord(spawnCenter.X), RandCoord(spawnCenter.Y));
+                tile = GetTile(RandCoord(center.X), RandCoord(center.Y));
                 deviation += Game.Rand.DoubleFull(Consts.CavePathSize);
             }
             while ((Valid != null && !Valid(tile)) || InvalidStartTile(tile, isEnemy));

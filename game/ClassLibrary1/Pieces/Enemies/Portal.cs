@@ -121,7 +121,7 @@ namespace ClassLibrary1.Pieces.Enemies
             Tile tile = this.Tile;
             base.Die();
             Treasure.NewTreasure(tile, _collect);
-            Game.Enemy.AddEnergy(Game.Rand.GaussianInt(_total - _collect, .13));
+            Game.Enemy.Income(_total - _collect); 
         }
 
         private static IEnumerable<IKillable.Values> GenKillable(double difficulty, bool exit)

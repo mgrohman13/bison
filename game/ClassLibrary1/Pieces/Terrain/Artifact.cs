@@ -25,11 +25,11 @@ namespace ClassLibrary1.Pieces.Terrain
             GetCost(costMult, Consts.ArtifactResearchInc, Consts.ArtifactExtractorEnergyCost, Consts.ArtifactExtractorMassCost, out energy, out mass);
         }
 
-        protected override void GenerateResources(double value, ref double energyInc, ref double massInc, ref double researchInc)
+        protected override void GenerateResources(double value, out double energyInc, out double massInc, out double researchInc)
         {
-            researchInc += value;
-            massInc += value / Consts.ArtifactMassIncDiv;
-            energyInc -= value * Consts.ArtifactEnergyUpkMult;
+            energyInc = -value * Consts.ArtifactEnergyUpkMult;
+            massInc = value / Consts.ArtifactMassIncDiv;
+            researchInc = value;
         }
 
         public override string GetResourceName()

@@ -49,7 +49,7 @@ namespace ClassLibrary1.Pieces
                 this._defenseCur = 1;
         }
 
-        internal void Damage(Attack attack)
+        internal void DoDamage(Attack attack)
         {
             if (CombatTypes.DoSplash(attack.Type))
                 foreach (Defense defense in Game.Rand.Iterate(Piece.Tile.GetAdjacentTiles()
@@ -59,17 +59,14 @@ namespace ClassLibrary1.Pieces
                         .Where(k => k != null && !k.Dead)
                         .SelectMany(k => k.AllDefenses)))
                     if (defense != this && CombatTypes.SplashAgainst(defense) && DoCollateralDamage(defense.Piece, defense.DefenseCur))
-                        defense.Damage();
+                        defense.DamageOne(attack);
 
-            Tile tile = Piece.Tile;
-            Damage();
-
-            Piece.GetBehavior<IKillable>().RaiseDamagedEvent(attack, this, tile);
+            DamageOne(attack);
         }
-        private void Damage()//int damage)
+        private void DamageOne(Attack a)
         {
-            //for (int a = 0; a < damage; a++)
-            //{
+            Tile tile = Piece.Tile;
+
             if (Type == DefenseType.Hits && Piece.HasBehavior(out IAttacker attacker))
                 foreach (Attack attack in Game.Rand.Iterate(attacker.Attacks))
                     if (DoCollateralDamage(null, attack.AttackCur))//null to do reduced damage
@@ -77,10 +74,13 @@ namespace ClassLibrary1.Pieces
 
             if (!this.Dead)
                 this._defenseCur--;
+            else
+                ;
 
             if (Type == DefenseType.Hits && this.Dead)
                 Piece.Die();
-            //}
+
+            Piece.GetBehavior<IKillable>().RaiseDamagedEvent(a, this, tile);
         }
         private bool DoCollateralDamage(Piece piece, int defCur)
         {

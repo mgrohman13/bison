@@ -58,33 +58,34 @@ namespace ClassLibrary1.Pieces.Players
             IEnumerable<IAttacker.Values> attacker, IMovable.Values? movable, out double energy, out double mass)
         {
             const double moveMult = 6.5;
-            double baseMove = Math.Pow(Consts.MoveValue(movable), 1.69);
 
-            const double attPow = 1.13;
+            double baseMove = Math.Pow(Consts.MoveValue(movable), 1.69);
+            double r = Math.Pow(Math.Pow(resilience, Math.Log(3) / Math.Log(2)) * 1.5 + 0.5, .26);
+
             double AttCost(IAttacker.Values a)
             {
                 double rangeMult = 1;
                 if (a.Range > Attack.MELEE_RANGE)
                     rangeMult = (a.Range + Attack.MELEE_RANGE) / (Math.PI * Attack.MIN_RANGED);
-                if (rangeMult > 1)
-                    rangeMult = Math.Pow(rangeMult, Math.Sqrt(1 + (moveMult + baseMove) / 5.2 / moveMult));
+                rangeMult = Math.Pow(rangeMult, 1.17);
                 return Consts.StatValue(a.Attack)
                     * CombatTypes.Cost(a.Type)
                     * Math.Sqrt(a.Reload / CombatTypes.ReloadAvg(a.Attack))
                     * rangeMult;
             };
-            static double DefCost(IKillable.Values d) => Consts.StatValue(d.Defense) * CombatTypes.Cost(d.Type);
+            double DefCost(IKillable.Values d) => Consts.StatValue(d.Defense) * CombatTypes.Cost(d.Type)
+                * (d.Type == DefenseType.Hits ? Math.Pow(r, 1.56) * .78 : 1.04);
 
-            double r = Math.Pow(Math.Pow(resilience, Math.Log(3) / Math.Log(2)) * 1.5 + 0.5, .39);
+            double attPow = Math.Pow(1 + (moveMult + baseMove) / 3.9 / moveMult, .21);
             double att = Math.Pow(attacker.Sum(AttCost), attPow) / researchMult * 2.1;
-            double def = killable.Sum(DefCost) * r / researchMult * 2.1;
+            double def = killable.Sum(DefCost) / researchMult * 2.1;
 
             double mult = Math.Sqrt(researchMult);
             double move = (baseMove + 3.9) * moveMult / mult;
             double v = vision;
             v = (v + 6.5) * 3.9 / mult;
 
-            double total = (att + v) * (def + move) * Consts.MechCostMult;
+            double total = (att + v) * (def + move) * r * Consts.MechCostMult;
 
             //Debug.WriteLine($"total: {total}");
 

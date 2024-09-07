@@ -46,11 +46,11 @@ namespace ClassLibrary1.Pieces.Terrain
             this.Sustain = sustain;
         }
 
-        public void GenerateResources(ref double energyInc, ref double massInc, ref double researchInc) =>
-            GenerateResources(Value, ref energyInc, ref massInc, ref researchInc); //not using valueMult - values will increase when building extractor
-        internal void GenerateResources(Extractor extractor, double valueMult, ref double energyInc, ref double massInc, ref double researchInc) =>
-            GenerateResources(GetValue(extractor, valueMult), ref energyInc, ref massInc, ref researchInc);
-        protected abstract void GenerateResources(double value, ref double energyInc, ref double massInc, ref double researchInc);
+        public void GenerateResources(out double energyInc, out double massInc, out double researchInc) =>
+            GenerateResources(Value, out energyInc, out massInc, out researchInc); //not using valueMult - values will increase when building extractor
+        internal void GenerateResources(Extractor extractor, double valueMult, out double energyInc, out double massInc, out double researchInc) =>
+            GenerateResources(GetValue(extractor, valueMult), out energyInc, out massInc, out researchInc);
+        protected abstract void GenerateResources(double value, out double energyInc, out double massInc, out double researchInc);
 
         internal void Extract(Extractor extractor, double valueMult, double sustainMult)
         {

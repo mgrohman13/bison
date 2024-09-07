@@ -294,8 +294,8 @@ namespace ClassLibrary1
             double mult = (1 - Math.Pow(previous / (double)_researchLast, _researchLast / Consts.ResearchFactor));
             if (IsUpgradeOnly(_researching, previous))
                 mult *= .65;
-            mult *= Math.Sqrt(((_researchLast + _progress.Values.Sum() + Consts.CoreResearch) /
-                (1.0 + Game.Turn) + Consts.CoreResearch) / (39.0 + .169 * Game.Turn));
+            const double padding = Consts.CoreResearch * 1.69;
+            mult *= ((_researchLast + _progress.Values.Sum() + padding) / (1.0 + Game.Turn) + padding) / (26.0 + .21 * Game.Turn + padding);
             nextAvg = GetNext(_nextAvg) * mult;
             this._nextAvg += nextAvg;
 
@@ -395,7 +395,7 @@ namespace ClassLibrary1
         private static IReadOnlyDictionary<Type, int> CalcMinResearch()
         {
             //help key types to not come too late
-            HashSet<Type> keyTechs = new() { Type.Factory, Type.MechMove, Type.TurretRange, Type.ConstructorDefense, Type.ConstructorMove,
+            HashSet<Type> keyTechs = new() { Type.Factory, Type.TurretRange, Type.ConstructorDefense, Type.ConstructorMove,
                 Type.FactoryRepair, Type.FactoryConstructor, Type.BuildingDefense, Type.ExtractorAutoRepair, };
 
             Dictionary<Type, int> retVal = new();
@@ -407,7 +407,8 @@ namespace ClassLibrary1
             while (all.Any())
             {
                 Type type = Game.Rand.SelectValue(all.Where(t1 => Dependencies[t1].All(t2 => retVal.ContainsKey(t2))),
-                    type => Game.Rand.Round(count / Math.Sqrt((Math.Sqrt(count) + GetAllDependencies(type).Count))));
+                    type => Game.Rand.Round(count / (Math.Sqrt(count) + GetAllDependencies(type).Count))
+                        + (keyTechs.Contains(type) ? 2 : 1));
                 all.Remove(type);
                 research += .78 * GetNext(research) * (double)type / _avgTypeCost;
                 int min = 0;
@@ -419,6 +420,8 @@ namespace ClassLibrary1
                     min = Game.Rand.Round(Math.Pow(min, .91));
                 retVal.Add(type, min);
             }
+
+            //var sort = retVal.OrderBy(p => p.Value);
 
             return retVal.AsReadOnly();
         }

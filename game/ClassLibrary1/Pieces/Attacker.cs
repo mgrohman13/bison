@@ -57,6 +57,7 @@ namespace ClassLibrary1.Pieces
 
                 energy += Consts.StatValue(cur.AttackCur) * Consts.EnergyPerAttack;
             }
+            // need method 
             Piece.Side.Spend(Game.Rand.Round(-energy), 0);
 
             for (int a = 0; a < attacks.Length; a++)

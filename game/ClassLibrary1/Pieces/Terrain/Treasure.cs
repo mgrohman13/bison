@@ -68,7 +68,7 @@ namespace ClassLibrary1.Pieces.Terrain
             if (value < min)
                 min = value * .21;
             value = Func(tile, Game.Rand.GaussianOE(value, .26, .13, min));
-            Game.Enemy.AddEnergy(Game.Rand.Round(value * .52));
+            Game.Enemy.Income(value * Consts.EnemyTreasureMatch);
         }
 
         private double CollectResources(Tile tile, double value)

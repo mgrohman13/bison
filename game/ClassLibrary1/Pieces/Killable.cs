@@ -78,6 +78,7 @@ namespace ClassLibrary1.Pieces
                 else
                     energy += cost;
             }
+            // need method 
             Piece.Side.Spend(Game.Rand.Round(-energy), Game.Rand.Round(-mass));
 
             foreach (var upg in defenses)
