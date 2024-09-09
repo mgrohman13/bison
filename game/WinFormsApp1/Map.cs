@@ -456,12 +456,13 @@ namespace WinFormsApp1
                         //    //    }
                         //    //}
                         //}
-                        if (SelTile?.Piece?.HasBehavior(out IAttacker a) ?? false
-                            && a.Attacks.Any(a => a.GetDefenders(piece).Any() && SelTile.GetPointsInRange(a).Contains(piece.Tile.Location)))
-                        {
-                            float scale = Scale / -6.5f;
-                            ellipses[indicatorBase].Add(RectangleF.Inflate(rect, scale, scale));
-                        }
+                        if (SelTile?.Piece?.IsPlayer ?? false)
+                            if (SelTile.Piece.HasBehavior(out IAttacker a)
+                                && a.Attacks.Any(a => a.GetDefenders(piece).Any() && SelTile.GetPointsInRange(a).Contains(piece.Tile.Location)))
+                            {
+                                float scale = Scale / -3.9f;
+                                ellipses[indicatorAccent].Add(RectangleF.Inflate(rect, scale, scale));
+                            }
                     }
                     else if (piece is Mech mech)
                     {

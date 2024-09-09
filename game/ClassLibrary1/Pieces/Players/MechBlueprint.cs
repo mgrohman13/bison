@@ -680,7 +680,7 @@ namespace ClassLibrary1.Pieces.Players
                         type = AttackType.Kinetic;
                     else
                         ranged = false;
-                if (ranged && usedRange && Game.Rand.Bool())
+                if (ranged && usedRange && researchType != Type.MechLasers && type != AttackType.Explosive && Game.Rand.Bool())
                     ranged = false;
                 usedRange |= ranged;
                 return ranged;

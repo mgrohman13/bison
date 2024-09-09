@@ -92,7 +92,27 @@ FEATURES
 	experience!
 	power grid
 	research to automate mechs - big stat buff, less micromanagement
-		
+
+clear sleep on move (+hold?)
+
+melee explosive attack...
+
+treasure resource estimate account for massmult
+research tree too quick if early artifacts	
+repair HP cost < armor (e.g. late game constructor)
+
+dependencies for alien research tree
+	only a chance of enforcing, not always?
+	range + energy -> laser
+	range -> explosive
+	?
+	
+treasure giving mech shows research form not mechs	
+
+exploring n/e/s/w through vision block should still reveal 3 wide
+	
+use can attack alien indicator when in range of mouse over move to tile too
+	
 calc generator roi when going turret->gen->turret
 	different refund pcts for different buildings
 	ensure auto-repair before replace is always efficient	

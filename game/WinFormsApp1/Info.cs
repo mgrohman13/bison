@@ -118,6 +118,15 @@ namespace WinFormsApp1
                         + (repairInc > 0 ? $"+{FormatUsuallyInt(repairInc)}" : "");
 
                     Defense armor = killable.Protection.Where(d => d.Type == DefenseType.Armor).FirstOrDefault();
+                    if (playerPiece is Drone drone)
+                    {
+                        if (armor != null)
+                            throw new Exception();
+                        lbl2.Show();
+                        lblInf2.Show();
+                        lbl2.Text = "Duration";
+                        lblInf2.Text = drone.Turns.ToString();
+                    }
                     if (armor != null)
                     {
                         lbl2.Show();
@@ -140,18 +149,10 @@ namespace WinFormsApp1
 
                     lbl4.Show();
                     lblInf4.Show();
-                    if (playerPiece is Drone drone)
-                    {
-                        lbl4.Text = "Duration";
-                        lblInf4.Text = drone.Turns.ToString();
-                    }
-                    else
-                    {
-                        lbl4.Text = killable.Hits.DefenseCur < killable.Hits.DefenseMax ? "Efficiency" : "Resilience";
-                        lblInf4.Text = string.Format("{0}{1}",
-                            FormatPct(killable.Hits.DefenseCur < killable.Hits.DefenseMax ? Consts.GetDamagedValue(killable.Piece, 1, 0) : killable.Resilience),
-                            killable.Hits.DefenseCur < killable.Hits.DefenseMax ? string.Format(" ({0})", FormatPct(killable.Resilience)) : "");
-                    }
+                    lbl4.Text = killable.Hits.DefenseCur < killable.Hits.DefenseMax ? "Efficiency" : "Resilience";
+                    lblInf4.Text = string.Format("{0}{1}",
+                        FormatPct(killable.Hits.DefenseCur < killable.Hits.DefenseMax ? Consts.GetDamagedValue(killable.Piece, 1, 0) : killable.Resilience),
+                        killable.Hits.DefenseCur < killable.Hits.DefenseMax ? string.Format(" ({0})", FormatPct(killable.Resilience)) : "");
                 }
                 if (Selected.Piece.HasBehavior(out IMovable movable))
                 {
