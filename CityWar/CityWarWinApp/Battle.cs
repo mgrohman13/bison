@@ -295,11 +295,15 @@ namespace CityWarWinApp
                     splashes = splashes.Where(splash => splash.Item2 > 0).ToList();
                     if (extraRelic.ToString(Log.ScoreFormat) != Log.ScoreFormat && !splashes.Any())
                     {
-                        Unit random = Game.Random.SelectValue(battle.GetDefenders().Where(u => attack.CanSplash(u, tile)));
+                        Unit random = Game.Random.SelectValue(battle.GetDefenders().Where(u => attack.CanSplash(u, tile)).Where(u => u != clicked));
+                        if (random == clicked)
+                            ;
                         splashes.Add(new(random, 0, random.Hits, extraRelic));
                     }
                     foreach (var splash in splashes)
                     {
+                        if (splash.Item1 == clicked)
+                            ;
                         Log.LogAttack(attack.Owner, attack, splash.Item1, splash.Item2, splash.Item3, extraRelic, " (S)");
                         extraRelic = 0;
                     }

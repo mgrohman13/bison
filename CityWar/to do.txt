@@ -1,4 +1,9 @@
+game ID to preserve auto saves (see gal war)
+write start.txt file on game start?
+
 gameplay
+	unit treasure check neighbor tiles for g/w?
+	automated retaliations?
 	splash dmg vs isThree?
 	upgrade units
 		factory
@@ -14,6 +19,7 @@ gameplay
 	"security" of public fields
 
 balance	
+	scout attack names... Photon blasters?? Anti-matter missiles?? (weaker beam and particle gun)
 	portals cost   
 		rescale non min/max magic vals too to keep mag/elem ratios better?
 	ensure each unit type has a unit that can only attack each other type?
@@ -21,6 +27,8 @@ balance
 		W->A
 		G->W
 	no cheap W/GW unit for dwarf
+		make troll cheap?
+			bats?? - make attack better? acid?
 	bonus to element units on terrain?
 	attack bonuses, not just armor?
 	unit abilities 
@@ -46,6 +54,8 @@ balance
 		carrier defend air only??
 
 interface	
+	H/D NaN when no attacks
+	UI indicator showing attacking impassible doesnt allow retaliation?
 	main map	
 		better indication of air units cant heal
 		bold other resources?

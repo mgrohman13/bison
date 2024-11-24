@@ -1212,7 +1212,7 @@ namespace CityWar
                 double c1 = (cost - amt) / (double)cost;
                 //since the metrics are multiplied together, you have to be both far away from getting one and have low army strength to have a high chance of losing the resource
                 return Game.Random.Bool(c1 * c1 * c2);
-            };
+            }
             bool inclWiz = include(magic, WizardCost);
             // use public 0-600 RelicProgress value (indicates how close you really are to a relic)
             bool inclRel = include(RelicProgress, 2 * RelicCost);
