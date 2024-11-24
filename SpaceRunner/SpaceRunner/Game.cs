@@ -1,12 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Diagnostics;
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Threading;
 using MattUtil;
 using MattUtil.RealTimeGame;
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Linq;
+using System.Threading;
 using Point = MattUtil.Point;
 
 namespace SpaceRunner
@@ -582,7 +580,7 @@ namespace SpaceRunner
         private static int GetDrawPriority(GameObject obj)
         {
 #if DEBUG || TRACE
-            if (GetDistance(obj.X, obj.Y) - obj.Size > MapSize)
+            if (obj == null || GetDistance(obj.X, obj.Y) - obj.Size > MapSize)
                 return 0;
 #endif
             //z-index: higher values are drawn on top of lower values
