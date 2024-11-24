@@ -24,22 +24,22 @@
       <HintPath>..\..\..\BepInEx_x64_5.4.21.0\BepInEx\core\0Harmony.dll</HintPath>
     </Reference>
     <Reference Include="Assembly-CSharp">
-      <HintPath>..\..\..\..\Program Files\Epic Games\Warpips\Warpips_Data\Managed\Assembly-CSharp.dll</HintPath>
+      <HintPath>dlls\Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="MattUtil">
       <HintPath>..\MattUtil\MattUtil\bin\Debug\MattUtil.dll</HintPath>
     </Reference>
     <Reference Include="Unity.TextMeshPro">
-      <HintPath>..\..\..\..\Program Files\Epic Games\Warpips\Warpips_Data\Managed\Unity.TextMeshPro.dll</HintPath>
+      <HintPath>dlls\Unity.TextMeshPro.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine">
-      <HintPath>..\..\..\..\Program Files\Epic Games\Warpips\Warpips_Data\Managed\UnityEngine.dll</HintPath>
+      <HintPath>dlls\UnityEngine.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
-      <HintPath>..\..\..\..\Program Files\Epic Games\Warpips\Warpips_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+      <HintPath>dlls\UnityEngine.CoreModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.UI">
-      <HintPath>..\..\..\..\Program Files\Epic Games\Warpips\Warpips_Data\Managed\UnityEngine.UI.dll</HintPath>
+      <HintPath>dlls\UnityEngine.UI.dll</HintPath>
     </Reference>
   </ItemGroup>
 </Project>
