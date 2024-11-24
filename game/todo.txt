@@ -93,6 +93,47 @@ FEATURES
 	power grid
 	research to automate mechs - big stat buff, less micromanagement
 
+map
+	use deterministic prng (or separate noise func?) to create curves, width changes
+		give terrain features a max range of effectg and use that to generate
+		use same noise func, but interp points somehow?
+	better ensuring of path that doesnt rely on spawns?
+		when skinnier, increase mult in mid
+	feature dist fall off nonlinearly to maintain smaller corridors farther out 
+
+use debt instead of negative energy for hive spawns
+	energy can still go negative?
+
+reduce extractor value distance mult?
+	only >1
+
+prevent mechs with move being high pct of cost without att/dev/vision...
+
+wormholes
+	reduce max hp with decay, not with hit (like drone)
+	auto reapair?
+portal 
+	needed avgs gt,lt should be swapped?
+	start with .5 inc, increase turns
+	if inc low, debt high, cash in entrances instead of making exit more likely?
+	
+clustering algorithms for move left order?
+	+portal entrance spawn
+
+research
+	require more to finish tree
+	less padding in balance adjustment
+
+map
+	convert everthing to lines (actually segments or rays)
+	paths have 2 parallel rays
+	evaluate calc based on distance from nearest 2 lines
+		set such that paths are filled in the center
+	caves, center also have shaped area 
+		all segment/ray endpoints have shaped area?
+	eval=.5 feature dist also use shape logic
+
+
 clear sleep on move (+hold?)
 
 melee explosive attack...

@@ -337,6 +337,7 @@ namespace WinFormsApp1
             List<RectangleF> tileRects = new();
             List<RectangleF> rectangles = new();
             List<RectangleF> rectsAlt = new();
+            List<RectangleF> redCircle = new();
             Dictionary<Brush, List<RectangleF>> ellipses = new();
             Dictionary<Brush, List<PointF[]>> polygons = new();
             Dictionary<Pen, List<Tuple<PointF, PointF>>> lines = new() {
@@ -353,14 +354,17 @@ namespace WinFormsApp1
 
             Brush playerBrush = Brushes.Blue;
             Brush indicatorBase = Brushes.Black;
+            Brush indicatorAtt = Brushes.Red;
             Brush indicatorAccent = Brushes.DarkGray;
             Brush healBrush = Brushes.HotPink;
             ellipses.Add(playerBrush, new());
             ellipses.Add(indicatorBase, new());
+            ellipses.Add(indicatorAtt, new());
             ellipses.Add(indicatorAccent, new());
             ellipses.Add(healBrush, new());
             polygons.Add(playerBrush, new());
             polygons.Add(indicatorBase, new());
+            polygons.Add(indicatorAtt, new());
             polygons.Add(indicatorAccent, new());
             polygons.Add(healBrush, new());
 
@@ -497,35 +501,39 @@ namespace WinFormsApp1
                     if (Info.HasAnyUpgrade(piece.Tile))
                         polygons[indicatorAccent].Add(new PointF[] { new(rect.X + rect.Width / 2f, rect.Y), new(rect.Right, rect.Y), new(rect.Right, rect.Y + rect.Height / 2f) });
 
+                    if (piece is PlayerPiece playerPiece)
+                    {
+                        if (piece is IRepairable repairable)
+                            if (playerPiece.IsRepairing())
+                            {
+                                const float div = 7.8f;
+                                float w = rect.Width / div, h = rect.Height / div;
+                                PointF[] indicator = new PointF[] { new(2, 1), new(3, 1), new(3, 2), new(4, 2), new(4, 3),
+                                    new(3, 3), new(3, 4), new(2, 4), new(2, 3), new(1, 3), new(1, 2), new(2, 2), };
+                                indicator = indicator.Select(p => new PointF(rect.X + p.X * w, rect.Y + p.Y * h)).ToArray();
+                                polygons[healBrush].Add(indicator);
+                            }
+                            else if (repairable.CanRepair() && (piece.HasBehavior<IMovable>() || piece.HasBehavior<IAttacker>()))
+                            {
+                                AddEllipse(indicatorAccent, 6.5f);
+                            }
+                        if (Program.MoveLeft(playerPiece, out bool canAttack))
+                            AddEllipse(canAttack ? indicatorAtt : indicatorBase, 16.9f);
+                        //if (playerPiece.HasBehavior(out IAttacker a) && a.Attacks.Any(a => a.CanAttack()))
+                        //    redCircle.Add(GetEllipse(16.9f));
+                        void AddEllipse(Brush brush, float padDiv)
+                        {
+                            ellipses[brush].Add(GetEllipse(padDiv));
+                        }
+                        RectangleF GetEllipse(float padDiv)
+                        {
+                            float xPad = rect.Width / padDiv, yPad = rect.Height / padDiv;
+                            return new(rect.X + xPad, rect.Y + yPad, rect.Width / 2f - xPad * 2f, rect.Height / 2f - yPad * 2f);
+                        }
+                    }
+
                     if (piece != null && piece.HasBehavior(out IKillable killable))
                     {
-                        if (piece is PlayerPiece playerPiece)
-                        {
-                            if (piece is IRepairable repairable)
-                                if (playerPiece.IsRepairing())
-                                {
-                                    const float div = 7.8f;
-                                    float w = rect.Width / div, h = rect.Height / div;
-                                    PointF[] indicator = new PointF[] { new(2, 1), new(3, 1), new(3, 2), new(4, 2), new(4, 3),
-                                    new(3, 3), new(3, 4), new(2, 4), new(2, 3), new(1, 3), new(1, 2), new(2, 2), };
-                                    indicator = indicator.Select(p => new PointF(rect.X + p.X * w, rect.Y + p.Y * h)).ToArray();
-                                    polygons[healBrush].Add(indicator);
-                                }
-                                else if (repairable.CanRepair() && (piece.HasBehavior<IMovable>() || piece.HasBehavior<IAttacker>()))
-                                {
-                                    AddEllipse(indicatorAccent, 6.5f);
-                                }
-                            if (Program.MoveLeft(playerPiece))
-                                AddEllipse(indicatorBase, 16.9f);
-
-                            void AddEllipse(Brush brush, float padDiv)
-                            {
-                                float xPad = rect.Width / padDiv, yPad = rect.Height / padDiv;
-                                RectangleF indicator = new(rect.X + xPad, rect.Y + yPad, rect.Width / 2f - xPad * 2f, rect.Height / 2f - yPad * 2f);
-                                ellipses[brush].Add(indicator);
-                            }
-                        }
-
                         float barSize = defHeight * rect.Height;
                         //statBarPow makes smaller bars bigger which helps visual clarity 
                         //float widthTotal = (float)Math.Pow(killable.AllDefenses.Sum(k => StatValue(k.DefenseMax)) / defenseMax, statBarPow);
@@ -698,6 +706,8 @@ namespace WinFormsApp1
             foreach (var p in ellipses)
                 foreach (var ellipse in Game.Rand.Iterate(p.Value))
                     e.Graphics.FillEllipse(p.Key, ellipse);
+            foreach (var ellipse in redCircle)
+                e.Graphics.DrawEllipse(Pens.Red, ellipse);
             foreach (var p in Game.Rand.Iterate(fill))
                 if (afterBrushes.Contains(p.Key))
                     e.Graphics.FillRectangles(p.Key, p.Value.ToArray());
@@ -732,14 +742,15 @@ namespace WinFormsApp1
             }
             if (Scale > scaleCutoff)
                 foreach (var p in letters)
-                {
-                    Font f = new(FontFamily.GenericMonospace, Scale);
-                    SizeF size = e.Graphics.MeasureString(p.Value, f);
-                    f = new(f.FontFamily, f.Size * Scale / 1.69f / size.Width);
-                    size = e.Graphics.MeasureString(p.Value, f);
-                    e.Graphics.DrawString(p.Value, f, Brushes.Black, p.Key.X + Scale - size.Width, p.Key.Y);
-                }
-
+                    using (Font f = new(FontFamily.GenericMonospace, Scale))
+                    {
+                        SizeF size = e.Graphics.MeasureString(p.Value, f);
+                        using (Font font = new(f.FontFamily, f.Size * Scale / 1.69f / size.Width, p.Value.Length > 1 ? FontStyle.Bold : FontStyle.Regular))
+                        {
+                            size = e.Graphics.MeasureString(p.Value, font);
+                            e.Graphics.DrawString(p.Value, font, Brushes.Black, p.Key.X + Scale - size.Width, p.Key.Y);
+                        }
+                    }
             //foreach (IDisposable d in hitsBrushes.Values)
             //    d.Dispose();
         }

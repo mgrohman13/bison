@@ -157,7 +157,7 @@ namespace WinFormsApp1
                 SaveGame();
                 CopyAutoSave("e");
 
-                IEnumerable<PlayerPiece> GetRepairs() => data.sleep.Where(p => p.IsRepairing()); ;
+                IEnumerable<PlayerPiece> GetRepairs() => data.sleep.Where(p => p.IsRepairing()); 
                 var repairs = GetRepairs().ToHashSet();
 
                 Form.UpdateProgress(null, 0);
@@ -285,12 +285,26 @@ namespace WinFormsApp1
                 Form.MapMain.SelTile = null;
             }
         }
-        public static bool MoveLeft(Piece piece)
+        public static bool MoveLeft(Piece piece) => MoveLeft(piece, out _);
+        public static bool MoveLeft(Piece piece, out bool canAttack)
         {
+            bool move = false;
+            canAttack = false;
+
+            if (piece.HasBehavior(out IAttacker attacker))
+            {
+                static double GetRange(Attack a) => a.CanAttack() ? a.Range : 0;
+                double maxRange = attacker.Attacks.Max(GetRange);
+                Attack max = Game.Rand.SelectValue(attacker.Attacks.Where(a => GetRange(a) == maxRange));
+                canAttack = maxRange > 0 && piece.Tile.GetVisibleTilesInRange(max).Any(t => t.Piece != null && t.Piece.HasBehavior<IKillable>() && t.Piece.IsEnemy);
+                if (!canAttack && piece.HasBehavior(out IMovable movable) && attacker.Attacks.Any(a => a.CanAttack() && a.Range == Attack.MELEE_RANGE))
+                    canAttack |= piece.Tile.GetPointsInRange(movable).Select(Game.Map.GetVisibleTile).Where(t => t is not null).SelectMany(t => t.GetVisibleAdjacentTiles())
+                        .Any(t => t.Piece is not null && t.Piece.IsEnemy && t.Piece.HasBehavior<IKillable>());
+                move |= canAttack;
+            }
+
             if (data.moved.Contains(piece))
                 return false;
-
-            bool move = false;
 
             piece.HasBehavior(out IKillable killable);
             // optimize?
@@ -315,7 +329,7 @@ namespace WinFormsApp1
             {
                 move = attacks.Any();
             }
-            else
+            else if (!move)
             {
                 IBuilder builder = piece.GetBehavior<IBuilder>();
                 if (!move && piece.HasBehavior<IBuilder.IBuildMech>())
@@ -373,14 +387,6 @@ namespace WinFormsApp1
 
                 if (piece is Mech mech)
                     move |= mech.CanUpgrade(out _, out _, out _);
-            }
-
-            if (!move && piece.HasBehavior(out IAttacker attacker))
-            {
-                static double GetRange(Attack a) => a.CanAttack() ? a.Range : 0;
-                double maxRange = attacker.Attacks.Max(GetRange);
-                Attack max = Game.Rand.SelectValue(attacker.Attacks.Where(a => GetRange(a) == maxRange));
-                move |= maxRange > 0 && piece.Tile.GetVisibleTilesInRange(max).Any(t => t.Piece != null && t.Piece.HasBehavior<IKillable>() && t.Piece.IsEnemy);
             }
 
             if (move)

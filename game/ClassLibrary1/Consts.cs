@@ -127,7 +127,7 @@ namespace ClassLibrary1
         public const double EnergyMassRatio = 1.69;
 
         public const double RepairCost = .169;
-        public const double PassiveRepairCost = .13;
+        public const double PassiveRepairCost = .13; //
         public const double EnergyRepairDiv = 2.1;
         public const int AutoRepair = 1;
         public const double ReplaceRefundPct = .8;

@@ -127,7 +127,7 @@ namespace ClassLibrary1.Pieces.Terrain
             return blueprint.EnergyEquivalent() + researchCost;
         }
 
-        public override string ToString() => _value.HasValue ? "Resources ~ " + _value.Value.ToString("0") : "Unknown Object";
+        public override string ToString() => _value.HasValue ? $"Resources ~ {_value.Value * 2 / (1.0 + Consts.EnergyMassRatio):0}" : "Unknown Object";
 
         internal static void RaiseCollectEvent(Tile tile, int energy, int mass) =>
             RaiseCollectEvent(tile, $"Energy: {energy}  Mass: {mass}");
