@@ -97,4 +97,9 @@ pulsing Q/E
 emergency cash button always available?
 	change timouts?
 
+hide new life in shroud if territory is not special 
+modify FloatHalf in between islands?
+sometimes round off warbucks to 5s,10s?
+ranomize hidden item cooldowns slightly every mission??
+
 allow the dead to remain on the battlefield longer/permanently?
