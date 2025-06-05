@@ -15,6 +15,8 @@ namespace NCWMap
 
             InitializeComponent();
             ResizeRedraw = true;
+
+            this.SetStyle(ControlStyles.DoubleBuffer | ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint, true);
         }
 
         protected override void OnPaint(PaintEventArgs e)
@@ -28,7 +30,7 @@ namespace NCWMap
                     int idx = 0;
                     RectangleF[] rects = new RectangleF[18 * 18];
 
-                    using (Font font = new("arial", ys / 2.6f))
+                    using (Font font = new("arial", ys / 3f))
                         for (int x = 0; x < 18; ++x)
                             for (int y = 0; y < 18; ++y)
                             {

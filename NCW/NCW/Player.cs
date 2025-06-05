@@ -60,7 +60,7 @@ namespace NCWMap
             bool distant = Program.Random.Bool();
             if (distant)
             {
-                //cannot contest another palyer's territory
+                //cannot contest another player's territory
                 var enemy = Program.Players.Where(p => p != this).SelectMany(p =>
                 {
                     var m = Enumerable.Empty<KeyValuePair<Tile, int>>();

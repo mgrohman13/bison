@@ -31,6 +31,9 @@ namespace randTest
             rand.StartTick();
 
 
+            Temp();
+            Console.ReadKey();
+
             //while (true)
             //{
             //    int style = rand.Next(6);
@@ -527,8 +530,9 @@ namespace randTest
 
             //do
             //{
-                Console.WriteLine();
-                FactRand(new float[] { 1 / 3f, 3f, 1f }, 1f / 3f, 1f / 2f);
+            Console.WriteLine();
+            float sqrt3 = (float)Math.Sqrt(3);
+            FactRand(new float[] { 1 / 2f, 2f / sqrt3, 1f / sqrt3 });//, 1f / 3f, 1f / 2f);
             //} while (Console.ReadKey(true).KeyChar != 'q');
 
 
@@ -543,6 +547,39 @@ namespace randTest
             rand.StopTick();
         }
 
+        private static void Temp()
+        {
+            string start = @"
+dTp74xg*1$t&pOUw
+7XOF$!Hq50TtRboa
+VazgpYcQ2C18LuX$
+pIXpET^JXd4Jfuu@
+Gqzceg0EvIMO!M1x
+N$P7z6cLacx9r*TR
+m7N#6P^dRv9Fd8tN
+%!Gyt5OeIeh4gbjZ
+6#lAPbsnXtwVxsED
+^83UWjoh*LKeFdK%
+olM8Heg6Y@Bn4Meb
+3ezQi%zkYiDpK#fl
+nnwJ@P^Dwn8AI@2y
+v^I58ex1QL9VEtzT
+aS2w5l^nBuRYokcV
+b59F*@idv#HA06wA
+                ".Trim();
+            var vals = rand.Iterate(start.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)).ToArray();
+            string result = "";
+            for (int a = 15; a >= 0; a--)
+            {
+                for (int b = 0; b < 16; b++)
+                    result += vals[b][a];
+                result += Environment.NewLine;
+            }
+
+            Console.WriteLine(result);
+        }
+
+        #region newgame
         private static void newgame2()
         {
             Dictionary<Point, double> chance = new();
@@ -637,7 +674,9 @@ namespace randTest
             //Console.WriteLine($"{-Math.Log((1 - wins) / wins) / Math.Log(att / (double)def)}");
             //Console.WriteLine();
         }
+        #endregion newgame
 
+        #region lotr
         private static void lotr()
         {
             //double r = 0, c = 1000000;
@@ -757,15 +796,16 @@ namespace randTest
                 this.offset = offset;
             }
         }
+        #endregion lotr
 
         #region FactRand
-        private static void FactRand(float[] scenario, float minDiff, float maxDiff)
+        private static void FactRand(float[] scenario)//, float minDiff, float maxDiff)
         {
             float[] vals = new float[] { 1 / 6f, 1 / 4f, 1 / 3f, 1 / 2f, 3 / 4f, 1f, 4 / 3f, 3 / 2f, 2f, 3f, 4f, 6f };
-            float tot = 1;
+            float tot = 1, nauvis = 1;
             float scenAvg = scenario.Aggregate((a, b) => a * b);
-            string[] resources = new string[] { "iron", "copper", "stone", "coal", "uranium", "oil" };
-            for (int a = 0; a < 6; ++a)
+            string[] resources = new string[] { "iron", "copper", "stone", "coal", "oil", "uranium", "v1", "v2", "v3", "v4", "g", "f", "a1", "a2", "a3" };
+            for (int a = 0; a < resources.Length; ++a)
             {
                 if (a == 0)
                     Console.WriteLine("res\tfreq\tsize\trich\ttot");
@@ -804,25 +844,31 @@ namespace randTest
                 Console.WriteLine();
                 row /= scenAvg;
                 tot *= row;
-                double maxMult = Math.Sqrt(3);
-                if (match || row < minDiff / maxMult || row > maxDiff * maxMult)
-                {
-                    tot = 1;
-                    a = -1;
-                    Console.WriteLine();
-                }
-                else if (a == 5)
-                {
-                    tot = (float)Math.Pow(tot, 1 / 6.0);
-                    Console.WriteLine("tot\t\t\t\t" + tot);
-                    if (tot > maxDiff || tot < minDiff)
-                    {
-                        tot = 1;
-                        a = -1;
-                        Console.WriteLine();
-                    }
-                }
+                if (a < 6)
+                    nauvis *= row;
+                //double maxMult = Math.Sqrt(3);
+                //if (match || row < minDiff / maxMult || row > maxDiff * maxMult)
+                //{
+                //    tot = 1;
+                //    a = -1;
+                //    Console.WriteLine();
+                //}
+                //else
             }
+            //if (a == 5)
+            //{
+            tot = (float)Math.Pow(tot, 1 / (double)resources.Length);
+            Console.WriteLine($"tot\t{(float)(tot * scenAvg)} / ({(float)scenAvg}) = {(float)tot}");
+            nauvis = (float)Math.Pow(nauvis, 1 / (double)6);
+            Console.WriteLine($"nauvis\t{(float)(nauvis * scenAvg)} / ({(float)scenAvg}) = {(float)nauvis}");
+            //if (tot > maxDiff || tot < minDiff)
+            //{
+            //    tot = 1;
+            //    a = -1;
+            //    Console.WriteLine();
+            //}
+            //    }
+            //}
         }
         #endregion
 
