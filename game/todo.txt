@@ -1,3 +1,27 @@
+Consts.PathWidth	11.944130354249044	double
+
+use debt instead of negative energy for hive spawns
+	energy can still go negative?
+unused upkeep on death?
+exploration spawn chance?
+upgrade OP??
+	increase cost based on reasearch diff???
+	based on time youve had mech??
+biomass/metal ratio - but ambient generator??
+icon for sleep
+trying to sleep when cant moves next anyways
+finish reasearch too fast?
+	add more...
+ambient gen power decreases over time??
+	decrease dependent on total amount used that turn?
+	generators still use shared value, the shared value is decreased
+		applies to furutre generators
+	can be counteracted by research
+	min value = Consts.GeneratorResearchUpk * Consts.MassPerResearchConversion / Consts.BurnMassPerEnergy (5.5901699437494745)
+		some const multiplier? between 1.69 - 5.2
+		ArtifactEnergyUpkMult??
+invisible unit defending adjacent reveals unit?
+	
 NEW
 	can upgrade to just interim step 
 	cycle through move first, then build	
@@ -56,20 +80,16 @@ UI
 	
 GAMEPLAY
 	attacker upgrades keep some old attacks/values
-	unused upkeep on death?
 	research/blueprint chances also based on current blueprints?
 	use type research levels in blueprint cost?
 	upkeep doesnt scale
 	repair decrease with pow?
-	negative mass/energy shuts things off
 	enforce information hiding at project level
 
 FEATURES
 	enemy hive
 		protected by turrets
 	calc with lines
-		line of sight for vision while moving 
-		stop when see new enemy?
 		auto move to target
 			tries to find squares closest to line 
 			favors moving just past min range
@@ -101,9 +121,6 @@ map
 		when skinnier, increase mult in mid
 	feature dist fall off nonlinearly to maintain smaller corridors farther out 
 
-use debt instead of negative energy for hive spawns
-	energy can still go negative?
-
 reduce extractor value distance mult?
 	only >1
 
@@ -122,7 +139,6 @@ clustering algorithms for move left order?
 
 research
 	require more to finish tree
-	less padding in balance adjustment
 
 map
 	convert everthing to lines (actually segments or rays)
@@ -133,13 +149,9 @@ map
 		all segment/ray endpoints have shaped area?
 	eval=.5 feature dist also use shape logic
 
-
-clear sleep on move (+hold?)
-
 melee explosive attack...
 
 treasure resource estimate account for massmult
-research tree too quick if early artifacts	
 repair HP cost < armor (e.g. late game constructor)
 
 dependencies for alien research tree
@@ -179,7 +191,6 @@ fix move next order algorithm - x/y coords no longer apply to random maps
 tie notify to specific pieces
 	need way to override global/starting point?
 		
-buff portal def, inc decay, reduce cost??
 check math for extractors expiring sooner rather than later?
 	break even point with dropped treasure
 	extracted amount > treasure difference
@@ -219,13 +230,12 @@ new high level overall enemy state that changes morale cutoffs?
 aliens move towards mechs with range on them
 disable/disband drone
 move left when constructor can move to reach build extractor?
-backs of main paths occasionally visible in places 
 	
 combine factory repair and drone repair upgrades
 	specific techs have no upg - upg separate?
 BuildingDefense upgs too weak late?
 	also add core hits??
-	
+
 alien att/def ratio long term?
 make IRepair.Repaired double??
 	use elsewhere? for same piece being repaired?
@@ -242,9 +252,7 @@ replace foundation with small multiple tile island
 	unlimited generators
 fix Visible code crappiness with TEST_MAP_GEN & GameOver
 map - occasional caves farther out infinitely??
-mech cost capping should decrease attack range?
 show area you will scout on mouseover when can move to target
-make path edges less sharp??
 turret randomness??
 can turn off mechs to save energy
 	but take time to come back online
@@ -278,19 +286,21 @@ click on alien 2 centers alien 22
 implement vision for aliens?
 more treasure types
 blockRadius needs to be Math.Sqrt(2) / 2 ??
+factory/turret upkeep?
+	turn off...
+shield regen in BP?
+damages reduces shield regen?
+
 improve/fix combat log.....
 	font awesome??
 income/upk breakdown
-factory/turret upkeep?
-	turn off...
 prevent Application.DoEvents from affecting game state during enemy turn
 abusing pathfinding with DoEvents crashes form?
 	replace PathFind DoEvents with background worker
 isolated vision tiles kill pathfinding perf
 min move - help with pathfinding 
-damages reduces shield regen?
-	shield regen in BP?
 show extended atts in att range, but with val of 0?
+
 dont show exact move to tile?
 	show all possible target tiles??
 	aliens move out of vision still show range?
@@ -304,7 +314,6 @@ entire tree too easily completed rn before game victory
 	increase cost of late game techs
 constructor defense show only 1 upgrade
 alien more flexible on pathing heat map
-move left if can be attacked/killed?	
 enemies overvalue attacking repair?
 mech upg shouldnt clear log when name changes 
 	also replace turret 
@@ -340,9 +349,6 @@ fix 1 - rounding
 
 log debug to file
 ensure everything within .5 (vision blocking) of core paths is terrain
-aliens really struggle to retreat and heal
-	make more likely to jump to any available heal tile?
-	new state not working? aliens parked outside visible still dont sit and heal?
 
 pathfind on background thread
 mouse move refresh slows scrolling too much
@@ -390,8 +396,8 @@ walls
 	terrain where walls are unbuildable?
 	requires move blocking
 better handling of fractional repair amts 
-aliens not retreating well? 
-research upgs show bonus show exact where can e.g. core shields	
+research upgs show bonus show exact where can 
+	e.g. core shields	
 	hide upg info for unaquired types
 
 should reasearch progress be included in any calcs?
@@ -462,14 +468,11 @@ after attack select alien who actually defended
 	log splash damage
 fix center
 	make core always 0,0, actual center is randed offset from there
-make movement path when alien is out of vision ambiguous 
-	(and atts?)
 cap zooming out to map bounds 
 	still bugs in existing limits though...
 need to be able to visualize AI alg on map
 measure enemy move performance with stopwatch
 	expect pathfinding to take the most time but not happen often 
-core efficiency UI confusion with income pct 
 defending passive defense shouldnt be guaranteed?
 research aliens
 	start showing morale, state, path
@@ -524,7 +527,6 @@ show inc/upk breakdown
 move att/def draw boxes away from thick range lines
 	if cur>0 ensure draw sliver
 negative resources show red (not just inc)
-negative resource punishment?
 when unit selected, slow drawing (range not saved)
 slow-paint scroll amt shouldnt take effect until 2nd tick so you can tap button once
 draw bars not use stat value for pct cur/max??
@@ -546,6 +548,7 @@ info button show stats
 	also build for all types?
 better move left indicators?
 	indicate when upgradeable
+	
 finish directional move/attack blocking
 experience
 new ranged attack type that you can move and then shoot

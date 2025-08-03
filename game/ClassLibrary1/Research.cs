@@ -294,7 +294,7 @@ namespace ClassLibrary1
             double mult = (1 - Math.Pow(previous / (double)_researchLast, _researchLast / Consts.ResearchFactor));
             if (IsUpgradeOnly(_researching, previous))
                 mult *= .65;
-            const double padding = Consts.CoreResearch * 1.69;
+            const double padding = Consts.CoreResearch * .91;
             mult *= ((_researchLast + _progress.Values.Sum() + padding) / (1.0 + Game.Turn) + padding) / (26.0 + .21 * Game.Turn + padding);
             nextAvg = GetNext(_nextAvg) * mult;
             this._nextAvg += nextAvg;

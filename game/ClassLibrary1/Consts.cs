@@ -47,10 +47,10 @@ namespace ClassLibrary1
         public static readonly double PortalMinDist = Math.Sqrt(Scale) * 78;
         public const double PortalSpawnTime = 39;
         public const double PortalSpawnStrMult = 1.3;
-        public const double PortalCost = 13;
-        public const double PortalExitDef = 210;
-        public const double PortalEntranceDef = 91;
-        public const double PortalDecayRate = 7.8;
+        public const double PortalCost = 6.5;
+        public const double PortalExitDef = 390;
+        public const double PortalEntranceDef = 169;
+        public const double PortalDecayRate = 16.9;
         public const double PortalRewardPct = .39;
 
         public const double MoveDev = .013;

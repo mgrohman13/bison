@@ -665,7 +665,7 @@ namespace WinFormsApp1
                                 line = line[..c].Trim();
                                 // pick the friendly piece if it is still alive, else the enemy
                                 Piece select = Program.Game.Player.Pieces.Concat(Program.Game.Enemy.VisiblePieces)
-                                    .FirstOrDefault(p => line.StartsWith(p.ToString()) || line.EndsWith(p.ToString()));
+                                    .LastOrDefault(p => line.StartsWith(p.ToString()) || line.EndsWith(p.ToString()));
                                 // select the piece if it is already on screen, otherwise just center it
                                 if (select != null && !Program.Form.MapMain.Center(select.Tile))
                                     Program.Form.MapMain.SelTile = select.Tile;

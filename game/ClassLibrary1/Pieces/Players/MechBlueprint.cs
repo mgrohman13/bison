@@ -513,7 +513,13 @@ namespace ClassLibrary1.Pieces.Players
                     if (select < 0)
                     {
                         select = int.MaxValue;
-                        attacker.Add(UpgAttack(a, a.Type, Math.Max(1, a.Attack + mod), a.Range));
+                        int att = a.Attack;
+                        double range = a.Range;
+                        if (range == Attack.MELEE_RANGE || Game.Rand.Bool())
+                            att = Math.Max(1, att + mod);
+                        else
+                            range = Math.Max(Attack.MIN_RANGED * Game.Rand.Range(1, 2), range + Game.Rand.DoubleFull(2.6 * mod));
+                        attacker.Add(UpgAttack(a, a.Type, att, range));
                     }
                     else
                         attacker.Add(a);
