@@ -7,6 +7,9 @@ namespace ClassLibrary1.Map
 {
     public partial class Map
     {
+        public static double Logistic(double dist, double k, double width) =>
+            (2 - 2 / (1 + Math.Pow(Math.E, -k * (dist / width - 1))));
+
 
         [Serializable]
         private class Path : IEnemySpawn
