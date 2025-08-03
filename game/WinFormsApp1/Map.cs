@@ -1411,8 +1411,7 @@ namespace WinFormsApp1
                     && attacker.Fire(killable))
                 {
                     SelTile = clicked;
-                    Program.RefreshChanged();
-                    //Program.SaveGame();
+                    Program.Moved(attacker);
                 }
                 else if (SelTile.Piece.HasBehavior(out IMovable movable))
                 {
@@ -1431,7 +1430,7 @@ namespace WinFormsApp1
                         {
                             mousePath = null;
                             SelTile = movable.Piece.Tile;
-                            Program.RefreshChanged();
+                            Program.Moved(movable);
                         }
                         return moved;
                     }

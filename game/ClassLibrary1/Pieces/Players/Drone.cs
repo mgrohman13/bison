@@ -158,7 +158,7 @@ namespace ClassLibrary1.Pieces.Players
 
             public void GetCost(out int energy, out int mass)
             {
-                double turn = turns * 2.6 + Math.Sqrt(Consts.StatValue(hits));
+                double turn = turns * 3.9 + Math.Sqrt(Consts.StatValue(hits));
                 double repair = repairRate * 3.9 + Consts.MoveValue(moveInc, moveMax, moveLimit);
 
                 double cost = Consts.DroneCost * costMult * Math.Sqrt(turn * repair);

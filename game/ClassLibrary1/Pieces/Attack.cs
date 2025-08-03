@@ -31,8 +31,8 @@ namespace ClassLibrary1.Pieces
         public double Range => RangeBase > MELEE_RANGE ? Consts.GetDamagedValue(Piece, RangeBase, 2) : MELEE_RANGE;
         public double RangeBase => _values.Range;
 
-        public double Reload =>
-            CombatTypes.GetReload(this, Attacked, Piece.HasBehavior(out IKillable killable) ? killable.Hits.GetRepair() : 0);
+        public double Reload => Math.Min(AttackMax,
+            CombatTypes.GetReload(this, Attacked, Piece.HasBehavior(out IKillable killable) ? killable.Hits.GetRepair() : 0));
         public int ReloadBase => _values.Reload;
 
         internal Attack(Piece piece, Values values)

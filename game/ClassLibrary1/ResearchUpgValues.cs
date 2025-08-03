@@ -58,7 +58,7 @@ namespace ClassLibrary1
             { UpgType.DroneDefense, new(21, 0.35, 1.1) },
             { UpgType.DroneMove, new(2.6, 0.40) },
             { UpgType.DroneRepair, new(1.3, 0.75, add: -0.3) },
-            { UpgType.DroneTurns, new(11.7, 0.50) },
+            { UpgType.DroneTurns, new(7.8, 0.45) },
             /*UpgType.ExtractorResilience*/
             { UpgType.ExtractorCost, new(0.15, true) },
             { UpgType.ExtractorDefense, new(16.9, 0.60, 3.90, 1.3) },

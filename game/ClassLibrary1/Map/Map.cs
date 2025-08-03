@@ -232,29 +232,14 @@ namespace ClassLibrary1.Map
             watch.Start();
             evalCount++;
 
-            double minLineDist = double.MaxValue;
+            //double minLineDist = double.MaxValue;
 
             double mult = 0;
             foreach (var path in _paths)
-            {
-                double Gradient(PointD point, int sign)
-                {
-                    double backMult = 1;
-                    double angle = GetAngle(x - point.X, y - point.Y);
-                    if (GetAngleDiff(path.Angle, angle) > HALF_PI)
-                    {
-                        double distSqr = Math.Min(GetDistSqr(x, y, path.Left), GetDistSqr(x, y, path.Right));
-                        backMult = Math.Min(1, Consts.PathWidth * Consts.PathWidth / distSqr);
-                    }
-
-                    double dist = PointLineDistanceSigned(path, point, p) * sign;
-                    minLineDist = Math.Min(minLineDist, Math.Abs(dist));
-                    return 2 / (1 + Math.Pow(Math.E, -.065 * dist)) * backMult;
-                }
-
-                double m = Math.Min(Gradient(path.Left, 1), Gradient(path.Right, -1));
-                mult += m * m;
-            }
+                //{
+                //minLineDist =
+                mult += path.Evaluate(p);
+            //}
             mult += _caves.Max(c => c.GetMult(x, y));
 
             double eval = noise.Evaluate(x, y);
@@ -269,6 +254,7 @@ namespace ClassLibrary1.Map
             watch.Stop();
             return value;
         }
+
         private static double GetDistSqr(PointD v, PointD w) => GetDistSqr(v.X, v.Y, w);
         private static double GetDistSqr(double x, double y, PointD point) => GetDistSqr(x, y, point.X, point.Y);
         private static double GetDistSqr(double x1, double y1, double x2, double y2)
@@ -495,8 +481,8 @@ namespace ClassLibrary1.Map
                 {
                     resourcePool[ResourceType.Artifact] += 2;
                     resourcePool[ResourceType.Foundation] += 4;
-                    resourcePool[ResourceType.Biomass] += 5;
-                    resourcePool[ResourceType.Metal] += 6;
+                    resourcePool[ResourceType.Biomass] += 5;//swap?
+                    resourcePool[ResourceType.Metal] += 6;//swap? - inc start metal further?
                 }
 
                 ResourceType type;
@@ -558,12 +544,12 @@ namespace ClassLibrary1.Map
         }
 
         //the sign indicates which side of the line the point is on
-        private static double PointLineDistanceSigned(Path path, PointD linePoint, Point point)
+        private static double PointLineDistanceSigned(PointD linePoint, double angle, Point point)
         {
-            path.CalcLine(linePoint, out double a, out double b, out double c);
+            Path.CalcLine(linePoint, angle, out double a, out double b, out double c);
 
             double dist = PointLineDistance(a, b, c, point);
-            if (GetAngleDiff(path.Angle, Math.PI) < HALF_PI)
+            if (GetAngleDiff(angle, Math.PI) < HALF_PI)
                 dist *= -1;
             return dist;
         }

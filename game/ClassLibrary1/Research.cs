@@ -332,7 +332,7 @@ namespace ClassLibrary1
             else
                 return min + Add();
         }
-        internal static double GetNext(double v) => Math.Pow(v * 5.2 + 1690, .52);
+        internal static double GetNext(double v) => Math.Pow(v * 0.91 + 390, .65);
 
         public bool HasType(Type research)
         {
@@ -421,7 +421,7 @@ namespace ClassLibrary1
                 retVal.Add(type, min);
             }
 
-            //var sort = retVal.OrderBy(p => p.Value);
+            var sort = retVal.OrderBy(p => p.Value);
 
             return retVal.AsReadOnly();
         }

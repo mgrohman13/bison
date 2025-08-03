@@ -341,7 +341,12 @@ namespace ClassLibrary1
                             defWeight = (1 + Math.Pow(defWeight, 2.0 / count)) * count;
                             if (!usePortal && (friendly.OfType<Hive>().Any() || friendly.OfType<Portal>().Any()))
                                 defWeight *= Math.Sqrt(defWeight);
-                            defWeight = Math.Pow(defWeight, Math.Sqrt(.25 / playerAttWeight));
+                            double exponent = .25 / playerAttWeight;
+                            if (exponent > 1)
+                                exponent = Math.Log(exponent);
+                            else
+                                exponent = Math.Sqrt(exponent);
+                            defWeight = Math.Pow(defWeight, exponent);
                         }
                     }
 
@@ -354,7 +359,13 @@ namespace ClassLibrary1
 
                     void Inc(ref double weight, double pow)
                     {
+                        double prev = weight;
                         weight = Math.Pow(weight, Math.Sqrt(pow));
+                        if (double.IsInfinity(weight))
+                        {
+                            Debug.WriteLine("weight overflow");
+                            weight = double.MaxValue;
+                        }
                     }
                     switch (state)
                     {
@@ -391,10 +402,15 @@ namespace ClassLibrary1
                         default: throw new Exception();
                     }
 
+
                     double[] weights = new double[] { attWeight, pathWeight, coreWeight, playerAttWeight, moveWeight, repairWeight, defWeight, };
                     double result = 1, div = 1;
                     foreach (var w in weights)
                     {
+
+                        if (!double.IsNormal(w))
+                            ;
+
                         double weight = w;
                         if (double.IsNaN(weight) || weight < 0)
                             throw new Exception();
@@ -407,6 +423,9 @@ namespace ClassLibrary1
 
                     if (result <= 0)
                         throw new Exception();
+
+                    if (!double.IsNormal(result))
+                        ;
 
                     dictDbl.Add(moveTile, result);
                 }
@@ -552,6 +571,16 @@ namespace ClassLibrary1
                 if (killable.Piece.HasBehavior<IBuilder.IBuildDrone>())
                     buildTrg *= inFight ? 9 : 3;
                 repair += buildTrg;
+
+                if (killable.Piece is Drone drone)
+                {
+                    double turnMult = (drone.Turns + 2.6) / 16.9;
+                    if (turnMult > 1)
+                        turnMult = Math.Sqrt(turnMult);
+                    else
+                        turnMult *= turnMult;
+                    repair *= turnMult;
+                }
             }
 
             double mass = 0;
@@ -567,7 +596,7 @@ namespace ClassLibrary1
                     mass += Consts.CoreMass / div;
                     r += Consts.CoreResearch / div;
                 }
-                mass += e / Consts.EnergyMassRatio + r * Consts.ResearchMassConversion;
+                mass += e / Consts.EnergyMassRatio + r * Consts.MassPerResearchConversion;
             }
             double massDiv = state switch
             {

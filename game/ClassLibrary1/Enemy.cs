@@ -271,7 +271,7 @@ namespace ClassLibrary1
             return energy * Consts.DifficultySetting;
         }
         internal static double EnergyEquivalent(double energyInc, double massInc, double researchInc) =>
-            energyInc + Consts.EnergyMassRatio * (massInc + researchInc * Consts.ResearchMassConversion);
+            energyInc + Consts.EnergyMassRatio * (massInc + researchInc * Consts.MassPerResearchConversion);
 
         private void Loan(double energy)
         {

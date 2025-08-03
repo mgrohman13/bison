@@ -66,7 +66,7 @@ namespace ClassLibrary1.Pieces.Players
         internal override void GenerateResources(ref double energyInc, ref double massInc, ref double researchInc)
         {
             energyInc += Consts.GetDamagedValue(this, GetValues(Game).EnergyInc, 0);
-            researchInc -= Consts.GeneratorResearchUpk;
+            researchInc -= Consts.GetDamagedValue(this, Consts.GeneratorResearchUpk, 0);
 
             base.GenerateResources(ref energyInc, ref massInc, ref researchInc);
         }

@@ -65,7 +65,7 @@ namespace ClassLibrary1.Map
                 double s = offset + Math.Sin((GetAngle(Center.X - x, Center.Y - y) + Math.PI) * shape[1] + shape[2]);
                 s *= s;
                 double distance = GetDistSqr(x, y, Center) / s;
-                double centerMult = GetMult(distance, shape[5] * Consts.CaveSize / offset, shape[3]);
+                double centerMult = GetMult(distance, shape[5] * Consts.CaveSize / offset, shape[3]);//replace shape[3] with K?
 
                 double connection = GetMult(ConnectionDistSqr(x, y), segSize, shape[4]);
 

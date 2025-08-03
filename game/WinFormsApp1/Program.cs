@@ -157,7 +157,7 @@ namespace WinFormsApp1
                 SaveGame();
                 CopyAutoSave("e");
 
-                IEnumerable<PlayerPiece> GetRepairs() => data.sleep.Where(p => p.IsRepairing()); 
+                IEnumerable<PlayerPiece> GetRepairs() => data.sleep.Where(p => p.IsRepairing());
                 var repairs = GetRepairs().ToHashSet();
 
                 Form.UpdateProgress(null, 0);
@@ -201,15 +201,22 @@ namespace WinFormsApp1
             return progress + add >= cost;
         }
 
-        public static void Hold()
+        public static void Moved(IBehavior behavior)
         {
-            PlayerPiece playerPiece = Toggle(data.moved);
-            data.sleep.Remove(playerPiece);
+            Wake(behavior);
+            RefreshChanged();
+            //Program.SaveGame();
         }
-        public static void Sleep()
+
+        public static void Hold() => data.sleep.Remove(Toggle(data.moved));
+        public static void Sleep() => data.moved.Remove(Toggle(data.sleep));
+        public static void Wake(IBehavior behavior)
         {
-            PlayerPiece playerPiece = Toggle(data.sleep);
-            data.moved.Remove(playerPiece);
+            if (behavior?.Piece is PlayerPiece playerPiece)
+            {
+                data.sleep.Remove(playerPiece);
+                data.moved.Remove(playerPiece);
+            }
         }
         private static PlayerPiece Toggle(HashSet<PlayerPiece> set)
         {
@@ -327,7 +334,7 @@ namespace WinFormsApp1
 
             if (data.sleep.Contains(piece))
             {
-                move = attacks.Any();
+                move |= attacks.Any();
             }
             else if (!move)
             {
@@ -390,7 +397,7 @@ namespace WinFormsApp1
             }
 
             if (move)
-                data.sleep.Remove(piece as PlayerPiece);
+                Wake(piece);
 
             return move;
         }

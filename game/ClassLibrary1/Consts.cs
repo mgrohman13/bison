@@ -8,10 +8,11 @@ namespace ClassLibrary1
     {
         public const double Scale = Math.E * .26;
 
+        public const double ShapesDistance = CaveDistance * Math.PI;
         public const double PathMinSeparation = Scale * Math.PI * 1.3;
         public const double PathWidth = Scale * 16.9;
-        public const double PathWidthDev = .13;
-        public const double PathWidthMin = Scale * 9.1;
+        public const double PathWidthDev = .21;
+        public const double PathWidthMin = Math.E;
         public const double FeatureDist = Scale * 169;
         public const double FeatureMin = FeatureDist / Math.PI;
         public static readonly double NoiseDistance = CaveDistance / Math.Sqrt(Scale);
@@ -109,9 +110,9 @@ namespace ClassLibrary1
         public const int EnergyPerFabricateMass = 10;
         public const int BurnMassPerEnergy = 2;
         public const int MassForScrapResearch = 5; //inverted value from the other two
-        public static readonly double ResearchMassConversion = MassForScrapResearch
+        public static readonly double MassPerResearchConversion = MassForScrapResearch
             * Math.Sqrt(EnergyPerFabricateMass * BurnMassPerEnergy);
-        //public static readonly double ResearchEnergyConversion = ResearchMassConversion * EnergyMassRatio;
+        //public static readonly double EnergyPerResearchConversion = MassPerResearchConversion * EnergyMassRatio;
 
         public const double BaseConstructorUpkeep = 5;
         public const double BaseDroneUpkeep = 2;

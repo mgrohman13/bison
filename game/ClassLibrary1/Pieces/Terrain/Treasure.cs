@@ -9,7 +9,7 @@ namespace ClassLibrary1.Pieces.Terrain
     [Serializable]
     public class Treasure : Piece
     {
-        private static readonly double ConvertResearch = Consts.ResearchMassConversion * Consts.EnergyMassRatio / 1.5;
+        private static readonly double ConvertResearch = Consts.MassPerResearchConversion * Consts.EnergyMassRatio / 1.5;
 
         private readonly double? _value;
 
@@ -63,8 +63,8 @@ namespace ClassLibrary1.Pieces.Terrain
             if (_value.HasValue)
                 Func = CollectResources;
 
-            double value = _value ?? (210 + Game.Turn) * 9.1;
-            double min = _value.HasValue ? 13 : 650;
+            double value = _value ?? (169 + Game.Turn) * 6.5;
+            double min = _value.HasValue ? 13 : Game.Rand.Range(260, 910);
             if (value < min)
                 min = value * .21;
             value = Func(tile, Game.Rand.GaussianOE(value, .26, .13, min));
