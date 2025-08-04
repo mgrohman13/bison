@@ -114,6 +114,45 @@ namespace ClassLibrary1
             return ((Energy >= energy || energy <= 0) && (Mass >= mass || mass <= 0));
         }
 
+        public Dictionary<Type, double[]> GetIncomeDetails()
+        {
+            Dictionary<Type, double[]> details = new();
+            foreach (PlayerPiece p in Pieces.Cast<PlayerPiece>())
+            {
+                double energyInc, massInc, researchInc, energyUpk, massUpk, researchUpk;
+                energyInc = massInc = researchInc = energyUpk = massUpk = researchUpk = 0;
+                p.GenerateResources(ref energyInc, ref massInc, ref researchInc);
+                p.GetUpkeep(ref energyUpk, ref massUpk);
+
+                static void MoveNeg(ref double v1, ref double v2)
+                {
+                    if (v1 < 0)
+                    {
+                        v2 -= v1;
+                        v1 = 0;
+                    }
+                }
+                MoveNeg(ref energyInc, ref energyUpk);
+                MoveNeg(ref energyUpk, ref energyInc);
+                MoveNeg(ref massInc, ref massUpk);
+                MoveNeg(ref massUpk, ref massInc);
+                MoveNeg(ref researchInc, ref researchUpk);
+                MoveNeg(ref researchUpk, ref researchInc);
+
+                Type type = p.GetType();
+                if (!details.TryGetValue(type, out double[] row))
+                    details[type] = row = new double[7];
+                row[0]++;
+                row[1] += energyInc;
+                row[2] += -energyUpk;
+                row[3] += massInc;
+                row[4] += -massUpk;
+                row[5] += researchInc;
+                row[6] += -researchUpk;
+            }
+            return details;
+        }
+
         public void GetIncome(out double energyInc, out double massInc, out double researchInc)
         {
             energyInc = massInc = researchInc = 0;

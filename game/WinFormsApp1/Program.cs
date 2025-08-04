@@ -18,7 +18,7 @@ namespace WinFormsApp1
         public static Game Game;
 
         public readonly static Main Form;
-        public readonly static DgvForm DgvForm;
+        public readonly static BuildForm BuildForm;
 
         private static UIData data = new();
 
@@ -47,7 +47,7 @@ namespace WinFormsApp1
             Application.SetCompatibleTextRenderingDefault(false);
 
             Form = new Main();
-            DgvForm = new DgvForm();
+            BuildForm = new BuildForm();
         }
 
         [STAThread]
@@ -181,7 +181,7 @@ namespace WinFormsApp1
                 if (researched.HasValue && (researched.Value == Type.Mech || Research.IsMech(researched.Value)))
                 {
                     RefreshChanged();
-                    DgvForm.BuilderDialogMech();
+                    BuildForm.BuilderDialogMech();
                 }
                 ViewedResearch = false;
 

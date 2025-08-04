@@ -73,7 +73,7 @@ namespace WinFormsApp1
             //    animateTimer.Stop();
             //    btnBuild.BackColor = Color.Transparent;
             //}
-            if (DgvForm.CanBuild(Selected))
+            if (BuildForm.CanBuild(Selected))
             {
                 btnBuild.Text = "Build";
                 btnBuild.Show();
@@ -664,7 +664,7 @@ namespace WinFormsApp1
                             {
                                 line = line[..c].Trim();
                                 // pick the friendly piece if it is still alive, else the enemy
-                                Piece select = Program.Game.Player.Pieces.Concat(Program.Game.Enemy.VisiblePieces)
+                                Piece select = Program.Game.Enemy.VisiblePieces.Concat(Program.Game.Player.Pieces)
                                     .LastOrDefault(p => line.StartsWith(p.ToString()) || line.EndsWith(p.ToString()));
                                 // select the piece if it is already on screen, otherwise just center it
                                 if (select != null && !Program.Form.MapMain.Center(select.Tile))
@@ -722,9 +722,9 @@ namespace WinFormsApp1
         public void BtnBuild_Click(object sender, EventArgs e)
         {
             static string DispCost(int c) => (c < 0 ? "+" : "") + -c;
-            if (DgvForm.CanBuild(Selected))
+            if (BuildForm.CanBuild(Selected))
             {
-                Piece result = Program.DgvForm.BuilderDialog(Selected);
+                Piece result = Program.BuildForm.BuilderDialog(Selected);
                 if (result != null)
                     Program.RefreshChanged();
             }
@@ -734,7 +734,7 @@ namespace WinFormsApp1
             }
             else if (HasUpgrade(Selected, out MechBlueprint blueprint, out int energy, out int mass))
             {
-                Program.DgvForm.UpgradeInfo(((Mech)Selected.Piece).Blueprint);
+                Program.BuildForm.UpgradeInfo(((Mech)Selected.Piece).Blueprint);
                 bool canUpgrade = CanUpgrade();
                 if (canUpgrade && MessageBox.Show(string.Format("{3}pgrade to {0} for {1} energy {2} mass{4}",
                         blueprint, DispCost(energy), DispCost(mass),
@@ -839,14 +839,14 @@ namespace WinFormsApp1
             {
                 if (Selected.Piece is Extractor)
                 {
-                    IBuilder.IBuildExtractor buildExtractor = DgvForm.GetBuilder<IBuilder.IBuildExtractor>(Selected);
+                    IBuilder.IBuildExtractor buildExtractor = BuildForm.GetBuilder<IBuilder.IBuildExtractor>(Selected);
                     builder = buildExtractor;
                 }
                 if (Selected.Piece is FoundationPiece)
                 {
-                    IBuilder buildFactory = DgvForm.GetBuilder<IBuilder.IBuildFactory>(Selected);
-                    IBuilder buildTurret = DgvForm.GetBuilder<IBuilder.IBuildTurret>(Selected);
-                    IBuilder buildGenerator = DgvForm.GetBuilder<IBuilder.IBuildGenerator>(Selected);
+                    IBuilder buildFactory = BuildForm.GetBuilder<IBuilder.IBuildFactory>(Selected);
+                    IBuilder buildTurret = BuildForm.GetBuilder<IBuilder.IBuildTurret>(Selected);
+                    IBuilder buildGenerator = BuildForm.GetBuilder<IBuilder.IBuildGenerator>(Selected);
                     builder = buildFactory ?? buildTurret ?? buildGenerator;
                 }
             }

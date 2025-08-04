@@ -45,7 +45,6 @@ namespace WinFormsApp1
             button1.TabIndex = 11;
             button1.Text = "button1";
             button1.UseVisualStyleBackColor = true;
-            button1.Click += Button1_Click;
             // 
             // dataGridView1
             // 
@@ -87,13 +86,12 @@ namespace WinFormsApp1
             Name = "DgvForm";
             ShowIcon = false;
             Text = "dgvForm";
-            FormClosing += DgvForm_FormClosing;
             ((System.ComponentModel.ISupportInitialize)dataGridView1).EndInit();
             ResumeLayout(false);
         }
 
         #endregion
         private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.DataGridView dataGridView1;
+        protected System.Windows.Forms.DataGridView dataGridView1;
     }
 }

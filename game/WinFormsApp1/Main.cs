@@ -1,5 +1,7 @@
 ﻿using ClassLibrary1;
 using System;
+using System.Collections.Generic;
+using System.Data;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
@@ -132,6 +134,27 @@ namespace WinFormsApp1
                 }
             }
             progressBar1.Visible = visible;
+        }
+
+        private void lblResearching_Click(object sender, EventArgs e)
+        {
+            if (ResearchForm.ShowForm())
+                Program.RefreshChanged();
+        }
+        private void lblResources_Click(object sender, EventArgs e)
+        {
+            DataTable data = new()
+            {
+                Columns = { { "Category", typeof(string) }, { "Count", typeof(string) }, { "Energy +", typeof(string) }, { "Energy -", typeof(string) },
+                    { "Mass +", typeof(string) }, { "Mass -", typeof(string) },  { "Research +", typeof(string) },  { "Research -", typeof(string) }, },
+            };
+
+            Dictionary<Type, double[]> income = Program.Game.Player.GetIncomeDetails();
+            foreach (var pair in income.OrderByDescending(p => p.Value.Sum()))
+                data.Rows.Add(pair.Key.Name, pair.Value[0], pair.Value[1].ToString("0.0"), pair.Value[2].ToString("0.0"),
+                    pair.Value[3].ToString("0.0"), pair.Value[4].ToString("0.0"), pair.Value[5].ToString("0.0"), pair.Value[6].ToString("0.0"));
+
+            DgvForm.ShowData("Resources per Turn", data);
         }
     }
 }
