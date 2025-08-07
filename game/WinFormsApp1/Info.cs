@@ -551,7 +551,7 @@ namespace WinFormsApp1
                             {
                                 rtbLog.SelectionColor = side == null ? Color.Black : side == side.Game.Player ? Color.Green : Color.Red;
                                 rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Bold);
-                                rtbLog.AppendText(name);
+                                rtbLog.AppendText(name + " ");
                                 rtbLog.SelectionColor = Color.Black;
                                 rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Regular);
                                 rtbLog.AppendText(type);
@@ -730,7 +730,8 @@ namespace WinFormsApp1
             }
             else if (HasConstructorUpgrade())
             {
-                MessageBox.Show("Constructor can be upgraded.", "Upgrade", MessageBoxButtons.OK);
+                MessageBox.Show("Constructor will be automatically upgraded on turn end, " +
+                    "if in range of a piece that can build constructors.", "Upgrade", MessageBoxButtons.OK);
             }
             else if (HasUpgrade(Selected, out MechBlueprint blueprint, out int energy, out int mass))
             {
@@ -739,8 +740,8 @@ namespace WinFormsApp1
                 if (canUpgrade && MessageBox.Show(string.Format("{3}pgrade to {0} for {1} energy {2} mass{4}",
                         blueprint, DispCost(energy), DispCost(mass),
                         canUpgrade ? "U" : "Can u", canUpgrade ? "?" : " ."),
-                        "Upgrade", canUpgrade ? MessageBoxButtons.YesNo : MessageBoxButtons.OK)
-                    == DialogResult.Yes)
+                        "Upgrade", canUpgrade ? MessageBoxButtons.OKCancel : MessageBoxButtons.OK)
+                    == DialogResult.OK)
                 {
                     ((Mech)Selected.Piece).Upgrade();
                     Program.RefreshChanged();
@@ -753,9 +754,9 @@ namespace WinFormsApp1
                     bool canReplace = ReplaceFunc(false, out int energy, out int mass, out bool couldReplace);
                     if (canReplace)
                     {
-                        if (DialogResult.Yes == MessageBox.Show(
+                        if (DialogResult.OK == MessageBox.Show(
                                 $"Replace with {type} for{DispCost(energy)} energy {DispCost(mass)} mass?",
-                                "Replace", MessageBoxButtons.YesNo)
+                                "Replace", MessageBoxButtons.OKCancel)
                             && ReplaceFunc(true, out _, out _, out _))
                         {
                             Program.RefreshChanged();

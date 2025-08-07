@@ -171,7 +171,7 @@ namespace ClassLibrary1.Pieces.Enemies
 
         public override string ToString()
         {
-            return "Wormhole " + (_exit ? "Exit" : "Entrance");
+            return "Wormhole " + (_exit ? "Exit " : "Entrance ") + PieceNum;
         }
     }
 }

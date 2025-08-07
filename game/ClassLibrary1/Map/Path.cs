@@ -30,29 +30,19 @@ namespace ClassLibrary1.Map
 
             private double K;
 
-            public Path(double angle)//, double enemyMult, double enemyPow)
+            public Path(double angle)
             {
                 Angle = angle;
-                //this.EnemyMult = enemyMult;
-                //this.EnemyPow = enemyPow;
 
                 Width = Game.Rand.GaussianCapped(Consts.PathWidth, Consts.PathWidthDev, Consts.PathWidthMin);
-                PointD GetOrigin(int sign)
-                {
-                    double dist = Width;
-                    double dir = angle + Game.Rand.GaussianCapped(HALF_PI, Consts.PathWidthDev) * sign;
-                    return GetPoint(dir, dist);
-                }
-                Start = GetOrigin(Game.Rand.Bool() ? 1 : -1);
-                //Right = GetOrigin(-1);
+
+                double GetCoord() => Game.Rand.Gaussian((Width + Consts.PathWidth) / 2.0);
+                Start = new(GetCoord(), GetCoord());
 
                 K = Game.Rand.GaussianOE(1, 1 / Math.PI, .5);
                 Debug.WriteLine("Angle: " + Angle);
                 Debug.WriteLine("K: " + K);
                 Debug.WriteLine("Width: " + Width);
-
-                //Debug.WriteLine(Left);
-                //Debug.WriteLine(Right);
 
                 ResourceNum = 0;
                 ExploredDist = 0;
@@ -96,6 +86,7 @@ namespace ClassLibrary1.Map
             }
             public PointD GetClosestPoint(double x, double y)
             {
+                //TODO: Start
                 CalcLine(new PointD(0, 0), out double a, out double b, out double c); //centered on (0,0)
 
                 double div = a * a + b * b;
@@ -148,16 +139,12 @@ namespace ClassLibrary1.Map
                 double backMult = 1;
                 double direction = PointLineDistanceSigned(Start, Angle + Map.HALF_PI, p);
                 if (direction < 0)
-                    backMult = Logistic(1 + Math.Abs(direction));
+                    backMult = Logistic(1 + Math.Abs(direction)); //TODO: Width
 
                 double dist = PointLineDistanceSigned(Start, Angle, p);
                 double mult = Logistic(Math.Abs(dist)) * backMult;
                 if (mult > 1)
-                    mult = Math.Pow(mult, Math.Log(Math.E) / Math.Log(Logistic(0)));
-                //if (mult < 1)
-                //{
-                //    Math.Log(Math.E) / Math.Log(Logistic(2))
-                //}
+                    mult = Math.Pow(mult, 1 / Math.Log(Logistic(0)));
                 return mult;
             }
         }

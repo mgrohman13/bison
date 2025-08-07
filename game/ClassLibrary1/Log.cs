@@ -70,8 +70,8 @@ namespace ClassLibrary1
 
             public LogEntry(int logNum, int turn, Attack attack, int startAttack, IKillable target, Dictionary<Defense, int> startDefense)
             {
-                static string GetName(Piece p) => p is Mech mech ? mech.GetName() : p.ToString();
-                static string GetBlueprint(Piece p) => p is Mech mech ? mech.GetBlueprintName() : "";
+                static string GetName(Piece p) => p is Mech mech ? mech.Name : p.ToString();
+                static string GetBlueprint(Piece p) => p is Mech mech ? $" ({mech.BlueprintName})" : "";
 
                 this.LogNum = logNum;
                 this.Turn = turn;

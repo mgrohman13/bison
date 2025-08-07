@@ -209,7 +209,13 @@ namespace WinFormsApp1
         }
 
         public static void Hold() => data.sleep.Remove(Toggle(data.moved));
-        public static void Sleep() => data.moved.Remove(Toggle(data.sleep));
+        public static void Sleep()
+        {
+            PlayerPiece piece = Toggle(data.sleep);
+            data.moved.Remove(piece);
+            if (MoveLeft(piece))
+                data.moved.Add(piece);
+        }
         public static void Wake(IBehavior behavior)
         {
             if (behavior?.Piece is PlayerPiece playerPiece)

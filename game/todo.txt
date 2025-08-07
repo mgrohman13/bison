@@ -21,6 +21,27 @@ ambient gen power decreases over time??
 		some const multiplier? between 1.69 - 5.2
 		ArtifactEnergyUpkMult??
 invisible unit defending adjacent reveals unit?
+drone more expensive?
+	especially later?
+hives occasionally have very weak melee attack?
+prevalience of low-range units of debatable use...
+wormhole exits appear away from hives??
+nerf drone defense?
+	and constructor?
+end game overpowered missile 
+	acts as quicker win somehow only if youre ahead?
+	gives resources to enemy so tough to use if losing?
+		also expensive?
+		different types?
+resources burn out faster??
+if cannot sleep on Z, hold instead
+fix path origin calcs
+extreme attack values fuck up move/range
+	decrease high end attack average
+	imrpove cost reduction alg
+kill pathfinding threads on exit
+tech cost multiplier apply some const increase somehow for high cost techs even when avg is low?
+different icons for friendly range vs mellee att available?
 	
 NEW
 	can upgrade to just interim step 

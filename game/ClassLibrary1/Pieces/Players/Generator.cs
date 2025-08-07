@@ -74,7 +74,10 @@ namespace ClassLibrary1.Pieces.Players
         private static double HitsMult() =>
             Extractor.HitsMult(Consts.GeneratorEnergyCost + Consts.GeneratorMassCost * Consts.EnergyMassRatio);
 
-        public override string ToString() => "Ambient Generator";
+        public override string ToString()
+        {
+            return "Ambient Generator " + PieceNum;
+        }
 
         [Serializable]
         private class Values : IUpgradeValues

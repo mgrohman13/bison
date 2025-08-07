@@ -136,7 +136,7 @@ namespace ClassLibrary1.Pieces.Players
                     select = existing;
             }
 
-            MechBlueprint upgrade = Game.Rand.SelectValue(select.Append(""), b =>
+            var doubles = select.Append("").ToLookup(b => b, b =>
             {
                 double chance;
                 if (b is MechBlueprint blueprint)
@@ -149,8 +149,16 @@ namespace ClassLibrary1.Pieces.Players
                 {
                     chance = Consts.ResearchFactor;
                 }
-                return Game.Rand.Round(chance * chance);
-            }) as MechBlueprint;
+                return (chance * chance);
+            });
+            double mult = 1;
+            double sum = doubles.Sum(p => p.Sum());
+            double max = int.MaxValue - 13 * doubles.Count;
+            if (sum > max)
+                mult = max / sum;
+            var ints = doubles.ToDictionary(p => p.Key, p => Game.Rand.Round(p.Sum() * mult));
+
+            MechBlueprint upgrade = Game.Rand.SelectValue(ints) as MechBlueprint;
 
             MechBlueprint newBlueprint = GenBlueprint(upgrade, research, research.Game.GetPieceNum(typeof(MechBlueprint)), researchLevel, false);
             blueprints.Add(newBlueprint);

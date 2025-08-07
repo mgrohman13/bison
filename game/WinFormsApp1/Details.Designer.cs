@@ -273,8 +273,10 @@ namespace WinFormsApp1
             // 
             // Details
             // 
+            AcceptButton = btnOK;
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            CancelButton = btnCancel;
             ClientSize = new System.Drawing.Size(265, 146);
             Controls.Add(lblGM);
             Controls.Add(lblGE);

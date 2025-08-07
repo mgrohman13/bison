@@ -217,6 +217,24 @@ namespace ClassLibrary1.Map
                 c.Spawner.Turn(turn);
         }
 
+        //public float EvalNull(Point p)
+        //{
+        //    float eval = float.NaN;
+        //    if (Visible(p))
+        //    {
+        //        eval = Evaluate(p);
+        //        if (eval < .25)
+        //        {
+        //            eval *= 4;
+        //            if (Tile.GetAllPointsInRange(this, p, Attack.MELEE_RANGE).Any(n => GetTile(n) is not null))
+        //                eval = 1;
+        //        }
+        //        else
+        //            eval = float.NaN;
+        //    }
+        //    return eval;
+        //}
+
         [NonSerialized]
         private Dictionary<Point, float> evaluateCache;//Tuple<float, float>> evaluateCache;
         private float Evaluate(Point p)//, out float lineDist)

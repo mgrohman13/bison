@@ -408,6 +408,18 @@ namespace WinFormsApp1
                 }
             }
 
+            IEnumerable<Mech> mechs = Program.Game.Player.PiecesOfType<Mech>();
+            Dictionary<char, bool> reduceBlueprints = new();
+            if (mechs.Any(m => m.BlueprintNum.Length > 1))
+            {
+                var distinct = mechs.Select(m => m.BlueprintNum).Distinct();
+                foreach (string mech in distinct)
+                {
+                    char first = mech[0];
+                    reduceBlueprints[first] = distinct.All(bp => bp[0] != first || bp == mech);
+                }
+            }
+
             foreach (Piece piece in Program.Game.Map.GetVisiblePieces())
                 if (mapCoords.Contains(piece.Tile.X, piece.Tile.Y))
                 {
@@ -471,7 +483,12 @@ namespace WinFormsApp1
                     else if (piece is Mech mech)
                     {
                         AddFill(Brushes.Green, rect);
-                        letters.Add(rect, mech.Blueprint.BlueprintNum);
+
+                        string blueprint = mech.BlueprintNum;
+                        char first = blueprint[0];
+                        if (reduceBlueprints[first])
+                            blueprint = first.ToString();
+                        letters.Add(rect, blueprint);
                     }
                     else if (piece is Core || piece is Factory)
                         AddFill(Brushes.Blue, rect);
@@ -495,7 +512,11 @@ namespace WinFormsApp1
                         if (piece is Turret or Generator)
                             ellipses[playerBrush].Add(ellipse);
                         else if (piece is PlayerPiece)
+                        {
                             AddFill(Brushes.LightGreen, rect);
+                            if (piece is Drone drone)
+                                letters.Add(rect, drone.Turns.ToString());
+                        }
                     }
 
                     if (Info.HasAnyUpgrade(piece.Tile))
@@ -691,6 +712,17 @@ namespace WinFormsApp1
 
             if (nullTiles.Any())
                 e.Graphics.FillRectangles(Brushes.DarkKhaki, nullTiles.Select(p => new RectangleF(GetX(p.X), GetY(p.Y), Scale, Scale)).ToArray());
+            //foreach (var n in nullTiles)
+            //{
+            //    double eval = Program.Game.Map.EvalNull(n);
+            //    eval = Math.Sqrt(eval);
+            //    int Interp(int orig) => Game.Rand.Round(255 - ((255 - orig) * eval));
+            //    Color c = Color.DarkKhaki;
+            //    int r = Interp(c.R);
+            //    int g = Interp(c.G);
+            //    int b = c.B;
+            //    AddFill(new SolidBrush(Color.FromArgb(r, g, b)), new RectangleF(GetX(n.X), GetY(n.Y), Scale, Scale));
+            //}
 
             RectangleF[] rects = rectangles.ToArray();
             RectangleF[] allrects = rectangles.Concat(tileRects).ToArray();
