@@ -483,6 +483,12 @@ namespace ClassLibrary1.Pieces.Players
 
             return blueprint;
 
+            //public readonly double Vision;
+            //public readonly double Resilience;
+            //public readonly IReadOnlyList<IKillable.Values> Killable;
+            //public readonly IReadOnlyList<IAttacker.Values> Attacker;
+            //public readonly IMovable.Values Movable;
+
             bool ModStat(bool increase)
             {
                 Debug.WriteLine($"ModStat: {blueprint.TotalCost()} ({minTotal}-{maxTotal})");
@@ -624,9 +630,9 @@ namespace ClassLibrary1.Pieces.Players
                 HashSet<Type> apply = GetResearchTypes(type, ranged);
 
                 //modify for current research type
-                double attAvg = 3.9, dev = .26, oe = .13;
+                double attAvg = 3.9, dev = .21, oe = .091;
                 foreach (var item in apply)//Game.Rand.Iterate(apply))
-                    ModValues(researchType == item, 1.5, ref attAvg, ref dev, ref oe);
+                    ModValues(researchType == item, 1.3, ref attAvg, ref dev, ref oe);
 
                 //modify for research totals
                 double researchMult = 1;

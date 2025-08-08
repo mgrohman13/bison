@@ -110,6 +110,8 @@ namespace ClassLibrary1.Pieces
                 bool DoAtt() => this.AttackCur > 0 && !target.Dead;
                 if (DoAtt())
                 {
+                    Piece.Game.Map.UpdateVision(new[] { Piece, target.Piece }.Select(p => p.Tile));
+
                     target.OnAttacked();
                     int startAttack = this.AttackCur;
                     Dictionary<Defense, int> startDefense = target.AllDefenses.ToDictionary(d => d, d => d.DefenseCur);

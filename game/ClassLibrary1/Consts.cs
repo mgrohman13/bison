@@ -22,11 +22,12 @@ namespace ClassLibrary1
         public const double CaveDistanceOE = .169;
         public const double CaveMinDist = Scale * 91;
         public const double CaveSize = Scale * 13;
-        public static readonly double CavePathSize = Math.Sqrt(Scale) * 2.6;
+        public static readonly double CavePathWidth = Scale * 6.5;
         public const double CaveDistPow = 1.13;
 
         public static readonly double ResourceAvgDist = Math.Sqrt(Scale) * 21;
-        public static readonly double TreasureDiv = Scale * 21;
+        public static readonly double TreasureDiv = Scale * 13;
+        //public const double TreasureSpacingChance = .5;
         public const double ResearchFactor = 2600;
         public const int ExploreForResearch = 39;
 

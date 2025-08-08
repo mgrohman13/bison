@@ -168,6 +168,8 @@ namespace ClassLibrary1
                         .Concat(player.PiecesOfType<FoundationPiece>().Select(t => t.Tile)
                             .Concat(pieces.OfType<Foundation>().Select(f => f.Tile))
                             .SelectMany(t => t.GetAllPointsInRange(turretRange)))
+                        .Concat(PiecesOfType<Hive>().SelectMany(h => h.Tile.GetAllPointsInRange(
+                            h.GetBehavior<IAttacker>().Attacks.Max(a => a.Range * Game.Rand.Range(1, 2)))))
                         .Select(map.GetTile))
                     .Where(t => t is not null).ToHashSet();
 
@@ -198,7 +200,7 @@ namespace ClassLibrary1
                             foreach (var check in Game.Rand.Iterate(pieces))
                                 if (piece != check)
                                 {
-                                    double factor = 2.1 * Consts.PathWidth / (Consts.CavePathSize + portalTile.GetDistance(check.Tile));
+                                    double factor = 2.1 * Consts.PathWidth / (Consts.CavePathWidth + portalTile.GetDistance(check.Tile));
                                     factor *= factor * (check is EnemyPiece enemy && enemy.State == EnemyPiece.AIState.Rush ? factor : 1);
                                     if (check.IsEnemy && check is not Portal)
                                         mult += factor;
@@ -330,7 +332,7 @@ namespace ClassLibrary1
                     do
                     {
                         tile = Game.Map.GetTile(RandCoord(defTile.X), RandCoord(defTile.Y));
-                        dev += Game.Rand.DoubleFull(Consts.CavePathSize);
+                        dev += Game.Rand.DoubleFull(Consts.CavePathWidth);
                     }
                     while (tile == null || tile.Piece != null);
 

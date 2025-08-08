@@ -9,12 +9,12 @@ namespace ClassLibrary1
 {
     internal static class ResearchUpgValues
     {
-        internal const double Blueprint_Attack_Pow = 0.80;
+        internal const double Blueprint_Attack_Pow = 0.60;
         internal const double Blueprint_Attacks_Count_Pow = 0.20;
-        internal const double Blueprint_Defense_Pow = 0.70;
-        internal const double Blueprint_Move_Pow = 0.35;
-        internal const double Blueprint_Range_Pow = 0.55;
-        internal const double Blueprint_Vision_Pow = 0.65;
+        internal const double Blueprint_Defense_Pow = 0.65;
+        internal const double Blueprint_Move_Pow = 0.40;
+        internal const double Blueprint_Range_Pow = 0.45;
+        internal const double Blueprint_Vision_Pow = 0.70;
 
         //internal const double Constructor_Cost_Pow = ;
         //internal const double Constructor_Defense_Pow = ;
@@ -45,40 +45,40 @@ namespace ClassLibrary1
 
         private static readonly IReadOnlyDictionary<UpgType, UpgParam> UpgParams = new Dictionary<UpgType, UpgParam>() {
             { UpgType.AmbientGenerator, new(Consts.GeneratorEnergyInc, 0.65) },
-            { UpgType.AmbientGeneratorCost, new(.20, true) },
+            { UpgType.AmbientGeneratorCost, new(0.20, true) },
             { UpgType.ConstructorCost, new(0.70, true) },
-            { UpgType.ConstructorDefense, new(8, 0.65, add: 2) },
-            { UpgType.ConstructorMove, new(Constructor.BASE_MOVE_INC * Constructor.MOVE_RAMP, 0.35, Constructor.MOVE_RAMP) },
-            { UpgType.ConstructorVision, new(Constructor.BASE_VISION, 0.30) },
-            { UpgType.ConstructorRange, new(5.2, 0.45,  add: .3) },
+            { UpgType.ConstructorDefense, new(8, 0.45, add: 2) },
+            { UpgType.ConstructorMove, new(Constructor.BASE_MOVE_INC * Constructor.MOVE_RAMP, 0.30, Constructor.MOVE_RAMP) },
+            { UpgType.ConstructorRange, new(5.2, 0.35,  add: .3) },
+            { UpgType.ConstructorVision, new(Constructor.BASE_VISION, 0.25) },
             //{ UpgType.ConstructorRepair, new(1, 0.45) },
             //{ UpgType.CoreDefense, new(11, 0.65, 11 / 10.0) },
-            { UpgType.CoreShields, new(7.8, .85, 1.5) },
+            { UpgType.CoreShields, new(7.8, 0.85, 1.5) },
             { UpgType.DroneCost, new(0.10, true) },
-            { UpgType.DroneDefense, new(21, 0.35, 1.1) },
-            { UpgType.DroneMove, new(2.6, 0.40) },
+            { UpgType.DroneDefense, new(21, 0.30, 1.1) },
+            { UpgType.DroneMove, new(2.6, 0.35) },
             { UpgType.DroneRepair, new(1.3, 0.75, add: -0.3) },
             { UpgType.DroneTurns, new(7.8, 0.45) },
             /*UpgType.ExtractorResilience*/
             { UpgType.ExtractorCost, new(0.15, true) },
-            { UpgType.ExtractorDefense, new(16.9, 0.60, 3.90, 1.3) },
-            { UpgType.ExtractorVision, new(5, 0.75) },
-            { UpgType.ExtractorValue, new(1, 0.25) },
+            { UpgType.ExtractorDefense, new(16.9, 0.50, 3.90, 1.3) },
             { UpgType.ExtractorSustain, new(1, 0.10) },
+            { UpgType.ExtractorValue, new(1, 0.25) },
+            { UpgType.ExtractorVision, new(5, 0.80) },
             { UpgType.FactoryCost, new(0.60, true) },
-            { UpgType.FactoryDefense, new(9, 0.55, 9 / 5.0) },
-            { UpgType.FactoryVision, new(6.5, 0.95, 6.5 / 4.5 ) },
+            { UpgType.FactoryDefense, new(9, 0.40, 9 / 5.0) },
             { UpgType.FactoryRepair, new(1, 0.50, Math.E, .65) },
-            { UpgType.TurretCost, new(0.40, true) },
+            { UpgType.FactoryVision, new(6.5, 0.90, 6.5 / 4.5 ) },
+            { UpgType.TurretArmorDefense, new(11, 0.55, 5.2, 1.69) },
             { UpgType.TurretAttack, new(8, 0.70, 1.69, .39) },
-            { UpgType.TurretLaserAttack, new(4, 0.75) },
+            { UpgType.TurretCost, new(0.30, true) },
+            { UpgType.TurretDefense, new(5, 0.25, add: 10) },
             { UpgType.TurretExplosivesAttack, new(6, 0.65) },
-            { UpgType.TurretDefense, new(5, 0.30, add: 10) },
-            { UpgType.TurretShieldDefense, new(7, 0.35, 1.85) },
-            { UpgType.TurretArmorDefense, new(11, 0.60, 5.2, 1.69) },
-            { UpgType.TurretRange, new(13, 0.50, 1.4, Attack.MIN_RANGED) },
-            { UpgType.TurretLaserRange, new(15, 0.55, 1.45, Attack.MIN_RANGED + 1) },
             { UpgType.TurretExplosivesRange, new(9, 0.40, 1.35, Attack.MIN_RANGED - 1) },
+            { UpgType.TurretLaserAttack, new(4, 0.75) },
+            { UpgType.TurretLaserRange, new(15, 0.60, 1.45, Attack.MIN_RANGED + 1) },
+            { UpgType.TurretRange, new(13, 0.50, 1.4, Attack.MIN_RANGED) },
+            { UpgType.TurretShieldDefense, new(7, 0.35, 1.85) },
             { UpgType.TurretVision, new(10, 0.45, 1.7) },
         }.AsReadOnly();
 

@@ -45,10 +45,16 @@ namespace ClassLibrary1.Map
                 Center = center;
                 seg1 = new(center.X + Offset(Consts.CaveSize), center.Y + Offset(Consts.CaveSize));
                 seg2 = new(connectTo.X + Offset(off2), connectTo.Y + Offset(off2));
-                segSize = Game.Rand.GaussianOE(Consts.CavePathSize, .13, .13, 1.3);
+                segSize = Game.Rand.GaussianOE(Consts.CavePathWidth, .39, .5, 1.3);
+                //Width = Game.Rand.GaussianCapped(Consts.PathWidth, Consts.PathWidthDev, Consts.PathWidthMin);
 
-                shape = new[] { Game.Rand.GaussianOE(1.69, .39, .13), 1 + Game.Rand.GaussianOEInt(1.3, .26, .26), Game.Rand.NextDouble() * TWO_PI,
-                    Game.Rand.GaussianCapped(1.3, .26), Game.Rand.GaussianOE(6.5, .39, .13), Game.Rand.GaussianCapped(1, .13, .5) };
+                shape = new[] { Game.Rand.GaussianOE(1.69, .39, .13), 1 + Game.Rand.GaussianOEInt(1.3, .26, .26),
+                    Game.Rand.NextDouble() * TWO_PI, GenK(), GenK(), Game.Rand.GaussianCapped(1, .13, .5) };
+
+                Debug.WriteLine($"Cave - ({Center}) {shape[5] * Consts.CaveSize} (path: {segSize})");
+                Debug.WriteLine($"K: {shape[3]}");
+                Debug.WriteLine($"K (path): {shape[4]}");
+
                 if (shape[1] != (int)shape[1])
                     throw new Exception();
             }
@@ -59,7 +65,7 @@ namespace ClassLibrary1.Map
                 explored |= GetDistSqr(new(point.X, point.Y), Center) < vision * vision;
             }
 
-            public double GetMult(int x, int y)
+            public double Evaluate(int x, int y)
             {
                 double offset = 1.3 + shape[0];
                 double s = offset + Math.Sin((GetAngle(Center.X - x, Center.Y - y) + Math.PI) * shape[1] + shape[2]);
@@ -71,8 +77,9 @@ namespace ClassLibrary1.Map
 
                 return centerMult + connection;
 
-                static double GetMult(double distSqr, double size, double o) =>
-                    (Math.Pow(size, Consts.CaveDistPow) + o) / (Math.Pow(distSqr, Consts.CaveDistPow / 2.0) + o);
+                static double GetMult(double distSqr, double size, double k) =>
+                    Logistic(Math.Sqrt(distSqr), k, size);
+                //(Math.Pow(size, Consts.CaveDistPow) + o) / (Math.Pow(distSqr, Consts.CaveDistPow / 2.0) + o);
             }
             public double ConnectionDistSqr(int x, int y) => PointLineDistSqr(seg1, seg2, new(x, y));
             private static double PointLineDistSqr(PointD v, PointD w, PointD p)
@@ -132,7 +139,7 @@ namespace ClassLibrary1.Map
             public Tile SpawnTile(Map map, ResourceType? type, double deviationMult = 1)
             {
                 bool isEnemy = !type.HasValue;
-                bool inPath = !isEnemy && Game.Rand.Bool(type == ResourceType.Foundation ? .65 : .26);
+                bool inPath = !isEnemy && Game.Rand.Bool(type == ResourceType.Foundation ? .65 : .39);
                 PointD spawnCenter = inPath ? PathCenter : Center;
                 double deviation = deviationMult * (inPath ? PathLength / 6.5 : Consts.CaveSize);
                 Tile tile = map.SpawnTile(spawnCenter, deviation, isEnemy);

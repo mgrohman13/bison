@@ -9,7 +9,7 @@ namespace ClassLibrary1.Map
     {
         public static double Logistic(double dist, double k, double width) =>
             (2 - 2 / (1 + Math.Pow(Math.E, -k * (dist / width - 1))));
-
+        private static double GenK() => Game.Rand.GaussianOE(1, 1 / Math.PI, .5);
 
         [Serializable]
         private class Path : IEnemySpawn
@@ -28,7 +28,7 @@ namespace ClassLibrary1.Map
             public double ExploredDist { get; private set; }
             public double NextResourceDist { get; private set; }
 
-            private double K;
+            private readonly double K;
 
             public Path(double angle)
             {
@@ -39,7 +39,7 @@ namespace ClassLibrary1.Map
                 double GetCoord() => Game.Rand.Gaussian((Width + Consts.PathWidth) / 2.0);
                 Start = new(GetCoord(), GetCoord());
 
-                K = Game.Rand.GaussianOE(1, 1 / Math.PI, .5);
+                K = GenK();
                 Debug.WriteLine("Angle: " + Angle);
                 Debug.WriteLine("K: " + K);
                 Debug.WriteLine("Width: " + Width);
@@ -82,21 +82,23 @@ namespace ClassLibrary1.Map
             private double GetExploredDist(Point point, double vision)
             {
                 PointD closest = GetClosestPoint(point.X, point.Y);
-                return Math.Sqrt(closest.X * closest.X + closest.Y * closest.Y) + vision; //centered on (0,0)
+                double x = closest.X - Start.X;
+                double y = closest.Y - Start.Y;
+                return Math.Sqrt(x * x + y * y) + vision;
             }
             public PointD GetClosestPoint(double x, double y)
             {
-                //TODO: Start
-                CalcLine(new PointD(0, 0), out double a, out double b, out double c); //centered on (0,0)
+                CalcLine(Start, out double a, out double b, out double c);
 
                 double div = a * a + b * b;
                 double lineX = (b * (+b * x - a * y) - a * c) / div;
                 double lineY = (a * (-b * x + a * y) - b * c) / div;
-                double path = GetAngle(lineX, lineY);
+                double path = GetAngle(lineX - Start.X, lineY - Start.Y);
+                double diff = GetAngleDiff(path, Angle);
                 //check can be againsts any arbitrarily small value - angle will either be equal or opposite
-                if (GetAngleDiff(path, Angle) < HALF_PI)
+                if (diff < HALF_PI)
                     return new(lineX, lineY);
-                return new(0, 0);
+                return Start;
             }
             private void CreateResources(Map map)
             {
@@ -107,7 +109,7 @@ namespace ClassLibrary1.Map
                 List<double> create = new();
                 while (ExploredDist + generationBuffer > NextResourceDist)
                 {
-                    map.GenResources(_ => map.SpawnTile(GetPoint(Angle, NextResourceDist), Consts.PathWidth, false));
+                    map.GenResources(_ => map.SpawnTile(GetLinePoint(NextResourceDist), Consts.PathWidth, false));
 
                     ResourceNum++;
                     GetNextDist();
@@ -128,7 +130,12 @@ namespace ClassLibrary1.Map
             public int SpawnChance(int turn, double? enemyMove) => _spawn.Chance;
             public Tile SpawnTile(Map map)
                 => map.SpawnTile(ExploredPoint(), Consts.PathWidth * 1.69, true);
-            public PointD ExploredPoint(double buffer = 0) => GetPoint(Angle, ExploredDist + buffer);
+            public PointD ExploredPoint(double buffer = 0) => GetLinePoint(ExploredDist + buffer);
+            private PointD GetLinePoint(double dist)
+            {
+                PointD origin = GetPoint(Angle, dist);
+                return new(origin.X + Start.X, origin.Y + Start.Y);
+            }
 
             public override string ToString() => "Path " + (float)Angle;
 
@@ -139,7 +146,7 @@ namespace ClassLibrary1.Map
                 double backMult = 1;
                 double direction = PointLineDistanceSigned(Start, Angle + Map.HALF_PI, p);
                 if (direction < 0)
-                    backMult = Logistic(1 + Math.Abs(direction)); //TODO: Width
+                    backMult = Logistic(Width + Math.Abs(direction));
 
                 double dist = PointLineDistanceSigned(Start, Angle, p);
                 double mult = Logistic(Math.Abs(dist)) * backMult;

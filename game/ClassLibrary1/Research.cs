@@ -321,12 +321,18 @@ namespace ClassLibrary1
             int last = GetLast(type);
             double mult = (last + GetNext(last)) / (_researchLast + nextAvg);
             mult = 1 + mult * mult;
-            mult *= (double)type / _avgTypeCost;
-            int Add() => Game.Rand.OEInt(13 * mult);
+
+            double typeCost = (double)type / _avgTypeCost;
+            mult *= typeCost;
+
+            typeCost = typeCost > 1 ? 1 + (1.69 * (typeCost - 1) * (typeCost + 1.69)) : typeCost;
+            int Add() => Game.Rand.GaussianOEInt(13 * (mult + typeCost), .26, 1 - typeCost / (typeCost + 6.5));
 
             nextAvg = nextAvg * mult + Add();
+
             double progress = _progress[type];
             int min = Game.Rand.Round(nextMin + progress);
+
             if (nextAvg > min)
                 return Game.Rand.GaussianOEInt(nextAvg, nextDev, nextOE, min);
             else

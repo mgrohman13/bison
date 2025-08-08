@@ -258,7 +258,7 @@ namespace ClassLibrary1.Map
                 //minLineDist =
                 mult += path.Evaluate(p);
             //}
-            mult += _caves.Max(c => c.GetMult(x, y));
+            mult += _caves.Max(c => c.Evaluate(x, y));
 
             double eval = noise.Evaluate(x, y);
             double dist = Tile.GetDistance(p, new(0, 0));
@@ -414,6 +414,7 @@ namespace ClassLibrary1.Map
 
             return found;
         }
+        private HashSet<PointD> _treasures = new();
         private void CreateTreasure(Tile tile)
         {
             static bool Clear(Tile t) => t != null && (t.Piece == null || t.Piece.HasBehavior<IMovable>());
@@ -421,7 +422,7 @@ namespace ClassLibrary1.Map
             {
                 int x = tile.X, y = tile.Y;
 
-                var dist = _caves.Select(c => c.Center).Concat(_paths.Select(p => p.GetClosestPoint(x, y)))
+                var dist = _treasures.Concat(_caves.Select(c => c.Center)).Concat(_paths.Select(p => p.GetClosestPoint(x, y)))
                     .Select(p => GetDistSqr(p, new(x, y))).Concat(_caves.Select(c => c.ConnectionDistSqr(x, y)))
                     .Min() + 1;
                 dist = Math.Sqrt(dist) / Consts.PathWidth / 2;
@@ -434,7 +435,11 @@ namespace ClassLibrary1.Map
                 chance /= Consts.TreasureDiv;
 
                 if (Game.Rand.Bool(chance))
+                {
                     Treasure.NewTreasure(tile);
+                    if (Game.Rand.Bool())//Consts.TreasureSpacingChance
+                        _treasures.Add(new(tile.X, tile.Y));
+                }
             }
         }
 
@@ -458,7 +463,7 @@ namespace ClassLibrary1.Map
             do
             {
                 tile = GetTile(RandCoord(center.X), RandCoord(center.Y));
-                deviation += Game.Rand.DoubleFull(Consts.CavePathSize);
+                deviation += Game.Rand.DoubleFull(Consts.CavePathWidth);
             }
             while ((Valid != null && !Valid(tile)) || InvalidStartTile(tile, isEnemy));
 
@@ -482,14 +487,10 @@ namespace ClassLibrary1.Map
 
         internal void Explore(Point point, double vision)
         {
-            if (point.X != 0 || point.Y != 0)
-            {
-                double angle = GetAngle(point.X, point.Y);
-                Path explore = Game.Rand.Iterate(_paths).OrderBy(path => GetAngleDiff(path.Angle, angle)).First();
-                explore.Explore(this, point, vision);
-                foreach (Cave c in _caves)
-                    c.Explore(point, vision);
-            }
+            foreach (Path p in _paths)
+                p.Explore(this, point, vision);
+            foreach (Cave c in _caves)
+                c.Explore(point, vision);
         }
         internal void GenResources(Func<ResourceType, Tile> GetTile, double foundationMult = 1, int numResources = 1)
         {
@@ -661,7 +662,7 @@ namespace ClassLibrary1.Map
                 .Concat(_caves.Where(c => !c.Explored).Select(c => c.Center))
                 .OrderBy(p =>
                 {
-                    if (dists.TryAdd(p, Math.Sqrt(GetDistSqr(tile.X, tile.Y, p)) + Game.Rand.OE(Consts.CavePathSize)))
+                    if (dists.TryAdd(p, Math.Sqrt(GetDistSqr(tile.X, tile.Y, p)) + Game.Rand.OE(Consts.CavePathWidth)))
                         ;
                     else
                         ; //if never hit can remove dists dict

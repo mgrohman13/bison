@@ -485,9 +485,12 @@ namespace WinFormsApp1
                         AddFill(Brushes.Green, rect);
 
                         string blueprint = mech.BlueprintNum;
-                        char first = blueprint[0];
-                        if (reduceBlueprints[first])
-                            blueprint = first.ToString();
+                        if (reduceBlueprints.Any())
+                        {
+                            char first = blueprint[0];
+                            if (reduceBlueprints[first])
+                                blueprint = first.ToString();
+                        }
                         letters.Add(rect, blueprint);
                     }
                     else if (piece is Core || piece is Factory)

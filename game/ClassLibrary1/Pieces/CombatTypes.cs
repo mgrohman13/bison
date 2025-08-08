@@ -81,7 +81,7 @@ namespace ClassLibrary1.Pieces
                         chance *= 2;
                     break;
                 case DefenseType.Armor:
-                    chance *= Math.Sqrt(mult); //remove Sqrt??
+                    chance *= mult;
                     if (pct >= 1)
                         chance *= Math.Sqrt(2);
                     break;
