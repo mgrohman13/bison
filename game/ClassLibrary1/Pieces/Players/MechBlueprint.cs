@@ -483,73 +483,151 @@ namespace ClassLibrary1.Pieces.Players
 
             return blueprint;
 
-            //public readonly double Vision;
-            //public readonly double Resilience;
-            //public readonly IReadOnlyList<IKillable.Values> Killable;
-            //public readonly IReadOnlyList<IAttacker.Values> Attacker;
-            //public readonly IMovable.Values Movable;
-
             bool ModStat(bool increase)
             {
                 Debug.WriteLine($"ModStat: {blueprint.TotalCost()} ({minTotal}-{maxTotal})");
 
-                IMovable.Values movable = blueprint.Movable;
-                double moveValue = Consts.MoveValue(movable);
-                double moveDiv = 1.69;
-                if (increase)
-                    moveDiv *= Math.Sqrt(moveValue);
-                int move = movable.MoveInc >= 2 ? Game.Rand.Round(moveValue / moveDiv) : 0;
+                int inc = 1;
 
-                int sum = move + blueprint.Killable.Where(CanModDef).Select(k => (int?)k.Defense)
-                    .Concat(blueprint.Attacker.Where(CanModAtt).Select(a => (int?)a.Attack))
-                    .Sum() ?? 0;
-                if (sum == 0)
+                double vision = blueprint.Vision; //0
+                double resilience = blueprint.Resilience; //1
+                double moveInc = blueprint.Movable.MoveInc; //2
+                double moveMax = blueprint.Movable.MoveMax; //3
+                double moveLimit = blueprint.Movable.MoveLimit; //4
+                double[] def = blueprint.Killable.Select(k => (double)k.Defense).ToArray();
+                double[] att = blueprint.Attacker.Select(a => (double)a.Attack).ToArray();
+                double[] reload = blueprint.Attacker.Select(a => (double)a.Reload).ToArray();
+                double[] range = blueprint.Attacker.Select(a => (double)a.Range).ToArray();
+
+                if (increase)
+                {
+                    if (moveInc + inc >= moveMax)
+                        moveInc = 0;
+                    if (moveMax + inc >= moveLimit)
+                        moveMax = 0;
+                    for (int a = 0; a < att.Length; a++)
+                    {
+                        if (reload[a] + inc >= att[a])
+                            reload[a] = 0;
+                        if (range[a] == Attack.MELEE_RANGE)
+                            range[a] = 0;
+                    }
+                }
+                else
+                {
+                    if (vision - inc <= 1)
+                        vision = 0;
+                    if (moveInc - inc <= 1)
+                        moveInc = 0;
+                    if (moveMax - inc <= moveInc)
+                        moveMax = 0;
+                    if (moveLimit - inc <= moveMax)
+                        moveLimit = 0;
+                    for (int b = 0; b < def.Length; b++)
+                        if (def[b] - inc <= 1)
+                            def[b] = 0;
+                    for (int c = 0; c < att.Length; c++)
+                    {
+                        if (att[c] - inc <= reload[c])
+                            att[c] = 0;
+                        if (reload[c] - inc < 1) //allow dropping to 1
+                            reload[c] = 0;
+                        if (range[c] - inc <= Attack.MIN_RANGED)
+                            range[c] = 0;
+                    }
+
+                    vision -= 1;
+                    moveInc -= 1;
+                    moveMax -= 2;
+                    moveLimit -= 3;
+                    def = def.Select(d => d - 2).ToArray();
+                    att = att.Select(a => a - 1).ToArray();
+                    reload = reload.Select(r => r - 1).ToArray();
+                    range = range.Select(r => r - Attack.MIN_RANGED).ToArray();
+                }
+
+                const double resilienceMult = 16.9;
+                resilience *= resilienceMult;
+                reload = reload.Select(r => r * 6.5).ToArray();
+                range = range.Select(r => r * .39).ToArray();
+
+                var stats = new[] { vision, resilience, moveInc, moveMax, moveLimit }.Concat(def).Concat(att).Concat(reload).Concat(range).ToArray();
+                //if decreasing, favor extreme values
+                if (!increase)
+                    stats = stats.Select(s =>
+                    {
+                        if (s < 0)
+                            s = 0;
+                        return s * s;
+                    }).ToArray();
+
+                int[] select = stats.Select(s => Game.Rand.Round(s)).ToArray();
+                if (select.Sum() == 0)
                     return false;
 
-                List<IKillable.Values> killable = new();
-                List<IAttacker.Values> attacker = new();
-                int mod = increase ? 1 : -1;
-                int select = Game.Rand.Next(sum);
-                foreach (var k in Game.Rand.Iterate(blueprint.Killable))
+                int index = Game.Rand.SelectValue(Enumerable.Range(0, select.Length), idx => select[idx]);
+
+                double newVision = blueprint.Vision, newResilience = blueprint.Resilience;
+                List<IKillable.Values> killable = blueprint.Killable.ToList();
+                List<IAttacker.Values> attacker = blueprint.Attacker.ToList();
+                IMovable.Values movable = blueprint.Movable;
+
+                if (!increase)
+                    inc *= -1;
+
+                if (index == 0)
                 {
-                    select -= CanModDef(k) ? k.Defense : 0;
-                    if (select < 0)
-                    {
-                        select = int.MaxValue;
-                        killable.Add(new(k.Type, Math.Max(1, k.Defense + mod)));
-                    }
-                    else
-                        killable.Add(k);
+                    newVision = blueprint.Vision + inc;
                 }
-                foreach (var a in Game.Rand.Iterate(blueprint.Attacker))
+                else if (index == 1)
                 {
-                    select -= CanModAtt(a) ? a.Attack : 0;
-                    if (select < 0)
-                    {
-                        select = int.MaxValue;
-                        int att = a.Attack;
-                        double range = a.Range;
-                        if (range == Attack.MELEE_RANGE || Game.Rand.Bool())
-                            att = Math.Max(1, att + mod);
-                        else
-                            range = Math.Max(Attack.MIN_RANGED * Game.Rand.Range(1, 2), range + Game.Rand.DoubleFull(2.6 * mod));
-                        attacker.Add(UpgAttack(a, a.Type, att, range));
-                    }
-                    else
-                        attacker.Add(a);
+                    if (increase)
+                        newResilience = 1 - newResilience;
+                    newResilience -= newResilience / resilienceMult;
+                    if (increase)
+                        newResilience = 1 - newResilience;
                 }
-                select -= move;
-                if (select < 0)
+                else if (index >= 2 && index <= 4)
                 {
-                    select = int.MaxValue;
-                    movable = new IMovable.Values(movable.MoveInc + mod, movable.MoveMax + mod, movable.MoveLimit + mod);
+                    double mInc = blueprint.Movable.MoveInc;
+                    int mMax = blueprint.Movable.MoveMax;
+                    int mLimit = blueprint.Movable.MoveLimit;
+                    if (index == 2)
+                        mInc += inc;
+                    else if (index == 3)
+                        mMax += inc;
+                    else if (index == 4)
+                        mLimit += inc;
+                    movable = new(mInc, mMax, mLimit);
+                }
+                else
+                {
+                    index -= 5;
+                    for (int d = 0; d < def.Length; d++)
+                    {
+                        if (index == 0)
+                            killable[d] = new(killable[d].Type, killable[d].Defense + inc);
+                        index--;
+                    }
+                    LoopAttacks(inc, 0, 0); //att
+                    LoopAttacks(0, 0, inc); //reload
+                    LoopAttacks(0, inc, 0); //range
+                    void LoopAttacks(int incAtt, int incRange, int incReload)
+                    {
+                        if (index >= 0)
+                            for (int e = 0; e < att.Length; e++)
+                            {
+                                if (index == 0)
+                                    attacker[e] = new(attacker[e].Type, attacker[e].Attack + incAtt, attacker[e].Range + incRange, attacker[e].Reload + incReload);
+                                index--;
+                            }
+                    }
                 }
 
-                blueprint = new(blueprintNum, blueprint.UpgradeFrom, blueprint.ResearchLevel, blueprint.Vision, killable, blueprint.Resilience, attacker, movable);
+                if (index >= 0) throw new Exception();
+
+                blueprint = new(blueprintNum, blueprint.UpgradeFrom, blueprint.ResearchLevel, newVision, killable, newResilience, attacker, movable);
                 return true;
-
-                bool CanModDef(IKillable.Values k) => increase || k.Defense > 1;
-                bool CanModAtt(IAttacker.Values a) => increase || a.Attack > 1;
             }
         }
         private static IAttacker.Values UpgAttack(IAttacker.Values oldAttack, AttackType type, int att, double range) =>
