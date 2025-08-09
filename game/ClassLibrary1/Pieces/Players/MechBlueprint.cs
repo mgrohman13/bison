@@ -57,7 +57,6 @@ namespace ClassLibrary1.Pieces.Players
         public static void CalcCost(double researchMult, double vision, IEnumerable<IKillable.Values> killable, double resilience,
             IEnumerable<IAttacker.Values> attacker, IMovable.Values? movable, out double energy, out double mass)
         {
-            const double moveMult = 6.5;
 
             double baseMove = Math.Pow(Consts.MoveValue(movable), 1.69);
             double r = Math.Pow(Math.Pow(resilience, Math.Log(3) / Math.Log(2)) * 1.5 + 0.5, .26);
@@ -68,20 +67,19 @@ namespace ClassLibrary1.Pieces.Players
                 if (a.Range > Attack.MELEE_RANGE)
                     rangeMult = (a.Range + Attack.MELEE_RANGE) / (Math.PI * Attack.MIN_RANGED);
                 rangeMult = Math.Pow(rangeMult, 1.17);
-                return Consts.StatValue(a.Attack)
-                    * CombatTypes.Cost(a.Type)
+                return BaseAttCost(a)
                     * Math.Sqrt(a.Reload / CombatTypes.ReloadAvg(a.Attack))
                     * rangeMult;
             };
             double DefCost(IKillable.Values d) => Consts.StatValue(d.Defense) * CombatTypes.Cost(d.Type)
                 * (d.Type == DefenseType.Hits ? Math.Pow(r, 1.56) * .78 : 1.04);
 
-            double attPow = Math.Pow(1 + (moveMult + baseMove) / 3.9 / moveMult, .21);
-            double att = Math.Pow(attacker.Sum(AttCost), attPow) / researchMult * 2.1;
-            double def = killable.Sum(DefCost) / researchMult * 2.1;
+            double attPow = Math.Pow(1 + (MoveCostMult + baseMove) / 3.9 / MoveCostMult, .21);
+            double att = MultAttCost(Math.Pow(attacker.Sum(AttCost), attPow), researchMult);
+            double def = killable.Sum(DefCost) / researchMult * StatsCostMult;
 
             double mult = Math.Sqrt(researchMult);
-            double move = (baseMove + 3.9) * moveMult / mult;
+            double move = (baseMove + MoveCostAdd) * MoveCostMult / mult;
             double v = vision;
             v = (v + 6.5) * 3.9 / mult;
 
@@ -104,6 +102,16 @@ namespace ClassLibrary1.Pieces.Players
             energy = total * energyPct;
             mass = (total - energy) / Consts.EnergyMassRatio;
         }
+        private const double MoveCostAdd = 3.9;
+        private const double MoveCostMult = 6.5;
+        private const double StatsCostMult = 2.1;
+        private static double BaseAttCost(IAttacker.Values a) =>
+            Consts.StatValue(a.Attack) * CombatTypes.Cost(a.Type);
+        private static double MultAttCost(double cost, double researchMult) =>
+            cost / researchMult * StatsCostMult;
+        internal static double MissileCost(IAttacker.Values missile, double researchMult) =>
+             (MultAttCost(BaseAttCost(missile), researchMult) + 0)
+                * (StatsCostMult + MoveCostAdd * MoveCostMult) * 1 * Consts.MechCostMult;
 
         public int TotalCost()
         {
@@ -489,11 +497,12 @@ namespace ClassLibrary1.Pieces.Players
 
                 int inc = 1;
 
-                double vision = blueprint.Vision; //0
-                double resilience = blueprint.Resilience; //1
-                double moveInc = blueprint.Movable.MoveInc; //2
-                double moveMax = blueprint.Movable.MoveMax; //3
-                double moveLimit = blueprint.Movable.MoveLimit; //4
+                //variables for relative chances
+                double vision = blueprint.Vision;
+                double resilience = blueprint.Resilience;
+                double moveInc = blueprint.Movable.MoveInc;
+                double moveMax = blueprint.Movable.MoveMax;
+                double moveLimit = blueprint.Movable.MoveLimit;
                 double[] def = blueprint.Killable.Select(k => (double)k.Defense).ToArray();
                 double[] att = blueprint.Attacker.Select(a => (double)a.Attack).ToArray();
                 double[] reload = blueprint.Attacker.Select(a => (double)a.Reload).ToArray();
@@ -501,6 +510,7 @@ namespace ClassLibrary1.Pieces.Players
 
                 if (increase)
                 {
+                    //boundary conditions
                     if (moveInc + inc >= moveMax)
                         moveInc = 0;
                     if (moveMax + inc >= moveLimit)
@@ -515,6 +525,7 @@ namespace ClassLibrary1.Pieces.Players
                 }
                 else
                 {
+                    //boundary conditions
                     if (vision - inc <= 1)
                         vision = 0;
                     if (moveInc - inc <= 1)
@@ -528,14 +539,15 @@ namespace ClassLibrary1.Pieces.Players
                             def[b] = 0;
                     for (int c = 0; c < att.Length; c++)
                     {
-                        if (att[c] - inc <= reload[c])
+                        if (att[c] - inc < reload[c]) //allow dropping to 1
                             att[c] = 0;
                         if (reload[c] - inc < 1) //allow dropping to 1
                             reload[c] = 0;
-                        if (range[c] - inc <= Attack.MIN_RANGED)
+                        if (range[c] - inc <= Attack.MIN_RANGED * 2) //buffer to allow inc by up to MIN_RANGED
                             range[c] = 0;
                     }
 
+                    //offsets
                     vision -= 1;
                     moveInc -= 1;
                     moveMax -= 2;
@@ -546,87 +558,81 @@ namespace ClassLibrary1.Pieces.Players
                     range = range.Select(r => r - Attack.MIN_RANGED).ToArray();
                 }
 
-                const double resilienceMult = 16.9;
-                resilience *= resilienceMult;
-                reload = reload.Select(r => r * 6.5).ToArray();
-                range = range.Select(r => r * .39).ToArray();
+                //weight multipliers 
+                const double resilienceMult = 16.9, rangeMult = .39;
+                resilience *= resilienceMult; //resilienceMult used in inc
+                reload = reload.Select(r => r * (increase ? 3.9 : 6.5)).ToArray(); //inc is unaffected
+                range = range.Select(r => r * rangeMult).ToArray(); //inc is also higher 
+                moveMax /= 2; //inc is unaffected
+                moveLimit /= 3; //inc is unaffected
 
-                var stats = new[] { vision, resilience, moveInc, moveMax, moveLimit }.Concat(def).Concat(att).Concat(reload).Concat(range).ToArray();
-                //if decreasing, favor extreme values
-                if (!increase)
-                    stats = stats.Select(s =>
-                    {
-                        if (s < 0)
-                            s = 0;
-                        return s * s;
-                    }).ToArray();
-
-                int[] select = stats.Select(s => Game.Rand.Round(s)).ToArray();
-                if (select.Sum() == 0)
-                    return false;
-
-                int index = Game.Rand.SelectValue(Enumerable.Range(0, select.Length), idx => select[idx]);
+                int GetChance(double value)
+                {
+                    if (value < 0)
+                        value = 0;
+                    else if (!increase)
+                        value *= value; //if decreasing, favor extreme values
+                    return Game.Rand.Round(value);
+                }
 
                 double newVision = blueprint.Vision, newResilience = blueprint.Resilience;
-                List<IKillable.Values> killable = blueprint.Killable.ToList();
-                List<IAttacker.Values> attacker = blueprint.Attacker.ToList();
-                IMovable.Values movable = blueprint.Movable;
+                var newKillable = blueprint.Killable.ToArray();
+                var newAttacker = blueprint.Attacker.ToArray();
+                var newMovable = blueprint.Movable;
 
                 if (!increase)
                     inc *= -1;
 
-                if (index == 0)
-                {
-                    newVision = blueprint.Vision + inc;
-                }
-                else if (index == 1)
+                Action IncVision = () => newVision += inc;
+                Action IncResilience = () =>
                 {
                     if (increase)
                         newResilience = 1 - newResilience;
                     newResilience -= newResilience / resilienceMult;
                     if (increase)
                         newResilience = 1 - newResilience;
-                }
-                else if (index >= 2 && index <= 4)
+                };
+                Action IncMoveInc = () => IncMovable(inc, 0, 0);
+                Action IncMoveMax = () => IncMovable(0, inc, 0);
+                Action IncMoveLimit = () => IncMovable(0, 0, inc);
+                void IncMovable(int moveInc, int moveMax, int moveLimit) =>
+                    newMovable = new(blueprint.Movable.MoveInc + moveInc, blueprint.Movable.MoveMax + moveMax, blueprint.Movable.MoveLimit + moveLimit);
+
+                Dictionary<Action, int> chances = new() {
+                    { IncVision, GetChance(vision) },
+                    { IncResilience, GetChance(resilience) },
+                    { IncMoveInc, GetChance(moveInc) },
+                    { IncMoveMax, GetChance(moveMax) },
+                    { IncMoveLimit, GetChance(moveLimit) },
+                };
+
+                for (int d = 0; d < blueprint.Killable.Count; d++)
                 {
-                    double mInc = blueprint.Movable.MoveInc;
-                    int mMax = blueprint.Movable.MoveMax;
-                    int mLimit = blueprint.Movable.MoveLimit;
-                    if (index == 2)
-                        mInc += inc;
-                    else if (index == 3)
-                        mMax += inc;
-                    else if (index == 4)
-                        mLimit += inc;
-                    movable = new(mInc, mMax, mLimit);
+                    int e = d; //capture loop variable
+                    chances.Add(() =>
+                        newKillable[e] = new(newKillable[e].Type, newKillable[e].Defense + inc),
+                        GetChance(def[e]));
                 }
-                else
+                for (int f = 0; f < blueprint.Attacker.Count; f++)
                 {
-                    index -= 5;
-                    for (int d = 0; d < def.Length; d++)
-                    {
-                        if (index == 0)
-                            killable[d] = new(killable[d].Type, killable[d].Defense + inc);
-                        index--;
-                    }
-                    LoopAttacks(inc, 0, 0); //att
-                    LoopAttacks(0, 0, inc); //reload
-                    LoopAttacks(0, inc, 0); //range
-                    void LoopAttacks(int incAtt, int incRange, int incReload)
-                    {
-                        if (index >= 0)
-                            for (int e = 0; e < att.Length; e++)
-                            {
-                                if (index == 0)
-                                    attacker[e] = new(attacker[e].Type, attacker[e].Attack + incAtt, attacker[e].Range + incRange, attacker[e].Reload + incReload);
-                                index--;
-                            }
-                    }
+                    int g = f; //capture loop variable
+                    chances.Add(() =>
+                        IncAttacker(inc, 0, 0),
+                        GetChance(att[g]));
+                    chances.Add(() =>
+                        IncAttacker(0, inc * Game.Rand.Range(1, Attack.MIN_RANGED), 0), //equivalent to 0.350116223 rangeMult
+                        GetChance(range[g]));
+                    chances.Add(() =>
+                        IncAttacker(0, 0, inc),
+                        GetChance(reload[g]));
+                    void IncAttacker(int incAtt, double incRange, int incReload) =>
+                        newAttacker[g] = new(newAttacker[g].Type, newAttacker[g].Attack + incAtt, newAttacker[g].Range + incRange, newAttacker[g].Reload + incReload);
                 }
 
-                if (index >= 0) throw new Exception();
+                Action Inc = Game.Rand.SelectValue(chances);
+                Inc();
 
-                blueprint = new(blueprintNum, blueprint.UpgradeFrom, blueprint.ResearchLevel, newVision, killable, newResilience, attacker, movable);
+                blueprint = new(blueprintNum, blueprint.UpgradeFrom, blueprint.ResearchLevel, newVision, newKillable, newResilience, newAttacker, newMovable);
                 return true;
             }
         }
