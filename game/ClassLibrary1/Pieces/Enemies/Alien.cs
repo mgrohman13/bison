@@ -1,9 +1,11 @@
-﻿using MattUtil;
+﻿using ClassLibrary1.Pieces.Behavior;
+using ClassLibrary1.Pieces.Behavior.Combat;
+using MattUtil;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
-using static ClassLibrary1.Pieces.IKillable;
+using IRepairable = ClassLibrary1.Pieces.Behavior.Combat.IKillable.IRepairable;
 using Tile = ClassLibrary1.Map.Map.Tile;
 
 namespace ClassLibrary1.Pieces.Enemies
@@ -35,7 +37,7 @@ namespace ClassLibrary1.Pieces.Enemies
         //private double Morale => _morale;// hide behind research
 
         private Alien(Tile tile, List<Point> pathToCore, double energy, int research,
-            IEnumerable<Values> killable, double resilience, IEnumerable<IAttacker.Values> attacks, IMovable.Values movable)
+            IEnumerable<IKillable.Values> killable, double resilience, IEnumerable<IAttacker.Values> attacks, IMovable.Values movable)
             : base(tile, pathToCore == null || Game.Rand.Bool() ? AIState.Patrol : AIState.Rush)
         {
             //this._autoRepair = Game.Rand.Bool(.078);//
@@ -54,7 +56,7 @@ namespace ClassLibrary1.Pieces.Enemies
             OnDeserialization(this);
         }
         internal static Alien NewAlien(Tile tile, List<Point> pathToCore, double energy, int research,
-            IEnumerable<Values> killable, double resilience, IEnumerable<IAttacker.Values> attacks, IMovable.Values movable)
+            IEnumerable<IKillable.Values> killable, double resilience, IEnumerable<IAttacker.Values> attacks, IMovable.Values movable)
         {
             Alien obj = new(tile, pathToCore, energy, research, killable, resilience, attacks, movable);
             tile.Map.Game.AddPiece(obj);

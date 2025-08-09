@@ -1,11 +1,13 @@
-﻿using ClassLibrary1.Pieces.Terrain;
+﻿using ClassLibrary1.Pieces.Behavior;
+using ClassLibrary1.Pieces.Behavior.Combat;
+using ClassLibrary1.Pieces.Terrain;
 using MattUtil;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using AttackType = ClassLibrary1.Pieces.CombatTypes.AttackType;
-using DefenseType = ClassLibrary1.Pieces.CombatTypes.DefenseType;
+using AttackType = ClassLibrary1.Pieces.Behavior.Combat.CombatTypes.AttackType;
+using DefenseType = ClassLibrary1.Pieces.Behavior.Combat.CombatTypes.DefenseType;
 using Tile = ClassLibrary1.Map.Map.Tile;
 using UpgType = ClassLibrary1.ResearchUpgValues.UpgType;
 

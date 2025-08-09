@@ -1,10 +1,11 @@
-﻿using ClassLibrary1.Pieces.Enemies;
+﻿using ClassLibrary1.Pieces.Behavior.Combat;
+using ClassLibrary1.Pieces.Enemies;
 using ClassLibrary1.Pieces.Players;
 using System;
 using System.Linq;
 using Tile = ClassLibrary1.Map.Map.Tile;
 
-namespace ClassLibrary1.Pieces
+namespace ClassLibrary1.Pieces.Behavior
 {
     [Serializable]
     public class Movable : IMovable
@@ -23,11 +24,11 @@ namespace ClassLibrary1.Pieces
         }
         public Movable(Piece piece, IMovable.Values values, double moveCur)
         {
-            this._piece = piece;
-            this._values = values;
+            _piece = piece;
+            _values = values;
 
-            this._moveCur = moveCur;
-            this._moved = true;
+            _moveCur = moveCur;
+            _moved = true;
         }
         public T GetBehavior<T>() where T : class, IBehavior
         {
@@ -45,7 +46,7 @@ namespace ClassLibrary1.Pieces
         {
             double oldMove = MoveLimit;
 
-            this._values = values;
+            _values = values;
 
             if (MoveLimit < oldMove)
                 _moveCur = _moveCur * MoveLimit / oldMove;
@@ -93,8 +94,8 @@ namespace ClassLibrary1.Pieces
             if (CanMoveTo(to))
             {
                 double dist = Piece.Tile.GetDistance(to);
-                this._moved = true;
-                this._moveCur -= dist;
+                _moved = true;
+                _moveCur -= dist;
                 Piece.SetTile(to);
                 return true;
             }
@@ -117,8 +118,8 @@ namespace ClassLibrary1.Pieces
         {
             if (portal.CanPort(this, out Portal exit, out double dist))
             {
-                this._moveCur -= dist;
-                this._moved = true;
+                _moveCur -= dist;
+                _moved = true;
                 if (Piece.HasBehavior(out IAttacker attacker))
                     attacker.Attacked = true;
                 // Piece.DrainMove();
@@ -139,7 +140,7 @@ namespace ClassLibrary1.Pieces
             if (doEndTurn)
             {
                 //this._moved = false;
-                this._moveCur += moveInc;
+                _moveCur += moveInc;
             }
             return moveInc;
         }
@@ -149,7 +150,7 @@ namespace ClassLibrary1.Pieces
         }
         void IBehavior.StartTurn()
         {
-            this._moved = false;
+            _moved = false;
         }
         void IBehavior.EndTurn(ref double energyUpk, ref double massUpk)
         {

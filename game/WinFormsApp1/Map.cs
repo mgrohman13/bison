@@ -1,5 +1,7 @@
 ﻿using ClassLibrary1;
 using ClassLibrary1.Pieces;
+using ClassLibrary1.Pieces.Behavior;
+using ClassLibrary1.Pieces.Behavior.Combat;
 using ClassLibrary1.Pieces.Enemies;
 using ClassLibrary1.Pieces.Players;
 using ClassLibrary1.Pieces.Terrain;
@@ -10,9 +12,8 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
-using static ClassLibrary1.Pieces.IKillable;
-using AttackType = ClassLibrary1.Pieces.CombatTypes.AttackType;
-using DefenseType = ClassLibrary1.Pieces.CombatTypes.DefenseType;
+using AttackType = ClassLibrary1.Pieces.Behavior.Combat.CombatTypes.AttackType;
+using DefenseType = ClassLibrary1.Pieces.Behavior.Combat.CombatTypes.DefenseType;
 using DPoint = System.Drawing.Point;
 using Point = MattUtil.Point;
 using Tile = ClassLibrary1.Map.Map.Tile;
@@ -527,7 +528,7 @@ namespace WinFormsApp1
 
                     if (piece is PlayerPiece playerPiece)
                     {
-                        if (piece is IRepairable repairable)
+                        if (piece is IKillable.IRepairable repairable)
                             if (playerPiece.IsRepairing())
                             {
                                 const float div = 7.8f;

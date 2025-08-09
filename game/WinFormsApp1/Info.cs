@@ -1,5 +1,7 @@
 ﻿using ClassLibrary1;
 using ClassLibrary1.Pieces;
+using ClassLibrary1.Pieces.Behavior;
+using ClassLibrary1.Pieces.Behavior.Combat;
 using ClassLibrary1.Pieces.Players;
 using ClassLibrary1.Pieces.Terrain;
 using System;
@@ -8,8 +10,8 @@ using System.Drawing;
 using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
-using AttackType = ClassLibrary1.Pieces.CombatTypes.AttackType;
-using DefenseType = ClassLibrary1.Pieces.CombatTypes.DefenseType;
+using AttackType = ClassLibrary1.Pieces.Behavior.Combat.CombatTypes.AttackType;
+using DefenseType = ClassLibrary1.Pieces.Behavior.Combat.CombatTypes.DefenseType;
 using Tile = ClassLibrary1.Map.Map.Tile;
 
 namespace WinFormsApp1

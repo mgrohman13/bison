@@ -1,4 +1,6 @@
 ﻿using ClassLibrary1.Pieces;
+using ClassLibrary1.Pieces.Behavior;
+using ClassLibrary1.Pieces.Behavior.Combat;
 using ClassLibrary1.Pieces.Terrain;
 using MattUtil;
 using System;

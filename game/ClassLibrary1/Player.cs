@@ -1,4 +1,5 @@
 ﻿using ClassLibrary1.Pieces;
+using ClassLibrary1.Pieces.Behavior;
 using ClassLibrary1.Pieces.Players;
 using MattUtil;
 using System;

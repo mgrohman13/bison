@@ -1,4 +1,6 @@
 ﻿using ClassLibrary1.Pieces;
+using ClassLibrary1.Pieces.Behavior;
+using ClassLibrary1.Pieces.Behavior.Combat;
 using ClassLibrary1.Pieces.Players;
 using ClassLibrary1.Pieces.Terrain;
 using System;
@@ -7,8 +9,8 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
-using AttackType = ClassLibrary1.Pieces.CombatTypes.AttackType;
-using DefenseType = ClassLibrary1.Pieces.CombatTypes.DefenseType;
+using AttackType = ClassLibrary1.Pieces.Behavior.Combat.CombatTypes.AttackType;
+using DefenseType = ClassLibrary1.Pieces.Behavior.Combat.CombatTypes.DefenseType;
 using Tile = ClassLibrary1.Map.Map.Tile;
 
 namespace WinFormsApp1
@@ -282,7 +284,7 @@ namespace WinFormsApp1
                 Blueprint.Movable.MoveInc, Blueprint.Movable.MoveMax, Blueprint.Movable.MoveLimit);
             public string Weapons => Blueprint == null ? null : FormatAtt(a => a.Type.ToString());
             public string Range => Blueprint == null ? null :
-                FormatAtt(a => a.Range > ClassLibrary1.Pieces.Attack.MELEE_RANGE ? a.Range.ToString("0.0") : "M");
+                FormatAtt(a => a.Range > ClassLibrary1.Pieces.Behavior.Combat.Attack.MELEE_RANGE ? a.Range.ToString("0.0") : "M");
             public string Attack => Blueprint == null ? null : FormatAtt(a => a.Attack.ToString() + (a.Reload > 1 ? $"(+{a.Reload})" : ""));
             public int? Defense => FormatDef(DefenseType.Hits);
             public int? Shield => FormatDef(DefenseType.Shield);

@@ -1,4 +1,6 @@
-﻿namespace ClassLibrary1.Pieces
+﻿using ClassLibrary1.Pieces.Behavior.Combat;
+
+namespace ClassLibrary1.Pieces.Behavior
 {
     public interface IMissileSilo : IBehavior
     {

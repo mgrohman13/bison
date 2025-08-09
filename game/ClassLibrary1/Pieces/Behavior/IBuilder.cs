@@ -3,7 +3,7 @@ using ClassLibrary1.Pieces.Terrain;
 using System;
 using Tile = ClassLibrary1.Map.Map.Tile;
 
-namespace ClassLibrary1.Pieces
+namespace ClassLibrary1.Pieces.Behavior
 {
     public interface IBuilder : IBehavior
     {
@@ -55,7 +55,7 @@ namespace ClassLibrary1.Pieces
             private readonly double _range;
             public Values(double range)
             {
-                this._range = range;
+                _range = range;
             }
             public Values(IBuilder builder) : this(builder.RangeBase) { }
             public double Range => _range;

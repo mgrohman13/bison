@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ClassLibrary1.Pieces
+namespace ClassLibrary1.Pieces.Behavior
 {
     public interface IRepair : IBuilder
     {
@@ -13,7 +13,7 @@ namespace ClassLibrary1.Pieces
 
         internal bool Repaired { get; set; }
 
-        internal void Upgrade(IRepair.Values values);
+        internal void Upgrade(Values values);
 
         [Serializable]
         public new readonly struct Values
@@ -23,8 +23,8 @@ namespace ClassLibrary1.Pieces
             private readonly int _rate;
             public Values(IBuilder.Values builder, int rate)
             {
-                this.Builder = builder;
-                this._rate = rate;
+                Builder = builder;
+                _rate = rate;
             }
             public int Rate => _rate;
         }

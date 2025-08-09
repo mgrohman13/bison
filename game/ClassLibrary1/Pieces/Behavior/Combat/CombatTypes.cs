@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace ClassLibrary1.Pieces
+namespace ClassLibrary1.Pieces.Behavior.Combat
 {
     public static class CombatTypes
     {

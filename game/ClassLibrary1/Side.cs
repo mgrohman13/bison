@@ -1,4 +1,5 @@
 ﻿using ClassLibrary1.Pieces;
+using ClassLibrary1.Pieces.Behavior;
 using System;
 using System.Collections.Generic;
 using System.Linq;

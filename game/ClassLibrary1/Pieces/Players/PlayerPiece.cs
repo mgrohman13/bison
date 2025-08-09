@@ -43,11 +43,11 @@ namespace ClassLibrary1.Pieces.Players
         public double GetRepairInc()
         {
             double result = 0;
-            if (this.HasBehavior(out IKillable killable))
+            if (this.HasBehavior(out Behavior.Combat.IKillable killable))
                 killable.GetHitsRepair(out result, out _);
             return result;
         }
-        public bool IsRepairing() => HasBehavior(out IKillable killable) && killable.IsRepairing();
+        public bool IsRepairing() => HasBehavior(out Behavior.Combat.IKillable killable) && killable.IsRepairing();
 
         internal abstract void OnResearch(Research.Type type);
     }

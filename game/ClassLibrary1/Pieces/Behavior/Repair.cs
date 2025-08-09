@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ClassLibrary1.Pieces
+namespace ClassLibrary1.Pieces.Behavior
 {
     [Serializable]
     public class Repair : Builder, IRepair
@@ -16,31 +16,31 @@ namespace ClassLibrary1.Pieces
             get => _repaired;
             set
             {
-                this._repaired = value;
-                this._resetRepaired = false;
+                _repaired = value;
+                _resetRepaired = false;
             }
         }
 
         void IBehavior.StartTurn()
         {
-            this._resetRepaired = true;
+            _resetRepaired = true;
         }
         void IBehavior.EndTurn(ref double energyUpk, ref double massUpk)
         {
-            if (this._resetRepaired)
-                this._repaired = false;
+            if (_resetRepaired)
+                _repaired = false;
         }
 
         public Repair(Piece piece, IRepair.Values repair)
             : base(piece, repair.Builder)
         {
-            this._values = repair;
+            _values = repair;
         }
 
         void IRepair.Upgrade(IRepair.Values repair)
         {
-            Builder.UpgradeAll(Piece, repair.Builder);
-            this._values = repair;
+            UpgradeAll(Piece, repair.Builder);
+            _values = repair;
         }
     }
 }

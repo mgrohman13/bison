@@ -1,4 +1,5 @@
-﻿using MattUtil;
+﻿using ClassLibrary1.Pieces.Behavior.Combat;
+using MattUtil;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;

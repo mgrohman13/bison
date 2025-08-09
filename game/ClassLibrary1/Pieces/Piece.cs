@@ -1,4 +1,6 @@
-﻿using ClassLibrary1.Pieces.Players;
+﻿using ClassLibrary1.Pieces.Behavior;
+using ClassLibrary1.Pieces.Behavior.Combat;
+using ClassLibrary1.Pieces.Players;
 using System;
 using System.Collections.Generic;
 using System.Linq;

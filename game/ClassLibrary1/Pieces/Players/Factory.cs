@@ -1,14 +1,17 @@
-﻿using ClassLibrary1.Pieces.Terrain;
+﻿using ClassLibrary1.Pieces.Behavior;
+using ClassLibrary1.Pieces.Behavior.Combat;
+using ClassLibrary1.Pieces.Terrain;
 using MattUtil;
 using System;
-using DefenseType = ClassLibrary1.Pieces.CombatTypes.DefenseType;
+using DefenseType = ClassLibrary1.Pieces.Behavior.Combat.CombatTypes.DefenseType;
+using IRepairable = ClassLibrary1.Pieces.Behavior.Combat.IKillable.IRepairable;
 using Tile = ClassLibrary1.Map.Map.Tile;
 using UpgType = ClassLibrary1.ResearchUpgValues.UpgType;
 
 namespace ClassLibrary1.Pieces.Players
 {
     [Serializable]
-    public class Factory : FoundationPiece, IKillable.IRepairable
+    public class Factory : FoundationPiece, IRepairable
     {
         private readonly double _rangeMult, _rounding;
 

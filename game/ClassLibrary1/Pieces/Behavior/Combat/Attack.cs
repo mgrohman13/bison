@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using AttackType = ClassLibrary1.Pieces.CombatTypes.AttackType;
+using AttackType = ClassLibrary1.Pieces.Behavior.Combat.CombatTypes.AttackType;
 using Tile = ClassLibrary1.Map.Map.Tile;
-using Values = ClassLibrary1.Pieces.IAttacker.Values;
+using Values = ClassLibrary1.Pieces.Behavior.Combat.IAttacker.Values;
 
-namespace ClassLibrary1.Pieces
+namespace ClassLibrary1.Pieces.Behavior.Combat
 {
     [Serializable]
     public class Attack
@@ -37,24 +37,24 @@ namespace ClassLibrary1.Pieces
 
         internal Attack(Piece piece, Values values)
         {
-            this.Piece = piece;
-            this._values = values;
+            Piece = piece;
+            _values = values;
 
-            this._attackCur = CombatTypes.GetStartCur(values.Type, values.Attack);
-            this._attacked = true;
-            this._restrictMove = false;
+            _attackCur = CombatTypes.GetStartCur(values.Type, values.Attack);
+            _attacked = true;
+            _restrictMove = false;
         }
 
         internal void Upgrade(Values values)
         {
             double attPct = Consts.StatValue(AttackCur) / Consts.StatValue(AttackMax);
-            this._values = values;
-            this._attackCur = Game.Rand.Round(Consts.StatValueInverse(Consts.StatValue(AttackMax) * attPct));
+            _values = values;
+            _attackCur = Game.Rand.Round(Consts.StatValueInverse(Consts.StatValue(AttackMax) * attPct));
         }
 
         internal void Damage()//int damage)
         {
-            this._attackCur = Math.Max(0, AttackCur - 1);// damage);
+            _attackCur = Math.Max(0, AttackCur - 1);// damage);
         }
 
         public bool CanAttack() => !Attacked && AttackCur > 0
@@ -104,7 +104,7 @@ namespace ClassLibrary1.Pieces
             if (Piece.HasBehavior<IMissileSilo>())
             {
                 double att = AttackCur * attMult;
-                this._attackCur = Game.Rand.GaussianCappedInt(att, 1 / att, 1);
+                _attackCur = Game.Rand.GaussianCappedInt(att, 1 / att, 1);
                 return DoFire(target);
             }
             return false;
@@ -118,16 +118,16 @@ namespace ClassLibrary1.Pieces
         }
         private bool DoFire(IKillable target)
         {
-            bool DoAtt() => this.AttackCur > 0 && !target.Dead;
+            bool DoAtt() => AttackCur > 0 && !target.Dead;
             if (DoAtt())
             {
                 Piece.Game.Map.UpdateVision(new[] { Piece, target.Piece }.Select(p => p.Tile));
 
                 target.OnAttacked();
-                int startAttack = this.AttackCur;
+                int startAttack = AttackCur;
                 Dictionary<Defense, int> startDefense = target.AllDefenses.ToDictionary(d => d, d => d.DefenseCur);
 
-                int rounds = this.AttackCur;
+                int rounds = AttackCur;
                 for (int a = 0; a < rounds && DoAtt(); a++)
                     if (a == 0 || Game.Rand.Bool())
                     {
@@ -142,15 +142,15 @@ namespace ClassLibrary1.Pieces
                         else
                         {
                             if (activeDefense)
-                                this._attackCur--;
+                                _attackCur--;
                             if (Game.Rand.Bool())
                                 rounds--;
                         }
                     }
 
-                this._attacked = true;
+                _attacked = true;
                 if (Piece.HasBehavior(out IMovable movable) && movable.Moved)
-                    this._restrictMove = true;
+                    _restrictMove = true;
 
                 if (Piece.HasBehavior(out IAttacker attacker))
                     attacker.RaiseAttackEvent(this, target, target.Piece.Tile);
@@ -166,8 +166,8 @@ namespace ClassLibrary1.Pieces
         }
         internal void StartTurn()
         {
-            this._attacked = false;
-            this._restrictMove = false;
+            _attacked = false;
+            _restrictMove = false;
         }
         internal void EndTurn(ref double energyUpk, ref double massUpk)
         {
@@ -181,7 +181,7 @@ namespace ClassLibrary1.Pieces
             {
                 if (newValue != (int)newValue)
                     throw new Exception();
-                this._attackCur = (int)newValue;
+                _attackCur = (int)newValue;
             }
         }
     }

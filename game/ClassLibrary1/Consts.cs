@@ -1,6 +1,8 @@
 ﻿using ClassLibrary1.Pieces;
+using ClassLibrary1.Pieces.Behavior;
+using ClassLibrary1.Pieces.Behavior.Combat;
 using System;
-using DefenseType = ClassLibrary1.Pieces.CombatTypes.DefenseType;
+using DefenseType = ClassLibrary1.Pieces.Behavior.Combat.CombatTypes.DefenseType;
 
 namespace ClassLibrary1
 {

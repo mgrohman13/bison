@@ -1,9 +1,12 @@
-﻿using ClassLibrary1.Pieces.Terrain;
+﻿using ClassLibrary1.Pieces.Behavior;
+using ClassLibrary1.Pieces.Behavior.Combat;
+using ClassLibrary1.Pieces.Behavior.Combat;
+using ClassLibrary1.Pieces.Terrain;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
-using DefenseType = ClassLibrary1.Pieces.CombatTypes.DefenseType;
+using DefenseType = ClassLibrary1.Pieces.Behavior.Combat.CombatTypes.DefenseType;
 using Tile = ClassLibrary1.Map.Map.Tile;
 
 namespace ClassLibrary1.Pieces.Enemies

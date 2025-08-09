@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Linq;
+using ClassLibrary1.Pieces.Behavior;
+using ClassLibrary1.Pieces.Behavior.Combat;
+using ClassLibrary1.Pieces.Behavior.Combat;
 using Tile = ClassLibrary1.Map.Map.Tile;
 
 namespace ClassLibrary1.Pieces.Players

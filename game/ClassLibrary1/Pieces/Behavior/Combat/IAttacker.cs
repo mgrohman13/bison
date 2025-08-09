@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using static ClassLibrary1.Map.Map;
-using static ClassLibrary1.Pieces.Attacker;
-using AttackType = ClassLibrary1.Pieces.CombatTypes.AttackType;
+using static ClassLibrary1.Pieces.Behavior.Combat.Attacker;
+using AttackType = ClassLibrary1.Pieces.Behavior.Combat.CombatTypes.AttackType;
 
-namespace ClassLibrary1.Pieces
+namespace ClassLibrary1.Pieces.Behavior.Combat
 {
     public interface IAttacker : IBehavior
     {
@@ -43,12 +43,12 @@ namespace ClassLibrary1.Pieces
 
             public Values(AttackType type, int attack, double range, int? reload = null)
             {
-                this.Type = type;
+                Type = type;
                 if (attack < 1)
                     attack = 1;
-                this._attack = attack;
-                this._range = range;
-                this._reload = reload ?? CombatTypes.GetReload(type, attack);
+                _attack = attack;
+                _range = range;
+                _reload = reload ?? CombatTypes.GetReload(type, attack);
                 if (Attack < 1 || Range < 1 || Reload < 1 || Attack < Reload)
                     throw new Exception();
             }

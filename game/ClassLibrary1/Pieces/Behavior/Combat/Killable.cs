@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 using Tile = ClassLibrary1.Map.Map.Tile;
-using Values = ClassLibrary1.Pieces.IKillable.Values;
+using Values = ClassLibrary1.Pieces.Behavior.Combat.IKillable.Values;
 
-namespace ClassLibrary1.Pieces
+namespace ClassLibrary1.Pieces.Behavior.Combat
 {
     [Serializable]
     public class Killable : IKillable, IDeserializationCallback
@@ -42,13 +42,13 @@ namespace ClassLibrary1.Pieces
         {
             Values hits = GetHits(values);
 
-            this._piece = piece;
-            this._hits = new(piece, hits);
-            this._defenses = GetOther(values).Select(v => new Defense(piece, v)).ToList();
+            _piece = piece;
+            _hits = new(piece, hits);
+            _defenses = GetOther(values).Select(v => new Defense(piece, v)).ToList();
 
-            this._resilience = resilience;
-            this._defended = true;
-            this._resetDefended = false;
+            _resilience = resilience;
+            _defended = true;
+            _resetDefended = false;
 
             OnDeserialization(this);
         }
@@ -67,7 +67,7 @@ namespace ClassLibrary1.Pieces
             _hits.Upgrade(hits);
 
             double energy = 0, mass = 0;
-            foreach (var cur in Game.Rand.Iterate(this.Protection.Where(d1 => !defenses.Any(d2 => d1.Type == d2.Type))))
+            foreach (var cur in Game.Rand.Iterate(Protection.Where(d1 => !defenses.Any(d2 => d1.Type == d2.Type))))
             {
                 _defenses.Remove(cur);
 
@@ -83,7 +83,7 @@ namespace ClassLibrary1.Pieces
 
             foreach (var upg in defenses)
             {
-                var cur = this.Protection.Where(d => d.Type == upg.Type).SingleOrDefault();
+                var cur = Protection.Where(d => d.Type == upg.Type).SingleOrDefault();
                 if (cur == null)
                     _defenses.Add(new(Piece, upg));
                 else
@@ -99,8 +99,8 @@ namespace ClassLibrary1.Pieces
 
         void IKillable.OnAttacked()
         {
-            this._defended = true;
-            this._resetDefended = false;
+            _defended = true;
+            _resetDefended = false;
         }
 
         void IKillable.GetHitsRepair(out double hitsInc, out double massCost)
@@ -126,7 +126,7 @@ namespace ClassLibrary1.Pieces
             foreach (Defense defense in Game.Rand.Iterate(((IKillable)this).AllDefenses))
                 defense.StartTurn();
 
-            if (this._resetDefended)
+            if (_resetDefended)
                 _defended = false;
         }
         void IBehavior.EndTurn(ref double energyUpk, ref double massUpk)
@@ -134,7 +134,7 @@ namespace ClassLibrary1.Pieces
             foreach (Defense defense in Game.Rand.Iterate(((IKillable)this).AllDefenses))
                 defense.EndTurn(ref energyUpk, ref massUpk);
 
-            this._resetDefended = true;
+            _resetDefended = true;
         }
 
         [NonSerialized]
@@ -155,9 +155,9 @@ namespace ClassLibrary1.Pieces
             public readonly Tile DefTile;
             public DamagedEventArgs(Attack attack, Defense defense, Tile defTile)
             {
-                this.Attack = attack;
-                this.Defense = defense;
-                this.DefTile = defTile;
+                Attack = attack;
+                Defense = defense;
+                DefTile = defTile;
             }
         }
         void IKillable.RaiseDamagedEvent(Attack attack, Defense defense, Tile defTile)

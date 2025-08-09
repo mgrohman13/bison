@@ -1,10 +1,11 @@
-﻿using ClassLibrary1.Pieces.Players;
+﻿using ClassLibrary1.Pieces.Behavior.Combat;
+using ClassLibrary1.Pieces.Players;
 using ClassLibrary1.Pieces.Terrain;
 using MattUtil;
 using System;
 using Tile = ClassLibrary1.Map.Map.Tile;
 
-namespace ClassLibrary1.Pieces
+namespace ClassLibrary1.Pieces.Behavior
 {
     [Serializable]
     public class Builder : IBuilder
@@ -21,8 +22,8 @@ namespace ClassLibrary1.Pieces
 
         public Builder(Piece piece, IBuilder.Values values)
         {
-            this._piece = piece;
-            this._values = values;
+            _piece = piece;
+            _values = values;
         }
         public T GetBehavior<T>() where T : class, IBehavior
         {
@@ -36,7 +37,7 @@ namespace ClassLibrary1.Pieces
         }
         void IBuilder.Upgrade(IBuilder.Values values)
         {
-            this._values = values;
+            _values = values;
         }
 
         void IBehavior.GetUpkeep(ref double energyUpk, ref double massUpk)
@@ -52,7 +53,7 @@ namespace ClassLibrary1.Pieces
         private bool Validate(Tile tile, bool empty)
         {
             //check blocks
-            return tile != null && tile.Visible && tile.GetDistance(this.Piece.Tile) <= Range
+            return tile != null && tile.Visible && tile.GetDistance(Piece.Tile) <= Range
                 && (empty ? tile.Piece == null : !tile.Piece.HasBehavior(out IMissileSilo silo) || silo.NumMissiles == 0);
         }
         private bool Replace(bool doReplace, PlayerPiece piece, CostFunc GetNewCost, Func<double> GetRounding, Action NewPiece, bool validateHits,
@@ -97,7 +98,7 @@ namespace ClassLibrary1.Pieces
                     foreach (var a in attacker.Attacks)
                         ApplyValue(a.AttackCur, CombatTypes.GetStartCur(a.Type, a.AttackMax), Consts.EnergyPerAttack);
                 if (totCur > totStart) throw new Exception();
-                double mult = totStart == 0 ? 1 : ((totCur / totStart) + 1.0) / 2.0;
+                double mult = totStart == 0 ? 1 : (totCur / totStart + 1.0) / 2.0;
 
                 mult *= Consts.ReplaceRefundPct * Consts.StatValue(killable.Hits.DefenseCur) / Consts.StatValue(killable.Hits.DefenseMax);
                 double rounding = GetRounding();

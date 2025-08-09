@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Data;
 using System.Linq;
-using DefenseType = ClassLibrary1.Pieces.CombatTypes.DefenseType;
+using DefenseType = ClassLibrary1.Pieces.Behavior.Combat.CombatTypes.DefenseType;
 using Tile = ClassLibrary1.Map.Map.Tile;
-using Values = ClassLibrary1.Pieces.IKillable.Values;
+using Values = ClassLibrary1.Pieces.Behavior.Combat.IKillable.Values;
 
-namespace ClassLibrary1.Pieces
+namespace ClassLibrary1.Pieces.Behavior.Combat
 {
     [Serializable]
     public class Defense
@@ -23,10 +23,10 @@ namespace ClassLibrary1.Pieces
 
         internal Defense(Piece piece, Values values)
         {
-            this.Piece = piece;
-            this._values = values;
+            Piece = piece;
+            _values = values;
 
-            this._defenseCur = CombatTypes.GetStartCur(values.Type, values.Defense);
+            _defenseCur = CombatTypes.GetStartCur(values.Type, values.Defense);
         }
         public T GetBehavior<T>() where T : class, IBehavior
         {
@@ -35,18 +35,18 @@ namespace ClassLibrary1.Pieces
 
         internal void SetHits(int cur, int max)
         {
-            this._defenseCur = cur;
+            _defenseCur = cur;
             if (max != DefenseMax)
-                this._values = new(Type, max);
+                _values = new(Type, max);
         }
         internal void Upgrade(Values values)
         {
             double defPct = Consts.StatValue(DefenseCur) / Consts.StatValue(DefenseMax);
-            this._values = values;
+            _values = values;
             //if (Type != DefenseType.Shield) //move to CombatTypes
-            this._defenseCur = Game.Rand.Round(Consts.StatValueInverse(Consts.StatValue(DefenseMax) * defPct));
+            _defenseCur = Game.Rand.Round(Consts.StatValueInverse(Consts.StatValue(DefenseMax) * defPct));
             if (DefenseCur < 1 && Type == DefenseType.Hits)
-                this._defenseCur = 1;
+                _defenseCur = 1;
         }
 
         internal void DoDamage(Attack attack)
@@ -72,19 +72,19 @@ namespace ClassLibrary1.Pieces
                     if (DoCollateralDamage(null, attack.AttackCur))//null to do reduced damage
                         attack.Damage();
 
-            if (!this.Dead)
-                this._defenseCur--;
+            if (!Dead)
+                _defenseCur--;
             else
                 ;
 
-            if (Type == DefenseType.Hits && this.Dead)
+            if (Type == DefenseType.Hits && Dead)
                 Piece.Die();
 
             Piece.GetBehavior<IKillable>().RaiseDamagedEvent(a, this, tile);
         }
         private bool DoCollateralDamage(Piece piece, int defCur)
         {
-            double dmgVal = this.DefenseCur;
+            double dmgVal = DefenseCur;
             double otherVal = defCur;
             double dmgChance = 0;
             if (otherVal > 0)
@@ -94,7 +94,7 @@ namespace ClassLibrary1.Pieces
                     dmgChance = (otherVal - .5) / (double)(dmgVal + .5);
 
             double baseChance = .75;
-            if (piece != this.Piece)
+            if (piece != Piece)
                 baseChance = .50;
 
             return Game.Rand.Bool(baseChance * dmgChance);
@@ -176,7 +176,7 @@ namespace ClassLibrary1.Pieces
             {
                 if (newValue != (int)newValue)
                     throw new Exception();
-                this._defenseCur = (int)newValue;
+                _defenseCur = (int)newValue;
             }
 
             if (CombatTypes.Repair(Type))

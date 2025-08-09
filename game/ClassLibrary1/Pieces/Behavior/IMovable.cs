@@ -2,7 +2,7 @@
 using System;
 using Tile = ClassLibrary1.Map.Map.Tile;
 
-namespace ClassLibrary1.Pieces
+namespace ClassLibrary1.Pieces.Behavior
 {
     public interface IMovable : IBehavior
     {
@@ -30,9 +30,9 @@ namespace ClassLibrary1.Pieces
             {
                 if (!(moveInc < moveMax && moveMax < moveLimit)) throw new Exception();
 
-                this._moveInc = moveInc;
-                this._moveMax = moveMax;
-                this._moveLimit = moveLimit;
+                _moveInc = moveInc;
+                _moveMax = moveMax;
+                _moveLimit = moveLimit;
             }
             public Values(IMovable movable)
                 : this(movable.MoveInc, movable.MoveMax, movable.MoveLimit)

@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 using Tile = ClassLibrary1.Map.Map.Tile;
-using Values = ClassLibrary1.Pieces.IAttacker.Values;
+using Values = ClassLibrary1.Pieces.Behavior.Combat.IAttacker.Values;
 
-namespace ClassLibrary1.Pieces
+namespace ClassLibrary1.Pieces.Behavior.Combat
 {
     [Serializable]
     public class Attacker : IAttacker, IDeserializationCallback
@@ -34,8 +34,8 @@ namespace ClassLibrary1.Pieces
 
         internal Attacker(Piece piece, IEnumerable<Values> attacks)
         {
-            this._piece = piece;
-            this._attacks = attacks.Select(a => new Attack(Piece, a)).ToList();
+            _piece = piece;
+            _attacks = attacks.Select(a => new Attack(Piece, a)).ToList();
 
             OnDeserialization(this);
         }
@@ -50,9 +50,9 @@ namespace ClassLibrary1.Pieces
             Values[] attacks = values.ToArray();
 
             double energy = 0;
-            while (this.Attacks.Count > attacks.Length)
+            while (Attacks.Count > attacks.Length)
             {
-                var cur = Game.Rand.SelectValue(this.Attacks);
+                var cur = Game.Rand.SelectValue(Attacks);
                 _attacks.Remove(cur);
 
                 energy += Consts.StatValue(cur.AttackCur) * Consts.EnergyPerAttack;
@@ -63,7 +63,7 @@ namespace ClassLibrary1.Pieces
             for (int a = 0; a < attacks.Length; a++)
             {
                 var upg = attacks[a];
-                if (a >= this.Attacks.Count)
+                if (a >= Attacks.Count)
                     _attacks.Add(new(Piece, upg));
                 else
                     _attacks[a].Upgrade(upg);
@@ -72,21 +72,21 @@ namespace ClassLibrary1.Pieces
 
         bool IAttacker.Fire(IKillable target)
         {
-            bool fire = (Piece.IsPlayer && target != null && target.Piece.IsEnemy && target.Piece.Tile.Visible);
+            bool fire = Piece.IsPlayer && target != null && target.Piece.IsEnemy && target.Piece.Tile.Visible;
             bool fired = Fire(fire, target);
             Piece.Tile.Map.Game.SaveGame();
             return fired;
         }
         bool IAttacker.EnemyFire(IKillable target, Attack attack)
         {
-            bool fire = (Piece.IsEnemy && target != null && target.Piece.IsPlayer);
+            bool fire = Piece.IsEnemy && target != null && target.Piece.IsPlayer;
             return Fire(fire, target, attack);
         }
         private bool Fire(bool fire, IKillable target, Attack useAtt = null)
         {
             bool retVal = false;
             if (fire)
-                foreach (Attack attack in (useAtt == null ? Game.Rand.Iterate(Attacks) : new[] { useAtt }))
+                foreach (Attack attack in useAtt == null ? Game.Rand.Iterate(Attacks) : new[] { useAtt })
                 {
                     retVal |= attack.Fire(target);
                     if (target.Dead)
@@ -128,10 +128,10 @@ namespace ClassLibrary1.Pieces
             public readonly IKillable Killable;
             public AttackEventArgs(Attack attack, IKillable killable, Tile targetTile)
             {
-                this.Attack = attack;
-                this.Killable = killable;
-                this.From = attack.Piece.Tile;
-                this.To = targetTile;
+                Attack = attack;
+                Killable = killable;
+                From = attack.Piece.Tile;
+                To = targetTile;
             }
         }
         void IAttacker.RaiseAttackEvent(Attack attack, IKillable killable, Tile targetTile) => Event.RaiseAttackEvent(attack, killable, targetTile);

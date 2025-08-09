@@ -1,7 +1,8 @@
-﻿using ClassLibrary1.Pieces.Terrain;
+﻿using ClassLibrary1.Pieces.Behavior.Combat;
+using ClassLibrary1.Pieces.Terrain;
 using MattUtil;
 using System;
-using DefenseType = ClassLibrary1.Pieces.CombatTypes.DefenseType;
+using DefenseType = ClassLibrary1.Pieces.Behavior.Combat.CombatTypes.DefenseType;
 using Tile = ClassLibrary1.Map.Map.Tile;
 using UpgType = ClassLibrary1.ResearchUpgValues.UpgType;
 

@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using static ClassLibrary1.Pieces.Killable;
-using DefenseType = ClassLibrary1.Pieces.CombatTypes.DefenseType;
+using DefenseType = ClassLibrary1.Pieces.Behavior.Combat.CombatTypes.DefenseType;
 using Tile = ClassLibrary1.Map.Map.Tile;
 
-namespace ClassLibrary1.Pieces
+namespace ClassLibrary1.Pieces.Behavior.Combat
 {
     public interface IKillable : IBehavior
     {
@@ -27,7 +26,7 @@ namespace ClassLibrary1.Pieces
         internal void OnAttacked();
         internal void GetHitsRepair(out double hitsInc, out double massCost);
         internal bool IsRepairing();
-        public Events Event { get; }
+        public Killable.Events Event { get; }
         internal void RaiseDamagedEvent(Attack attack, Defense defense, Tile defTile);
 
         internal double CurDefenseValue => AllDefenses.Sum(d => Consts.StatValue(d.DefenseCur));
@@ -41,10 +40,10 @@ namespace ClassLibrary1.Pieces
 
             public Values(DefenseType type, int defense)
             {
-                this.Type = type;
+                Type = type;
                 if (defense < 1)
                     defense = 1;
-                this._defense = defense;
+                _defense = defense;
             }
             public Values(Defense defense)
                 : this(defense.Type, defense.DefenseMax)

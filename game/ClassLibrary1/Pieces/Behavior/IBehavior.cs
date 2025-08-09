@@ -1,4 +1,4 @@
-﻿namespace ClassLibrary1.Pieces
+﻿namespace ClassLibrary1.Pieces.Behavior
 {
     public interface IBehavior
     {
