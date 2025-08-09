@@ -154,7 +154,15 @@ namespace WinFormsApp1
                         FormatPct(killable.Hits.DefenseCur < killable.Hits.DefenseMax ? Consts.GetDamagedValue(killable.Piece, 1, 0) : killable.Resilience),
                         killable.Hits.DefenseCur < killable.Hits.DefenseMax ? string.Format(" ({0})", FormatPct(killable.Resilience)) : "");
                 }
-                if (Selected.Piece.HasBehavior(out IMovable movable))
+
+                if (Selected.Piece.HasBehavior(out IMissileSilo silo))
+                {
+                    lbl5.Show();
+                    lblInf5.Show();
+                    lbl5.Text = "Missiles";
+                    lblInf5.Text = silo.NumMissiles.ToString();
+                }
+                else if (Selected.Piece.HasBehavior(out IMovable movable))
                 {
                     lbl5.Show();
                     lblInf5.Show();
@@ -292,12 +300,17 @@ namespace WinFormsApp1
                     lblInf10.Text = string.Format("{0}{1}", FormatPct(sustain), CheckBase(resource.Sustain, sustain, FormatPct));
                 }
 
+                var attacks = Enumerable.Empty<Attack>();
                 if (Selected.Piece.HasBehavior(out IAttacker attacker))
+                    attacks = attacker.Attacks;
+                if (silo != null)
+                    attacks = new[] { silo.SampleAttack };
+                if (attacks.Any())
                 {
                     dgvAttacks.Show();
 
                     //int idx = 0;
-                    dgvAttacks.DataSource = attacker.Attacks.OrderByDescending(a => a.Range).Select(a => new
+                    dgvAttacks.DataSource = attacks.OrderByDescending(a => a.Range).Select(a => new
                     {
                         Online = a.CanAttack().ToString(),
                         a.Type,
@@ -306,66 +319,9 @@ namespace WinFormsApp1
                         Attack = $"{a.AttackCur}" + (a.AttackCur < a.AttackMax ? $" / {a.AttackMax}" : ""),
                         Reload = $"+{FormatUsuallyInt(a.Reload)}" + (FormatUsuallyInt(a.Reload) != a.ReloadBase.ToString() ? $" / {a.ReloadBase}" : ""),
                     }).ToList();
-                    dgvAttacks.Columns["Online"].Visible = attacker.Attacks.Any(a => !a.CanAttack());
-                    dgvAttacks.Columns["Type"].Visible = attacker.Attacks.Any(a => a.Type != AttackType.Kinetic);
-                    dgvAttacks.Columns["Range"].Visible = attacker.Attacks.Any(a => a.Range > Attack.MELEE_RANGE);
-                    //dgvAttacks.Columns["Rounds"].DefaultCellStyle.Format = "0.0";
-
-                    //foreach (DataGridViewColumn c in dgvAttacks.Columns)
-                    //    c.Visible = false;
-
-                    //dgvAttacks.Columns["Type"].Visible = true;
-                    //dgvAttacks.Columns["AttackCur"].Visible = true;
-                    //dgvAttacks.Columns["AttackMax"].Visible = true;
-                    //dgvAttacks.Columns["Range"].Visible = true;
-                    //dgvAttacks.Columns["Rounds"].Visible = true;
-                    //dgvAttacks.Columns["Range"].DefaultCellStyle.Format = "0.0";
-
-
-                    //dgvAttacks.Columns["Upkeep"].Visible = false;
-
-                    //dgvAttacks.Columns["Range"].DisplayIndex = idx++;
-                    //dgvAttacks.Columns["Range"].HeaderText = "RANGE";
-                    //dgvAttacks.Columns["Range"].DefaultCellStyle.Format = "0.0";
-
-                    ////if (attacker.Attacks.Any(a => Format(a.Range) != Format(a.RangeBase)))
-                    ////{
-                    ////    dgvAttacks.Columns["RangeBase"].Visible = true;
-                    ////    dgvAttacks.Columns["RangeBase"].DisplayIndex = idx++;
-                    ////    dgvAttacks.Columns["RangeBase"].HeaderText = "(base)";
-                    ////    dgvAttacks.Columns["RangeBase"].DefaultCellStyle.Format = "0.0";
-                    ////}
-                    ////else
-                    //dgvAttacks.Columns["RangeBase"].Visible = false;
-
-                    //dgvAttacks.Columns["Damage"].DisplayIndex = idx++;
-                    //dgvAttacks.Columns["Damage"].HeaderText = "DMG";
-                    //dgvAttacks.Columns["Damage"].DefaultCellStyle.Format = attacker.Attacks.Any(a => a.Damage < a.DamageBase) ? "0.0" : "0";
-
-                    ////if (attacker.Attacks.Any(a => Format(a.Damage) != Format(a.DamageBase)))
-                    ////{
-                    ////    dgvAttacks.Columns["DamageBase"].Visible = true;
-                    ////    dgvAttacks.Columns["DamageBase"].DisplayIndex = idx++;
-                    ////    dgvAttacks.Columns["DamageBase"].HeaderText = "(base)";
-                    ////    dgvAttacks.Columns["DamageBase"].DefaultCellStyle.Format = "0.0";
-                    ////}
-                    ////else
-                    //dgvAttacks.Columns["DamageBase"].Visible = false;
-
-                    //dgvAttacks.Columns["ArmorPierce"].Visible = attacker.Attacks.Any(a => a.ArmorPierce > 0);
-                    //dgvAttacks.Columns["ArmorPierce"].DisplayIndex = idx++;
-                    //dgvAttacks.Columns["ArmorPierce"].HeaderText = "AP";
-                    //dgvAttacks.Columns["ArmorPierce"].DefaultCellStyle.Format = "P0";
-                    //dgvAttacks.Columns["ShieldPierce"].Visible = attacker.Attacks.Any(a => a.ShieldPierce > 0);
-                    //dgvAttacks.Columns["ShieldPierce"].DisplayIndex = idx++;
-                    //dgvAttacks.Columns["ShieldPierce"].HeaderText = "SP";
-                    //dgvAttacks.Columns["ShieldPierce"].DefaultCellStyle.Format = "P0";
-
-                    //dgvAttacks.Columns["Dev"].DisplayIndex = idx++;
-                    //dgvAttacks.Columns["Dev"].HeaderText = "RNDM";
-                    //dgvAttacks.Columns["Dev"].DefaultCellStyle.Format = "P0";
-                    //dgvAttacks.Columns["Attacked"].DisplayIndex = idx++;
-                    //dgvAttacks.Columns["Attacked"].HeaderText = "USED";
+                    dgvAttacks.Columns["Online"].Visible = attacks.Any(a => !a.CanAttack());
+                    dgvAttacks.Columns["Type"].Visible = attacks.Any(a => a.Type != AttackType.Kinetic);
+                    dgvAttacks.Columns["Range"].Visible = attacks.Any(a => a.Range > Attack.MELEE_RANGE);
 
                     int labelsY = this.Controls.OfType<Label>().Where(lbl => lbl.Visible && lbl.Parent != this.panel1).Max(lbl => lbl.Location.Y + lbl.Height);
                     dgvAttacks.MaximumSize = new Size(this.Width, this.panel1.Location.Y - labelsY);

@@ -59,6 +59,8 @@ namespace ClassLibrary1.Pieces.Players
                 SetBehavior(new Repair(this, values.GetRepair(Game, _rangeMult, _rounding)));
             if (!HasBehavior<IBuilder.IBuildConstructor>() && research.HasType(Research.Type.FactoryConstructor))
                 SetBehavior(new Builder.BuildConstructor(this, values.GetRepair(Game, _rangeMult, _rounding).Builder));
+            if (!HasBehavior<IMissileSilo>() && research.HasType(Research.Type.Missile))
+                SetBehavior(new MissileSilo(this));
         }
         private static Values GetValues(Game game)
         {

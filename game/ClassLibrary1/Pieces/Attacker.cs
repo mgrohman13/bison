@@ -119,7 +119,6 @@ namespace ClassLibrary1.Pieces
             public delegate void AttackEventHandler(object sender, AttackEventArgs e);
             public event AttackEventHandler AttackEvent;
             internal void RaiseAttackEvent(Attack attack, IKillable killable, Tile targetTile) =>
-
                 AttackEvent?.Invoke(this, new AttackEventArgs(attack, killable, targetTile));
         }
         public class AttackEventArgs

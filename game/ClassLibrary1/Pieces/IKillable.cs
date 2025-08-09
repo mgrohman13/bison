@@ -30,6 +30,9 @@ namespace ClassLibrary1.Pieces
         public Events Event { get; }
         internal void RaiseDamagedEvent(Attack attack, Defense defense, Tile defTile);
 
+        internal double CurDefenseValue => AllDefenses.Sum(d => Consts.StatValue(d.DefenseCur));
+        internal double MaxDefenseValue => AllDefenses.Sum(d => Consts.StatValue(d.DefenseMax));
+
         [Serializable]
         public readonly struct Values
         {

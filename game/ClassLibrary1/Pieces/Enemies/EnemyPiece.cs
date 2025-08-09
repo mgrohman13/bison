@@ -27,6 +27,7 @@ namespace ClassLibrary1.Pieces.Enemies
         public ReadOnlyCollection<Tuple<Tile, Tile>> LastAttacks => lastAttacks.AsReadOnly();
 
         internal IEnemySpawn Spawn => _spawn;
+        internal abstract double Cost { get; }
 
         internal EnemyPiece(Tile tile, AIState state, IEnemySpawn spawn = null)
             : base(tile.Map.Game.Enemy, tile)

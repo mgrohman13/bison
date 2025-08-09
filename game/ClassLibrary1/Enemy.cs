@@ -20,6 +20,8 @@ namespace ClassLibrary1
         private MechBlueprint NextAlien => _nextAlien;
         private double _portalSpawn, _debt, _payment;
 
+        internal IResearch Research => _research;
+
         public IEnumerable<Piece> VisiblePieces => _pieces.Where(p => p.Tile.Visible);
 
         public IEnumerable<Tuple<Tile, Tile>> LastAttacks => PiecesOfType<EnemyPiece>().SelectMany(a => a.LastAttacks);
@@ -153,7 +155,7 @@ namespace ClassLibrary1
 
                 //exits place near core, avoiding stronger immediate player attacks and potential turret range
                 double turretRange = (new[] { UpgType.TurretRange, UpgType.TurretLaserRange, UpgType.TurretExplosivesRange, })
-                    .Max(u => ResearchUpgValues.Calc(u, Research.GetResearchMult(player.Research.ResearchCur)));
+                    .Max(u => ResearchUpgValues.Calc(u, ClassLibrary1.Research.GetResearchMult(player.Research.ResearchCur)));
                 IEnumerable<FoundationPiece> turrets = player.PiecesOfType<Turret>();
                 if (turrets.Any())
                     turretRange = Math.Max(turretRange,
@@ -350,7 +352,7 @@ namespace ClassLibrary1
         }
 
         internal void Income(double energy) => AddEnergy(energy * Consts.DifficultySetting);
-        private void AddEnergy(double energy) => this._energy += Game.Rand.Round(energy);
+        internal void AddEnergy(double energy) => this._energy += Game.Rand.Round(energy);
         private void RandIncome()
         {
             double modify = Math.Min(Math.Max(0, Energy), IncomeReference());
@@ -389,7 +391,7 @@ namespace ClassLibrary1
 
             double energy = NextAlien.EnergyEquivalent();
             Spend(Game.Rand.Round(energy), 0);
-            Alien.NewAlien(tile, path, energy, NextAlien.Killable, NextAlien.Resilience, NextAlien.Attacker, NextAlien.Movable);
+            Alien.NewAlien(tile, path, energy, NextAlien.ResearchLevel, NextAlien.Killable, NextAlien.Resilience, NextAlien.Attacker, NextAlien.Movable);
             value = null;
             GenAlien();
 

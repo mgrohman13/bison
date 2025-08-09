@@ -20,6 +20,7 @@ namespace ClassLibrary1
         internal IReadOnlyList<Piece> Pieces => _pieces;
         public bool IsPlayer => this == Game.Player;
         public bool IsEnemy => this == Game.Enemy;
+        internal IResearch Research;
 
         protected Side(Game game, int energy, int mass)
         {

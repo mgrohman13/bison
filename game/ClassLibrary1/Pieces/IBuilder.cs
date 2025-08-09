@@ -44,6 +44,10 @@ namespace ClassLibrary1.Pieces
         {
             public Drone Build(Tile tile);
         }
+        //public interface IBuildMissile : IBuilder
+        //{
+        //    public void Build();
+        //}
 
         [Serializable]
         public readonly struct Values

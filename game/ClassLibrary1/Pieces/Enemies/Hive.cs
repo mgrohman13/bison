@@ -20,8 +20,8 @@ namespace ClassLibrary1.Pieces.Enemies
         private readonly IKillable killable;
         private readonly IAttacker attacker;
 
-        internal readonly double Cost;
-        private double energy;
+        internal override double Cost => _cost;
+        private double _cost, _energy;
 
         public bool Dead => killable.Dead;
 
@@ -30,8 +30,8 @@ namespace ClassLibrary1.Pieces.Enemies
         {
             this.spawner = spawner;
 
-            this.Cost = cost + energy;
-            this.energy = energy;
+            this._cost = cost + energy;
+            this._energy = energy;
 
             this.killable = new Killable(this, killable, resilience);
             this.attacker = new Attacker(this, attacks);
@@ -91,7 +91,7 @@ namespace ClassLibrary1.Pieces.Enemies
         {
             double cur = killable.AllDefenses.Sum(d => Consts.StatValue(d.DefenseCur));
             double max = killable.AllDefenses.Sum(d => Consts.StatValue(d.DefenseMax));
-            ((Enemy)Side).HiveDamaged(this, e.DefTile, spawner, ref energy,
+            ((Enemy)Side).HiveDamaged(this, e.DefTile, spawner, ref _energy,
                 killable.Hits.DefenseCur, cur / max, MaxRange / 2.1 + Attack.MELEE_RANGE);
         }
         public double SumRange => attacker.Attacks.Sum(a => a.Range);

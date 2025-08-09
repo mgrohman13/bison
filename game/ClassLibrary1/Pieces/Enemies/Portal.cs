@@ -21,23 +21,24 @@ namespace ClassLibrary1.Pieces.Enemies
         private readonly bool _exit;
         private int _decay;
         private double _range, _collect;
-        private readonly double _total;
+        private readonly double _cost;
 
         //internal readonly double Cost;
         //private double energy;
 
         public bool Exit => _exit;
         public bool Dead => killable.Dead;
+        internal override double Cost => _cost;
 
         private Portal(Tile tile, bool exit, IEnumerable<IKillable.Values> killable,
-            double resilience, double range, double collect, PieceSpawn spawn)
+            double resilience, double range, double cost, PieceSpawn spawn)
             : base(tile, AIState.Fight, spawn)
         {
             this._exit = exit;
             this._decay = 0;
             this._range = range;
-            this._collect = collect;
-            this._total = collect;
+            this._collect = cost;
+            this._cost = cost;
 
             //this.Cost = cost + energy;
             //this.energy = energy;
@@ -70,7 +71,7 @@ namespace ClassLibrary1.Pieces.Enemies
 
             PieceSpawn spawn = exit ? new PieceSpawn() : null;
             spawn?.Spawner?.Mult(3.9);
-            Portal obj = new(tile, exit, killable, 1, range, cost * Consts.PortalRewardPct, spawn);
+            Portal obj = new(tile, exit, killable, 1, range, cost, spawn);
             tile.Map.Game.AddPiece(obj);
 
             //if (exit)
@@ -120,8 +121,8 @@ namespace ClassLibrary1.Pieces.Enemies
         {
             Tile tile = this.Tile;
             base.Die();
-            Treasure.NewTreasure(tile, _collect);
-            Game.Enemy.Income(_total - _collect); 
+            Treasure.NewTreasure(tile, _collect * Consts.PortalRewardPct);
+            Game.Enemy.Income((_cost - _collect) * Consts.PortalRewardPct);
         }
 
         private static IEnumerable<IKillable.Values> GenKillable(double difficulty, bool exit)

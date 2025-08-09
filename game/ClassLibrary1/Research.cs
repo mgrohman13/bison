@@ -400,10 +400,6 @@ namespace ClassLibrary1
 
         private static IReadOnlyDictionary<Type, int> CalcMinResearch()
         {
-            //help key types to not come too late
-            HashSet<Type> keyTechs = new() { Type.Factory, Type.TurretRange, Type.ConstructorDefense, Type.ConstructorMove,
-                Type.FactoryRepair, Type.FactoryConstructor, Type.BuildingDefense, Type.ExtractorAutoRepair, };
-
             Dictionary<Type, int> retVal = new();
             HashSet<Type> all = Enum.GetValues<Type>().ToHashSet();
 
@@ -414,22 +410,32 @@ namespace ClassLibrary1
             {
                 Type type = Game.Rand.SelectValue(all.Where(t1 => Dependencies[t1].All(t2 => retVal.ContainsKey(t2))),
                     type => Game.Rand.Round(count / (Math.Sqrt(count) + GetAllDependencies(type).Count))
-                        + (keyTechs.Contains(type) ? 2 : 1));
+                        + (KeyTechs.Contains(type) ? 2 : 1));
                 all.Remove(type);
-                research += .78 * GetNext(research) * (double)type / _avgTypeCost;
+                research = GetResearch(research, (double)type);
                 int min = 0;
                 if (GetAllDependencies(type).Count > 2)
                     min = Game.Rand.GaussianCappedInt(research, dev / Math.Sqrt(research));
                 else
                     Debug.WriteLine($"Early type: {type}");
-                if (keyTechs.Contains(type))
+                if (KeyTechs.Contains(type))
                     min = Game.Rand.Round(Math.Pow(min, .91));
                 retVal.Add(type, min);
             }
 
             var sort = retVal.OrderBy(p => p.Value);
 
+            //run through each twice to bias towards high side
+            foreach (Type end in Game.Rand.Iterate(EndTechs.Concat(EndTechs)))
+            {
+                research = Game.Rand.Range(research, GetResearch(research, Game.Rand.Range((double)_avgTypeCost, (double)end)));
+                retVal[end] = Game.Rand.RangeInt(retVal[end], Game.Rand.Round(research));
+            }
+
             return retVal.AsReadOnly();
+
+            static double GetResearch(double research, double type) =>
+                research + .78 * GetNext(research) * type / _avgTypeCost;
         }
 
         public static IEnumerable<Type> GetUnlocks(Type selected)
@@ -463,15 +469,20 @@ namespace ClassLibrary1
             Type.TurretLasers, Type.TurretExplosives, Type.TurretShields, Type.TurretArmor, Type.TurretAutoRepair,
             Type.FactoryConstructor, Type.FactoryAutoRepair, Type.ExtractorAutoRepair, Type.BurnMass, Type.ScrapResearch, Type.FabricateMass, };
         public static readonly Type[] UpgradeOnly = new Type[] { Type.ConstructorCost, Type.ConstructorMove,
-            Type.TurretRange, Type.TurretAttack, Type.TurretDefense, Type.BuildingCost,
-            Type.BuildingDefense, Type.ResearchChoices, Type.ExtractorValue, };
+            Type.TurretRange, Type.TurretAttack, Type.TurretDefense, Type.MissileCost, Type.MissileRange,
+            Type.BuildingCost, Type.BuildingDefense, Type.ResearchChoices, Type.ExtractorValue };
+        //pushes down min research requirement
+        public static readonly HashSet<Type> KeyTechs = new() { Type.Factory, Type.TurretRange, Type.ConstructorDefense, Type.ConstructorMove,
+                Type.FactoryRepair, Type.FactoryConstructor, Type.BuildingDefense, Type.ExtractorAutoRepair, };
+        //pushes up min research requirement
+        public static readonly Type[] EndTechs = new Type[] { Type.AmbientGenerator, Type.ExtractorValue, Type.RepairDrone, Type.Missile };
+
         //public static readonly Dictionary<Type, Type[,]> Dependencies = new()
         //{
         //    { Type.Mech, new Type[,] { } },
-        //    { Type.CoreShields, new Type[,]          { { Type.Mech, Type.Mech }, { Type.CoreShields, Type.CoreShields }, } },
-        //    { Type.Constructor, new Type[,]          { { Type.CoreShields, }, } },
-        //    { Type.Turret, new Type[,]               { { Type.Constructor, }, } },
-        //    { Type.Factory, new Type[,]              { { Type.Constructor, }, } },
+        //    { Type.CoreShields, new Type[,]          { { Type.Mech, Type.OptionA1 }, { Type.OptionB1, Type.OptionB2 }, } },
+        //    { Type.Constructor, new Type[,]          { { Type.CoreShields, }, } }, 
+
         public static readonly Dictionary<Type, Type[]> Dependencies = new()
         {
             { Type.Mech, Array.Empty<Type>() },
@@ -509,7 +520,10 @@ namespace ClassLibrary1
             { Type.FactoryRepair, new Type[]        { Type.Factory, } },
             { Type.FactoryConstructor, new Type[]   { Type.Factory, Type.FactoryRepair, Type.ConstructorCost, } },
             { Type.FactoryAutoRepair, new Type[]    { Type.Factory, Type.FactoryRepair, Type.ExtractorAutoRepair, } },
-
+            { Type.Missile, new Type[]              { Type.FactoryConstructor, Type.FactoryAutoRepair, Type.TurretExplosives } },
+            { Type.MissileCost, new Type[]          { Type.Missile, } }, //end
+            { Type.MissileRange, new Type[]         { Type.Missile, } }, //end
+            
             { Type.BuildingDefense, new Type[]      { Type.Constructor } }, //quick
             { Type.ExtractorAutoRepair, new Type[]  { Type.BuildingDefense, } },
             { Type.BuildingCost, new Type[]         { Type.BuildingDefense, Type.Turret, Type.Factory, Type.ConstructorCost, } },
@@ -565,6 +579,9 @@ namespace ClassLibrary1
             FactoryAutoRepair = 205,
             FactoryRepair = 240, //key
             FactoryConstructor = 290, //key
+            Missile = 910,
+            MissileCost = 90, //end
+            MissileRange = 400, //end
 
             BuildingDefense = 115, //quick
             FabricateMass = 135,
@@ -574,7 +591,7 @@ namespace ClassLibrary1
             BuildingCost = 225, //delay
             ExtractorAutoRepair = 285, //key
             AmbientGenerator = 310, //end   
-            ExtractorValue = 350, //end   
+            ExtractorValue = 390, //end   
         }
     }
 }

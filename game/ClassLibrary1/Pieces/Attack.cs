@@ -99,52 +99,63 @@ namespace ClassLibrary1.Pieces
                 ?? Enumerable.Empty<Piece>();
         }
 
+        internal bool Missile(IKillable target, double attMult)
+        {
+            if (Piece.HasBehavior<IMissileSilo>())
+            {
+                double att = AttackCur * attMult;
+                this._attackCur = Game.Rand.GaussianCappedInt(att, 1 / att, 1);
+                return DoFire(target);
+            }
+            return false;
+        }
         internal bool Fire(IKillable target)
         {
-            Tile targetTile = target.Piece.Tile;
-
             var defenders = GetDefenders(target.Piece);
             if (defenders.Any())
+                return DoFire(Game.Rand.SelectValue(defenders));
+            return false;
+        }
+        private bool DoFire(IKillable target)
+        {
+            bool DoAtt() => this.AttackCur > 0 && !target.Dead;
+            if (DoAtt())
             {
-                target = Game.Rand.SelectValue(defenders);
-                bool DoAtt() => this.AttackCur > 0 && !target.Dead;
-                if (DoAtt())
-                {
-                    Piece.Game.Map.UpdateVision(new[] { Piece, target.Piece }.Select(p => p.Tile));
+                Piece.Game.Map.UpdateVision(new[] { Piece, target.Piece }.Select(p => p.Tile));
 
-                    target.OnAttacked();
-                    int startAttack = this.AttackCur;
-                    Dictionary<Defense, int> startDefense = target.AllDefenses.ToDictionary(d => d, d => d.DefenseCur);
+                target.OnAttacked();
+                int startAttack = this.AttackCur;
+                Dictionary<Defense, int> startDefense = target.AllDefenses.ToDictionary(d => d, d => d.DefenseCur);
 
-                    int rounds = this.AttackCur;
-                    for (int a = 0; a < rounds && DoAtt(); a++)
-                        if (a == 0 || Game.Rand.Bool())
+                int rounds = this.AttackCur;
+                for (int a = 0; a < rounds && DoAtt(); a++)
+                    if (a == 0 || Game.Rand.Bool())
+                    {
+                        //Defense defense = Game.Rand.Iterate(target.TotalDefenses.Where(d => !d.Dead)).OrderBy(CombatTypes.CompareDef).First();
+                        Defense defense = Game.Rand.SelectValue(target.AllDefenses, CombatTypes.GetDefenceChance);
+                        bool activeDefense = target.HasBehavior<IAttacker>();
+
+                        if (Game.Rand.Next(AttackCur + defense.DefenseCur) < AttackCur)
                         {
-                            //Defense defense = Game.Rand.Iterate(target.TotalDefenses.Where(d => !d.Dead)).OrderBy(CombatTypes.CompareDef).First();
-                            Defense defense = Game.Rand.SelectValue(target.AllDefenses, CombatTypes.GetDefenceChance);
-                            bool activeDefense = target.HasBehavior<IAttacker>();
-
-                            if (Game.Rand.Next(AttackCur + defense.DefenseCur) < AttackCur)
-                            {
-                                defense.DoDamage(this);
-                            }
-                            else
-                            {
-                                if (activeDefense)
-                                    this._attackCur--;
-                                if (Game.Rand.Bool())
-                                    rounds--;
-                            }
+                            defense.DoDamage(this);
                         }
+                        else
+                        {
+                            if (activeDefense)
+                                this._attackCur--;
+                            if (Game.Rand.Bool())
+                                rounds--;
+                        }
+                    }
 
-                    this._attacked = true;
-                    if (Piece.HasBehavior(out IMovable movable) && movable.Moved)
-                        this._restrictMove = true;
+                this._attacked = true;
+                if (Piece.HasBehavior(out IMovable movable) && movable.Moved)
+                    this._restrictMove = true;
 
-                    Piece.GetBehavior<IAttacker>().RaiseAttackEvent(this, target, targetTile);
-                    Piece.Game.Log.LogAttack(this, startAttack, target, startDefense);
-                    return true;
-                }
+                if (Piece.HasBehavior(out IAttacker attacker))
+                    attacker.RaiseAttackEvent(this, target, target.Piece.Tile);
+                Piece.Game.Log.LogAttack(this, startAttack, target, startDefense);
+                return true;
             }
             return false;
         }

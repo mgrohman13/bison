@@ -16,7 +16,7 @@ namespace ClassLibrary1.Pieces.Enemies
         private readonly IMovable movable;
 
         //private readonly bool _autoRepair;
-        private readonly double _energy;
+        private readonly double _energy, _research;
 
         private double _morale;
         private bool targeted;
@@ -34,12 +34,13 @@ namespace ClassLibrary1.Pieces.Enemies
 
         //private double Morale => _morale;// hide behind research
 
-        private Alien(Tile tile, List<Point> pathToCore, double energy,
+        private Alien(Tile tile, List<Point> pathToCore, double energy, int research,
             IEnumerable<Values> killable, double resilience, IEnumerable<IAttacker.Values> attacks, IMovable.Values movable)
             : base(tile, pathToCore == null || Game.Rand.Bool() ? AIState.Patrol : AIState.Rush)
         {
             //this._autoRepair = Game.Rand.Bool(.078);//
             this._energy = energy;
+            this._research = research;
             this._morale = Game.Rand.Weighted(.91);
             this.targeted = false;
             this.PathToCore = pathToCore;
@@ -52,13 +53,16 @@ namespace ClassLibrary1.Pieces.Enemies
 
             OnDeserialization(this);
         }
-        internal static Alien NewAlien(Tile tile, List<Point> pathToCore, double energy,
+        internal static Alien NewAlien(Tile tile, List<Point> pathToCore, double energy, int research,
             IEnumerable<Values> killable, double resilience, IEnumerable<IAttacker.Values> attacks, IMovable.Values movable)
         {
-            Alien obj = new(tile, pathToCore, energy, killable, resilience, attacks, movable);
+            Alien obj = new(tile, pathToCore, energy, research, killable, resilience, attacks, movable);
             tile.Map.Game.AddPiece(obj);
             return obj;
         }
+
+        internal override double Cost => _energy
+            * Research.GetResearchMult(_research) / Research.GetResearchMult(Side.Research.GetBlueprintLevel());
 
         public override void OnDeserialization(object sender)
         {
@@ -131,7 +135,7 @@ namespace ClassLibrary1.Pieces.Enemies
                     if (MoraleCheck(1, true))
                         goto case AIState.Fight;
                     if (moveTiles.Any() && NeedsRetreatPath())
-                        RetreatPath = Game.Map.PathFindRetreat(Tile, GetRetreatTiles(), GetPathFindingMovement(), GetCurDefenseValue(), playerAttacks, ValidRetreatTile);
+                        RetreatPath = Game.Map.PathFindRetreat(Tile, GetRetreatTiles(), GetPathFindingMovement(), killable.CurDefenseValue, playerAttacks, ValidRetreatTile);
                     break;
                 case AIState.Fight:
                     state = AIState.Fight;
@@ -219,15 +223,12 @@ namespace ClassLibrary1.Pieces.Enemies
         {
             double pct = Consts.GetDamagedValue(this, 1, 0);
             pct *= pct;
-            double defCur = GetCurDefenseValue();
-            double defMax = killable.AllDefenses.Sum(d => Consts.StatValue(d.DefenseMax));
-            pct *= Math.Sqrt(defCur / defMax);
+            pct *= Math.Sqrt(killable.CurDefenseValue / killable.MaxDefenseValue);
             return Math.Sqrt(pct);
         }
 
         public bool CanRepair() => Consts.CanRepair(this);
 
-        private double GetCurDefenseValue() => killable.AllDefenses.Sum(d => Consts.StatValue(d.DefenseCur));
         private double GetPathFindingMovement() =>
             GetPathFindingMovement(new(movable));
         internal static double GetPathFindingMovement(IMovable.Values movable) =>

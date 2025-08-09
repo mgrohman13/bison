@@ -52,7 +52,8 @@ namespace ClassLibrary1.Pieces
         private bool Validate(Tile tile, bool empty)
         {
             //check blocks
-            return (tile != null && (!empty || tile.Piece == null) && tile.Visible && tile.GetDistance(this.Piece.Tile) <= Range);
+            return tile != null && tile.Visible && tile.GetDistance(this.Piece.Tile) <= Range
+                && (empty ? tile.Piece == null : !tile.Piece.HasBehavior(out IMissileSilo silo) || silo.NumMissiles == 0);
         }
         private bool Replace(bool doReplace, PlayerPiece piece, CostFunc GetNewCost, Func<double> GetRounding, Action NewPiece, bool validateHits,
             out int energy, out int mass, out bool couldReplace)
@@ -279,5 +280,22 @@ namespace ClassLibrary1.Pieces
                 return null;
             }
         }
+        //public class BuildMissile : Builder, IBuilder.IBuildMissile
+        //{
+        //    public BuildMissile(IMissileSilo silo, IBuilder.Values values)
+        //        : base(silo.Piece, values)
+        //    {
+        //    }
+        //    public void Build()
+        //    {
+        //        //if (Validate(tile, true))
+        //        //{
+        //        //    Drone.Cost(Piece.Game, out int energy, out int mass);
+        //        //    if (Piece.Game.Player.Spend(energy, mass))
+        //        //        return Drone.NewDrone(tile);
+        //        //}
+        //        //return null;
+        //    }
+        //}
     }
 }
