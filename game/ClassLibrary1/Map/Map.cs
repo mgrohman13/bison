@@ -422,24 +422,32 @@ namespace ClassLibrary1.Map
             {
                 int x = tile.X, y = tile.Y;
 
-                var dist = _treasures.Concat(_caves.Select(c => c.Center)).Concat(_paths.Select(p => p.GetClosestPoint(x, y)))
-                    .Select(p => GetDistSqr(p, new(x, y))).Concat(_caves.Select(c => c.ConnectionDistSqr(x, y)))
-                    .Min() + 1;
-                dist = Math.Sqrt(dist) / Consts.PathWidth / 2;
-
-                double chance;
-                if (dist > 1.5)
-                    chance = .21 - 1 / (dist - .5) / 5;
-                else
-                    chance = .01 * dist / 1.5;
-                chance /= Consts.TreasureDiv;
-
-                if (Game.Rand.Bool(chance))
+                Tile core = Game.Player.Core?.Tile;
+                if (core is not null)
                 {
-                    Treasure.NewTreasure(tile);
-                    if (Game.Rand.Bool())//Consts.TreasureSpacingChance
-                        _treasures.Add(new(tile.X, tile.Y));
+                    var dist = _treasures.Concat(new[] { new PointD(core.X, core.Y) })
+                        .Concat(_caves.Select(c => c.Center))
+                        .Concat(_paths.Select(p => p.GetClosestPoint(x, y)))
+                        .Select(p => GetDistSqr(p, new(x, y))).Concat(_caves.Select(c => c.ConnectionDistSqr(x, y)))
+                        .Min() + 1;
+                    dist = Math.Sqrt(dist) / Consts.PathWidth / 2;
+
+                    double chance;
+                    if (dist > 1.5)
+                        chance = .21 - 1 / (dist - .5) / 5;
+                    else
+                        chance = .01 * dist / 1.5;
+                    chance /= Consts.TreasureDiv;
+
+                    if (Game.Rand.Bool(chance))
+                    {
+                        Treasure.NewTreasure(tile);
+                        if (Game.Rand.Bool())//Consts.TreasureSpacingChance
+                            _treasures.Add(new(tile.X, tile.Y));
+                    }
                 }
+                else
+                    ;
             }
         }
 
