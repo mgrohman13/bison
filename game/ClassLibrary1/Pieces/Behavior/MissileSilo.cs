@@ -92,7 +92,28 @@ namespace ClassLibrary1.Pieces.Behavior
                     if (enemy is not null)
                     {
                         hitPct -= killable.CurDefenseValue / killable.MaxDefenseValue;
-                        ((Enemy)enemy.Side).AddEnergy(energy * hitPct); // full amt???
+                        Piece.Game.Enemy.AddEnergy(energy * hitPct); // full amt???
+
+                        double income = Piece.Game.Enemy.IncomeReference();
+                        double mult = (energy + income) / income;
+
+                        double spawnerMult = Math.Sqrt(mult);
+                        void MultSpawn(IBehavior location) =>
+                            Piece.Game.Map.GetClosestSpawner(location.Piece.Tile.Location).Spawner.Mult(Game.Rand.Range(1, spawnerMult));
+                        MultSpawn(this);
+                        MultSpawn(killable);
+
+                        mult *= mult;
+                        foreach (Alien a in Game.Rand.Iterate(Piece.Game.Enemy.PiecesOfType<Alien>()))
+                            if (a != killable.Piece)
+                            {
+                                void MissileFired(IBehavior location) =>
+                                    a.MissileFired(location.Piece, Game.Rand.Range(1, mult));
+                                MissileFired(this);
+                                MissileFired(killable);
+                            }
+                            else
+                                ;
 
                         //also mult nearby spawners?? //alien morale?
                     }

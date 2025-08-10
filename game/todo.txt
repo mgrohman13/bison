@@ -37,14 +37,10 @@ missile
 		2?
 	also make turret a missile silo?
 	allow replace missile silo to refund missiles?
-	
-UI for Missile
-namespace for IBehaviors
-missiles use explosive att type
-	account for it in enemy cost refund
-missile firing mult nearby spawners
-missiles landing nearby switch enemies to more aggressive state
-	increase morale? change state directly?
+	overkill affects alien energy inc?
+	missiles use explosive att type
+		account for it in enemy cost refund
+	UI for Missile
 
 NEW
 	can upgrade to just interim step 

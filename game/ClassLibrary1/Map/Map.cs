@@ -482,7 +482,8 @@ namespace ClassLibrary1.Map
         }
         internal static bool InvalidStartTile(Tile tile, bool isEnemy)
         {
-            if (tile == null) return true;
+            if (tile == null) 
+                return true;
 
             bool visible = tile.Visible && !tile.Map.Game.GameOver && !Game.TEST_MAP_GEN.HasValue;
             bool hiveRange = isEnemy && tile.Map._pieces.OfType<Hive>().Any(h => tile.GetDistance(h.Tile) <= h.MaxRange);
@@ -556,6 +557,19 @@ namespace ClassLibrary1.Map
             return spawn.SpawnTile(this);
         }
 
+        internal IEnemySpawn GetClosestSpawner(Point location)
+        {
+            var spawns = _paths.Select(p => new Tuple<IEnemySpawn, PointD>(p, p.ExploredPoint()))
+                .Concat(_caves.Select(c => new Tuple<IEnemySpawn, PointD>(c, c.Center)))
+                .Select(t =>
+                {
+                    double xDiff = location.X - t.Item2.X;
+                    double yDiff = location.Y - t.Item2.Y;
+                    int chance = Game.Rand.Round(int.MaxValue / (13 + xDiff * xDiff + yDiff * yDiff));
+                    return new Tuple<IEnemySpawn, int>(t.Item1, chance);
+                }).ToDictionary(t => t.Item1, t => t.Item2);
+            return Game.Rand.SelectValue(spawns);
+        }
         private static double GetAngle(PointD point) => GetAngle(point.X, point.Y);
         private static double GetAngle(double x, double y) => Math.Atan2(y, x);
         private static PointD GetPoint(double angle, double dist)

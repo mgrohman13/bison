@@ -106,11 +106,27 @@ namespace ClassLibrary1.Pieces.Enemies
             offset += ((IRepairable)this).RepairCost / Consts.RepairCost;
             double pct = offset / (cost + offset);
 
-            double distance = Tile.GetDistance(enemyPiece.Tile);
-            pct = Math.Pow(pct, Math.Sqrt(Consts.CaveSize / (distance + 1)));
+            pct = Math.Pow(pct, Math.Sqrt(EventDistMult(enemyPiece, 1)));
 
             this._morale *= Game.Rand.Weighted(pct);
         }
+        internal void MissileFired(Piece piece, double mult)
+        {
+            double pct = DefPct();
+            double dist = EventDistMult(piece, Consts.CaveSize);
+
+            mult--;
+            mult *= pct * pct * dist;
+            if (Game.Rand.Bool())
+                mult *= dist;
+            mult++;
+
+            this._morale = 1 - (1 - this._morale) / mult;
+            if (Game.Rand.Bool(1 - 1 / mult) && MoraleCheck(.5 / mult, true))
+                _state = AIState.Rush;
+        }
+        private double EventDistMult(Piece piece, double offset) =>
+            Consts.CaveSize / (Tile.GetDistance(piece.Tile) + offset);
 
         internal override AIState TurnState(double difficulty, bool clearPaths, Dictionary<Tile, double> playerAttacks, HashSet<Tile> moveTiles, HashSet<IKillable> killables,
             out List<Point> path)

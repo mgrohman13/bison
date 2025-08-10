@@ -92,7 +92,7 @@ namespace ClassLibrary1.Pieces.Enemies
         {
             double cur = killable.AllDefenses.Sum(d => Consts.StatValue(d.DefenseCur));
             double max = killable.AllDefenses.Sum(d => Consts.StatValue(d.DefenseMax));
-            ((Enemy)Side).HiveDamaged(this, e.DefTile, spawner, ref _energy,
+            Game.Enemy.HiveDamaged(this, e.DefTile, spawner, ref _energy,
                 killable.Hits.DefenseCur, cur / max, MaxRange / 2.1 + Attack.MELEE_RANGE);
         }
         public double SumRange => attacker.Attacks.Sum(a => a.Range);
