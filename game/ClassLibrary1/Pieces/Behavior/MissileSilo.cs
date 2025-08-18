@@ -58,7 +58,7 @@ namespace ClassLibrary1.Pieces.Behavior
 
             double totalAtt = 0, totalWeight = 0;
 
-            foreach (var pair in Behavior.Combat.Attack.GetDefenders(Piece.Side, killable.Piece))
+            foreach (var pair in Combat.Attack.GetDefenders(Piece.Side, killable.Piece))
             {
                 totalAtt += att * GetAttackMult(killable) * pair.Value;
                 totalWeight += pair.Value;
@@ -71,7 +71,7 @@ namespace ClassLibrary1.Pieces.Behavior
             bool fired = false;
 
             //no range or CanAttack checks
-            var defenders = Behavior.Combat.Attack.GetDefenders(Piece.Side, killable.Piece);
+            var defenders = Combat.Attack.GetDefenders(Piece.Side, killable.Piece);
             if (defenders.Any())
             {
                 killable = Game.Rand.SelectValue(defenders);
@@ -172,7 +172,7 @@ namespace ClassLibrary1.Pieces.Behavior
 
             public Values()
             {
-                attack = new(AttackType.Kinetic, 1, Behavior.Combat.Attack.MELEE_RANGE);
+                attack = new(AttackType.Kinetic, 1, Combat.Attack.MELEE_RANGE);
 
                 UpgradeMissileAttack(1);
                 UpgradeMissileRange(1);

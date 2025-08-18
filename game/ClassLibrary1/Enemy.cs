@@ -22,7 +22,7 @@ namespace ClassLibrary1
         private MechBlueprint NextAlien => _nextAlien;
         private double _portalSpawn, _debt, _payment;
 
-        internal IResearch Research => _research;
+        //internal IResearch Research => _research;
 
         public IEnumerable<Piece> VisiblePieces => _pieces.Where(p => p.Tile.Visible);
 
@@ -313,9 +313,10 @@ namespace ClassLibrary1
             IncPortals(hive);
 
             hitsPct = 1 - hitsPct;
-            int xfer = Game.Rand.Round(energy);
+            int xfer;
             if (hive.Dead)
             {
+                xfer = Game.Rand.Round(energy);
                 hitsPct = 1;
             }
             else

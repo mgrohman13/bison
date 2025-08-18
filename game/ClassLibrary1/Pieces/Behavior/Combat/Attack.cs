@@ -105,7 +105,7 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
             {
                 double att = AttackCur * attMult;
                 _attackCur = Game.Rand.GaussianCappedInt(att, 1 / att, 1);
-                return DoFire(target);
+                return DoFire(target, target.Piece.Tile);
             }
             return false;
         }
@@ -113,10 +113,10 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
         {
             var defenders = GetDefenders(target.Piece);
             if (defenders.Any())
-                return DoFire(Game.Rand.SelectValue(defenders));
+                return DoFire(Game.Rand.SelectValue(defenders), target.Piece.Tile);
             return false;
         }
-        private bool DoFire(IKillable target)
+        private bool DoFire(IKillable target, Tile targetTile)
         {
             bool DoAtt() => AttackCur > 0 && !target.Dead;
             if (DoAtt())
@@ -153,7 +153,7 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
                     _restrictMove = true;
 
                 if (Piece.HasBehavior(out IAttacker attacker))
-                    attacker.RaiseAttackEvent(this, target, target.Piece.Tile);
+                    attacker.RaiseAttackEvent(this, target, targetTile);
                 Piece.Game.Log.LogAttack(this, startAttack, target, startDefense);
                 return true;
             }

@@ -445,8 +445,6 @@ namespace ClassLibrary1
                 foreach (var p in dictDbl)
                     dictInt.Add(p.Key, Game.Rand.Round(p.Value * multiplier));
 
-                if (piece.ToString() == "Alien 36")
-                    ;
                 moveTo = Game.Rand.SelectValue(dictInt);
             }
 
@@ -536,7 +534,7 @@ namespace ClassLibrary1
                             else if (CanTarget(target))
                             { }
                         }
-                        else if (piece is Alien && target != null)
+                        else if (piece is Alien && target != null && !target.Dead)
                         { }
                     }
                 }

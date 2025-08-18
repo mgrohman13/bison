@@ -135,9 +135,13 @@ namespace ClassLibrary1.Pieces.Players
         }
         internal override void EndTurn(ref double energyUpk, ref double massUpk)
         {
-            Values values = GetValues(Game);
             if (!ShutOff())
+            {
+                Values values = GetValues(Game);
                 Resource.Extract(this, values.ValueMult, values.SustainMult);
+            }
+            else
+                ;
 
             //will end up being slightly cheaper to repair than in GetUpkeep because of extracted resource value
             base.EndTurn(ref energyUpk, ref massUpk);

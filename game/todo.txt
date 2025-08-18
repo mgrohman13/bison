@@ -41,6 +41,23 @@ missile
 	missiles use explosive att type
 		account for it in enemy cost refund
 	UI for Missile
+upgrading shields/energy attacks need to charge?
+make actual move tile obvious when using out of range path move
+keep log on upgrade
+aliens dont know how to use one-tile space to be safe from melee
+better alien group behavior
+	generate goals at turn start and factor them into alg?
+		shift goals as pieces move?
+	e.g. charge turret/ranged mech together
+	random global weight powers each turn?
+		clustered in areas?
+	ehn enemy ends turn in player attack range, reduce that attack threat for future aliens
+start enemy turn progress bar immediately
+	might be long running pathfinding/spawning before moves
+	start with some random fraction?
+reveal wormhole if enemy uses 
+enemies more likely to use
+	esp in some states
 
 NEW
 	can upgrade to just interim step 

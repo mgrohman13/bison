@@ -24,7 +24,7 @@ namespace ClassLibrary1
             //TEST_MAP_GEN = Rand.GaussianCappedInt(1.3 * Consts.CaveDistance * Math.Sqrt(2), .13);
         }
 
-        public readonly ClassLibrary1.Map.Map Map;
+        public readonly Map.Map Map;
         public readonly Player Player;
         public readonly Enemy Enemy;
         public readonly Log Log;
