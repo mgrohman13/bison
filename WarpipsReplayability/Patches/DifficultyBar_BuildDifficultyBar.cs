@@ -69,14 +69,15 @@ namespace WarpipsReplayability.Patches
                     {
                         float target = a * mult;
                         int b = deterministic.Round(target);
-                        int c = b;
-                        if (b > target || (b == target && deterministic.Bool()))
-                            c--;
-                        else
-                            c++;
+                        //int c = b;
+                        //if (b > target || (b == target && deterministic.Bool()))
+                        //    c--;
+                        //else
+                        //    c++;
 
+                        ___barTexture.SetPixel(b - 1, 0, Color.white);
                         ___barTexture.SetPixel(b, 0, Color.white);
-                        ___barTexture.SetPixel(c, 0, Color.white);
+                        ___barTexture.SetPixel(b + 1, 0, Color.white);
                     }
                     ___barTexture.Apply();
                 }

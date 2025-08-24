@@ -26,6 +26,8 @@ hives occasionally have very weak melee attack?
 nerf drone defense?
 	and constructor?
 resources burn out faster??
+	sustain mult nearer to core?
+	use to balance energy/ass ratio?
 kill pathfinding threads on exit
 different icons for friendly range vs melee att available?
 missile
@@ -35,7 +37,9 @@ missile
 				e.g. big splash damage gives more energy back to enemy?
 	limit missiles fired per turn?
 		2?
+		soft limit - e.g. some kind of downside?
 	also make turret a missile silo?
+		rethink replace meta w/ generators and foundations
 	allow replace missile silo to refund missiles?
 	overkill affects alien energy inc?
 	missiles use explosive att type
@@ -45,23 +49,46 @@ upgrading shields/energy attacks need to charge?
 make actual move tile obvious when using out of range path move
 keep log on upgrade
 aliens dont know how to use one-tile space to be safe from melee
+	can simply never include those spaces in any potential melee attacks
+		so remove from player indicator too
+			need to clean up handling with terrain as well
 better alien group behavior
 	generate goals at turn start and factor them into alg?
 		shift goals as pieces move?
 	e.g. charge turret/ranged mech together
 	random global weight powers each turn?
 		clustered in areas?
-	ehn enemy ends turn in player attack range, reduce that attack threat for future aliens
+	when enemy ends turn in player attack range, reduce that attack threat for future aliens
 start enemy turn progress bar immediately
 	might be long running pathfinding/spawning before moves
 	start with some random fraction?
-reveal wormhole if enemy uses 
-enemies more likely to use
+reveal wormhole if enemy uses
+enemies more likely to use wormhole
 	esp in some states
+	always add any portal entrance in range to pathTiles?
+introduce upkeep
+	reduce to automate
+	part of blueprint (like galwar)
+rethink replace foundation generator meta
+	move to build/upgrade model??
+	limited space for multiple modules?
+		allow 1 factory, 1 generator, unlimited turrets 
+			turrets upg into silo?
+			nerf turret? (or just cheaper,weaker)
+				cheaper will help early turrets be a things
+				cost might need to scale with power like drone
+		decrease foundation occurence? increase turret range??
+expoenential move cost too extreme?
+	1.3 might be too low though 
+random research costs
+	corrlate somehow? 
+	waiting around for same tech to appear cheaper isnt great
+	rethink concept? go to more fixed structure somehow?
+	simple check to ensure *total* research required for same tech is never lower?
 
 NEW
 	can upgrade to just interim step 
-	cycle through move first, then build	
+	cycle through move first, then build
 	consolidate explored points around 0 into range tuple
 	hide unused columns for build extractor/turret/etc only
 	enemies go after long range attackers (esp turrets)
@@ -74,6 +101,7 @@ NEW
 		make multpl attacks more interesintg
 	mouse move stops scroll
 	show avg damage
+	detailed combat breakdown
 	
 IMPORTANT
 	more move-left triggers (under attack, can attack if move, got attacked by unseen)
@@ -330,7 +358,6 @@ damages reduces shield regen?
 
 improve/fix combat log.....
 	font awesome??
-income/upk breakdown
 prevent Application.DoEvents from affecting game state during enemy turn
 abusing pathfinding with DoEvents crashes form?
 	replace PathFind DoEvents with background worker
