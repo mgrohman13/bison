@@ -182,8 +182,11 @@ namespace WarpipsReplayability.Mod
                 values.capMin /= div;
                 values.capMax /= div;
                 values.number /= div;
-                if (values.capMin == 0)
+                if (values.capMin < 1)
+                {
+                    Plugin.Log.LogWarning($"values.capMin < 1 ({values.capMin})");
                     values.capMin = 1;
+                }
 
                 Plugin.Log.LogInfo($"{pair.Key} ({values.territories}, {values.Profiles.Count}): {values.countMin:0.00}-{values.countMax:0.00} ({values.capMin:0.00}-{values.capMax:0.00}), {values.number:0.00}");
 

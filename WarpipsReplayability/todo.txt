@@ -3,26 +3,15 @@ ticks for difficulty bar?
 		still show ticks in integer divisons?
 		show text as integer?
 
- "enemy HERO approcahing" text
+"enemy HERO approcahing" text
 shuffle validate error
 maps without defensive structure spots
 
-MTRandom helper method to generate seeds from arbitrary objects
-
 add marathon mode option?
 	reduce all tech points, reduce worldMapDifficultyMultipler
-test TerritoryInstance.blocked
 show bombs on island map difficulty bar
 	bombIndicatorPrefabs dont appear immediately after load
 	serialize? figure out how to load resource...
-
-mess with spawning, true mission randomness
-	rand bombs?		
-		bombsOnCycle
-		will need to revisit ManageBombIndicatorPrefabs
-	correlate difficulty with tech pts?
-	difficultmode?
-	final map missions w/ extra lives harder?
 
 tech decrease certain pct for each mission past max?
 revisit reward upper limit outside difficult mode
@@ -36,7 +25,7 @@ balancing
 			hind < rocket < predator
 			Gruz 0.8 upper
 			T92  0.4 lower
-
+		guarantee primary tech spawns has only short gaps if any
 
 map lengths not really accurate...
 
@@ -59,47 +48,52 @@ big oil?? no better over time than small?
 inc worldMapDifficultyMultipler >1 ?
 reroll shop?
 things shop never sells?
-undo buy?
 
 new game rand SaleIndex?
 	works? but how?
 	
 dropbox bug
-log time with difficulty?
-correlate duration with keys?
 altf4?
 
+can see short maps in fog
+shroud only show tech pts?
+	always show 1 reward (if life, life + 1?, always 8?)
+rand arms dealer prices
+emergency cash button always available?
+	change timouts?
+ranomize hidden item cooldowns slightly every mission??
+
+mess with spawning, true mission randomness
+	rand bombs?		
+		bombsOnCycle
+		will need to revisit ManageBombIndicatorPrefabs
+	correlate difficulty with tech pts?
+	difficultmode?
+	final map missions w/ extra lives harder?
+	
+community:
+
+undo buy?
 forever inc difficulty?
-
+allow the dead to remain on the battlefield longer/permanently?
 The destruction from the explosions staying on the terrain is great but it would be even better to see everything else that got destroyed stay on the map as well.
- 
-difficultyCurve tangents??	
-
 
 next release:
 
-can see short maps in fog
-hide more info in shroud?
-shroud only show tech pts?
-	always show 1 reward (if life, life + 1?, always 8?)
-randomize unit island averages like we build sites?
-rand arms dealer prices
+test TerritoryInstance.blocked
+log time with difficulty?
+correlate duration with keys?
+difficultyCurve tangents??	
 RandOnLoss change spawn counts?
 increase SpawnCapCycleMultipler based on caps?
 	cycle difficulty increase?
 	rand all cycle stuff
 		other SpawnerData properties
 		cycle difficulty increase?
+randomize unit island averages like w/ build sites?
 apply something similar to bomb gap to final missions?
-
 pulsing Q/E
 	reduce fuel gain by asymptotic amt since last use?
-emergency cash button always available?
-	change timouts?
-
-hide new life in shroud if territory is not special 
-modify FloatHalf in between islands?
+hide new life in shroud if territory is not special?
 sometimes round off warbucks to 5s,10s?
-ranomize hidden item cooldowns slightly every mission??
 
-allow the dead to remain on the battlefield longer/permanently?
