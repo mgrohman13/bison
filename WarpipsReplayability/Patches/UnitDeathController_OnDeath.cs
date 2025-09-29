@@ -52,7 +52,7 @@ namespace WarpipsReplayability.Patches
                     exp += offset;
                 bool super = IsSuperEnemy(___statController.gameObject);
                 if (super)
-                    exp += 1 / 6f;
+                    exp *= 1.1f;
 
                 if (___unitTeamController.UnitTeam == UnitTeam.Team2)
                     LogExp(name, exp, super);
@@ -83,7 +83,7 @@ namespace WarpipsReplayability.Patches
                 bool speed = unitBuff.name == "SuperEnemy_Speed";
                 LogBuffs(unitBuff, speed);
                 return speed;
-            };
+            }
         }
 
         private static string LastLog, LastLog2;
@@ -101,11 +101,11 @@ namespace WarpipsReplayability.Patches
                 if (LastLog != log)
                 {
                     LastLog = log;
-                    Plugin.Log.LogDebug(log);
+                    Plugin.Log.LogDebug(log);  //LogError
                 }
             }
         }
-        private static readonly Dictionary<string, float> expMap = new();
+        private static readonly Dictionary<string, float> expMap = [];
         private static string LogExp(string name, float exp, bool super)
         {
             string key = name;

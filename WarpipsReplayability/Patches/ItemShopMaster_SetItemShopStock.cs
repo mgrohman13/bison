@@ -19,7 +19,7 @@ namespace WarpipsReplayability.Patches
 
                 int saleIndex = Persist.Instance.SaleIndex;
                 Plugin.Log.LogInfo($"loaded SaleIndex {__instance.SaleIndex} -> {saleIndex}");
-                _saleIndex.Invoke(__instance, new object[] { saleIndex });
+                _saleIndex.Invoke(__instance, [saleIndex]);
             }
             catch (Exception e)
             {

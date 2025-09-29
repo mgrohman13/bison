@@ -14,7 +14,7 @@ namespace WarpipsReplayability.Patches
             try
             {
                 Plugin.Log.LogDebug("SpawnerData_SpawnCount Prefix");
-                return Spawns.ModifySpawns(false, ___spawnTech, ___spawnCountMin, ___spawnCountMax, t, ref __result);
+                return Spawns.ModifySpawns("SpawnCount", ___spawnTech, ___spawnCountMin, ___spawnCountMax, t, ref __result);
             }
             catch (Exception e)
             {

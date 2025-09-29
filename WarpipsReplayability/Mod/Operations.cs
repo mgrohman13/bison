@@ -242,9 +242,9 @@ namespace WarpipsReplayability.Mod
             int hiddenTechs = 0;
 
             //keep techTypes distinct
-            HashSet<string> techTypes = new();
+            HashSet<string> techTypes = [];
 
-            List<SpawnerInfo> spawns = new();
+            List<SpawnerInfo> spawns = [];
             if (spawnTechs > 0)
                 foreach (int spawnIdx in Plugin.Rand.Iterate(spawnTechs))
                 {

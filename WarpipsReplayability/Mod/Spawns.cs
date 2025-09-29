@@ -9,12 +9,12 @@ namespace WarpipsReplayability.Mod
         public static bool DoLog = true;
         private static readonly HashSet<string> LoggedInfo = new();
 
-        public static bool ModifySpawns(bool cap, InvokeableType spawnTech, float min, float max, float t, ref int __result)
+        public static bool ModifySpawns(string logDesc, InvokeableType spawnTech, float min, float max, float t, ref int __result)
         {
             ////Plugin.Log.LogDebug($"{Map.Territories} {Map.MissionManagerAsset.CurrentWorldMap.lastAttackedTerritory}");
             //if (Map.MissionManagerAsset != null)// && Map.MissionManagerAsset.CurrentWorldMap.lastAttackedTerritory > -1)
             //{
-            string logDesc = cap ? "SpawnCap" : "SpawnCount";
+            //string logDesc = cap ? "SpawnCap" : "SpawnCount";
             //LogInfo(logDesc, spawnTech, min, max, t);
 
             //HashSet<string> techTypes = new() { "PistolPip", "Shotgunner", "Warfighter", };// "UAZ", "Warmule", };     
