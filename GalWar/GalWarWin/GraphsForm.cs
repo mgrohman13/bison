@@ -1,12 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.ComponentModel;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
 using GalWar;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
 
 namespace GalWarWin
 {
@@ -130,39 +124,30 @@ namespace GalWarWin
 
             Dictionary<Player, double> research = MainForm.Game.GetResearch();
             labels = new Label[8, players.Count + 1];
-            y = 32;
+            y = lblPlayer.Bottom + 3;
             int researchX = 0;
             for (int i = 0; i < players.Count; ++i)
             {
-                int x = 12;
-                labels[0, i] = NewLabel(x, y, players[i].Name, players[i].Color);
-                x += 106;
-                labels[1, i] = NewLabel(x, y, players[i].GetColonies().Count.ToString(), players[i].Color);
-                x += 106;
-                labels[2, i] = NewLabel(x, y, players[i].GetTotalQuality().ToString(), players[i].Color);
-                x += 106;
-                labels[3, i] = NewLabel(x, y, players[i].GetPopulation().ToString(), players[i].Color);
-                x += 106;
-                labels[4, i] = NewLabel(x, y, MainForm.FormatDouble(players[i].GetPopulationGrowth()), players[i].Color);
-                x += 106;
-                labels[5, i] = NewLabel(x, y, MainForm.FormatDouble(players[i].GetTotalIncome()), players[i].Color);
-                x += 106;
-                labels[6, i] = NewLabel(x, y, GetStringDec(players[i].GetArmadaStrength(), div, place), players[i].Color);
-                x += 106;
-                researchX = x;
-                labels[7, i] = NewLabel(x, y, MainForm.FormatInt(GetResearch(research, players[i])), players[i].Color);
+                labels[0, i] = NewLabel(lblPlayer.Location.X, y, players[i].Name, players[i].Color);
+                labels[1, i] = NewLabel(lblPlanets.Location.X, y, players[i].GetColonies().Count.ToString(), players[i].Color);
+                labels[2, i] = NewLabel(lblQuality.Location.X, y, players[i].GetTotalQuality().ToString(), players[i].Color);
+                labels[3, i] = NewLabel(lblPopulation.Location.X, y, players[i].GetPopulation().ToString(), players[i].Color);
+                labels[4, i] = NewLabel(lblGrowth.Location.X, y, MainForm.FormatDouble(players[i].GetPopulationGrowth()), players[i].Color);
+                labels[5, i] = NewLabel(lblIncome.Location.X, y, MainForm.FormatDouble(players[i].GetTotalIncome()), players[i].Color);
+                labels[6, i] = NewLabel(lblArmada.Location.X, y, GetStringDec(players[i].GetArmadaStrength(), div, place), players[i].Color);
+                researchX = lblResearch.Location.X;
+                labels[7, i] = NewLabel(lblResearch.Location.X, y, MainForm.FormatInt(GetResearch(research, players[i])), players[i].Color);
                 if (players[i] == winner)
                 {
-                    x += 106;
-                    win = NewLabel(x, y, MainForm.FormatPctWithCheck(winChance), players[i].Color, true);
+                    win = NewLabel(lblResearch.Right + 6, y, MainForm.FormatPctWithCheck(winChance), players[i].Color, true);
                 }
-                y += 26;
+                y = labels[7, i].Bottom + 3;
             }
 
             double avgResearch = MainForm.Game.AvgResearch, lastAvgResearch = MainForm.Game.CurrentPlayer.LastAvgResearch;
             labels[7, players.Count] = NewLabel(researchX, y, string.Format("{0} ({1})",
                     MainForm.FormatInt(avgResearch), MainForm.FormatIncome(avgResearch - lastAvgResearch)), Color.Transparent);
-            y += 26;
+            y = labels[7, players.Count].Bottom + 3;
 
             this.GraphsForm_SizeChanged(null, null);
         }
@@ -304,7 +289,7 @@ namespace GalWarWin
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                Debug.WriteLine(e);
 
                 using (Font font = new Font("arial", 13f))
                     g.DrawString(e.ToString(), font, Brushes.White, 0, 0);

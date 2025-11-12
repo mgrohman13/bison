@@ -1,7 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Drawing;
 
 namespace GalWar
@@ -1031,7 +1029,7 @@ namespace GalWar
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e);
+                    Debug.WriteLine(e);
                 }
                 anomalies = anomalies.Concat(Game.EndTurn(handler, true));
             }

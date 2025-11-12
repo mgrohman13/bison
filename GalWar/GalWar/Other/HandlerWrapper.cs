@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace GalWar
@@ -40,7 +41,7 @@ namespace GalWar
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                Debug.WriteLine(e);
 
                 return null;
             }
@@ -62,7 +63,7 @@ namespace GalWar
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                Debug.WriteLine(e);
             }
             finally
             {
@@ -94,7 +95,7 @@ namespace GalWar
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                Debug.WriteLine(e);
 
                 if (fromColony == null)
                     retVal = max;
@@ -121,7 +122,7 @@ namespace GalWar
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                Debug.WriteLine(e);
 
                 retVal = true;
             }
@@ -145,7 +146,7 @@ namespace GalWar
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                Debug.WriteLine(e);
 
                 retVal = true;
             }
@@ -169,7 +170,7 @@ namespace GalWar
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                Debug.WriteLine(e);
 
                 retVal = true;
             }
@@ -191,7 +192,7 @@ namespace GalWar
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                Debug.WriteLine(e);
             }
             finally
             {
@@ -209,7 +210,7 @@ namespace GalWar
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                Debug.WriteLine(e);
             }
             finally
             {
@@ -227,7 +228,7 @@ namespace GalWar
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                Debug.WriteLine(e);
             }
             finally
             {
@@ -245,7 +246,7 @@ namespace GalWar
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                Debug.WriteLine(e);
             }
             finally
             {
@@ -263,7 +264,7 @@ namespace GalWar
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                Debug.WriteLine(e);
             }
             finally
             {
@@ -281,7 +282,7 @@ namespace GalWar
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                Debug.WriteLine(e);
             }
             finally
             {

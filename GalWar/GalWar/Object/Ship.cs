@@ -668,12 +668,12 @@ namespace GalWar
                     + (GetValueExpForRawExp(this.curExp) / Consts.ExpForGold)
                     + (this.Player.IsTurn ? GetUpkeepReturn() : 0);
 
-            Console.WriteLine("Destroy Gold:  " + gold);
-            Console.WriteLine("Population:  " + this.Population / Consts.PopulationForGoldLow);
-            Console.WriteLine("Soldiers:  " + this.Soldiers / Consts.SoldiersForGold);
-            Console.WriteLine("Experience:  " + GetValueExpForRawExp(this.curExp) / Consts.ExpForGold);
-            Console.WriteLine("Upkeep:  " + (this.Player.IsTurn ? GetUpkeepReturn() : 0));
-            Console.WriteLine();
+            //Console.WriteLine("Destroy Gold:  " + gold);
+            //Console.WriteLine("Population:  " + this.Population / Consts.PopulationForGoldLow);
+            //Console.WriteLine("Soldiers:  " + this.Soldiers / Consts.SoldiersForGold);
+            //Console.WriteLine("Experience:  " + GetValueExpForRawExp(this.curExp) / Consts.ExpForGold);
+            //Console.WriteLine("Upkeep:  " + (this.Player.IsTurn ? GetUpkeepReturn() : 0));
+            //Console.WriteLine();
 
             return gold;
         }
@@ -941,7 +941,7 @@ namespace GalWar
 
                 //add/subtract gold for level randomness and percent of ship injured
                 double goldIncome = (this.needExpMult - pct) * costInc / Consts.ExpForGold;
-                Console.WriteLine(goldIncome);
+                //Console.WriteLine(goldIncome);
                 this.Player.GoldIncome(goldIncome);
 
                 double basePayoff = GetUpkeepPayoff();
@@ -1678,7 +1678,6 @@ namespace GalWar
             get
             {
                 TurnException.CheckTurn(this.Player);
-
                 return this.cost;
             }
         }

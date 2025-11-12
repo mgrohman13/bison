@@ -11,7 +11,7 @@
         public bool HasBehavior<T>(out T behavior) where T : class, IBehavior => (behavior = GetBehavior<T>()) != null;
 
         internal void GetUpkeep(ref double energy, ref double mass);
-        public void StartTurn();
-        public void EndTurn(ref double energyUpk, ref double massUpk);
+        internal void StartTurn();
+        internal void EndTurn(ref double energyUpk, ref double massUpk);
     }
 }

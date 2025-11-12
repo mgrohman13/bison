@@ -116,7 +116,7 @@ namespace WarpipsReplayability.Mod
                 _techReward.SetValue(reward, operation.techReward);
                 _tokenReward.SetValue(reward, operation.tokenReward);
                 return data;
-            };
+            }
         }
         public static void LoadTechRewards()
         {

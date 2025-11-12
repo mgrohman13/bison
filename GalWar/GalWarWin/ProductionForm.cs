@@ -1,12 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.ComponentModel;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
 using GalWar;
-using GalWarWin.Sliders;
 
 namespace GalWarWin
 {
@@ -22,6 +14,8 @@ namespace GalWarWin
         private ProductionForm()
         {
             InitializeComponent();
+
+            ClientSize = new Size(ClientSize.Width, sdForm.Bottom + btnCancel.Height + 5);
         }
 
         private void SetColony(Colony colony, bool callback, double production, bool floor)

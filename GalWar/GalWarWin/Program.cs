@@ -1,10 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Windows.Forms;
 using GalWar;
-using System.Drawing;
-using System.ComponentModel;
 
 namespace GalWarWin
 {
@@ -73,7 +67,7 @@ namespace GalWarWin
             //    Console.WriteLine("{0:0.00}\t{1:00.0}\t{2:0.000}", d, e, e / d);
             //}
 
-            ShipDesign.DoCostTable();
+            //ShipDesign.DoCostTable();
 
             Player.VerifyRounded(1 / Consts.ProductionForGold);
             Player.VerifyRounded(Consts.GoldForProduction);
@@ -83,7 +77,7 @@ namespace GalWarWin
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new MainForm());
 
-            Game.Random.Dispose();
+            //Game.Random.Dispose();
         }
 
         //private static void CombatPerformance()

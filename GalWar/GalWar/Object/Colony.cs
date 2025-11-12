@@ -1,7 +1,4 @@
 using MattUtil;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace GalWar
 {
@@ -484,7 +481,10 @@ namespace GalWar
             //additional bookkeeping at the end, so its based on actual results
             DoChange(this.SoldierChange, this.DefenseAttChange, this.DefenseDefChange, this.DefenseHPChange);
             if (builtShips != null && builtShips.Any())
+            {
+                built = true;
                 ProdGuess -= builtShips.Sum(ship => ship.GetCostAvgResearch(true));
+            }
             if (ProdGuess < 0)
                 ProdGuess = 0;
         }
@@ -733,12 +733,12 @@ namespace GalWar
                     + (this.GetActualDisbandValue(this.HP, out newAtt, out newDef));
             this.Player.AddGold(gold, true);
 
-            Console.WriteLine("Destroy Gold:  " + gold);
-            Console.WriteLine("Population:  " + this.Population / Consts.PopulationForGoldLow);
-            Console.WriteLine("Soldiers:  " + this.Soldiers / Consts.SoldiersForGold);
-            Console.WriteLine("Production:  " + this.totalProd / Consts.ProductionForGold);
-            Console.WriteLine("Planet Defense:  " + this.GetActualDisbandValue(this.HP, out newAtt, out newDef));
-            Console.WriteLine();
+            //Console.WriteLine("Destroy Gold:  " + gold);
+            //Console.WriteLine("Population:  " + this.Population / Consts.PopulationForGoldLow);
+            //Console.WriteLine("Soldiers:  " + this.Soldiers / Consts.SoldiersForGold);
+            //Console.WriteLine("Production:  " + this.totalProd / Consts.ProductionForGold);
+            //Console.WriteLine("Planet Defense:  " + this.GetActualDisbandValue(this.HP, out newAtt, out newDef));
+            //Console.WriteLine();
 
             if ((!this.MinDefenses) ? (newAtt != 1 || newDef != 1) : (newAtt != Math.Max(this.Att - 1, 1) || newDef != Math.Max(this.Def - 1, 1)))
                 throw new Exception();
@@ -1353,7 +1353,7 @@ namespace GalWar
                 {
                     double useProd = avg / count--;
                     if (apply)
-                        useProd = Game.Random.GaussianCapped(useProd, Consts.PlanetDefenseRndm);
+                        useProd = Game.Random.GaussianCapped(Math.Max(0, useProd), Consts.PlanetDefenseRndm);
                     double repairHP = ship.ProductionRepair(ref avg, useProd, apply);
                     repairShips.Add(ship, repairHP);
                     if (apply)

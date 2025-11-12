@@ -430,21 +430,21 @@ namespace GalWarWin
                     return null;
             }
 
-            int max = Math.Max(chances.Count, oldChances.Count);
-            double p3 = 100.0 * max / targetCap;
-            const double trgPct = 21, pctError = .3;
-            if (max > 169 && Math.Abs(p3 - trgPct) / trgPct > pctError)
-            {
-                FieldInfo buckets = chances.GetType().GetField("buckets", BindingFlags.NonPublic | BindingFlags.Instance);
-                int chCap = GetCapacity(chances, buckets), oldCap = GetCapacity(oldChances, buckets);
-                double p1 = 100.0 * chances.Count / chCap, p2 = 100.0 * oldChances.Count / oldCap;
-                Console.WriteLine("att {0} def {1} attHP {2} defHP {3}", att, def, attHP, defHP);
-                Console.WriteLine("target {0}", targetCap);
-                Console.WriteLine("ch1 {0} pct {1}%", chances.Count, p1.ToString("00.0"));
-                Console.WriteLine("ch2 {0} pct {1}%", oldChances.Count, p2.ToString("00.0"));
-                Console.WriteLine("max {0} pct {1}%", max, p3.ToString("00.0"));
-                Console.WriteLine();
-            }
+            //int max = Math.Max(chances.Count, oldChances.Count);
+            //double p3 = 100.0 * max / targetCap;
+            //const double trgPct = 21, pctError = .3;
+            //if (max > 169 && Math.Abs(p3 - trgPct) / trgPct > pctError)
+            //{
+            //    FieldInfo buckets = chances.GetType().GetField("buckets", BindingFlags.NonPublic | BindingFlags.Instance);
+            //    int chCap = GetCapacity(chances, buckets), oldCap = GetCapacity(oldChances, buckets);
+            //    double p1 = 100.0 * chances.Count / chCap, p2 = 100.0 * oldChances.Count / oldCap;
+            //    Console.WriteLine("att {0} def {1} attHP {2} defHP {3}", att, def, attHP, defHP);
+            //    Console.WriteLine("target {0}", targetCap);
+            //    Console.WriteLine("ch1 {0} pct {1}%", chances.Count, p1.ToString("00.0"));
+            //    Console.WriteLine("ch2 {0} pct {1}%", oldChances.Count, p2.ToString("00.0"));
+            //    Console.WriteLine("max {0} pct {1}%", max, p3.ToString("00.0"));
+            //    Console.WriteLine();
+            //}
 
             return chances;
         }

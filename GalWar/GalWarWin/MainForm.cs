@@ -1,15 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Drawing;
-using System.IO;
-using System.Text;
-using System.Windows.Forms;
 using GalWar;
 using GalWarWin.Sliders;
 using MattUtil;
+using System.Diagnostics;
+using System.Drawing;
 using Point = MattUtil.Point;
 using PointForm = System.Drawing.Point;
 
@@ -128,7 +121,7 @@ namespace GalWarWin
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                Debug.WriteLine(e);
 
                 savePath = null;
             }
@@ -408,7 +401,7 @@ namespace GalWarWin
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e);
+                    Debug.WriteLine(e);
 
                     using (Font font = new Font("arial", 13f))
                         g.DrawString(e.ToString(), font, Brushes.White, 0f, 0f);
@@ -742,9 +735,9 @@ namespace GalWarWin
                 totals = retVal;
             }
 
-            Console.WriteLine(gm1);
-            Console.WriteLine(gm2);
-            Console.WriteLine(gm3);
+            //Console.WriteLine(gm1);
+            //Console.WriteLine(gm2);
+            //Console.WriteLine(gm3);
 
             return totals;
         }
@@ -2037,7 +2030,7 @@ namespace GalWarWin
             }
             catch (ObjectDisposedException e)
             {
-                Console.WriteLine(e);
+                Debug.WriteLine(e);
 
                 return;
             }
@@ -3030,7 +3023,7 @@ namespace GalWarWin
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                Debug.WriteLine(e);
             }
         }
 

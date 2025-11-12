@@ -1,5 +1,4 @@
-﻿using MattUtil.RealTimeGame;
-using System;
+﻿using System;
 
 namespace MattUtil
 {
@@ -34,9 +33,9 @@ namespace MattUtil
             for (int a = 0; a < steps + 1; a++)
             {
                 if (a == steps)
-                    divs[a] = rand.GaussianCapped(min + (max - min) * weightScale, stepDeviation);
+                    divs[a] = rand.GaussianCapped(min + (max - min) * weightScale, stepDeviation, float.Epsilon);
                 else
-                    divs[a] = rand.GaussianCapped(cur, stepDeviation);
+                    divs[a] = rand.GaussianCapped(cur, stepDeviation, float.Epsilon);
                 offX[a] = rand.Gaussian(max);
                 offY[a] = rand.Gaussian(max);
                 rotate[a] = 2 * Math.PI * rand.NextDouble();
