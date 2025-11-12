@@ -1,0 +1,354 @@
+runes
+	terminology
+		rune shape (blueprint)
+			reveal (add to deck)	
+			forget? (remove from deck)
+		rune (in hand)
+			fabricate (draw)	
+			shatter (discard)
+	all rune types get better over time using favor as research
+		maybe even add a research rune that costs favor and make it a legit meta 5th resource???
+			eh
+		more value for cost
+			e.g. stronger units for cheaper
+	some rune types can be combined
+		e.g. most card game mechanic runes
+		trade runes can combine with most?
+	forge rune (term??)
+		rune that creates new runes (add to deck)
+			always pick one of two 
+				possibly some day allow X of Y
+				first pick always some key rune/unit you are lacking if you lack anything
+					follows some kind of research tree?
+				second pick can be literally anything?
+					always different type from first though
+		costs primarily favor, secondarily one other resource
+			cost increases with each use of same rune
+				apply this to most/all rune types??
+				cost and increase decrease with research
+	upgrade rune
+		replaces with newer similar one based on research
+			random minor-ish changes to it?
+		costs primarily favor, secondarily one other resource
+	destroy rune (term??)
+		pick one of X runes to remove from deck 
+			X inc with research
+		gives back resources 
+			just favor? random?
+			amt based on rune "effectiveness" somehow?
+				eh, maybe always constant for any given rune
+			amt given decreases after repeated use?
+	trade
+		two formats
+			can pick trading one of the three other resources FOR X resource
+			can pick trading X resource for one of the three other resources 
+		amts you get for each choice randomized, constant for rune
+		probabilities such that food and favor trade runes much more likely early
+		starts at some trade value (e.g. 1/5th)
+			different for each of the three trades
+			gets better over time with research
+				up to almost 1/1?
+					even allow over 1? wont really be OP since can play limited amt
+		include an added calue to offset "rune cost" (cost to draw/amt paid on discard)
+	unit
+		must place next to builder unit?
+	disband unit?
+		gives back amt based on cost
+		rune has pct it gives back
+			gets better with research
+	teleport unit
+		cost based on
+			unit type (land,sea,flying)
+				multipliers fixed for rune
+			distance / movement + offset?
+			value of unit? (relative?? constant???)
+				but with low exponent?
+		start with some base cost multiplier (e.g. 200%)
+			randomize unit type modifiers
+				~1/2 cost for sea, flying
+				cost cost ~2x
+			multipliers get lower with research (i.e. cheaper)
+	basic card game mechanics 
+		draw runes, discard runes (terms??)
+		duplicate runes?
+	disband unit? upg unit?
+	quest runes??
+		drawn once, dissapear after use
+			how do you acquire?
+		quests progress towards victory
+		give rewards
+		function as basic tutorial
+			guide you to new resources
+				even reveal nearby?
+				e.g. generate new bonus resource, which functions as rune reward
+	whatever fun shit
+		dmg/heal enemy/player units
+			costs based on unit
+			even kill outright?
+		de/buff units (temporary and/or permanent?)
+		give exp
+		change terrain?
+			watch out for creating full walls though?
+				though enemy should have flyers, teleporters
+				will run out of resources
+					maybe allow then!
+		many can be combined
+		
+map gen
+	flip the sign of some combinations
+		e.g. hills/mountains in relation to forests
+		
+upkeep
+	new "resource"?
+		show with income like any other resource
+	as increases, starts costing you food
+		e.g. -X food and -X*Y upkeep income / turn
+	ending turn with negative food wounds units?
+	ending turn with negative other reasources costs upkeep?
+		wounds units with that upkeep/heal type??
+	all units cost some upkeep
+		even core costs 1
+		occasionally cost other resources instead?
+	can use to spend for moving units / balancing anomolies or whatever else
+	pay interest on?
+		interest must be significantly less than pay amount
+			pay amount affects interest directly? 
+				e.g. more interest when paying nothing?
+	internally, store as double with constant turn rounding 
+		do things affect upkeep amt directly, or only temporary upkeep income?
+			if latter, only store inc as double, actual amt is int
+				if so, fits nicely into resource construct...
+	harvesting resources costs upkeep
+		since there is no initial build cost for mine
+			though i may add a mine....
+	
+experience
+	galwar?
+
+anomalies/treasure?
+	galwar, game1 (cw?)
+	healing shrines? 
+	other interesting objects/terrain?
+		any piece that comes out can also appear on map randomly?
+			i.e. instead of always placing wormhole, occasionally place a wormhole result
+	wormholes?
+
+end game?
+	progress towards?
+		e.g. learn something with certain kills/objectives
+		quests, almost?
+
+map
+	use ~ .5 noise paths
+		else water
+		near .0 and 1.0, gen mountains?
+	separate noise per terrains?
+		forest
+			> .5
+		mountains
+			~ .5
+
+combat (/other?) log
+	show last few when clicked on unit, button to show more
+		opens right panel with full log
+			filters based on selected unit
+				button to show all (deselects unit)
+	use att/def icons for readability
+	
+terrains
+	plains (1 move)
+	forest (2 move, +1 def, -1 vision?)
+	mountains (3 move, +2 def, +1 vision)
+	ocean (blocked)
+		long term, maybe water units...
+	glacier = impassable
+		fliers can fly over it as long as dont end turn
+		cost infinity vision?
+	portals?
+	add rivers?
+
+resources
+	basic (food?)
+	advanced (gems?)
+	special (favor?)
+		used to modify rune BPs
+		acts as research (get better units)
+	4th resource for sea/amphibious/flying units
+	mines appear on map (similar to game1)
+		harvested by unit with ability
+		generator alg won't know about "paths"
+			use X% chance per explored hex?
+				chance chances changes based on already found compared to target?
+				certain types more likely on certain terrains?
+	treasure
+		galwar anomaly effects?
+	have fixed relative worth ratio 
+		basic - 2
+		adv - 5
+		special - 10
+		randomized each game
+	harvesting
+		give X amt per turn, with Y chance to reduce as mined
+			reduce not proportional to mined amt
+				BUT increases with harvester bonus
+	core income needs to reduce over time
+	each unit has a resource type as its repair cost?
+		default upkeep?
+	research?
+	
+runes
+	unlimited rune blueprint deck
+	draw 1 rune per turn
+		can pay resources to draw more
+			only if out of runes??
+		can increase?
+		chance to draw based in part on times BP played
+	max hand size
+		start at 5?
+		can increase
+		discard extras at turn end
+			get some special back (less than draw cost)
+	rune types
+		+/- resources
+			e.g. trade
+				trade ratio goes from 1/4 - 1/2 based on total special
+		modify rune BPs
+			uses special resource
+			create new
+			upg
+			destroy (get special back?)
+		play unit
+			random unit BP
+			str/cost based on total special
+		buff unit
+			cost based on target unit
+			buff core??
+				allow? cost more?
+		teleport unit
+			cost based on unit cost
+		dmg/debuf enemy?
+	each rune can do multiple things
+		1-4? 8??
+		except unit runes - just play one unit
+
+units
+	att, def, hp, move, move max, vision
+	combat
+		rounds = att
+		game1 round dmg chances
+		att, def (& move ??) scale based on hp (1-X)
+		no range
+		1 attack per turn 
+			costs move?
+			cant move again after?
+				game1 melee rules?
+	move 
+		max ~ 3-6
+		inc ~ 2-4
+		cost more upk to inc
+			payout on death
+		must have >=X move to move onto terrain
+		allow immobile (aka turret)
+	vision
+		1-7?
+			what about -1 in forest? 2-7 or cap at 1?
+		terrain move cost = vision cost
+			ocean = 1, but first ocean hex is free
+		can see hex if vision reaches with at least 1
+		can see mountains adjacent to vision edge
+			only if edge is not mountain 
+		prevent seeing around corners		
+	ZOC
+	protect each other
+	cost basic and/or advanced
+	upkeep
+		if can't pay, lose hp? dont inc move?
+			can manually turn off??
+	water units
+		whirlpools / portals connecting lakes?
+
+abilities
+	builder
+		can play unit runes adjacent
+	harvester
+		harvest adjacent mines
+		can come with int bonus to harvested amt
+		each addtional harvester also give +1 harvest
+	healer
+		heals adjacent units
+			costs 	
+	poison
+		each dmg apply X% poison
+		each turn
+			apply poison dmg
+			div by 2
+	acid
+		reduce def before attack
+	weaken
+		name?
+		reduce att
+	apply att/def/move debuffs?
+		apply debuffs over time?
+	ranged
+		does not lose hp attacking non-ranged
+	flying
+		move over anything with 1 move
+			can move over glacier but not end turn on it nor attack from it
+				same with ocean? unless has flying + amphibiouos
+			mountains still cost 2? (and glacier??)
+				reduce move costs by 1?
+		increase (2x?) def against non-flying
+		see over terrain???
+			see over forests, but not so much mountains?
+				reduce terrain costs by 1 to min of 1?
+	faster terrain move
+		with att/def/vision bonuses as well?
+	amphibious
+		can be combined with flying
+	ocean-only?
+		for enemy, with ability to create whirlpools
+			teleporters between seas
+		not for player? only amphibious?
+			or, player just needs teleport ability
+		can be combined with flying?
+			cant end turn on land
+	self regen
+		costs
+	inc att/def based on terrain?
+	resilient 
+		lose 50% att/def per dmg
+		separate anti-resilience ability? lose more?
+	move resilience or anti-resilience
+		gotta decide default...
+	multi-attack
+	dmg types / resistance / vulnerabilities?
+	abilities around adjacent defense?
+		splash dmg?
+	save up more move than max
+	passive
+		does not damage attacker when defending
+		doesnt defend neighbors
+		always defended by non-passive
+
+stationary versions of specialists
+	miner
+		cast from a rune, statonary miner for single resource (i.e. game1 extractor)
+	builder, healer
+		instead of bieng cast as runes, these are sites you find on map?
+
+xp
+	similar to galwar
+	only gives att/def
+
+core
+	like any other unit
+	always has 1 move, builder, harvester, healer
+
+other
+	one piece per hex
+	consts vary randomly per game
+ 
+https://icons8.com/icon/558XhUoeoVfO/carbohydrates
+https://icons8.com/icon/Q0wNjENy0Av1/rock
+https://icons8.com/icon/NeyTjBQo0AER/jewel
+https://icons8.com/icon/EgzzdgRSybOC/patriarchal-cross

@@ -1,0 +1,1022 @@
+﻿using game2.game;
+using game2.map;
+
+namespace game2.runes.pattern
+{
+    public class BuildUnit : IRunePattern
+    {
+        public readonly Game Game;
+
+        //public readonly string BlueprintNum;
+        //public readonly BuildUnit UpgradeFrom;
+
+        public readonly Resources Cost;
+        public readonly int Attack, Defense, HP, MoveInc, MoveMax, Vision;
+
+        private readonly int ResearchLevel;
+
+        private BuildUnit(Game game, int research, int att, int def, int hp, int moveInc, int moveMax, int vision) //int blueprintNum, BuildUnit upgrade,
+        {
+            //this.BlueprintNum = "";
+            //if (blueprintNum > 0)
+            //{
+            //    blueprintNum--;
+            //    int num = 1 + blueprintNum / 26;
+            //    BlueprintNum = (char)(blueprintNum % 26 + 65) + (num > 1 ? num.ToString() : "");
+            //}
+
+            //this.UpgradeFrom = upgrade;
+            this.Game = game;
+            this.ResearchLevel = research;
+            this.Attack = att;
+            this.Defense = def;
+            this.HP = hp;// Consts.ResilienceToHits(def);
+            this.MoveInc = moveInc;
+            this.MoveMax = moveMax;
+            this.Vision = vision;
+
+            Cost = CalcCost();
+            //this.Energy = Game.Rand.Round(energy / 10.0) * 10;
+            //this.Mass = Game.Rand.Round((mass + (energy - this.Energy) / Consts.EnergyMassRatio) / 5.0) * 5;
+        }
+        private Resources CalcCost()
+        {
+            double researchMult = 1;// Research.GetResearchMult(ResearchLevel);
+            return Generate.CalcCost(researchMult, Attack, Defense, HP, MoveInc, MoveMax, Vision);
+        }
+
+        public RuneShape NewShape()
+        {
+            throw new NotImplementedException();
+        }
+        public bool CanPlay(Rune rune)
+        {
+            throw new NotImplementedException();
+        }
+        public (bool, Tile?) HandleChoice(IChoiceHandler handler)
+        {
+            throw new NotImplementedException();
+        }
+        public Tile? Play(Rune rune, Tile? tile)
+        {
+            throw new NotImplementedException();
+        }
+
+        public int TotalCost()
+        {
+            return Cost.Sum();
+        }
+        public float TotalCostValue()
+        {
+            return Enumerable.Range(0, Resources.NumResources).Select(a => Cost[a] * Game.Consts.ResourceValue[a]).Sum();
+        }
+
+        private class Generate
+        {
+            //private static void GetPcts(ICollection<ShipDesign> designs, Game game, int research,
+            //        out double upkeep, out double speed, out double att, out double colony, out double trans, out double ds)
+            //{
+            //    if (designs != null && designs.Count > 0)
+            //    {
+            //        upkeep = speed = att = colony = trans = ds = 0;
+            //        double speedStr = GetSpeedStr(research), transStr = GetTransStr(research), dsStr = GetDsResearchStr(research);
+            //        double avgCost = designs.Average(sd => sd.GetTotCost());
+            //        double baseMultTot = 0, strMultTot = 0;
+            //        foreach (ShipDesign design in designs)
+            //        {
+            //            double totalCost = design.GetTotCost();
+            //            double speedMult = design.Speed / speedStr;
+
+            //            double baseMult = Math.Pow(research, 0.26) * 52;
+            //            baseMult = (design.Research + 2 * baseMult) / (research + baseMult);
+            //            baseMult = Math.Pow(baseMult, baseMult < 1 ? 3.9 : 1.3);
+            //            baseMultTot += baseMult;
+
+            //            upkeep += design.Upkeep / (totalCost / design.GetUpkeepPayoff(game) * Consts.CostUpkeepPct) * baseMult;
+            //            speed += (design.Speed + SpeedAvg) / (speedStr + SpeedAvg) * baseMult;
+
+            //            double costMult = Math.Sqrt(avgCost / totalCost);
+            //            double nonDSPct = 1 - Consts.LimitPct(design.Speed / GetSpeedStr(design.Research) * design.BombardDamage / GetDsResearchStr(design.Research) * costMult);
+            //            double strMult = design.GetNonColonyPct(game) * design.GetNonTransPct(game) * nonDSPct * baseMult;
+            //            strMultTot += strMult;
+
+            //            const double strAdd = 1.3;
+            //            att += (design.Att + strAdd) / ((double)design.Def + strAdd) * strMult;
+
+            //            costMult *= baseMult;
+
+            //            if (design.Colony)
+            //                colony += costMult;
+            //            trans += speedMult * design.Trans / transStr * costMult;
+            //            ds += speedMult * design.BombardDamage / dsStr * costMult;
+            //        }
+
+            //        upkeep /= baseMultTot;
+            //        speed /= baseMultTot;
+
+            //        att /= strMultTot;
+
+            //        colony /= baseMultTot;
+            //        trans /= baseMultTot;
+            //        ds /= baseMultTot;
+            //    }
+            //    else
+            //    {
+            //        upkeep = speed = att = 1;
+            //        colony = trans = ds = double.NaN;
+            //    }
+            //}
+
+            public static Resources CalcCost(double researchMult, int Attack, int Defense, int HP, int MoveInc, int MoveMax, int Vision)
+            {
+                return new();
+
+                //double baseMove = Math.Pow(Consts.MoveValue(movable), 1.69);
+                //double r = Math.Pow(Math.Pow(resilience, Math.Log(3) / Math.Log(2)) * 1.5 + 0.5, .26);
+
+                //double AttCost(IAttacker.Values a)
+                //{
+                //    double rangeMult = 1;
+                //    if (a.Range > Attack.MELEE_RANGE)
+                //        rangeMult = (a.Range + Attack.MELEE_RANGE) / (Math.PI * Attack.MIN_RANGED);
+                //    rangeMult = Math.Pow(rangeMult, 1.17);
+                //    return BaseAttCost(a)
+                //        * Math.Sqrt(a.Reload / CombatTypes.ReloadAvg(a.Attack))
+                //        * rangeMult;
+                //}
+                //;
+                //double DefCost(IKillable.Values d) => Consts.StatValue(d.Defense) * CombatTypes.Cost(d.Type)
+                //    * (d.Type == DefenseType.Hits ? Math.Pow(r, 1.56) * .78 : 1.04);
+
+                //double attPow = Math.Pow(1 + (MoveCostMult + baseMove) / 3.9 / MoveCostMult, .21);
+                //double att = MultAttCost(Math.Pow(attacker.Sum(AttCost), attPow), researchMult);
+                //double def = killable.Sum(DefCost) / researchMult * StatsCostMult;
+
+                //double mult = Math.Sqrt(researchMult);
+                //double move = (baseMove + MoveCostAdd) * MoveCostMult / mult;
+                //double v = vision;
+                //v = (v + 6.5) * 3.9 / mult;
+
+                //double total = (att + v) * (def + move) * r * Consts.MechCostMult;
+
+                ////Debug.WriteLine($"total: {total}");
+
+                //double energyPct = Math.Sqrt(att / (att + def + v));
+                //energyPct *= move / (move + def + v);
+                //energyPct = Math.Sqrt(energyPct);
+
+                //double attEnergy = attacker.Sum(a => AttCost(a) * CombatTypes.EnergyCostRatio(a.Type));
+                //double defEnergy = killable.Sum(d => DefCost(d) * CombatTypes.EnergyCostRatio(d.Type));
+                //double attMass = attacker.Sum(a => AttCost(a) * (1 - CombatTypes.EnergyCostRatio(a.Type)));
+                //double defMass = killable.Sum(d => DefCost(d) * (1 - CombatTypes.EnergyCostRatio(d.Type)));
+
+                //energyPct *= (attEnergy + defEnergy) / (attEnergy + defEnergy + attMass + defMass);
+                //energyPct = Math.Sqrt(energyPct);
+
+                //energy = total * energyPct;
+                //mass = (total - energy) / Consts.EnergyMassRatio;
+            }
+            //private const double MoveCostAdd = 3.9;
+            //private const double MoveCostMult = 6.5;
+            //private const double StatsCostMult = 2.1;
+            //private static double BaseAttCost(IAttacker.Values a) =>
+            //    Consts.StatValue(a.Attack) * CombatTypes.Cost(a.Type);
+            //private static double MultAttCost(double cost, double researchMult) =>
+            //    cost / researchMult * StatsCostMult;
+            //internal static double MissileCost(IAttacker.Values missile, double researchMult) =>
+            //     (MultAttCost(BaseAttCost(missile), researchMult) + 0)
+            //        * (StatsCostMult + MoveCostAdd * MoveCostMult) * 1 * Consts.MechCostMult;
+
+            //internal static MechBlueprint MechOneOff(IResearch research, int researchLevel)
+            //{
+            //    return GenBlueprint(null, research, research.Game.GetPieceNum(typeof(MechBlueprint)), researchLevel, false);
+            //}
+            //internal static MechBlueprint Alien(IResearch research)
+            //{
+            //    return GenBlueprint(null, research, 0, research.GetBlueprintLevel(), true);
+            //}
+            //internal static MechBlueprint OnResearch(IResearch research, SortedSet<MechBlueprint> blueprints)
+            //{
+            //    int researchLevel = research.GetBlueprintLevel();
+
+            //    IEnumerable<object> select = blueprints;
+            //    if (Game.Rand.Bool())
+            //    {
+            //        var existing = research.Game.Player.PiecesOfType<Mech>().Select(m => m.Blueprint);
+            //        if (Game.Rand.Bool())
+            //            select = select.Concat(existing).Append("");
+            //        else
+            //            select = existing;
+            //    }
+
+            //    var doubles = select.Append("").ToLookup(b => b, b =>
+            //    {
+            //        double chance;
+            //        if (b is MechBlueprint blueprint)
+            //        {
+            //            chance = researchLevel - blueprint.ResearchLevel;
+            //            if (chance < 0 || blueprint.UpgradeTo is not null)
+            //                chance = 0;
+            //        }
+            //        else
+            //        {
+            //            chance = Consts.ResearchFactor;
+            //        }
+            //        return (chance * chance);
+            //    });
+            //    double mult = 1;
+            //    double sum = doubles.Sum(p => p.Sum());
+            //    double max = int.MaxValue - 13 * doubles.Count;
+            //    if (sum > max)
+            //        mult = max / sum;
+            //    var ints = doubles.ToDictionary(p => p.Key, p => Game.Rand.Round(p.Sum() * mult));
+
+            //    MechBlueprint upgrade = Game.Rand.SelectValue(ints) as MechBlueprint;
+
+            //    MechBlueprint newBlueprint = GenBlueprint(upgrade, research, research.Game.GetPieceNum(typeof(MechBlueprint)), researchLevel, false);
+            //    blueprints.Add(newBlueprint);
+            //    if (upgrade != null)
+            //    {
+            //        upgrade.UpgradeTo = newBlueprint;
+            //        blueprints.Remove(upgrade);
+            //    }
+            //    return newBlueprint;
+            //}
+            private static BuildUnit GenBlueprint()//MechBlueprint upgrade, IResearch research, int blueprintNum, int researchLevel, bool alien)
+            {
+                BuildUnit? blueprint = null;
+
+                //bool valid = false;
+                //do
+                //{
+                //    if (upgrade == null)
+                //        blueprint = CheckCost(NewBlueprint(research, blueprintNum, researchLevel, alien),
+                //            upgrade, research, blueprintNum, researchLevel, alien);
+                //    else do
+                //            blueprint = CheckCost(UpgradeBlueprint(upgrade, research, blueprintNum, researchLevel),
+                //                upgrade, research, blueprintNum, researchLevel, alien);
+                //        while (!UpgradeValid(blueprint, upgrade, research));
+
+                //    valid = research.GetType() switch
+                //    {
+                //        Type.Mech => blueprint.Attacker.Single().Attack < blueprint.Killable.Single().Defense,
+                //        Type.MechEnergyWeapons => blueprint.Attacker.Any(a => a.Type == AttackType.Energy && a.Range == Attack.MELEE_RANGE),
+                //        Type.MechShields => blueprint.Killable.Any(k => k.Type == DefenseType.Shield),
+                //        //Type.MechResilience =>,
+                //        //Type.MechVision =>,
+                //        Type.MechAttack => blueprint.Attacker.Sum(a => Consts.StatValue(a.Attack)) * 2.1 >= blueprint.Killable.Max(k => Consts.StatValue(k.Defense)),
+                //        Type.MechDefense => blueprint.Attacker.Sum(a => Consts.StatValue(a.Attack)) * 2.1 <= blueprint.Killable.Max(k => Consts.StatValue(k.Defense)),
+                //        Type.MechLasers => blueprint.Attacker.Any(a => a.Type == AttackType.Energy && a.Range > Attack.MELEE_RANGE),
+                //        //Type.MechMove =>,
+                //        Type.MechRange => blueprint.Attacker.Any(a => a.Range > Attack.MELEE_RANGE),
+                //        Type.MechArmor => blueprint.Killable.Any(k => k.Type == DefenseType.Armor),
+                //        Type.MechExplosives => blueprint.Attacker.Any(a => a.Type == AttackType.Explosive),
+                //        _ => true,
+                //    };
+                //    valid &= blueprint.Hits.Defense > 1;
+                //}
+                //while (!valid);
+
+                return blueprint;
+            }
+
+            private static BuildUnit NewBlueprint()//IResearch research, int blueprintNum, int researchLevel, bool alien)
+            {
+                ////  ------  Att/Def           ------
+                ////being a colony ship/transport/death star makes att and def lower
+                //double strMult = GetAttDefStrMult(transStr, bombardDamageMult, colony, trans);
+                //double str = GetAttDefStr(research, strMult, focus);
+                //DoAttDef(str, attPct, (colony || trans > Game.Random.GaussianOEInt(transStr * .52, .52, .26)), out att, out def, focus);
+
+                ////  ------  HP                ------
+                ////being a colony ship/transport/death star makes hp higher
+                //hpMult = GetHPMult(strMult, deathStar, colony);
+                ////hp is relative to actual randomized stats
+                //hp = MakeStat(GetHPStr(att, def, hpMult));
+
+                ////  ------  Speed             ------
+                //double speedStr = MultStr(ModSpeedStr(GetSpeedStr(research), transStr, deathStar, colony, trans),
+                //        GetSpeedMult(str, hpMult, speedPct, att, def, hp, focus));
+                //speed = MakeStat(speedStr);
+
+                //double vision = alien ? 0 : GenVision(research);
+                //double resilience = GenResilience(research);
+                //IReadOnlyList<IKillable.Values> killable = GenKillable(research);
+                //IReadOnlyList<IAttacker.Values> attacker = GenAttacker(research);
+                //IMovable.Values movable = GenMovable(research);
+                //return new(blueprintNum, null, researchLevel, vision, killable, resilience, attacker, movable);
+
+                throw new NotImplementedException();
+            }
+
+            //private static MechBlueprint UpgradeBlueprint(MechBlueprint upgrade, IResearch research, int blueprintNum, int researchLevel)
+            //{
+            //    double resilience = upgrade.Resilience;
+            //    double vision = upgrade.Vision;
+            //    List<IKillable.Values> killable = upgrade.Killable.ToList();
+            //    List<IAttacker.Values> attacker = upgrade.Attacker.ToList();
+            //    IMovable.Values movable = upgrade.Movable;
+
+            //    Type upgType = research.GetType();
+            //    HashSet<Type> done = new() { };
+            //    int times = 1 + Game.Rand.OEInt(.5);
+            //    for (int a = 0; a < times; a++)
+            //    {
+            //        switch (upgType)
+            //        {
+            //            case Type.MechAttack:
+            //                attacker = Game.Rand.Iterate(attacker).Select(attack =>
+            //                {
+            //                    AttackType type = attack.Type;
+            //                    int att = attack.Attack;
+            //                    double range = attack.Range;
+            //                    IAttacker.Values newAttacker = Game.Rand.SelectValue(GenAttacker(research));
+            //                    if (Game.Rand.Next(newAttacker.Attack + 1) >= Game.Rand.Next(att + 1))
+            //                    {
+            //                        att = newAttacker.Attack;
+            //                        if (Game.Rand.Bool())
+            //                        {
+            //                            range = newAttacker.Range;
+            //                            if (Game.Rand.Bool() || CheckTypeRange(attack, newAttacker))
+            //                                type = newAttacker.Type;
+            //                        }
+            //                    }
+            //                    return UpgAttack(attack, type, att, range);
+            //                }).ToList();
+            //                break;
+            //            case Type.MechRange:
+            //                attacker = Game.Rand.Iterate(attacker).Select(attack =>
+            //                {
+            //                    AttackType type = attack.Type;
+            //                    int att = attack.Attack;
+            //                    double range = attack.Range;
+            //                    IAttacker.Values newAttacker = Game.Rand.SelectValue(GenAttacker(research));
+            //                    if (Game.Rand.DoubleFull(newAttacker.Range) >= Game.Rand.DoubleFull(range))
+            //                    {
+            //                        range = newAttacker.Range;
+            //                        if (Game.Rand.Bool())
+            //                            att = newAttacker.Attack;
+            //                        if (Game.Rand.Bool() || CheckTypeRange(attack, newAttacker))
+            //                            type = newAttacker.Type;
+            //                    }
+            //                    return UpgAttack(attack, type, att, range);
+            //                }).ToList();
+            //                break;
+            //            case Type.MechExplosives:
+            //                UpgAttackType(AttackType.Explosive);
+            //                break;
+            //            case Type.MechLasers:
+            //            case Type.MechEnergyWeapons:
+            //                UpgAttackType(AttackType.Energy);
+            //                break;
+            //            case Type.MechResilience:
+            //                resilience = GenResilience(research);
+            //                if (Game.Rand.Bool())
+            //                    killable = Game.Rand.Iterate(killable).Select(defense =>
+            //                    {
+            //                        IKillable.Values newKillable = GenKillable(research).Where(k => k.Type == DefenseType.Hits).Single();
+            //                        int def = defense.Defense;
+            //                        if (defense.Type == DefenseType.Hits)
+            //                            def = newKillable.Defense;
+            //                        return new IKillable.Values(defense.Type, def);
+            //                    }).ToList();
+            //                break;
+            //            case Type.MechDefense:
+            //                killable = Game.Rand.Iterate(killable).Select(defense =>
+            //                {
+            //                    int def = defense.Defense;
+            //                    IKillable.Values newKillable = Game.Rand.SelectValue(GenKillable(research).Where(k => k.Type == DefenseType.Hits || k.Type == defense.Type));
+            //                    if (Game.Rand.Next(newKillable.Defense + 1) >= Game.Rand.Next(def + 1))
+            //                        def = newKillable.Defense;
+            //                    return new IKillable.Values(defense.Type, def);
+            //                }).ToList();
+            //                if (Game.Rand.Bool())
+            //                    resilience = GenResilience(research);
+            //                break;
+            //            case Type.MechArmor:
+            //                UpgDefenseType(DefenseType.Armor);
+            //                break;
+            //            case Type.MechShields:
+            //                UpgDefenseType(DefenseType.Shield);
+            //                break;
+            //            case Type.MechMove:
+            //                IMovable.Values newMovable = GenMovable(research);
+            //                double inc = newMovable.MoveInc;
+            //                int max = movable.MoveMax;
+            //                if (max <= inc || (newMovable.MoveMax > inc && Game.Rand.Bool()))
+            //                    max = newMovable.MoveMax;
+            //                int limit = movable.MoveLimit;
+            //                if (limit <= max || (newMovable.MoveLimit > max && Game.Rand.Bool()))
+            //                    limit = newMovable.MoveLimit;
+            //                movable = new IMovable.Values(inc, max, limit);
+            //                if (Game.Rand.Bool())
+            //                    vision = GenVision(research);
+            //                break;
+            //            case Type.MechVision:
+            //                vision = GenVision(research);
+            //                if (Game.Rand.Bool())
+            //                {
+            //                    newMovable = GenMovable(research);
+            //                    movable = new IMovable.Values(newMovable);
+            //                }
+            //                break;
+            //            default:
+            //                throw new Exception();
+            //        }
+            //        if (!done.Add(upgType))
+            //            ;
+            //        upgType = Game.Rand.SelectValue(Enum.GetValues<Research.Type>().Where(Research.IsMech)
+            //            .Concat(new[] { Type.MechMove }) //more likely to pick
+            //            .Where(t => !done.Contains(t) || Game.Rand.Next(13) == 0) //small chance of picking the same type again
+            //            .Concat(new[] { Type.MechResilience, Type.MechVision })); //can pick multiple times
+            //    }
+            //    return new(blueprintNum, upgrade, researchLevel, vision, killable, resilience, attacker, movable);
+
+            //    void UpgAttackType(AttackType upgAtt)
+            //    {
+            //        attacker = Game.Rand.Iterate(attacker).Select(attack =>
+            //        {
+            //            AttackType type = attack.Type;
+            //            int att = attack.Attack;
+            //            double range = attack.Range;
+            //            IAttacker.Values newAttacker = GenAtt();
+            //            if (type != newAttacker.Type && Game.Rand.Bool())
+            //            {
+            //                type = newAttacker.Type;
+            //                if (Game.Rand.Bool())
+            //                    att = newAttacker.Attack;
+            //                if (Game.Rand.Bool() || CheckTypeRange(attack, newAttacker))
+            //                    range = newAttacker.Range;
+            //            }
+            //            return UpgAttack(attack, type, att, range);
+            //        }).ToList();
+
+            //        double trgAtts = NumAtts(research);
+            //        int numAttacks = attacker.Count;
+            //        if (CheckNumAtts())
+            //            attacker.Add(GenAtt());
+            //        numAttacks = attacker.Count;
+            //        HashSet<AttackType> seen = new();
+            //        attacker = Game.Rand.Iterate(attacker).Where(a =>
+            //        {
+            //            bool keep = seen.Add(a.Type) || CheckNumAtts();
+            //            if (!keep)
+            //                numAttacks--;
+            //            return keep;
+            //        }).ToList();
+            //        if (numAttacks != attacker.Count)
+            //            throw new Exception();
+
+            //        IAttacker.Values GenAtt()
+            //        {
+            //            IEnumerable<IAttacker.Values> genAtt = GenAttacker(research);
+            //            bool IsUpg(IAttacker.Values a) => a.Type == upgAtt;
+            //            if (genAtt.Any(IsUpg) && Game.Rand.Bool())
+            //                genAtt = genAtt.Where(IsUpg);
+            //            return Game.Rand.Bool() ? Game.Rand.SelectValue(genAtt) : genAtt.First();
+            //        }
+            //        bool CheckNumAtts() => Game.Rand.DoubleHalf(numAttacks) <= Game.Rand.DoubleHalf(trgAtts);
+            //    }
+            //    static bool CheckTypeRange(IAttacker.Values attack, IAttacker.Values newAttacker) =>
+            //        attack.Type != newAttacker.Type && (attack.Range > Attack.MELEE_RANGE) != (newAttacker.Range > Attack.MELEE_RANGE);
+            //    void UpgDefenseType(DefenseType upgDef)
+            //    {
+            //        killable = Game.Rand.Iterate(killable).Select(defense =>
+            //        {
+            //            int def = defense.Defense;
+            //            IKillable.Values newKillable = GenDef();
+            //            if (defense.Type == newKillable.Type || Game.Rand.Bool())
+            //                def = newKillable.Defense;
+            //            defense = new IKillable.Values(defense.Type, def);
+            //            return defense;
+            //        }).ToList();
+
+            //        IKillable.Values addKillable = GenDef();
+            //        if (!killable.Any(k => k.Type == addKillable.Type))
+            //            killable = killable.Concat(new[] { addKillable }).ToList();
+
+            //        killable.RemoveAll(k => k.Type != DefenseType.Hits && k.Type != upgDef && Game.Rand.Bool());
+
+            //        IKillable.Values GenDef()
+            //        {
+            //            IEnumerable<IKillable.Values> genDef = GenKillable(research);
+            //            bool IsUpg(IKillable.Values k) => k.Type == upgDef;
+            //            bool NotHits(IKillable.Values k) => k.Type != DefenseType.Hits;
+            //            if (genDef.Any(IsUpg) && Game.Rand.Bool(.91))
+            //                genDef = genDef.Where(IsUpg);
+            //            else if (genDef.Any(NotHits) && Game.Rand.Bool())
+            //                genDef = genDef.Where(NotHits);
+            //            return Game.Rand.SelectValue(genDef);
+            //        }
+            //    }
+            //}
+            //private static bool UpgradeValid(MechBlueprint blueprint, MechBlueprint upgrade, IResearch research)
+            //{
+            //    Func<MechBlueprint, double?> GetRaw = research.GetType() switch
+            //    {
+            //        Type.MechAttack => b => b.Attacker.Sum(a => (double?)Consts.StatValue(a.Attack)),
+            //        Type.MechRange => b => b.Attacker.Sum(a => (double?)a.Range * Consts.StatValue(a.Attack)) / b.Attacker.Sum(a => (double?)Consts.StatValue(a.Attack)),
+            //        Type.MechExplosives => b => b.Attacker.Where(a => a.Type == AttackType.Explosive).Sum(a => (double?)Consts.StatValue(a.Attack)),
+            //        Type.MechLasers => b => b.Attacker.Where(a => a.Type == AttackType.Energy && a.Range > Attack.MELEE_RANGE).Sum(a => (double?)Consts.StatValue(a.Attack)),
+            //        Type.MechEnergyWeapons => b => b.Attacker.Where(a => a.Type == AttackType.Energy).Sum(a => (double?)Consts.StatValue(a.Attack)),
+            //        Type.MechResilience => b => Consts.StatValue(b.Resilience * 13),
+            //        Type.MechDefense => b => b.Killable.Sum(k => (double?)Consts.StatValue(k.Defense)),
+            //        Type.MechArmor => b => b.Killable.Where(k => k.Type == DefenseType.Armor).Sum(k => (double?)Consts.StatValue(k.Defense)),
+            //        Type.MechShields => b => b.Killable.Where(k => k.Type == DefenseType.Shield).Sum(k => (double?)Consts.StatValue(k.Defense)),
+            //        Type.MechMove => b => Consts.StatValue(Consts.MoveValue(b.Movable) * 1.3),
+            //        Type.MechVision => b => Consts.StatValue(b.Vision),
+            //        _ => throw new Exception(),
+            //    };
+            //    double offset = Game.Rand.NextDouble();
+            //    double GetValue(MechBlueprint b) => Consts.StatValueInverse(GetRaw(b) ?? 0) + offset;
+            //    double oldVal = GetValue(upgrade), newVal = GetValue(blueprint);
+            //    bool valid = Game.Rand.Round(oldVal + Game.Rand.OE(.13)) < Game.Rand.Round(newVal);
+            //    if (!valid)
+            //        Debug.WriteLine($"{research.GetType()} upgrade invalid ({(float)oldVal} -> {(float)newVal})");
+            //    return valid;
+            //}
+
+            private static BuildUnit CheckCost()//MechBlueprint blueprint, MechBlueprint upgrade, IResearch research, int blueprintNum, int researchLevel, bool alien)
+            {
+                throw new NotImplementedException();
+
+                //if (double.IsNaN(minCost))
+                //{
+                //    minCost = GetMinCost(player.Game);
+                //    maxCost = GetMaxCost(research, minCost);
+                //}
+                //else
+                //{
+                //    minCost = Math.Max(minCost, GetMinCost(player.Game));
+                //}
+
+                ////  ------  Cost/Upkeep       ------
+                //double cost = -1, upkRnd = double.NaN;
+                //int upkeep = -1;
+                //GetCost(player.Game, upkeepPct, out cost, out upkeep, ref upkRnd, focus);
+                //while (cost > maxCost)
+                //{
+                //    ModifyStat ms = GetReduce(cost, hpMult, forceColony, forceTrans);
+                //    //Console.WriteLine(string.Format("Reduce: {0} {1} {2}", ms, cost, maxCost));
+                //    switch (ms)
+                //    {
+                //        case ModifyStat.Att:
+                //            --this._att;
+                //            break;
+                //        case ModifyStat.Def:
+                //            --this._def;
+                //            break;
+                //        case ModifyStat.HP:
+                //            --this._hp;
+                //            break;
+                //        case ModifyStat.Speed:
+                //            --this._speed;
+                //            break;
+                //        case ModifyStat.Trans:
+                //            --this._trans;
+                //            break;
+                //        case ModifyStat.DS:
+                //            this._bombardDamage = (ushort)SetBombardDamage(this.BombardDamage - 1, this.Att, false);
+                //            break;
+                //        case ModifyStat.Colony:
+                //            this._colony = false;
+                //            break;
+                //        case ModifyStat.None:
+                //            maxCost = cost;
+                //            break;
+                //        default:
+                //            throw new Exception();
+                //    }
+                //    GetCost(player.Game, upkeepPct, out cost, out upkeep, ref upkRnd, focus);
+                //}
+                //while (cost < minCost)
+                //{
+                //    ModifyStat ms = GetIncrease(hpMult);
+                //    //Console.WriteLine(string.Format("Increase: {0} {1} {2}", ms, cost, minCost));
+                //    switch (ms)
+                //    {
+                //        case ModifyStat.Att:
+                //            ++this._att;
+                //            this._bombardDamage = (ushort)SetBombardDamage(this._bombardDamage, this.Att, this.DeathStar);
+                //            break;
+                //        case ModifyStat.Def:
+                //            ++this._def;
+                //            break;
+                //        case ModifyStat.HP:
+                //            ++this._hp;
+                //            break;
+                //        case ModifyStat.None:
+                //            break;
+                //        default:
+                //            throw new Exception();
+                //    }
+                //    GetCost(player.Game, upkeepPct, out cost, out upkeep, ref upkRnd, focus);
+                //}
+                //this._cost = (ushort)Game.Random.Round(cost);
+                //this._upkeep = (byte)upkeep;
+                //this._costNotInit = false;
+
+                //Type researching = research.GetType();
+                //int minTotal, maxTotal;
+                //{
+                //    minTotal = research.GetMinCost();
+                //    maxTotal = research.GetMaxCost();
+                //    if (upgrade != null)
+                //    {
+                //        //avg??
+                //        minTotal = Math.Max(minTotal, Game.Rand.Round(upgrade.TotalCost() * 0.65));
+                //        maxTotal = Math.Min(maxTotal, Game.Rand.Round(upgrade.TotalCost() * 1.69));
+                //    }
+                //    if (researching != Type.Mech)
+                //    {
+                //        const double minDev = .13;
+                //        minTotal = Game.Rand.GaussianCappedInt(minTotal, minDev);
+                //        const double maxDev = .21, maxOE = .169;
+                //        if (maxTotal > minTotal)
+                //            maxTotal = Game.Rand.GaussianOEInt(maxTotal, maxDev, maxOE, minTotal);
+                //        else
+                //            maxTotal = Game.Rand.Round(minTotal * Game.Rand.Range(1, 1 + Game.Rand.Weighted(.13)));
+                //    }
+                //}
+
+                //int oldCost = blueprint.TotalCost();
+                //bool canKeep = true;
+                //while (blueprint.TotalCost() < minTotal && (canKeep &= ModStat(true))) ;
+                //while (blueprint.TotalCost() > maxTotal && (canKeep &= ModStat(false))) ;
+
+                //int newCost = blueprint.TotalCost();
+                //if (oldCost != newCost)
+                //    Debug.WriteLine($"blueprint ({(blueprint.BlueprintNum == "" ? "Alien" : blueprint.BlueprintNum)}) {oldCost} -> {newCost}");
+
+                //if ((!canKeep || research.GetType() == Type.Mech || Game.Rand.Bool()) && (newCost < minTotal || newCost > maxTotal))
+                //    blueprint = GenBlueprint(upgrade, research, blueprintNum, researchLevel, alien);
+
+                //return blueprint;
+
+                //bool ModStat(bool increase)
+                //{
+                //    Debug.WriteLine($"ModStat: {blueprint.TotalCost()} ({minTotal}-{maxTotal})");
+
+                //    int inc = 1;
+
+                //    //variables for relative chances
+                //    double vision = blueprint.Vision;
+                //    double resilience = blueprint.Resilience;
+                //    double moveInc = blueprint.Movable.MoveInc;
+                //    double moveMax = blueprint.Movable.MoveMax;
+                //    double moveLimit = blueprint.Movable.MoveLimit;
+                //    double[] def = blueprint.Killable.Select(k => (double)k.Defense).ToArray();
+                //    double[] att = blueprint.Attacker.Select(a => (double)a.Attack).ToArray();
+                //    double[] reload = blueprint.Attacker.Select(a => (double)a.Reload).ToArray();
+                //    double[] range = blueprint.Attacker.Select(a => (double)a.Range).ToArray();
+
+                //    if (increase)
+                //    {
+                //        //boundary conditions
+                //        if (moveInc + inc >= moveMax)
+                //            moveInc = 0;
+                //        if (moveMax + inc >= moveLimit)
+                //            moveMax = 0;
+                //        for (int a = 0; a < att.Length; a++)
+                //        {
+                //            if (reload[a] + inc >= att[a])
+                //                reload[a] = 0;
+                //            if (range[a] == Attack.MELEE_RANGE)
+                //                range[a] = 0;
+                //        }
+                //    }
+                //    else
+                //    {
+                //        //boundary conditions
+                //        if (vision - inc <= 1)
+                //            vision = 0;
+                //        if (moveInc - inc <= 1)
+                //            moveInc = 0;
+                //        if (moveMax - inc <= moveInc)
+                //            moveMax = 0;
+                //        if (moveLimit - inc <= moveMax)
+                //            moveLimit = 0;
+                //        for (int b = 0; b < def.Length; b++)
+                //            if (def[b] - inc <= 1)
+                //                def[b] = 0;
+                //        for (int c = 0; c < att.Length; c++)
+                //        {
+                //            if (att[c] - inc < reload[c]) //allow dropping to 1
+                //                att[c] = 0;
+                //            if (reload[c] - inc < 1) //allow dropping to 1
+                //                reload[c] = 0;
+                //            if (range[c] - inc <= Attack.MIN_RANGED * 2) //buffer to allow inc by up to MIN_RANGED
+                //                range[c] = 0;
+                //        }
+
+                //        //offsets
+                //        vision -= 1;
+                //        moveInc -= 1;
+                //        moveMax -= 2;
+                //        moveLimit -= 3;
+                //        def = def.Select(d => d - 2).ToArray();
+                //        att = att.Select(a => a - 1).ToArray();
+                //        reload = reload.Select(r => r - 1).ToArray();
+                //        range = range.Select(r => r - Attack.MIN_RANGED).ToArray();
+                //    }
+
+                //    //weight multipliers 
+                //    const double resilienceMult = 16.9, rangeMult = .39;
+                //    resilience *= resilienceMult; //resilienceMult used in inc
+                //    reload = reload.Select(r => r * (increase ? 3.9 : 6.5)).ToArray(); //inc is unaffected
+                //    range = range.Select(r => r * rangeMult).ToArray(); //inc is also higher 
+                //    moveMax /= 2; //inc is unaffected
+                //    moveLimit /= 3; //inc is unaffected
+
+                //    int GetChance(double value)
+                //    {
+                //        if (value < 0)
+                //            value = 0;
+                //        else if (!increase)
+                //            value *= value; //if decreasing, favor extreme values
+                //        return Game.Rand.Round(value);
+                //    }
+
+                //    double newVision = blueprint.Vision, newResilience = blueprint.Resilience;
+                //    var newKillable = blueprint.Killable.ToArray();
+                //    var newAttacker = blueprint.Attacker.ToArray();
+                //    var newMovable = blueprint.Movable;
+
+                //    if (!increase)
+                //        inc *= -1;
+
+                //    Action IncVision = () => newVision += inc;
+                //    Action IncResilience = () =>
+                //    {
+                //        if (increase)
+                //            newResilience = 1 - newResilience;
+                //        newResilience -= newResilience / resilienceMult;
+                //        if (increase)
+                //            newResilience = 1 - newResilience;
+                //    };
+                //    Action IncMoveInc = () => IncMovable(inc, 0, 0);
+                //    Action IncMoveMax = () => IncMovable(0, inc, 0);
+                //    Action IncMoveLimit = () => IncMovable(0, 0, inc);
+                //    void IncMovable(int moveInc, int moveMax, int moveLimit) =>
+                //        newMovable = new(blueprint.Movable.MoveInc + moveInc, blueprint.Movable.MoveMax + moveMax, blueprint.Movable.MoveLimit + moveLimit);
+
+                //    Dictionary<Action, int> chances = new() {
+                //        { IncVision, GetChance(vision) },
+                //        { IncResilience, GetChance(resilience) },
+                //        { IncMoveInc, GetChance(moveInc) },
+                //        { IncMoveMax, GetChance(moveMax) },
+                //        { IncMoveLimit, GetChance(moveLimit) },
+                //    };
+
+                //    for (int d = 0; d < blueprint.Killable.Count; d++)
+                //    {
+                //        int e = d; //capture loop variable
+                //        chances.Add(() =>
+                //            newKillable[e] = new(newKillable[e].Type, newKillable[e].Defense + inc),
+                //            GetChance(def[e]));
+                //    }
+                //    for (int f = 0; f < blueprint.Attacker.Count; f++)
+                //    {
+                //        int g = f; //capture loop variable
+                //        chances.Add(() =>
+                //            IncAttacker(inc, 0, 0),
+                //            GetChance(att[g]));
+                //        chances.Add(() =>
+                //            IncAttacker(0, inc * Game.Rand.Range(1, Attack.MIN_RANGED), 0), //equivalent to 0.350116223 rangeMult
+                //            GetChance(range[g]));
+                //        chances.Add(() =>
+                //            IncAttacker(0, 0, inc),
+                //            GetChance(reload[g]));
+                //        void IncAttacker(int incAtt, double incRange, int incReload) =>
+                //            newAttacker[g] = new(newAttacker[g].Type, newAttacker[g].Attack + incAtt, newAttacker[g].Range + incRange, newAttacker[g].Reload + incReload);
+                //    }
+
+                //    Action Inc = Game.Rand.SelectValue(chances);
+                //    Inc();
+
+                //    blueprint = new(blueprintNum, blueprint.UpgradeFrom, blueprint.ResearchLevel, newVision, newKillable, newResilience, newAttacker, newMovable);
+                //    return true;
+                //}
+            }
+            //private static IAttacker.Values UpgAttack(IAttacker.Values oldAttack, AttackType type, int att, double range) =>
+            //    new(type, att, range, oldAttack.Attack == att ? oldAttack.Reload : null);
+
+            private static double GenVision()//IResearch research)
+            {
+                const double avgVision = 5.2;
+                double avg = avgVision, dev = .39, oe = .169;
+                //bool isVision = research.GetType() == Type.MechVision;
+                //ModValues(isVision, 1.7, ref avg, ref dev, ref oe);
+                //avg *= research.GetMult(Type.MechVision, Blueprint_Vision_Pow);
+                //if (isVision)
+                //    avg += 1.3;
+                return Game.Rand.GaussianOE(avg, dev, oe);//, isVision ? Game.Rand.Round(Math.Sqrt(avg) + avgVision) : 1);
+            }
+            private static (int, int, int) GenCombatant()//IResearch research)
+            {
+                //IKillable.Values hits = GenType(DefenseType.Hits, null, 1.04);
+                //List<IKillable.Values> defenses = new() { hits };
+                //if (research.GetType() == Type.MechShields || research.MakeType(Type.MechShields))
+                //    defenses.Add(GenType(DefenseType.Shield, Type.MechShields, 0.65));
+                //if (research.GetType() == Type.MechArmor || research.MakeType(Type.MechArmor))
+                //    defenses.Add(GenType(DefenseType.Armor, Type.MechArmor, 0.91));
+                //return defenses.AsReadOnly();
+
+                //IKillable.Values GenType(DefenseType type, Type? additionalResearch, double mult)
+                //{
+                //    double avg = 5.2, dev = .26, oe = .078;
+                //    ModValues(research.GetType() == Type.MechDefense || research.GetType() == additionalResearch, 1.4, ref avg, ref dev, ref oe);
+
+                //    double researchMult = research.GetMult(Type.MechDefense, Blueprint_Defense_Pow);
+                //    if (additionalResearch.HasValue)
+                //        researchMult = Math.Sqrt(researchMult) * research.GetMult(additionalResearch.Value, Blueprint_Defense_Pow / 2.0);
+
+                //    int defense = Game.Rand.GaussianOEInt(2.6 + avg * mult * researchMult, dev, oe, 1);
+                //    return new(type, defense);
+                //}
+                return (GenAtt(), 1, 1);// GenDef(), GenHP());
+            }
+            //private static double NumAtts(IResearch research) => 1.13 * research.GetMult(Type.MechAttack, Blueprint_Attacks_Count_Pow);
+
+            private static int GenAtt()//IResearch research)
+            {
+                return 1;
+                //int numAttacks = research.GetType() == Type.Mech ? 1 : Game.Rand.GaussianOEInt(NumAtts(research), .26, .13, 1);
+                //if (numAttacks < 1)
+                //    numAttacks = 1;
+                //List<IAttacker.Values> attacks = new(numAttacks);
+
+                //HashSet<AttackType> used = new();
+                //bool usedRange = false;
+
+                //for (int a = 0; a < numAttacks; a++)
+                //{
+                //    Type researchType = a > 0 ? Type.Mech : research.GetType();
+
+                //    AttackType type = GetAttackType(researchType, out bool isLaser);
+                //    bool ranged = IsRanged(researchType, isLaser, ref type);
+                //    double range = GetRange(researchType, ranged, out double rangeAvg);
+
+                //    HashSet<Type> apply = GetResearchTypes(type, ranged);
+
+                //    //modify for current research type
+                //    double attAvg = 3.9, dev = .21, oe = .091;
+                //    foreach (var item in apply)//Game.Rand.Iterate(apply))
+                //        ModValues(researchType == item, 1.3, ref attAvg, ref dev, ref oe);
+
+                //    //modify for research totals
+                //    double researchMult = 1;
+                //    foreach (var item in apply)
+                //        researchMult *= research.GetMult(item, Blueprint_Attack_Pow);
+                //    researchMult = Math.Pow(researchMult, 1.0 / apply.Count);
+                //    attAvg *= researchMult;
+
+                //    //modify for attack type
+                //    attAvg *= CombatTypes.GetDamageMult(type);
+
+                //    //modify for multiple attacks and range
+                //    attAvg = 1 + (attAvg - 1) * Math.Sqrt(rangeAvg / range / numAttacks);
+
+                //    int cap = 1;
+                //    if (researchType == Type.MechAttack || researchType == Type.MechEnergyWeapons || researchType == Type.MechExplosives
+                //        || researchType == Type.MechLasers || researchType == Type.MechRange)
+                //    {
+                //        int rangedAtt = Game.Rand.RangeInt(Game.Rand.RangeInt(0, 2), Game.Rand.RangeInt(4, 6));
+                //        attAvg += rangedAtt;
+                //        cap += rangedAtt;
+                //    }
+
+                //    if (research is EnemyResearch)
+                //    {
+                //        int enemyAtt = Game.Rand.RangeInt(Game.Rand.RangeInt(0, 2), Game.Rand.RangeInt(2, 4));
+                //        attAvg += enemyAtt;
+                //        cap += enemyAtt;
+                //    }
+
+                //    int attack = cap;
+                //    if (attAvg > cap)
+                //        attack = Game.Rand.GaussianOEInt(attAvg, dev, oe, cap);
+                //    attacks.Add(new(type, attack, range));
+                //}
+                //return attacks.AsReadOnly();
+
+                //AttackType GetAttackType(Type researchType, out bool isLaser)
+                //{
+                //    bool explosive = research.MakeType(Type.MechExplosives);
+                //    bool MakeType(Type t) => research.MakeType(t) && !explosive;
+
+                //    isLaser = researchType == Type.MechLasers || MakeType(Type.MechLasers);
+
+                //    AttackType type = AttackType.Kinetic;
+                //    if (researchType == Type.MechExplosives)
+                //        type = AttackType.Explosive;
+                //    else if (isLaser || researchType == Type.MechEnergyWeapons || MakeType(Type.MechEnergyWeapons))
+                //        type = AttackType.Energy;
+                //    else if (explosive)
+                //        type = AttackType.Explosive;
+
+                //    if (used.Contains(type) && Game.Rand.Bool())
+                //        type = AttackType.Kinetic;
+                //    used.Add(type);
+
+                //    return type;
+                //}
+                //bool IsRanged(Type researchType, bool isLaser, ref AttackType type)
+                //{
+                //    bool ranged = isLaser || type == AttackType.Explosive ||
+                //        researchType == Type.MechRange || research.MakeType(Type.MechRange);
+                //    if (ranged && type == AttackType.Energy && !research.HasType(Type.MechLasers))
+                //        if (researchType == Type.MechRange)
+                //            type = AttackType.Kinetic;
+                //        else
+                //            ranged = false;
+                //    if (ranged && usedRange && researchType != Type.MechLasers && type != AttackType.Explosive && Game.Rand.Bool())
+                //        ranged = false;
+                //    usedRange |= ranged;
+                //    return ranged;
+                //}
+                //double GetRange(Type researchType, bool ranged, out double rangeAvg)
+                //{
+                //    double range = Attack.MELEE_RANGE;
+                //    rangeAvg = range;
+                //    if (ranged)
+                //    {
+                //        rangeAvg += 5.2;
+                //        double dev = .39, oe = .39;
+                //        ModValues(researchType == Type.MechRange, 1.6, ref rangeAvg, ref dev, ref oe);
+                //        rangeAvg *= research.GetMult(Type.MechRange, Blueprint_Range_Pow);
+                //        rangeAvg += 6.5;
+                //        oe /= Math.Sqrt(rangeAvg);
+                //        range = Game.Rand.GaussianOE(rangeAvg, dev, oe, Attack.MIN_RANGED);
+                //    }
+                //    return range;
+                //}
+                //static HashSet<Type> GetResearchTypes(AttackType type, bool ranged)
+                //{
+                //    HashSet<Type> apply = new() { Type.MechAttack };
+                //    switch (type)
+                //    {
+                //        case AttackType.Energy:
+                //            apply.Add(Type.MechEnergyWeapons);
+                //            if (ranged)
+                //                apply.Add(Type.MechLasers);
+                //            break;
+                //        case AttackType.Explosive:
+                //            apply.Add(Type.MechExplosives);
+                //            break;
+                //    }
+                //    return apply;
+                //}
+            }
+
+            private static (int, int) GenMovable()//IResearch research)
+            {
+                return new(1, 1);
+
+                //double avg = 7.8, dev = .169, oe = .13;
+
+                //double researchMult = research.GetMult(Type.MechMove, 1);
+                //const double lowPenalty = .21;
+                //if (researchMult < lowPenalty)
+                //    avg *= researchMult / lowPenalty;
+
+                //ModValues(research.GetType() == Type.MechMove, 1.3, ref avg, ref dev, ref oe);
+
+                //avg *= research.GetMult(Type.MechMove, Blueprint_Move_Pow);
+                //oe /= Math.Sqrt(avg);
+                //double cap = Game.Rand.Range(Game.Rand.Range(1, Math.Sqrt(2) + 1), Math.Sqrt(2) * 2 + Game.Rand.DoubleHalf());
+                //if (avg < cap)
+                //    ;
+                //double move = Game.Rand.GaussianOE(1 + avg, dev, oe, cap);
+                //int max = Game.Rand.GaussianOEInt(1 + move * 2, dev * 2.6, oe * 1.3, (int)Math.Ceiling(move) + 1);
+                //int limit = Game.Rand.GaussianOEInt(1 + move + max, dev * 2.6, oe * 2.6, max + (int)move);
+
+                //return new(move, max, limit);
+            }
+
+            //private static void ModValues(bool match, double mult, ref double avg, ref double dev, ref double oe)
+            //{
+            //    if (match)
+            //    {
+            //        avg *= mult;
+            //        mult = Math.Sqrt(mult);
+            //        dev /= mult;
+            //        oe *= mult;
+            //    }
+            //}
+
+            //public int CompareTo(MechBlueprint other)
+            //{
+            //    int sign = this.ResearchLevel - other.ResearchLevel;
+            //    if (sign == 0)
+            //        sign = this.BlueprintNum.CompareTo(other.BlueprintNum);
+            //    return sign;
+            //}
+
+            //public override string ToString()
+            //{
+            //    return "Type " + BlueprintNum;
+            //}
+        }
+    }
+}
