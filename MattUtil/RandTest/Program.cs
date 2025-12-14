@@ -30,8 +30,13 @@ namespace randTest
         {
             rand.StartTick();
 
+            void WriteNormSDist(float c) => Console.WriteLine($"{c.ToString("0.00").PadLeft(5)}: {1 / ((NormSDist(-c)) * 2.0):E2}");
+            for (int a = 1; a < 14; a++)
+                WriteNormSDist(a);
+            foreach (float b in new[] { .13f, .169f, .21f, .26f, .3f, 1 / 3f, .39f, .52f, .65f, .78f, .91f, 1f, 1.3f, 3.9f, 13f })
+                WriteNormSDist(1 / b);
 
-            Temp();
+            //Temp();
             Console.ReadKey();
 
             //while (true)
