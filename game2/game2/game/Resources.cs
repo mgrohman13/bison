@@ -5,54 +5,62 @@ namespace game2.game
 {
     public struct Resources : IEnumerable<int>
     {
-        public const int NumResources = 4;
+        public const int NumResources = 6;
+        public const int NumMapResources = 4;
 
-        private int _basic; // Food?
-        private int _advanced; // Alloys?
-        private int _mobility; // Gems?
-        private int _special; // Favor
-        private int _research; //  
-        private int _upkeep; //  
+        public const int BasicIdx = 0; // Food?
+        public const int AdvancedIdx = 1; // Alloys?
+        public const int MobilityIdx = 2; // Gems?
+        public const int SpecialIdx = 3; // Favor
+        public const int ResearchIdx = 4; //  
+        public const int UpkeepIdx = 5; //  
+
+        private int[] _resources;// = new int[NumResources];
 
         public Resources(Resources init) : this(init.ToArray()) { }
         public Resources(params int[] init)
         {
-            for (int a = 0; a < NumResources; a++)
+            _resources = new int[NumResources];
+            for (int a = 0; a < init.Length; a++)
                 this[a] = init[a];
         }
+        //public Resources()
+        //{
+        //    _resources = new int[NumResources];
+        //}
 
         public int Basic
         {
-            readonly get => _basic;
-            internal set => _basic = value;
+            get => this[BasicIdx];
+            internal set => this[BasicIdx] = value;
         }
         public int Advanced
         {
-            readonly get => _advanced;
-            internal set => _advanced = value;
+            get => this[AdvancedIdx];
+            internal set => this[AdvancedIdx] = value;
         }
         public int Mobility
         {
-            readonly get => _mobility;
-            internal set => _mobility = value;
+            get => this[MobilityIdx];
+            internal set => this[MobilityIdx] = value;
         }
         public int Special
         {
-            readonly get => _special;
-            internal set => _special = value;
+            get => this[SpecialIdx];
+            internal set => this[SpecialIdx] = value;
         }
         public int Research
         {
-            readonly get => _research;
-            internal set => _research = value;
+            get => this[ResearchIdx];
+            internal set => this[ResearchIdx] = value;
         }
         public int Upkeep
         {
-            readonly get => _upkeep;
-            internal set => _upkeep = value;
+            get => this[UpkeepIdx];
+            internal set => this[UpkeepIdx] = value;
         }
 
-        public readonly float GetValue(Game game)
+        public float GetValue(Game game)
         {
             float result = 0;
             for (int a = 0; a < NumResources; a++)
@@ -63,24 +71,15 @@ namespace game2.game
         // Indexer: 0 => Basic, 1 => Advanced, 2 => Mobility, 3 => Special
         public int this[int index]
         {
-            readonly get => index switch
+            get
             {
-                0 => _basic,
-                1 => _advanced,
-                2 => _mobility,
-                3 => _special,
-                _ => throw new ArgumentOutOfRangeException(nameof(index), "Valid indices are 0..3")
-            };
+                _resources ??= new int[NumResources];
+                return _resources[index];
+            }
             internal set
             {
-                switch (index)
-                {
-                    case 0: _basic = value; break;
-                    case 1: _advanced = value; break;
-                    case 2: _mobility = value; break;
-                    case 3: _special = value; break;
-                    default: throw new ArgumentOutOfRangeException(nameof(index), "Valid indices are 0..3");
-                }
+                _resources ??= new int[NumResources];
+                _resources[index] = value;
             }
         }
 
@@ -117,6 +116,12 @@ namespace game2.game
             return result;
         }
 
-        public override readonly int GetHashCode() => HashCode.Combine(_basic, _advanced, _mobility, _special);
+        public override int GetHashCode()
+        {
+            HashCode hash = new();
+            for (int a = 0; a < NumResources; a++)
+                hash.Add(this[a]);
+            return hash.ToHashCode();
+        }
     }
 }

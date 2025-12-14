@@ -1,12 +1,19 @@
-﻿using game2.map;
+﻿using game2.sides;
 
 namespace game2.runes.pattern
 {
-    internal interface IRunePattern
+    internal interface IRunePattern<Pattern> : IRunePattern where Pattern : IRunePattern<Pattern>
     {
-        RuneShape NewShape();
-        bool CanPlay(Rune rune);
-        (bool, Tile?) HandleChoice(IChoiceHandler handler);
-        Tile? Play(Rune rune, Tile? tile);
+        static abstract Pattern NewPattern(Player player, int researchLevel, float runeValue, int? forceCharges = null);
+    }
+
+    public interface IRunePattern
+    {
+        internal RuneShape NewShape();
+
+        internal bool CanPlay(Rune rune);
+        internal void Play(Rune rune, object? target);
+        internal (bool play, object target) HandleChoice(IChoiceHandler handler);
+        IEnumerable<IRuneEffect>? GetEffects();
     }
 }

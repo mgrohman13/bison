@@ -55,12 +55,12 @@ namespace game2.game
             piece.Side?.RemovePiece(piece);
         }
 
-        public void EndTurn()//Action<Tile, double> UpdateProgress)
+        public void EndTurn()//Action<Tile, float> UpdateProgress)
         {
             //if (this.GameOver)
             //    return null;
 
-            //Player.GenerateResources(out double energyInc, out double massInc, out double researchInc);
+            //Player.GenerateResources(out float energyInc, out float massInc, out float researchInc);
 
             //Research.Type? researched =
             Player.EndTurn();

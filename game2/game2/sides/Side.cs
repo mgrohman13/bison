@@ -29,7 +29,7 @@ namespace game2.sides
         //    foreach (Piece piece in Game.Rand.Iterate(_pieces))
         //        piece.StartTurn();
         //}
-        //protected void EndTurn(out double energyUpk, out double massUpk)
+        //protected void EndTurn(out float energyUpk, out float massUpk)
         //{
         //    energyUpk = massUpk = 0;
         //    foreach (Piece piece in Game.Rand.Iterate(_pieces))

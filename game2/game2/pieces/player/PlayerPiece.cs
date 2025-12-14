@@ -23,22 +23,22 @@ namespace game2.pieces.player
             _vision = game.Game.Rand.Round(_vision * woundPct);
         }
 
-        //public void GetIncome(ref double energyInc, ref double massInc, ref double researchInc)
+        //public void GetIncome(ref float energyInc, ref float massInc, ref float researchInc)
         //{
         //    GenerateResources(ref energyInc, ref massInc, ref researchInc);
 
-        //    double energyUpk = 0, massUpk = 0;
+        //    float energyUpk = 0, massUpk = 0;
         //    GetUpkeep(ref energyUpk, ref massUpk);
         //    energyInc -= energyUpk;
         //    massInc -= massUpk;
         //}
-        //internal virtual void GenerateResources(ref double energyInc, ref double massInc, ref double researchInc)
+        //internal virtual void GenerateResources(ref float energyInc, ref float massInc, ref float researchInc)
         //{
         //}
 
-        //public double GetRepairInc()
+        //public float GetRepairInc()
         //{
-        //    double result = 0;
+        //    float result = 0;
         //    if (this.HasBehavior(out Behavior.Combat.IKillable killable))
         //        killable.GetHitsRepair(out result, out _);
         //    return result;

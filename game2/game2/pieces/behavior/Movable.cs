@@ -45,11 +45,11 @@ namespace game2.pieces.behavior
 
         //    if (CanMoveTo(to) && to.Visible && Piece is PlayerPiece piece)
         //    {
-        //        const double lineDist = .5;
+        //        const float lineDist = .5;
         //        bool isX = from.X == to.X;
-        //        double a = isX ? 0 : (to.Y - from.Y) / (double)(to.X - from.X);
-        //        double c = to.Y - a * to.X;
-        //        double b = -1;
+        //        float a = isX ? 0 : (to.Y - from.Y) / (float)(to.X - from.X);
+        //        float c = to.Y - a * to.X;
+        //        float b = -1;
 
         //        IOrderedEnumerable<MattUtil.Point> ps =
         //            Game.Rand.Iterate(Math.Min(from.X, to.X), Math.Max(from.X, to.X), Math.Min(from.Y, to.Y), Math.Max(from.Y, to.Y))
@@ -119,7 +119,7 @@ namespace game2.pieces.behavior
 
         //bool IMovable.Port(Portal portal)
         //{
-        //    if (portal.CanPort(this, out Portal exit, out double dist))
+        //    if (portal.CanPort(this, out Portal exit, out float dist))
         //    {
         //        _moveCur -= dist;
         //        _moved = true;
@@ -133,13 +133,13 @@ namespace game2.pieces.behavior
         //    return false;
         //}
 
-        //public double GetInc()
+        //public float GetInc()
         //{
         //    return IncMove(false);
         //}
-        //private double IncMove(bool doEndTurn)
+        //private float IncMove(bool doEndTurn)
         //{
-        //    double moveInc = Consts.IncValueWithMaxLimit(MoveCur, MoveInc, Consts.MoveDev, MoveMax, MoveLimit, Consts.MoveLimitPow, doEndTurn);
+        //    float moveInc = Consts.IncValueWithMaxLimit(MoveCur, MoveInc, Consts.MoveDev, MoveMax, MoveLimit, Consts.MoveLimitPow, doEndTurn);
         //    if (doEndTurn)
         //    {
         //        //this._moved = false;
@@ -147,7 +147,7 @@ namespace game2.pieces.behavior
         //    }
         //    return moveInc;
         //}
-        //void IBehavior.GetUpkeep(ref double energyUpk, ref double massUpk)
+        //void IBehavior.GetUpkeep(ref float energyUpk, ref float massUpk)
         //{
         //    EndTurn(false, ref energyUpk);
         //}
@@ -155,11 +155,11 @@ namespace game2.pieces.behavior
         //{
         //    _moved = false;
         //}
-        //void IBehavior.EndTurn(ref double energyUpk, ref double massUpk)
+        //void IBehavior.EndTurn(ref float energyUpk, ref float massUpk)
         //{
         //    EndTurn(true, ref energyUpk);
         //}
-        //private void EndTurn(bool doEndTurn, ref double energyUpk)
+        //private void EndTurn(bool doEndTurn, ref float energyUpk)
         //{
         //    energyUpk += IncMove(doEndTurn) * Consts.EnergyPerMove;
         //}

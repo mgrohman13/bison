@@ -34,18 +34,26 @@
             lblSpecial = new Label();
             flowLayoutPanel1 = new FlowLayoutPanel();
             pictureBox1 = new PictureBox();
-            pictureBox2 = new PictureBox();
-            pictureBox3 = new PictureBox();
-            pictureBox4 = new PictureBox();
             lblbasicInc = new Label();
+            pictureBox2 = new PictureBox();
             lblAdvancedInc = new Label();
+            pictureBox3 = new PictureBox();
             lblMobilityInc = new Label();
+            pictureBox4 = new PictureBox();
             lblSpecialInc = new Label();
+            pictureBox5 = new PictureBox();
+            lblResearch = new Label();
+            lblResearchInc = new Label();
+            pictureBox6 = new PictureBox();
+            lblUpkeep = new Label();
+            lblUpkeepInc = new Label();
             flowLayoutPanel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox2).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox3).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox4).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)pictureBox5).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)pictureBox6).BeginInit();
             SuspendLayout();
             // 
             // lblbasic
@@ -103,9 +111,15 @@
             flowLayoutPanel1.Controls.Add(pictureBox4);
             flowLayoutPanel1.Controls.Add(lblSpecial);
             flowLayoutPanel1.Controls.Add(lblSpecialInc);
+            flowLayoutPanel1.Controls.Add(pictureBox5);
+            flowLayoutPanel1.Controls.Add(lblResearch);
+            flowLayoutPanel1.Controls.Add(lblResearchInc);
+            flowLayoutPanel1.Controls.Add(pictureBox6);
+            flowLayoutPanel1.Controls.Add(lblUpkeep);
+            flowLayoutPanel1.Controls.Add(lblUpkeepInc);
             flowLayoutPanel1.Location = new Point(0, 0);
             flowLayoutPanel1.Name = "flowLayoutPanel1";
-            flowLayoutPanel1.Size = new Size(648, 31);
+            flowLayoutPanel1.Size = new Size(972, 31);
             flowLayoutPanel1.TabIndex = 4;
             // 
             // pictureBox1
@@ -119,6 +133,16 @@
             pictureBox1.TabIndex = 4;
             pictureBox1.TabStop = false;
             // 
+            // lblbasicInc
+            // 
+            lblbasicInc.Font = new Font("Cascadia Code", 13F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            lblbasicInc.Location = new Point(105, 0);
+            lblbasicInc.Name = "lblbasicInc";
+            lblbasicInc.Size = new Size(54, 25);
+            lblbasicInc.TabIndex = 8;
+            lblbasicInc.Text = "+999";
+            lblbasicInc.TextAlign = ContentAlignment.MiddleLeft;
+            // 
             // pictureBox2
             // 
             pictureBox2.BackColor = Color.Silver;
@@ -129,6 +153,16 @@
             pictureBox2.SizeMode = PictureBoxSizeMode.StretchImage;
             pictureBox2.TabIndex = 5;
             pictureBox2.TabStop = false;
+            // 
+            // lblAdvancedInc
+            // 
+            lblAdvancedInc.Font = new Font("Cascadia Code", 13F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            lblAdvancedInc.Location = new Point(267, 0);
+            lblAdvancedInc.Name = "lblAdvancedInc";
+            lblAdvancedInc.Size = new Size(54, 25);
+            lblAdvancedInc.TabIndex = 9;
+            lblAdvancedInc.Text = "+999";
+            lblAdvancedInc.TextAlign = ContentAlignment.MiddleLeft;
             // 
             // pictureBox3
             // 
@@ -141,6 +175,16 @@
             pictureBox3.TabIndex = 6;
             pictureBox3.TabStop = false;
             // 
+            // lblMobilityInc
+            // 
+            lblMobilityInc.Font = new Font("Cascadia Code", 13F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            lblMobilityInc.Location = new Point(429, 0);
+            lblMobilityInc.Name = "lblMobilityInc";
+            lblMobilityInc.Size = new Size(54, 25);
+            lblMobilityInc.TabIndex = 10;
+            lblMobilityInc.Text = "+999";
+            lblMobilityInc.TextAlign = ContentAlignment.MiddleLeft;
+            // 
             // pictureBox4
             // 
             pictureBox4.BackColor = Color.DarkCyan;
@@ -152,36 +196,6 @@
             pictureBox4.TabIndex = 7;
             pictureBox4.TabStop = false;
             // 
-            // lblbasicInc
-            // 
-            lblbasicInc.Font = new Font("Cascadia Code", 13F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            lblbasicInc.Location = new Point(105, 0);
-            lblbasicInc.Name = "lblbasicInc";
-            lblbasicInc.Size = new Size(54, 25);
-            lblbasicInc.TabIndex = 8;
-            lblbasicInc.Text = "+999";
-            lblbasicInc.TextAlign = ContentAlignment.MiddleLeft;
-            // 
-            // lblAdvancedInc
-            // 
-            lblAdvancedInc.Font = new Font("Cascadia Code", 13F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            lblAdvancedInc.Location = new Point(267, 0);
-            lblAdvancedInc.Name = "lblAdvancedInc";
-            lblAdvancedInc.Size = new Size(54, 25);
-            lblAdvancedInc.TabIndex = 9;
-            lblAdvancedInc.Text = "+999";
-            lblAdvancedInc.TextAlign = ContentAlignment.MiddleLeft;
-            // 
-            // lblMobilityInc
-            // 
-            lblMobilityInc.Font = new Font("Cascadia Code", 13F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            lblMobilityInc.Location = new Point(429, 0);
-            lblMobilityInc.Name = "lblMobilityInc";
-            lblMobilityInc.Size = new Size(54, 25);
-            lblMobilityInc.TabIndex = 10;
-            lblMobilityInc.Text = "+999";
-            lblMobilityInc.TextAlign = ContentAlignment.MiddleLeft;
-            // 
             // lblSpecialInc
             // 
             lblSpecialInc.Font = new Font("Cascadia Code", 13F, FontStyle.Bold, GraphicsUnit.Point, 0);
@@ -192,6 +206,68 @@
             lblSpecialInc.Text = "+999";
             lblSpecialInc.TextAlign = ContentAlignment.MiddleLeft;
             // 
+            // pictureBox5
+            // 
+            pictureBox5.BackColor = Color.Crimson;
+            pictureBox5.Image = Properties.Resources.Research;
+            pictureBox5.Location = new Point(651, 3);
+            pictureBox5.Name = "pictureBox5";
+            pictureBox5.Size = new Size(25, 25);
+            pictureBox5.SizeMode = PictureBoxSizeMode.StretchImage;
+            pictureBox5.TabIndex = 13;
+            pictureBox5.TabStop = false;
+            // 
+            // lblResearch
+            // 
+            lblResearch.Font = new Font("Cascadia Code", 13F, FontStyle.Bold);
+            lblResearch.Location = new Point(682, 0);
+            lblResearch.Name = "lblResearch";
+            lblResearch.Size = new Size(65, 25);
+            lblResearch.TabIndex = 12;
+            lblResearch.Text = "99999";
+            lblResearch.TextAlign = ContentAlignment.MiddleLeft;
+            // 
+            // lblResearchInc
+            // 
+            lblResearchInc.Font = new Font("Cascadia Code", 13F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            lblResearchInc.Location = new Point(753, 0);
+            lblResearchInc.Name = "lblResearchInc";
+            lblResearchInc.Size = new Size(54, 25);
+            lblResearchInc.TabIndex = 14;
+            lblResearchInc.Text = "+999";
+            lblResearchInc.TextAlign = ContentAlignment.MiddleLeft;
+            // 
+            // pictureBox6
+            // 
+            pictureBox6.BackColor = Color.FromArgb(250, 196, 0);
+            pictureBox6.Image = Properties.Resources.Upkeep;
+            pictureBox6.Location = new Point(813, 3);
+            pictureBox6.Name = "pictureBox6";
+            pictureBox6.Size = new Size(25, 25);
+            pictureBox6.SizeMode = PictureBoxSizeMode.StretchImage;
+            pictureBox6.TabIndex = 16;
+            pictureBox6.TabStop = false;
+            // 
+            // lblUpkeep
+            // 
+            lblUpkeep.Font = new Font("Cascadia Code", 13F, FontStyle.Bold);
+            lblUpkeep.Location = new Point(844, 0);
+            lblUpkeep.Name = "lblUpkeep";
+            lblUpkeep.Size = new Size(65, 25);
+            lblUpkeep.TabIndex = 15;
+            lblUpkeep.Text = "99999";
+            lblUpkeep.TextAlign = ContentAlignment.MiddleLeft;
+            // 
+            // lblUpkeepInc
+            // 
+            lblUpkeepInc.Font = new Font("Cascadia Code", 13F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            lblUpkeepInc.Location = new Point(915, 0);
+            lblUpkeepInc.Name = "lblUpkeepInc";
+            lblUpkeepInc.Size = new Size(54, 25);
+            lblUpkeepInc.TabIndex = 17;
+            lblUpkeepInc.Text = "+999";
+            lblUpkeepInc.TextAlign = ContentAlignment.MiddleLeft;
+            // 
             // ResourcesCtrl
             // 
             AutoScaleDimensions = new SizeF(96F, 96F);
@@ -199,12 +275,14 @@
             AutoSize = true;
             Controls.Add(flowLayoutPanel1);
             Name = "ResourcesCtrl";
-            Size = new Size(651, 34);
+            Size = new Size(975, 34);
             flowLayoutPanel1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox2).EndInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox3).EndInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox4).EndInit();
+            ((System.ComponentModel.ISupportInitialize)pictureBox5).EndInit();
+            ((System.ComponentModel.ISupportInitialize)pictureBox6).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -224,5 +302,11 @@
         private Label lblAdvancedInc;
         private Label lblMobilityInc;
         private Label lblSpecialInc;
+        private PictureBox pictureBox5;
+        private Label lblResearch;
+        private Label lblResearchInc;
+        private PictureBox pictureBox6;
+        private Label lblUpkeep;
+        private Label lblUpkeepInc;
     }
 }

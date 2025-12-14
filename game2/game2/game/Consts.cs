@@ -48,7 +48,6 @@ namespace game2.game
 
         internal readonly float TilesPerResource;
 
-
         internal Consts()
         {
             SetDeviation();
@@ -160,7 +159,7 @@ namespace game2.game
             float avgMobilityInc = 5f / MobilityValue;
             float avgSpecialInc = 10f / SpecialValue;
             CoreSpecialInc += Game.Rand.GaussianCappedInt(1 + avgSpecialInc, Deviation * 2f, 1);
-            double mult = avgSpecialInc / CoreSpecialInc;
+            float mult = avgSpecialInc / CoreSpecialInc;
             CoreAdvancedInc += Game.Rand.GaussianCappedInt(1 + avgAdvancedInc * Math.Sqrt(mult), Deviation * 1.5f, 1);
             mult *= avgAdvancedInc / CoreAdvancedInc;
             CoreBasicInc += Game.Rand.GaussianCappedInt(1 + avgBasicInc * Math.Sqrt(mult), Deviation * 1.5f, 1);
@@ -185,8 +184,8 @@ namespace game2.game
 
         internal int Wound(float pct, int cur, int max, int min = 1)
         {
-            double avg = min + (cur - min) * (1f - pct);
-            double dev = (cur - min) * pct * WoundDeviation / avg;
+            float avg = min + (cur - min) * (1f - pct);
+            float dev = (cur - min) * pct * WoundDeviation / avg;
             int cap = Math.Max(min, (int)Math.Ceiling(avg * 2 - max));
             int res = Game.Rand.GaussianCappedInt(avg, dev, cap);
 
@@ -196,6 +195,12 @@ namespace game2.game
                 res = cur;
             }
             return res;
+        }
+
+        internal float GetResearchMult(int researchLevel)
+        {
+            const float mult = 100f; //TODO: randomize
+            return (mult + researchLevel) / mult;
         }
     }
 }

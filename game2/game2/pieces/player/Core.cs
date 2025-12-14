@@ -19,6 +19,8 @@ namespace game2.pieces.player
                 new Movable(this, Movable.MoveType.Ground, 3, 1, 3),
                 new Combatant(this, 1, 10, 20),
                 new Harvester(this, 0));
+
+            ReduceIncome();
         }
         internal static Core NewCore(Tile tile)
         {
@@ -32,7 +34,7 @@ namespace game2.pieces.player
             Income() + base.GetTurnEnd();
         private void ReduceIncome()
         {
-            float[] exponent = [0.6f, 1.0f, 1.8f, 0.8f]; //randomize
+            float[] exponent = [0.6f, 1.0f, 1.8f, 0.8f]; //TODO: randomize
             _curIncMult *= Tile.Map.Game.Consts.CoreIncReduction;
 
             if (_income != GetInc())
@@ -40,11 +42,13 @@ namespace game2.pieces.player
                 _rounding = Game.Rand.NextFloat();
                 _income = GetInc();
             }
+            _income.Special++;
+            _income.Research = 1;
 
             Resources GetInc()
             {
                 Resources newInc = new();
-                for (int a = 0; a < Resources.NumResources; a++)
+                for (int a = 0; a < Resources.NumMapResources; a++)
                     newInc[a] = MTRandom.Round(Tile.Map.Game.Consts.CoreIncome[a] * Math.Pow(_curIncMult, exponent[a]), _rounding);
                 return newInc;
             }

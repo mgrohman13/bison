@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace game2.runes.pattern
 {
-    internal class Upgrade
+    internal class UpgradeUnit
     {
     }
 }

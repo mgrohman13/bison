@@ -1,12 +1,11 @@
 ﻿using game2.game;
-using game2.map;
 using game2.sides;
 
 namespace game2.runes
 {
     public class Rune
     {
-        public readonly RuneShape Shape;
+        internal readonly RuneShape Shape;
         public readonly Resources Resources;
         public readonly int Draw, Discard;
 
@@ -18,11 +17,11 @@ namespace game2.runes
         public int Charges => _charges;
         public IReadOnlyList<IRuneEffect> Effects => _effects.AsReadOnly();
 
-        internal Rune(Player player, RuneShape shape, int charges = 1, Resources resources = new(),
+        internal Rune(Player player, RuneShape shape, int charges = 1, Resources? resources = null,
             IEnumerable<IRuneEffect>? effects = null, int draw = 0, int discard = 0)
         {
             Shape = shape;
-            Resources = resources;
+            Resources = resources ?? new();
             Draw = draw;
             Discard = discard;
 
@@ -39,19 +38,20 @@ namespace game2.runes
 
         public bool CanPlay() =>
             _player.HasResources(Resources) && Shape.Pattern.CanPlay(this);
-        public Tile? Play(IChoiceHandler handler)
+        public void Play(IChoiceHandler handler)
         {
-            Tile? result = null;
+            //Choice? result = null;
             if (CanPlay())
             {
-                (bool, Tile?) played = Shape.Pattern.HandleChoice(handler);
-                if (played.Item1)
-                {
-                    result ??= PlayRune(played.Item2);
-                    result ??= played.Item2;
-                }
+                (bool play, object target) = Shape.Pattern.HandleChoice(handler);
+                if (play)
+                    PlayRune(target);
+                //{
+                //    result ??= PlayRune(played.target);
+                //    result ??= played.target;
+                //}
             }
-            return result;
+            //return result;
         }
 
         public object[,] GetInfo()
@@ -71,21 +71,22 @@ namespace game2.runes
         //    PlayRune();
         //}
 
-        private Tile? PlayRune(Tile? tile)
+        private void PlayRune(object? choice)
         {
             _player.SpendResources(Resources);
             _charges--;
 
-            tile = Shape.Pattern.Play(this, tile);
+            //tile =
+            Shape.Pattern.Play(this, choice);
             foreach (IRuneEffect effect in Game.Rand.Iterate(_effects))
                 effect.PlayRune(this);
 
             if (Draw > 0)
                 _player.DrawRunes(Draw);
             if (Discard > 0)
-                _player.DiscardRunes(Discard);
+                _player.DiscardRunes((List<Rune>)choice!);
 
-            return tile;
+            //return tile;
         }
     }
 }

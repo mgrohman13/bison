@@ -133,9 +133,29 @@ namespace game2Forms.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap Research {
+            get {
+                object obj = ResourceManager.GetObject("Research", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap Special {
             get {
                 object obj = ResourceManager.GetObject("Special", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Upkeep {
+            get {
+                object obj = ResourceManager.GetObject("Upkeep", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

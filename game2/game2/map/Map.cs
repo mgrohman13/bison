@@ -22,7 +22,7 @@ namespace game2.map
         private readonly HashSet<Point> _explored, _notTall;
 
         private int _resourceCounter;
-        private Resources _resourceChances;
+        private int[] _resourceChances;
 
         public IEnumerable<Tile> VisibleTiles => _explored.Select(GetTile);
         public IEnumerable<Point> NotTallTiles => [.. _notTall];
@@ -45,7 +45,7 @@ namespace game2.map
             MountainNoise = CreateNoise(Game.Consts.MountainNoiseMult);
 
             _resourceCounter = Game.Rand.OEInt();
-            _resourceChances = new Resources(0, 0, 0, 0);
+            _resourceChances = new int[Resources.NumMapResources];
         }
         private static Noise CreateNoise(float mult)
         {
@@ -187,7 +187,7 @@ namespace game2.map
             return false;
         }
         private static bool CanPlaceResource(Tile t) => t.Piece == null && !t.Visible
-            && t.GetNeighbors().Any(n => n.Terrain != Terrain.Glacier);
+            && t.GetNeighbors().Any(n => n.Terrain != Terrain.Glacier && n.Piece == null);
         private int PickResources(Terrain terrain) //(int, int)
         {
             int Select()//float reduce)
@@ -195,7 +195,7 @@ namespace game2.map
                 Dictionary<int, int> dict = GetResourceChances(terrain);
                 int pick = Game.Rand.SelectValue(dict);
 
-                Resources updated = new(_resourceChances);
+                int[] updated = [.. _resourceChances];
                 updated[pick] -= Game.Rand.Round(Game.Consts.ResourceTypeConsistency);//*reduce);
                 _resourceChances = updated;
 
@@ -211,14 +211,14 @@ namespace game2.map
         {
             while (_resourceChances.Any(v => v <= 0))
             {
-                Resources refill = new(_resourceChances);
-                for (int a = 0; a < Resources.NumResources; a++)
+                int[] refill = [.. _resourceChances];
+                for (int a = 0; a < Resources.NumMapResources; a++)
                     refill[a] += Game.Rand.Round(Game.Consts.ResourceFreq[a]);
                 _resourceChances = refill;
             }
 
             float[] mult = Game.Consts.TerrainResourceMults(terrain);
-            return Enumerable.Range(0, Resources.NumResources).ToDictionary(k => k, v => Game.Rand.Round(_resourceChances[v] * mult[v]));
+            return Enumerable.Range(0, Resources.NumMapResources).ToDictionary(k => k, v => Game.Rand.Round(_resourceChances[v] * mult[v]));
         }
 
         public Tile GetRandomVisibleTile(Func<Tile, bool> Predicate) => Game.Rand.SelectValue(VisibleTiles.Where(Predicate));
@@ -278,7 +278,7 @@ namespace game2.map
 
             if (depth < -Game.Consts.LandWidth && !forceLand)
             {
-                double waterDepth = depth + (.5f - forestEval) * Game.Consts.ForestGlacierSeaMod;
+                double waterDepth = depth + (.5 - forestEval) * Game.Consts.ForestGlacierSeaMod;
                 if (waterDepth < -Game.Consts.LandWidth)
                     terrain = Terrain.Glacier;
                 else
@@ -289,7 +289,7 @@ namespace game2.map
                 if (hills)
                 {
                     terrain = Terrain.Hills;
-                    double mountainDepth = depth + (forestEval - .5f) * Game.Consts.ForestMountainMod;
+                    double mountainDepth = depth + (forestEval - .5) * Game.Consts.ForestMountainMod;
                     if (mountainDepth < -Game.Consts.Mountains)
                         terrain = Terrain.Mountains;
                 }
@@ -303,8 +303,8 @@ namespace game2.map
             }
             else
             {
-                double glacierDepth = depth - (mountainEval - .5f) * Game.Consts.MountainSeaGlacierMod;
-                double kelp = forestEval + (waterEval - .5f) * Game.Consts.DepthKelpMod;
+                double glacierDepth = depth - (mountainEval - .5) * Game.Consts.MountainSeaGlacierMod;
+                double kelp = forestEval + (waterEval - .5) * Game.Consts.DepthKelpMod;
                 if (glacierDepth > Game.Consts.DepthGlacier)
                     terrain = Terrain.Glacier;
                 else if (kelp < Game.Consts.Kelp)

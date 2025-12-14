@@ -32,13 +32,16 @@ namespace game2Forms
                 "Advanced",
                 "Mobility",
                 "Special",
+                "Research",
+                "Upkeep",
             ];
-            Color[] resourceColors =
-            [
+            Color[] resourceColors = [
                 Color.PaleGreen,
                 Color.Silver,
                 Color.BlueViolet,
                 Color.DarkCyan,
+                Color.Crimson,
+                Color.FromArgb(0xFAC400),
             ];
 
             //var b = Properties.Resources.Basic;
