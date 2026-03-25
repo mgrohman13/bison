@@ -1,3 +1,29 @@
+turret mass to expensive early?
+	enable early turrets somehow (orrr push back research?)
+	swap turret/factory mass/energy?
+	both too expensive early???
+		maybe different early building 
+
+prevent low-value upgs appearing?
+	what about if its a preq tho
+
+AI
+	weight paths taken last turn to tend to keep goin same dir?	
+	better group behavior
+		e.g. all healthy aliens in area of a hive switch to rush at once?
+
+fix map gen
+	caves too obvious
+
+fix core rush angle
+	gives away intent too clearly
+	ugh.. pathing....
+
+does repeating research increment int counter?
+ 
+
+
+
 Consts.PathWidth	11.944130354249044	double
 
 use debt instead of negative energy for hive spawns

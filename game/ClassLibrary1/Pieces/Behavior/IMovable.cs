@@ -1,5 +1,6 @@
 ﻿using ClassLibrary1.Pieces.Enemies;
 using System;
+using System.Runtime.Serialization;
 using Tile = ClassLibrary1.Map.Map.Tile;
 
 namespace ClassLibrary1.Pieces.Behavior
@@ -21,6 +22,7 @@ namespace ClassLibrary1.Pieces.Behavior
         public double GetInc();
 
         [Serializable]
+        [DataContract(IsReference = true)]
         public readonly struct Values
         {
             private readonly int _moveMax, _moveLimit;

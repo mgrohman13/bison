@@ -1,6 +1,7 @@
 ﻿using ClassLibrary1.Pieces.Players;
 using ClassLibrary1.Pieces.Terrain;
 using System;
+using System.Runtime.Serialization;
 using Tile = ClassLibrary1.Map.Map.Tile;
 
 namespace ClassLibrary1.Pieces.Behavior
@@ -16,7 +17,7 @@ namespace ClassLibrary1.Pieces.Behavior
         {
             public Constructor Build(Tile tile);
         }
-        public interface IBuildExtractor : IBuilder, IReplaceable<Extractor>
+        public interface IBuildExtractor : IReplacer<Extractor>
         {
             public Extractor Build(Resource resource);
         }
@@ -24,21 +25,25 @@ namespace ClassLibrary1.Pieces.Behavior
         {
             public Mech Build(Tile tile, MechBlueprint blueprint);
         }
-        public interface IBuildFactory : IBuilder, IReplaceable<FoundationPiece>
+        public interface IBuildOutpost : IReplacer<FoundationPiece>
+        {
+            public Outpost Build(Foundation foundation);
+        }
+        public interface IBuildFactory : IReplacer<FoundationPiece>
         {
             public Factory Build(Foundation foundation);
         }
-        public interface IBuildTurret : IBuilder, IReplaceable<FoundationPiece>
+        public interface IBuildTurret : IReplacer<FoundationPiece>
         {
             public Turret Build(Foundation foundation);
         }
-        public interface IBuildGenerator : IBuilder, IReplaceable<FoundationPiece>
+        public interface IBuildGenerator : IReplacer<FoundationPiece>
         {
             public Generator Build(Foundation foundation);
         }
-        public interface IReplaceable<T>
+        public interface IReplacer<T> : IBuilder
         {
-            public bool Replace(bool doReplace, T old, out int energy, out int mass, out bool couldReplace);
+            public T Replace(bool doReplace, T old, out int energy, out int mass, out bool couldReplace, out bool canReplace);
         }
         public interface IBuildDrone : IBuilder
         {
@@ -50,13 +55,11 @@ namespace ClassLibrary1.Pieces.Behavior
         //}
 
         [Serializable]
-        public readonly struct Values
+        [DataContract(IsReference = true)]
+        public readonly struct Values(double range)
         {
-            private readonly double _range;
-            public Values(double range)
-            {
-                _range = range;
-            }
+            private readonly double _range = range;
+
             public Values(IBuilder builder) : this(builder.RangeBase) { }
             public double Range => _range;
         }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using AttackType = ClassLibrary1.Pieces.Behavior.Combat.CombatTypes.AttackType;
 using Tile = ClassLibrary1.Map.Map.Tile;
 using Values = ClassLibrary1.Pieces.Behavior.Combat.IAttacker.Values;
@@ -8,6 +9,7 @@ using Values = ClassLibrary1.Pieces.Behavior.Combat.IAttacker.Values;
 namespace ClassLibrary1.Pieces.Behavior.Combat
 {
     [Serializable]
+    [DataContract(IsReference = true)]
     public class Attack
     {
         public const double MELEE_RANGE = 1.5;
@@ -65,14 +67,14 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
             bool movingRangeCheck = attackFrom == Piece.Tile || Range == MELEE_RANGE; //for AI 
             if (movingRangeCheck && CanAttack())
                 return GetDefenders(Piece.Side, target, t => attackFrom.GetDistance(t.Tile) <= Range);
-            return new();
+            return [];
         }
         public static Dictionary<IKillable, int> GetDefenders(Side attacker, Piece target) =>
             GetDefenders(attacker, target, _ => true);
         private static Dictionary<IKillable, int> GetDefenders(Side attacker, Piece target, Func<Piece, bool> InRange)
         {
             if (target == null)
-                return new();
+                return [];
 
             if (!CanAttack(target, true))
             {
@@ -80,7 +82,7 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
                 if (adjacent.Any() && attacker.IsEnemy)
                     target = Game.Rand.SelectValue(adjacent);
                 else
-                    return new();
+                    return [];
             }
 
             var defenders = AdjacentPieces(target)
@@ -88,7 +90,7 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
                 .Select(p => p.GetBehavior<IKillable>());
 
             if (!defenders.Any())
-                defenders = new[] { target.GetBehavior<IKillable>() };
+                defenders = [target.GetBehavior<IKillable>()];
             return defenders.ToDictionary(k => k, CombatTypes.GetPieceDefenceChance);
 
             bool CanAttack(Piece target, bool checkRange) => target != null && target.Side != attacker
@@ -96,7 +98,7 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
                 && (!checkRange || InRange(target));
             static IEnumerable<Piece> AdjacentPieces(Piece target) =>
                 target.Tile?.GetAdjacentTiles().Select(t => t.Piece).Where(p => p?.Side == target.Side)
-                ?? Enumerable.Empty<Piece>();
+                ?? [];
         }
 
         internal bool Missile(IKillable target, double attMult)
@@ -112,7 +114,7 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
         internal bool Fire(IKillable target)
         {
             var defenders = GetDefenders(target.Piece);
-            if (defenders.Any())
+            if (defenders.Count > 0)
                 return DoFire(Game.Rand.SelectValue(defenders), target.Piece.Tile);
             return false;
         }
@@ -142,9 +144,11 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
                         else
                         {
                             if (activeDefense)
+                            {
                                 _attackCur--;
-                            if (Game.Rand.Bool())
-                                rounds--;
+                                if (Game.Rand.Bool())
+                                    rounds--;
+                            }
                         }
                     }
 

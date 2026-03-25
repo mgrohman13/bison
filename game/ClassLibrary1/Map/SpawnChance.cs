@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Runtime.Serialization;
 
 namespace ClassLibrary1.Map
 {
     public partial class Map
     {
         [Serializable]
+        [DataContract(IsReference = true)]
         public class SpawnChance
         {
             private int chance, target;

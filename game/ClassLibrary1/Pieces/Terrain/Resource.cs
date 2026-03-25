@@ -1,11 +1,13 @@
 ﻿using ClassLibrary1.Pieces.Players;
 using MattUtil;
 using System;
+using System.Runtime.Serialization;
 using Tile = ClassLibrary1.Map.Map.Tile;
 
 namespace ClassLibrary1.Pieces.Terrain
 {
     [Serializable]
+    [DataContract(IsReference = true)]
     public abstract class Resource : Piece
     {
         public readonly double Sustain;

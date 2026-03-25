@@ -14,15 +14,18 @@ using Tile = ClassLibrary1.Map.Map.Tile;
 namespace ClassLibrary1.Pieces.Enemies
 {
     [Serializable]
+    [DataContract(IsReference = true)]
     public class Hive : EnemyPiece, IDeserializationCallback
     {
         private readonly SpawnChance spawner;
 
-        private readonly IKillable killable;
-        private readonly IAttacker attacker;
+        private readonly Killable killable;
+        private readonly Attacker attacker;
 
         internal override double Cost => _cost;
-        private double _cost, _energy;
+
+        private readonly double _cost;
+        private double _energy;
 
         public bool Dead => killable.Dead;
 
@@ -90,8 +93,8 @@ namespace ClassLibrary1.Pieces.Enemies
         }
         private void Killable_DamagedEvent(object sender, Killable.DamagedEventArgs e)
         {
-            double cur = killable.AllDefenses.Sum(d => Consts.StatValue(d.DefenseCur));
-            double max = killable.AllDefenses.Sum(d => Consts.StatValue(d.DefenseMax));
+            double cur = ((IKillable)killable).AllDefenses.Sum(d => Consts.StatValue(d.DefenseCur));
+            double max = ((IKillable)killable).AllDefenses.Sum(d => Consts.StatValue(d.DefenseMax));
             Game.Enemy.HiveDamaged(this, e.DefTile, spawner, ref _energy,
                 killable.Hits.DefenseCur, cur / max, MaxRange / 2.1 + Attack.MELEE_RANGE);
         }
@@ -113,12 +116,12 @@ namespace ClassLibrary1.Pieces.Enemies
             Game.CollectResources(tile, Cost / 2.1, out _, out _);
         }
 
-        private static IEnumerable<IKillable.Values> GenKillable(int hiveIdx)
+        private static List<IKillable.Values> GenKillable(int hiveIdx)
         {
             hiveIdx += Game.Rand.Next(3);
             IKillable.Values hits = new(DefenseType.Hits, Game.Rand.GaussianOEInt(10.4 + 3.9 * hiveIdx, .13, .13, 10));
 
-            List<IKillable.Values> defenses = new() { hits };
+            List<IKillable.Values> defenses = [hits];
 
             double def = 9.1 + .65 * hiveIdx;
             bool armor = Game.Rand.Bool();
@@ -150,7 +153,7 @@ namespace ClassLibrary1.Pieces.Enemies
             range = Game.Rand.GaussianOE(13 + 1.69 * hiveIdx, .13, .13, 10);
             IAttacker.Values att2 = new(flag ? AttackType.Kinetic : AttackType.Energy, att, range);
 
-            return new[] { att1, att2 };
+            return [att1, att2];
         }
 
         public override string ToString()

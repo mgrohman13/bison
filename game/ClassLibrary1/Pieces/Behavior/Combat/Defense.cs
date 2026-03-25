@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data;
 using System.Linq;
+using System.Runtime.Serialization;
 using DefenseType = ClassLibrary1.Pieces.Behavior.Combat.CombatTypes.DefenseType;
 using Tile = ClassLibrary1.Map.Map.Tile;
 using Values = ClassLibrary1.Pieces.Behavior.Combat.IKillable.Values;
@@ -8,6 +9,7 @@ using Values = ClassLibrary1.Pieces.Behavior.Combat.IKillable.Values;
 namespace ClassLibrary1.Pieces.Behavior.Combat
 {
     [Serializable]
+    [DataContract(IsReference = true)]
     public class Defense
     {
         public readonly Piece Piece;
@@ -135,13 +137,12 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
                 //check blocks
                 var repairers = Piece.Side.PiecesOfType<IRepair>()
                     .Where(r => Piece != r.Piece && Piece.Side == r.Piece.Side && Piece.Tile.GetDistance(r.Piece.Tile) <= r.Range);
-                double[] repairs = repairers
+                double[] repairs = [.. repairers
                     .Select(r => (r?.Rate))
-                    .Concat(repairable.AutoRepair ? new double?[] { Consts.AutoRepair } : Array.Empty<double?>())
+                    .Concat(repairable.AutoRepair ? new double?[] { Consts.AutoRepair } : [])
                     .Where(v => v.HasValue)
                     .Select(v => v.Value)
-                    .OrderByDescending(v => v)
-                    .ToArray();
+                    .OrderByDescending(v => v)];
                 //each additional repairer contributes a reduced amount 
                 for (int a = 0; a < repairs.Length; a++)
                     repairInc += repairs[a] / (a + 1.0);

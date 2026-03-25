@@ -3,16 +3,18 @@ using ClassLibrary1.Pieces.Behavior;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 
 namespace ClassLibrary1
 {
     [Serializable]
-    public abstract class Side
+    [DataContract(IsReference = true)]
+    public abstract class Side(Game game, int energy, int mass)
     {
-        protected readonly Game _game;
-        protected readonly List<Piece> _pieces;
+        protected readonly Game _game = game;
+        protected readonly List<Piece> _pieces = [];
 
-        protected int _energy, _mass;
+        protected int _energy = energy, _mass = mass;
 
         internal int Energy => _energy;
         internal int Mass => _mass;
@@ -21,15 +23,6 @@ namespace ClassLibrary1
         internal IReadOnlyList<Piece> Pieces => _pieces;
         public bool IsPlayer => this == Game.Player;
         public bool IsEnemy => this == Game.Enemy;
-        internal IResearch Research;
-
-        protected Side(Game game, int energy, int mass)
-        {
-            this._game = game;
-            this._pieces = new List<Piece>();
-            this._energy = energy;
-            this._mass = mass;
-        }
 
         internal IEnumerable<T> PiecesOfType<T>() where T : class, IBehavior
         {

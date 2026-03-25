@@ -6,6 +6,7 @@ using MattUtil;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using Point = MattUtil.Point;
 
 namespace ClassLibrary1.Map
@@ -13,6 +14,7 @@ namespace ClassLibrary1.Map
     public partial class Map
     {
         [Serializable]
+        [DataContract(IsReference = true)]
         public class Tile
         {
             public readonly Map Map;
@@ -117,8 +119,7 @@ namespace ClassLibrary1.Map
                 ////            && GetDistance(point, p.Key) <= range))
                 ////        AddBlock(pair.Key, pair.Value.Side != null && pair.Value.Side != blockFor.Side ? enemyBlock : baseBlock);
 
-                List<Point> block = Game.Rand.Iterate(GetPointsInRangeUnblocked(map, point, range).Where(p => map.GetTile(p) == null))
-                    .OrderBy(b => GetDistance(point, b)).ToList();
+                List<Point> block = [.. Game.Rand.Iterate(GetPointsInRangeUnblocked(map, point, range).Where(p => map.GetTile(p) == null)).OrderBy(b => GetDistance(point, b))];
                 double blockRadius = (1 + Math.Sqrt(2)) / 4.0;// Math.Sqrt(2) / 2
 
                 int max = (int)Math.Ceiling(range);

@@ -1,14 +1,15 @@
 ﻿using ClassLibrary1.Pieces;
 using ClassLibrary1.Pieces.Behavior.Combat;
-using ClassLibrary1.Pieces.Behavior.Combat;
 using ClassLibrary1.Pieces.Players;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 
 namespace ClassLibrary1
 {
     [Serializable]
+    [DataContract(IsReference = true)]
     public class Log
     {
         public readonly Game Game;
@@ -19,7 +20,7 @@ namespace ClassLibrary1
         internal Log(Game game)
         {
             this.Game = game;
-            this._log = new();
+            this._log = [];
             this._logNumInc = 0;
         }
 
@@ -27,10 +28,10 @@ namespace ClassLibrary1
         {
             SortedSet<LogEntry> entries;
             if (piece == null)
-                entries = new(_log.SelectMany(e => e.Value));
+                entries = [.. _log.SelectMany(e => e.Value)];
             else
                 _log.TryGetValue(piece.ToString(), out entries);
-            return entries ?? new();
+            return entries ?? [];
         }
 
         internal void LogAttack(Attack attack, int startAttack, IKillable target, Dictionary<Defense, int> startDefense)
@@ -42,17 +43,18 @@ namespace ClassLibrary1
         private void AddLog(LogEntry entry, params Piece[] pieces)
         {
             if (pieces.Length == 0)
-                pieces = new Piece[] { null };
+                pieces = [null];
             foreach (Piece piece in pieces)
             {
                 string key = piece.ToString();
                 if (!_log.TryGetValue(key, out SortedSet<LogEntry> entries))
-                    _log.Add(key, entries = new());
+                    _log.Add(key, entries = []);
                 entries.Add(entry);
             }
         }
 
         [Serializable]
+        [DataContract(IsReference = true)]
         public class LogEntry : IComparable
         {
             public readonly int LogNum;
@@ -91,7 +93,7 @@ namespace ClassLibrary1
                 this.Killed = target.Dead;
 
                 this.Attack = new(startAttack, attack.AttackCur, attack.AttackMax);
-                this.Defense = target.AllDefenses.Select(d => new Stat(startDefense[d], d.DefenseCur, d.DefenseMax)).ToArray();
+                this.Defense = [.. target.AllDefenses.Select(d => new Stat(startDefense[d], d.DefenseCur, d.DefenseMax))];
                 //.OrderBy(d => d.Type switch
                 //{
                 //    DefenseType.Hits => 1,
@@ -107,15 +109,10 @@ namespace ClassLibrary1
             }
 
             [Serializable]
-            public class Stat
+            [DataContract(IsReference = true)]
+            public class Stat(int prev, int cur, int max)
             {
-                public readonly int Prev, Cur, Max;
-                public Stat(int prev, int cur, int max)
-                {
-                    this.Prev = prev;
-                    this.Cur = cur;
-                    this.Max = max;
-                }
+                public readonly int Prev = prev, Cur = cur, Max = max;
             }
         }
     }

@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using Type = ClassLibrary1.Research.Type;
 
 namespace ClassLibrary1
 {
     [Serializable]
+    [DataContract(IsReference = true)]
     internal class EnemyResearch : IResearch
     {
         private const Type NoType = Type.BuildingCost;
@@ -33,15 +35,15 @@ namespace ClassLibrary1
         }
         private static Dictionary<Type, int> GenUnlockTurns()
         {
-            Type[] Skips = new[] { Type.ConstructorCost, Type.ConstructorDefense, Type.ConstructorMove };
+            Type[] Skips = [Type.ConstructorCost, Type.ConstructorDefense, Type.ConstructorMove];
             //in order of liklihood
-            Type[] unlocks = new Type[] { Type.MechEnergyWeapons, Type.MechShields, PortalType, Skips[0],
-                Type.MechRange, Type.MechArmor, Skips[1], Type.MechLasers, Type.MechExplosives, Skips[2] };
+            Type[] unlocks = [ Type.MechEnergyWeapons, Type.MechShields, PortalType, Skips[0],
+                Type.MechRange, Type.MechArmor, Skips[1], Type.MechLasers, Type.MechExplosives, Skips[2] ];
             int count = unlocks.Length;
             Dictionary<Type, int> chances = unlocks.ToDictionary(t => t, t =>
                 Game.Rand.Round(Math.Pow(1.69, count - Array.IndexOf(unlocks, t))));
 
-            Dictionary<Type, int> result = new();
+            Dictionary<Type, int> result = [];
             for (int a = 0; a < count; a++)
             {
                 Type next;

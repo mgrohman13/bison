@@ -20,6 +20,7 @@ namespace WinFormsApp1
             Turret.Cost(Program.Game, out int te, out int tm);
             Generator.Cost(Program.Game, out int ge, out int gm);
             Drone.Cost(Program.Game, out int de, out int dm);
+            Outpost.Cost(Program.Game, out int oe, out int om);
 
             this.lblCE.Text = ce.ToString();
             this.lblCM.Text = cm.ToString();
@@ -31,6 +32,8 @@ namespace WinFormsApp1
             this.lblGM.Text = gm.ToString();
             this.lblDE.Text = de.ToString();
             this.lblDM.Text = dm.ToString();
+            this.lblOE.Text = de.ToString();
+            this.lblOM.Text = dm.ToString();
 
             this.txtVictory.Text = $"{Program.Game.Victory}/{Game.POINTS_TO_WIN}";
 

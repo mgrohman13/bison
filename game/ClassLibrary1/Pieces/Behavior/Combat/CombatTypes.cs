@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 
 namespace ClassLibrary1.Pieces.Behavior.Combat
@@ -105,13 +106,13 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
             OrderAtt(attacks, a => a.Attack, a => a.Range, a => a.Type);
         internal static IReadOnlyList<Attack> OrderAtt(IEnumerable<Attack> attacks) =>
             OrderAtt(attacks, a => a.AttackMax, a => a.RangeBase, a => a.Type);
-        private static IReadOnlyList<T> OrderAtt<T>(IEnumerable<T> attacks, Func<T, int> AttMax, Func<T, double> Range, Func<T, AttackType> Type) =>
+        private static ReadOnlyCollection<T> OrderAtt<T>(IEnumerable<T> attacks, Func<T, int> AttMax, Func<T, double> Range, Func<T, AttackType> Type) =>
             Game.Rand.Iterate(attacks).OrderByDescending(AttMax).ThenByDescending(Range).ThenBy(Type).ToList().AsReadOnly();
         internal static IReadOnlyList<IKillable.Values> OrderDef(IEnumerable<IKillable.Values> killable) =>
             OrderDef(killable, d => d.Type);
         internal static IReadOnlyList<Defense> OrderDef(IEnumerable<Defense> killable) =>
             OrderDef(killable, d => d.Type);
-        private static IReadOnlyList<T> OrderDef<T>(IEnumerable<T> killable, Func<T, DefenseType> Type) =>
+        private static ReadOnlyCollection<T> OrderDef<T>(IEnumerable<T> killable, Func<T, DefenseType> Type) =>
             Game.Rand.Iterate(killable).OrderBy(Type).ToList().AsReadOnly();
 
         internal static bool DoSplash(AttackType type) => type == AttackType.Explosive;

@@ -5,6 +5,7 @@ using ClassLibrary1.Pieces.Behavior.Combat;
 using ClassLibrary1.Pieces.Players;
 using ClassLibrary1.Pieces.Terrain;
 using System;
+using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
@@ -19,6 +20,7 @@ namespace WinFormsApp1
     public partial class Info : UserControl
     {
         //private readonly Timer animateTimer;
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public Tile Selected { get; set; }
 
         public Info()
@@ -75,7 +77,12 @@ namespace WinFormsApp1
             //    animateTimer.Stop();
             //    btnBuild.BackColor = Color.Transparent;
             //}
-            if (BuildForm.CanBuild(Selected))
+            if (CanReplace(out _))
+            {
+                btnBuild.Text = "Replace";
+                btnBuild.Show();
+            }
+            else if (BuildForm.CanBuild(Selected))
             {
                 btnBuild.Text = "Build";
                 btnBuild.Show();
@@ -85,11 +92,6 @@ namespace WinFormsApp1
                 btnBuild.Text = "Upgrade";
                 btnBuild.Show();
                 //animateTimer.Start();
-            }
-            else if (CanReplace(out _))
-            {
-                btnBuild.Text = "Replace";
-                btnBuild.Show();
             }
             else
             {
@@ -306,7 +308,7 @@ namespace WinFormsApp1
                 if (Selected.Piece.HasBehavior(out IAttacker attacker))
                     attacks = attacker.Attacks;
                 if (silo != null)
-                    attacks = new[] { silo.SampleAttack };
+                    attacks = [silo.SampleAttack];
                 if (attacks.Any())
                 {
                     dgvAttacks.Show();
@@ -386,7 +388,7 @@ namespace WinFormsApp1
 
         private void ShowAll(bool show)
         {
-            foreach (Control label in this.Controls.OfType<Label>().OfType<Control>().Concat(new Control[] { dgvAttacks }))
+            foreach (Control label in this.Controls.OfType<Label>().OfType<Control>().Concat([dgvAttacks]))
                 if (show)
                     label.Show();
                 else
@@ -494,7 +496,8 @@ namespace WinFormsApp1
                                 rtbLog.AppendText("".PadLeft(39, ' '));
                                 rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Regular);
                                 rtbLog.AppendText(" ");
-                            };
+                            }
+                            ;
                             rtbLog.AppendText(Environment.NewLine);
                             HalfLine();
                             rtbLog.AppendText(entry.Turn + " ");
@@ -610,12 +613,12 @@ namespace WinFormsApp1
                 if (position > 0 && position < rtbLog.Text.Length)
                 {
                     // find the line that contains piece names for this entry
-                    int a = Math.Max(rtbLog.Text.LastIndexOf("\n", position), 0);
-                    int b = rtbLog.Text.IndexOf("\n", rtbLog.SelectionStart);
+                    int a = Math.Max(rtbLog.Text.LastIndexOf('\n', position), 0);
+                    int b = rtbLog.Text.IndexOf('\n', rtbLog.SelectionStart);
                     if (a >= 0 && a < rtbLog.Text.Length && b >= 0 && b < rtbLog.Text.Length)
                     {
                         string line = rtbLog.Text[a..b];
-                        int c = line.IndexOf("~");
+                        int c = line.IndexOf('~');
                         if (c >= 0 && c < line.Length)
                         {
                             if (line.Contains(':'))
@@ -680,7 +683,13 @@ namespace WinFormsApp1
         public void BtnBuild_Click(object sender, EventArgs e)
         {
             static string DispCost(int c) => (c < 0 ? "+" : "") + -c;
-            if (BuildForm.CanBuild(Selected))
+            if (CanReplace(out Piece builder))
+            {
+                Piece result = Program.BuildForm.ReplaceDialog(builder, Selected);
+                if (result != null)
+                    Program.RefreshChanged();
+            }
+            else if (BuildForm.CanBuild(Selected))
             {
                 Piece result = Program.BuildForm.BuilderDialog(Selected);
                 if (result != null)
@@ -693,11 +702,11 @@ namespace WinFormsApp1
             }
             else if (HasUpgrade(Selected, out MechBlueprint blueprint, out int energy, out int mass))
             {
-                Program.BuildForm.UpgradeInfo(((Mech)Selected.Piece).Blueprint);
+                Program.BuildForm.UpgradeDialog(((Mech)Selected.Piece).Blueprint);
                 bool canUpgrade = CanUpgrade();
                 if (canUpgrade && MessageBox.Show(string.Format("{3}pgrade to {0} for {1} energy {2} mass{4}",
                         blueprint, DispCost(energy), DispCost(mass),
-                        canUpgrade ? "U" : "Can u", canUpgrade ? "?" : " ."),
+                        canUpgrade ? "U" : "Can u", canUpgrade ? "?" : "."),
                         "Upgrade", canUpgrade ? MessageBoxButtons.OKCancel : MessageBoxButtons.OK)
                     == DialogResult.OK)
                 {
@@ -705,59 +714,7 @@ namespace WinFormsApp1
                     Program.RefreshChanged();
                 }
             }
-            else if (CanReplace(out Piece builder))
-            {
-                static bool Replace(string type, ReplaceFunc ReplaceFunc)
-                {
-                    bool canReplace = ReplaceFunc(false, out int energy, out int mass, out bool couldReplace);
-                    if (canReplace)
-                    {
-                        if (DialogResult.OK == MessageBox.Show(
-                                $"Replace with {type} for{DispCost(energy)} energy {DispCost(mass)} mass?",
-                                "Replace", MessageBoxButtons.OKCancel)
-                            && ReplaceFunc(true, out _, out _, out _))
-                        {
-                            Program.RefreshChanged();
-                            return true;
-                        }
-                    }
-                    else if (couldReplace)
-                    {
-                        MessageBox.Show(string.Format($"Replacing with {type} costs {DispCost(energy)} energy {DispCost(mass)} mass"));
-                    }
-                    return false;
-                }
-                if (builder.HasBehavior(out IBuilder.IBuildExtractor buildExtractor) && Selected.Piece is Extractor extractor)
-                {
-                    Replace("Extractor", (bool doReplace, out int energy, out int mass, out bool couldReplace) =>
-                        buildExtractor.Replace(doReplace, extractor, out energy, out mass, out couldReplace));
-                }
-                else if (Selected.Piece is FoundationPiece foundationPiece)
-                {
-                    IBuilder.IBuildFactory buildFactory = builder.GetBehavior<IBuilder.IBuildFactory>();
-                    IBuilder.IBuildTurret buildTurret = builder.GetBehavior<IBuilder.IBuildTurret>();
-                    IBuilder.IBuildGenerator buildGenerator = builder.GetBehavior<IBuilder.IBuildGenerator>();
-                    bool done = false;
-                    for (int a = 0; a < 3 && !done; a++)
-                        switch (a)
-                        {
-                            case 0:
-                                done = buildFactory != null && Replace("Factory", (bool doReplace, out int energy, out int mass, out bool couldReplace) =>
-                                    buildFactory.Replace(doReplace, foundationPiece, out energy, out mass, out couldReplace));
-                                break;
-                            case 1:
-                                done = buildTurret != null && Replace("Turret", (bool doReplace, out int energy, out int mass, out bool couldReplace) =>
-                                    buildTurret.Replace(doReplace, foundationPiece, out energy, out mass, out couldReplace));
-                                break;
-                            case 2:
-                                done = buildGenerator != null && Replace("Generator", (bool doReplace, out int energy, out int mass, out bool couldReplace) =>
-                                    buildGenerator.Replace(doReplace, foundationPiece, out energy, out mass, out couldReplace));
-                                break;
-                        }
-                }
-            }
         }
-        private delegate bool ReplaceFunc(bool doReplace, out int energy, out int mass, out bool couldReplace);
         public static bool HasAnyUpgrade(Tile tile)
         {
             return HasUpgrade(tile, out _, out _, out _) || HasConstructorUpgrade(tile);
@@ -797,17 +754,9 @@ namespace WinFormsApp1
             if (Selected != null)
             {
                 if (Selected.Piece is Extractor)
-                {
-                    IBuilder.IBuildExtractor buildExtractor = BuildForm.GetBuilder<IBuilder.IBuildExtractor>(Selected);
-                    builder = buildExtractor;
-                }
-                if (Selected.Piece is FoundationPiece)
-                {
-                    IBuilder buildFactory = BuildForm.GetBuilder<IBuilder.IBuildFactory>(Selected);
-                    IBuilder buildTurret = BuildForm.GetBuilder<IBuilder.IBuildTurret>(Selected);
-                    IBuilder buildGenerator = BuildForm.GetBuilder<IBuilder.IBuildGenerator>(Selected);
-                    builder = buildFactory ?? buildTurret ?? buildGenerator;
-                }
+                    builder = BuildForm.GetBuilder<IBuilder.IReplacer<Extractor>>(Selected);
+                else if (Selected.Piece is FoundationPiece)
+                    builder = BuildForm.GetBuilder<IBuilder.IReplacer<FoundationPiece>>(Selected);
             }
             piece = builder?.Piece;
             return builder != null;

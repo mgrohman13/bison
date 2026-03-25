@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.Serialization;
 using Point = MattUtil.Point;
 
 namespace ClassLibrary1.Map
@@ -13,6 +14,7 @@ namespace ClassLibrary1.Map
     public partial class Map
     {
         [Serializable]
+        [DataContract(IsReference = true)]
         private class Cave : IEnemySpawn
         {
             public readonly PointD Center;
@@ -22,7 +24,7 @@ namespace ClassLibrary1.Map
             private readonly double segSize;
 
             private readonly SpawnChance _spawn = new();
-            private readonly List<Hive> hives = new();
+            private readonly List<Hive> hives = [];
 
             private bool explored;
 
@@ -48,8 +50,8 @@ namespace ClassLibrary1.Map
                 segSize = Game.Rand.GaussianOE(Consts.CavePathWidth, .39, .5, 1.3);
                 //Width = Game.Rand.GaussianCapped(Consts.PathWidth, Consts.PathWidthDev, Consts.PathWidthMin);
 
-                shape = new[] { Game.Rand.GaussianOE(1.69, .39, .13), 1 + Game.Rand.GaussianOEInt(1.3, .26, .26),
-                    Game.Rand.NextDouble() * TWO_PI, GenK(), GenK(), Game.Rand.GaussianCapped(1, .13, .5) };
+                shape = [ Game.Rand.GaussianOE(1.69, .39, .13), 1 + Game.Rand.GaussianOEInt(1.3, .26, .26),
+                    Game.Rand.NextDouble() * TWO_PI, GenK(), GenK(), Game.Rand.GaussianCapped(1, .13, .5) ];
 
                 Debug.WriteLine($"Cave - ({Center}) {shape[5] * Consts.CaveSize} (path: {segSize})");
                 Debug.WriteLine($"K: {shape[3]}");

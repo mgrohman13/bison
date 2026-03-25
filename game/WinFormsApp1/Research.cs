@@ -125,7 +125,7 @@ namespace WinFormsApp1
 
         public void RefreshLB()
         {
-            Type[] available = Program.Game.Player.Research.Available.OrderBy(t => Program.Game.Player.Research.GetCost(t) - Program.Game.Player.Research.GetProgress(t)).ToArray();
+            Type[] available = [.. Program.Game.Player.Research.Available.OrderBy(t => Program.Game.Player.Research.GetCost(t) - Program.Game.Player.Research.GetProgress(t))];
             this.lbxAvailable.DataSource = available;
             this.lbxDone.DataSource = Program.Game.Player.Research.Done.OrderByDescending(Program.Game.Player.Research.GetLast).ToArray();
 
@@ -177,7 +177,7 @@ namespace WinFormsApp1
                 if (cbxFilter.Checked)
                     types = FilterDone(types);
                 if (main.HasValue)
-                    types = types.Where(t => t != main.Value).ToArray();
+                    types = [.. types.Where(t => t != main.Value)];
                 if (types.Any())
                 {
                     this.lvwAlso.Items.Clear();

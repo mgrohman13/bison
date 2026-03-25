@@ -3,6 +3,7 @@ using ClassLibrary1.Pieces.Behavior.Combat;
 using ClassLibrary1.Pieces.Terrain;
 using MattUtil;
 using System;
+using System.Runtime.Serialization;
 using DefenseType = ClassLibrary1.Pieces.Behavior.Combat.CombatTypes.DefenseType;
 using Tile = ClassLibrary1.Map.Map.Tile;
 using UpgType = ClassLibrary1.ResearchUpgValues.UpgType;
@@ -10,17 +11,18 @@ using UpgType = ClassLibrary1.ResearchUpgValues.UpgType;
 namespace ClassLibrary1.Pieces.Players
 {
     [Serializable]
+    [DataContract(IsReference = true)]
     public class Generator : FoundationPiece, IKillable.IRepairable
     {
         private readonly double _rounding;//_mult
 
         private Generator(Tile tile, Values values)
-            : base(tile, values.Vision)
+            : base(tile, Values.Vision)
         {
             //this._mult = Game.Rand.GaussianCapped(1, .13);
             this._rounding = Game.Rand.NextDouble();
 
-            SetBehavior(new Killable(this, values.GetKillable(HitsMult(), _rounding), values.Resilience));
+            SetBehavior(new Killable(this, values.GetKillable(HitsMult(), _rounding), Values.Resilience));
         }
 
         double IKillable.IRepairable.RepairCost
@@ -52,8 +54,8 @@ namespace ClassLibrary1.Pieces.Players
         {
             Values values = GetValues(Game);
 
-            this.Vision = values.Vision;
-            GetBehavior<IKillable>().Upgrade(new[] { values.GetKillable(HitsMult(), _rounding) }, values.Resilience);
+            this.Vision = Values.Vision;
+            GetBehavior<IKillable>().Upgrade([values.GetKillable(HitsMult(), _rounding)], Values.Resilience);
         }
 
         private static Values GetValues(Game game)
@@ -62,7 +64,7 @@ namespace ClassLibrary1.Pieces.Players
         }
         internal static double GetRounding(Game game)
         {
-            return GetValues(game).Rounding;
+            return GetValues(game).CostRounding;
         }
 
         internal override void GenerateResources(ref double energyInc, ref double massInc, ref double researchInc)
@@ -82,9 +84,10 @@ namespace ClassLibrary1.Pieces.Players
         }
 
         [Serializable]
+        [DataContract(IsReference = true)]
         private class Values : IUpgradeValues
         {
-            private const double resilience = .2;
+            public const double Resilience = .2;
             private double _costMult, _hits, _inc, _rounding;
 
             public Values()
@@ -94,15 +97,14 @@ namespace ClassLibrary1.Pieces.Players
                 UpgradeAmbientGenerator(1);
             }
 
-            public double Vision => Attack.MELEE_RANGE;
-            public double Resilience => resilience;
-            public double Rounding => _rounding;
+            public static double Vision => Attack.MELEE_RANGE; 
+            public double CostRounding => _rounding;
             public double EnergyInc => _inc;
 
             internal void GetCost(out int energy, out int mass)
             {
-                energy = MTRandom.Round(_costMult * Consts.GeneratorEnergyCost, 1 - Rounding);
-                mass = MTRandom.Round(_costMult * Consts.GeneratorMassCost, Rounding);
+                energy = MTRandom.Round(_costMult * Consts.GeneratorEnergyCost, 1 - CostRounding);
+                mass = MTRandom.Round(_costMult * Consts.GeneratorMassCost, CostRounding);
             }
 
             public IKillable.Values GetKillable(double hitsMult, double rounding)

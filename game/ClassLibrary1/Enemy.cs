@@ -9,12 +9,14 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.Serialization;
 using Tile = ClassLibrary1.Map.Map.Tile;
 using UpgType = ClassLibrary1.ResearchUpgValues.UpgType;
 
 namespace ClassLibrary1
 {
     [Serializable]
+    [DataContract(IsReference = true)]
     public class Enemy : Side
     {
         private readonly EnemyResearch _research;
@@ -22,7 +24,7 @@ namespace ClassLibrary1
         private MechBlueprint NextAlien => _nextAlien;
         private double _portalSpawn, _debt, _payment;
 
-        //internal IResearch Research => _research;
+        internal IResearch Research => _research;
 
         public IEnumerable<Piece> VisiblePieces => _pieces.Where(p => p.Tile.Visible);
 
@@ -161,7 +163,7 @@ namespace ClassLibrary1
                 IEnumerable<FoundationPiece> turrets = player.PiecesOfType<Turret>();
                 if (turrets.Any())
                     turretRange = Math.Max(turretRange,
-                         turrets.Max(t => t.GetBehavior<IAttacker>().Attacks.Max(att => att.RangeBase)));
+                         turrets.Max(t => t.GetBehavior<IAttacker>().Attacks.Max((Func<Attack, double>)(att => att.RangeBase))));
 
                 double deviation = core.GetBehavior<IRepair>().Range + Game.Rand.Range(Attack.MELEE_RANGE, Attack.MIN_RANGED);
 
@@ -190,7 +192,7 @@ namespace ClassLibrary1
 
                 //entrances chosen based on prioximity to aliens and distance from player pieces or resources
                 static bool CanPlace(Tile t) => t.Piece is null;
-                Dictionary<Piece, int> select = new();
+                Dictionary<Piece, int> select = [];
                 foreach (EnemyPiece piece in Game.Rand.Iterate(PiecesOfType<EnemyPiece>()))
                     if (piece is not Portal && piece.HasBehavior<IMovable>())
                     {
@@ -217,7 +219,7 @@ namespace ClassLibrary1
                             select.Add(piece, Game.Rand.Round(mult + 1));
                         }
                     }
-                if (select.Any())
+                if (select.Count > 0)
                     tile = Game.Rand.SelectValue(Game.Rand.SelectValue(select).Tile.GetAdjacentTiles().Where(CanPlace));
                 else
                     return false;
@@ -248,7 +250,7 @@ namespace ClassLibrary1
                 inc = amt;
             else if (!hive.Dead)
                 inc = amt / PiecesOfType<Hive>().Average(h =>
-                    h.GetBehavior<IKillable>().AllDefenses.Sum(d => d.DefenseMax));
+                    h.GetBehavior<IKillable>().AllDefenses.Sum((Func<Defense, int>)(d => d.DefenseMax)));
             else
                 ;
 
@@ -385,7 +387,7 @@ namespace ClassLibrary1
             while (true)
             {
                 tile = GetTile();
-                path = tile.Map.PathFindCore(tile, Alien.GetPathFindingMovement(NextAlien.Movable), blocked => !blocked.Any());
+                path = tile.Map.PathFindCore(tile, Alien.GetPathFindingMovement(NextAlien.Movable), blocked => blocked.Count == 0);
                 if (path == null)
                     GenAlien();
                 else

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -16,16 +17,13 @@ namespace ClassLibrary1.Pieces.Behavior
         internal void Upgrade(Values values);
 
         [Serializable]
-        public new readonly struct Values
+        [DataContract(IsReference = true)]
+        public new readonly struct Values(IBuilder.Values builder, int rate)
         {
-            public readonly IBuilder.Values Builder;
+            public readonly IBuilder.Values Builder = builder;
 
-            private readonly int _rate;
-            public Values(IBuilder.Values builder, int rate)
-            {
-                Builder = builder;
-                _rate = rate;
-            }
+            private readonly int _rate = rate;
+
             public int Rate => _rate;
         }
     }

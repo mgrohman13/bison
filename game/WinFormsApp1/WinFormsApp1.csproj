@@ -2,10 +2,11 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-	<TargetFramework>net7.0-windows</TargetFramework>
+	<TargetFramework>net8.0-windows7.0</TargetFramework>
 	<UseWindowsForms>true</UseWindowsForms>
     <LangVersion>latest</LangVersion>
 	<VersionPrefix>0.1.0</VersionPrefix>
+	<EnableUnsafeBinaryFormatterSerialization>true</EnableUnsafeBinaryFormatterSerialization>
   </PropertyGroup>
 
   <ItemGroup>

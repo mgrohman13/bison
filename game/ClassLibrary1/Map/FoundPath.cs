@@ -2,22 +2,17 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 
 namespace ClassLibrary1.Map
 {
     [Serializable]
-    public class FoundPath
+    [DataContract(IsReference = true)]
+    public class FoundPath(IEnumerable<Point> path, FoundPath target, double movement)
     {
-        public readonly double Movement;
-        public readonly IReadOnlyList<Point> Path;
-        private readonly FoundPath Target;
-
-        public FoundPath(IEnumerable<Point> path, FoundPath target, double movement)
-        {
-            this.Movement = movement;
-            this.Path = path.ToList().AsReadOnly();
-            this.Target = target;
-        }
+        public readonly double Movement = movement;
+        public readonly IReadOnlyList<Point> Path = path.ToList().AsReadOnly();
+        private readonly FoundPath Target = target;
 
         internal IEnumerable<Point> CompletePath(Point start)
         {

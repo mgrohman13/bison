@@ -1,12 +1,15 @@
 ﻿using ClassLibrary1.Pieces.Players;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.Serialization;
 
 namespace ClassLibrary1
 {
     [Serializable]
+    [DataContract(IsReference = true)]
     public class Research : IResearch
     {
         public const int StartResearch = 20;
@@ -68,15 +71,15 @@ namespace ClassLibrary1
             this.Game = Game;
 
             this._researching = Type.Mech;
-            this._lastSeen = new();
-            this._researchedTypes = new();
-            this._progress = new();
+            this._lastSeen = [];
+            this._researchedTypes = [];
+            this._progress = [];
             this._choices = new() { { _researching, 50 } };
 
             this._researchLast = 0;
             this._nextAvg = 39;
 
-            this._blueprints = new();
+            this._blueprints = [];
 
             this._minResearch = CalcMinResearch();
         }
@@ -120,11 +123,11 @@ namespace ClassLibrary1
         internal void AddBackground()
         {
             //skip only when starting a new game
-            if (_progress.Any())
+            if (_progress.Count > 0)
             {
                 var types = _progress.Select(p => p.Key).Where(CanResearch);
                 if (!types.Any())
-                    types = new[] { _researching };
+                    types = [_researching];
                 bool P1(Type t) => _progress[t] > 0;
                 bool P2(Type t) => !(_choices.TryGetValue(t, out int v) && _progress[t] + 1 >= v);
                 bool P3(Type t) => !_choices.ContainsKey(t);
@@ -216,10 +219,10 @@ namespace ClassLibrary1
             GetCostParams(excess, previous, out double nextAvg, out double nextDev, out double nextOE, out double nextMin);
 
             this._choices.Clear();
-            while (!_choices.Any())
+            while (_choices.Count == 0)
             {
                 Dictionary<Type, int> types = GetTypeChances(nextAvg);
-                while (types.Any() && _choices.Count < _numChoices)
+                while (types.Count > 0 && _choices.Count < _numChoices)
                 {
                     Type available = Game.Rand.SelectValue(types);
                     types.Remove(available);
@@ -398,15 +401,15 @@ namespace ClassLibrary1
             return Math.Pow(GetResearchMult(GetTotalLevel()) * GetResearchMult(GetLast(type)), pow / 2.0);
         }
 
-        private static IReadOnlyDictionary<Type, int> CalcMinResearch()
+        private static ReadOnlyDictionary<Type, int> CalcMinResearch()
         {
-            Dictionary<Type, int> retVal = new();
-            HashSet<Type> all = Enum.GetValues<Type>().ToHashSet();
+            Dictionary<Type, int> retVal = [];
+            HashSet<Type> all = [.. Enum.GetValues<Type>()];
 
             double research = 0;//StartResearch;
             double dev = Math.E * _avgTypeCost / (double)all.Min();
             double count = all.Count;
-            while (all.Any())
+            while (all.Count > 0)
             {
                 Type type = Game.Rand.SelectValue(all.Where(t1 => Dependencies[t1].All(t2 => retVal.ContainsKey(t2))),
                     type => Game.Rand.Round(count / (Math.Sqrt(count) + GetAllDependencies(type).Count))
@@ -458,24 +461,24 @@ namespace ClassLibrary1
         }
         public static HashSet<Type> GetAllDependencies(Type type)
         {
-            HashSet<Type> allDependencies = new(Dependencies[type]);
+            HashSet<Type> allDependencies = [.. Dependencies[type]];
             foreach (Type a in allDependencies.ToArray())
                 foreach (Type b in GetAllDependencies(a))
                     allDependencies.Add(b);
             return allDependencies;
         }
 
-        public static readonly Type[] NoUpgrades = new Type[] { Type.Mech, Type.Constructor, Type.Turret, Type.Factory,
+        public static readonly Type[] NoUpgrades = [ Type.Mech, Type.Outpost, Type.OutpostAttack, Type.OutpostRepair, Type.Constructor, Type.Turret, Type.Factory,
             Type.TurretLasers, Type.TurretExplosives, Type.TurretShields, Type.TurretArmor, Type.TurretAutoRepair,
-            Type.FactoryConstructor, Type.FactoryAutoRepair, Type.ExtractorAutoRepair, Type.BurnMass, Type.ScrapResearch, Type.FabricateMass, };
-        public static readonly Type[] UpgradeOnly = new Type[] { Type.ConstructorCost, Type.ConstructorMove,
+            Type.FactoryConstructor, Type.FactoryAutoRepair, Type.BuildingAutoRepair, Type.BurnMass, Type.ScrapResearch, Type.FabricateMass, ];
+        public static readonly Type[] UpgradeOnly = [ Type.ConstructorCost, Type.ConstructorMove,
             Type.TurretRange, Type.TurretAttack, Type.TurretDefense, Type.MissileCost, Type.MissileRange,
-            Type.BuildingCost, Type.BuildingDefense, Type.ResearchChoices, Type.ExtractorValue };
+            Type.BuildingCost, Type.BuildingDefense, Type.ResearchChoices, Type.ExtractorValue ];
         //pushes down min research requirement
-        public static readonly HashSet<Type> KeyTechs = new() { Type.Factory, Type.TurretRange, Type.ConstructorDefense, Type.ConstructorMove,
-                Type.FactoryRepair, Type.FactoryConstructor, Type.BuildingDefense, Type.ExtractorAutoRepair, };
+        public static readonly HashSet<Type> KeyTechs = [ Type.Factory, Type.TurretRange, Type.ConstructorDefense, Type.ConstructorMove,
+                Type.FactoryRepair, Type.FactoryConstructor, Type.BuildingDefense, Type.BuildingAutoRepair, ];
         //pushes up min research requirement
-        public static readonly Type[] EndTechs = new Type[] { Type.AmbientGenerator, Type.ExtractorValue, Type.RepairDrone, Type.Missile };
+        public static readonly Type[] EndTechs = [Type.AmbientGenerator, Type.ExtractorValue, Type.RepairDrone, Type.Missile];
 
         //public static readonly Dictionary<Type, Type[,]> Dependencies = new()
         //{
@@ -487,9 +490,12 @@ namespace ClassLibrary1
         {
             { Type.Mech, Array.Empty<Type>() },
             { Type.CoreDefense, new Type[]          { Type.Mech, } },
-            { Type.Turret, new Type[]               { Type.CoreDefense, } },
             { Type.Constructor, new Type[]          { Type.CoreDefense, } },
-            { Type.Factory, new Type[]              { Type.Constructor, } },
+            { Type.Outpost, new Type[]              { Type.CoreDefense, } },
+            { Type.OutpostAttack, new Type[]        { Type.Outpost, } }, //quick
+            { Type.Turret, new Type[]               { Type.Outpost, Type.OutpostAttack, } },
+            { Type.OutpostRepair, new Type[]        { Type.Outpost, } }, //quick
+            { Type.Factory, new Type[]              { Type.Outpost, Type.OutpostRepair, Type.Constructor, } },
 
             { Type.MechVision, new Type[]           { Type.Mech, } },
             { Type.MechShields, new Type[]          { Type.Mech, Type.MechVision, } },
@@ -519,20 +525,20 @@ namespace ClassLibrary1
 
             { Type.FactoryRepair, new Type[]        { Type.Factory, } },
             { Type.FactoryConstructor, new Type[]   { Type.Factory, Type.FactoryRepair, Type.ConstructorCost, } },
-            { Type.FactoryAutoRepair, new Type[]    { Type.Factory, Type.FactoryRepair, Type.ExtractorAutoRepair, } },
+            { Type.FactoryAutoRepair, new Type[]    { Type.Factory, Type.FactoryRepair, Type.BuildingAutoRepair, } },
             { Type.Missile, new Type[]              { Type.FactoryConstructor, Type.FactoryAutoRepair, Type.TurretExplosives } },
             { Type.MissileCost, new Type[]          { Type.Missile, } }, //end
             { Type.MissileRange, new Type[]         { Type.Missile, } }, //end
             
             { Type.BuildingDefense, new Type[]      { Type.Constructor } }, //quick
-            { Type.ExtractorAutoRepair, new Type[]  { Type.BuildingDefense, } },
+            { Type.BuildingAutoRepair, new Type[]   { Type.BuildingDefense, } },
             { Type.BuildingCost, new Type[]         { Type.BuildingDefense, Type.Turret, Type.Factory, Type.ConstructorCost, } },
             { Type.AmbientGenerator, new Type[]     { Type.BuildingCost, Type.TurretAutoRepair, } }, //end
             { Type.ScrapResearch, new Type[]        { Type.Turret, } },
             { Type.ResearchChoices, new Type[]      { Type.ScrapResearch, } },
             { Type.BurnMass, new Type[]             { Type.Factory, } },
             { Type.FabricateMass, new Type[]        { Type.ResearchChoices, Type.BurnMass, Type.FactoryAutoRepair, } },
-            { Type.ExtractorValue, new Type[]       { Type.ExtractorAutoRepair, Type.BuildingCost, Type.ScrapResearch, Type.BurnMass, } }, //end
+            { Type.ExtractorValue, new Type[]       { Type.BuildingAutoRepair, Type.BuildingCost, Type.ScrapResearch, Type.BurnMass, } }, //end
                                  
             //Type.BuildingResilience - not extractor??
             // Constructor resilience ?
@@ -545,6 +551,7 @@ namespace ClassLibrary1
         public enum Type
         {
             CoreDefense = 100,
+            Outpost = 150,
             Mech = 169,
             Constructor = 200,
             Turret = 250,
@@ -562,10 +569,11 @@ namespace ClassLibrary1
             MechArmor = 146,
             MechExplosives = 149,
 
+            OutpostAttack = 80, //quick
             TurretShields = 110, //quick
             TurretRange = 120,
             TurretLasers = 140, //end
-            TurretDefense = 150,
+            TurretDefense = 160,
             TurretExplosives = 170, //end
             TurretAttack = 180, //delay
             TurretArmor = 190, //delay
@@ -576,12 +584,13 @@ namespace ClassLibrary1
             ConstructorMove = 325, //end
             RepairDrone = 520, //end
 
+            OutpostRepair = 90, //quick
+            MissileCost = 95, //end
+            MissileRange = 195, //end
             FactoryAutoRepair = 205,
             FactoryRepair = 240, //key
             FactoryConstructor = 290, //key
-            Missile = 910,
-            MissileCost = 90, //end
-            MissileRange = 400, //end
+            Missile = 305,
 
             BuildingDefense = 115, //quick
             FabricateMass = 135,
@@ -589,7 +598,7 @@ namespace ClassLibrary1
             ScrapResearch = 165,
             BurnMass = 175,
             BuildingCost = 225, //delay
-            ExtractorAutoRepair = 285, //key
+            BuildingAutoRepair = 285, //key
             AmbientGenerator = 310, //end   
             ExtractorValue = 390, //end   
         }

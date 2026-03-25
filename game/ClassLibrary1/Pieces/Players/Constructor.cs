@@ -4,6 +4,7 @@ using MattUtil;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using DefenseType = ClassLibrary1.Pieces.Behavior.Combat.CombatTypes.DefenseType;
 using Tile = ClassLibrary1.Map.Map.Tile;
 using UpgType = ClassLibrary1.ResearchUpgValues.UpgType;
@@ -11,6 +12,7 @@ using UpgType = ClassLibrary1.ResearchUpgValues.UpgType;
 namespace ClassLibrary1.Pieces.Players
 {
     [Serializable]
+    [DataContract(IsReference = true)]
     public class Constructor : PlayerPiece, IKillable.IRepairable
     {
         public const double BASE_VISION = 6.5, MOVE_RAMP = 1.3, BASE_MOVE_INC = 4.5, BASE_MOVE_MAX = 10 * MOVE_RAMP;
@@ -99,6 +101,8 @@ namespace ClassLibrary1.Pieces.Players
             Research research = Game.Player.Research;
             IBuilder.Values GetBuilder(Values values) => values.GetBuilder(_rangeMult);
 
+            if (!HasBehavior<IBuilder.IBuildOutpost>() && research.HasType(Research.Type.Outpost))
+                SetBehavior(new Builder.BuildOutpost(this, GetBuilder(values)));
             if (!HasBehavior<IBuilder.IBuildFactory>() && research.HasType(Research.Type.Factory))
                 SetBehavior(new Builder.BuildFactory(this, GetBuilder(values)));
             if (!HasBehavior<IBuilder.IBuildTurret>() && research.HasType(Research.Type.Turret))
@@ -144,6 +148,7 @@ namespace ClassLibrary1.Pieces.Players
         }
 
         [Serializable]
+        [DataContract(IsReference = true)]
         private class Values : IUpgradeValues
         {
             private const double resilience = .4;
@@ -173,11 +178,11 @@ namespace ClassLibrary1.Pieces.Players
                 double mult = Math.Sqrt(Consts.StatValueInverse(Consts.StatValue(this.hits) / Consts.StatValue(hits)));
                 int def = MTRandom.Round((defenseType ? this.shield : this.armor) * mult, rounding);
 
-                List<IKillable.Values> defenses = new() { new IKillable.Values(DefenseType.Hits, hits) };
+                List<IKillable.Values> defenses = [new IKillable.Values(DefenseType.Hits, hits)];
                 if (game.Player.Research.HasType(Research.Type.ConstructorDefense))
                     defenses.Add(new IKillable.Values(defenseType ? DefenseType.Shield : DefenseType.Armor, def));
 
-                return defenses.ToArray();
+                return [.. defenses];
             }
             public IMovable.Values GetMovable(double rangeMult, double rounding)
             {

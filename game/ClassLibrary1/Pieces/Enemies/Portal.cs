@@ -1,6 +1,5 @@
 ﻿using ClassLibrary1.Pieces.Behavior;
 using ClassLibrary1.Pieces.Behavior.Combat;
-using ClassLibrary1.Pieces.Behavior.Combat;
 using ClassLibrary1.Pieces.Terrain;
 using System;
 using System.Collections.Generic;
@@ -12,12 +11,13 @@ using Tile = ClassLibrary1.Map.Map.Tile;
 namespace ClassLibrary1.Pieces.Enemies
 {
     [Serializable]
+    [DataContract(IsReference = true)]
     public class Portal : EnemyPiece, IDeserializationCallback
     {
         internal const double AvgRange = 6.5, MIN_RANGE = Attack.MELEE_RANGE;// Attack.MIN_RANGED;
-        //private readonly SpawnChance spawner;
+                                                                             //private readonly SpawnChance spawner;
 
-        private readonly IKillable killable;
+        private readonly Killable killable;
         private readonly PieceSpawn spawn;
         //private readonly IAttacker attacker;
 
@@ -128,12 +128,12 @@ namespace ClassLibrary1.Pieces.Enemies
             Game.Enemy.Income((_cost - _collect) * Consts.PortalRewardPct);
         }
 
-        private static IEnumerable<IKillable.Values> GenKillable(double difficulty, bool exit)
+        private static List<IKillable.Values> GenKillable(double difficulty, bool exit)
         {
             double avg = GetDefAvg(difficulty, exit);
             IKillable.Values hits = new(DefenseType.Hits, Game.Rand.GaussianOEInt(avg, .13, .13, 10));
 
-            List<IKillable.Values> defenses = new() { hits };
+            List<IKillable.Values> defenses = [hits];
             return defenses;
         }
         internal static double GetDefAvg(double difficulty, bool exit)

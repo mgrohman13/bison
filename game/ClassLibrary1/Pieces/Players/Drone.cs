@@ -11,6 +11,7 @@ using UpgType = ClassLibrary1.ResearchUpgValues.UpgType;
 namespace ClassLibrary1.Pieces.Players
 {
     [Serializable]
+    [DataContract(IsReference = true)]
     public class Drone : PlayerPiece, IDeserializationCallback
     {
         private int _turns;
@@ -28,7 +29,7 @@ namespace ClassLibrary1.Pieces.Players
             double defMult = Game.Rand.GaussianCapped(1, .078, .65);
             double moveMult = Game.Rand.GaussianCapped(1, .117, .65);
 
-            this.killable = new Killable(this, new[] { values.GetKillable(defMult) }, values.Resilience);
+            this.killable = new Killable(this, [values.GetKillable(defMult)], Values.Resilience);
             this.repair = new Repair(this, values.GetRepair(moveMult));
             SetBehavior(
                 killable,
@@ -142,9 +143,10 @@ namespace ClassLibrary1.Pieces.Players
         }
 
         [Serializable]
+        [DataContract(IsReference = true)]
         private class Values : IUpgradeValues
         {
-            private const double resilience = .7;
+            public const double Resilience = .7;
 
             private double turns, hits, repairRate, moveInc, moveMax, moveLimit, costMult, energyRounding, massRounding;
             public Values()
@@ -154,9 +156,7 @@ namespace ClassLibrary1.Pieces.Players
                 UpgradeConstructorMove(1);
                 UpgradeRepairDrone(1);
                 energyRounding = massRounding = .5;
-            }
-
-            public double Resilience => resilience;
+            } 
 
             public void GetCost(out int energy, out int mass)
             {

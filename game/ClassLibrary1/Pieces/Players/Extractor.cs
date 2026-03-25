@@ -2,6 +2,7 @@
 using ClassLibrary1.Pieces.Terrain;
 using MattUtil;
 using System;
+using System.Runtime.Serialization;
 using DefenseType = ClassLibrary1.Pieces.Behavior.Combat.CombatTypes.DefenseType;
 using Tile = ClassLibrary1.Map.Map.Tile;
 using UpgType = ClassLibrary1.ResearchUpgValues.UpgType;
@@ -9,6 +10,7 @@ using UpgType = ClassLibrary1.ResearchUpgValues.UpgType;
 namespace ClassLibrary1.Pieces.Players
 {
     [Serializable]
+    [DataContract(IsReference = true)]
     public class Extractor : PlayerPiece, IKillable.IRepairable
     {
         public const double AvgCost = (Consts.BiomassExtractorEnergyCost
@@ -27,7 +29,7 @@ namespace ClassLibrary1.Pieces.Players
             this.Resource = Resource;
             this._rounding = Game.Rand.NextDouble();
 
-            SetBehavior(new Killable(this, values.GetKillable(HitsMult(), _rounding), values.Resilience));
+            SetBehavior(new Killable(this, values.GetKillable(HitsMult(), _rounding), Values.Resilience));
         }
 
         internal static Extractor NewExtractor(Resource resource)
@@ -53,7 +55,7 @@ namespace ClassLibrary1.Pieces.Players
             Values values = GetValues(Game);
 
             this.Vision = values.Vision;
-            GetBehavior<IKillable>().Upgrade(new[] { values.GetKillable(HitsMult(), _rounding) }, values.Resilience);
+            GetBehavior<IKillable>().Upgrade([values.GetKillable(HitsMult(), _rounding)], Values.Resilience);
         }
         private static Values GetValues(Game game)
         {
@@ -68,7 +70,7 @@ namespace ClassLibrary1.Pieces.Players
                 return Consts.GetRepairCost(this, energy, mass);
             }
         }
-        bool IKillable.IRepairable.AutoRepair => Game.Player.Research.HasType(Research.Type.ExtractorAutoRepair);
+        bool IKillable.IRepairable.AutoRepair => Game.Player.Research.HasType(Research.Type.BuildingAutoRepair);
         public bool CanRepair() => Consts.CanRepair(this);
 
         internal override void Die()
@@ -148,7 +150,7 @@ namespace ClassLibrary1.Pieces.Players
         }
         private bool ShutOff()
         {
-            Resource.GenerateResources(out double energyInc, out double massInc, out double researchInc);
+            Resource.GenerateResources(out double energyInc, out _, out _);
             return energyInc < 0 && Side.Energy < 0;
         }
 
@@ -158,9 +160,10 @@ namespace ClassLibrary1.Pieces.Players
         }
 
         [Serializable]
+        [DataContract(IsReference = true)]
         private class Values : IUpgradeValues
         {
-            private const double resilience = .3;//resilienceBase
+            public const double Resilience = .3;//resilienceBase
 
             private double costMult, vision, valueMult, sustainMult, hits;//, resilience;
             //private IKillable.Values killable;
@@ -171,8 +174,7 @@ namespace ClassLibrary1.Pieces.Players
                 UpgradeBuildingHits(1);
                 UpgradeExtractorValue(1);
             }
-
-            public double Resilience => resilience;
+             
             public double CostMult => costMult;
             public double Vision => vision;
             public double ValueMult => valueMult;

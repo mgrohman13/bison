@@ -11,6 +11,7 @@ using Tile = ClassLibrary1.Map.Map.Tile;
 namespace ClassLibrary1.Pieces.Enemies
 {
     [Serializable]
+    [DataContract(IsReference = true)]
     public class Alien : EnemyPiece, IRepairable, IDeserializationCallback
     {
         private readonly IKillable killable;
@@ -46,7 +47,7 @@ namespace ClassLibrary1.Pieces.Enemies
             this._morale = Game.Rand.Weighted(.91);
             this.targeted = false;
             this.PathToCore = pathToCore;
-            this.RetreatPath = new() { Tile.Location };
+            this.RetreatPath = [Tile.Location];
 
             this.killable = new Killable(this, killable, resilience);
             this.attacker = new Attacker(this, attacks);
@@ -64,7 +65,7 @@ namespace ClassLibrary1.Pieces.Enemies
         }
 
         internal override double Cost => _energy
-            * Research.GetResearchMult(_research) / Research.GetResearchMult(Side.Research.GetBlueprintLevel());
+            * Research.GetResearchMult(_research) / Research.GetResearchMult(Game.Enemy.Research.GetBlueprintLevel());
 
         public override void OnDeserialization(object sender)
         {
@@ -152,7 +153,7 @@ namespace ClassLibrary1.Pieces.Enemies
                         goto case AIState.Heal;
                     if (MoraleCheck(1, true))
                         goto case AIState.Fight;
-                    if (moveTiles.Any() && NeedsRetreatPath())
+                    if (moveTiles.Count > 0 && NeedsRetreatPath())
                         RetreatPath = Game.Map.PathFindRetreat(Tile, GetRetreatTiles(), GetPathFindingMovement(), killable.CurDefenseValue, playerAttacks, ValidRetreatTile);
                     break;
                 case AIState.Fight:
@@ -189,7 +190,7 @@ namespace ClassLibrary1.Pieces.Enemies
                         goto case AIState.Harass;
                     if (MoraleCheck((PlayerThreat() ? .75 : .25) / difficulty, false))
                         goto case AIState.Fight;
-                    if (moveTiles.Any() && !SeePath())
+                    if (moveTiles.Count > 0 && !SeePath())
                         if (MoraleCheck(.5, true))
                             PathToCore = Game.Map.PathFindCore(Tile, GetPathFindingMovement(), _ => true);
                         else
@@ -207,9 +208,9 @@ namespace ClassLibrary1.Pieces.Enemies
             return state;
 
             bool PlayerThreat() => targeted || killables.Any(k => k.Piece.HasBehavior<IAttacker>()) || playerAttacks.ContainsKey(Tile);
-            bool PlayerPassive() => !PlayerThreat() && killables.Any();
+            bool PlayerPassive() => !PlayerThreat() && killables.Count > 0;
             bool SeePath(List<Point> path = null) => (path ?? PathToCore).Any(p => moveTiles.Contains(Game.Map.GetTile(p)));
-            bool NeedsRetreatPath() => RetreatPath == null || !RetreatPath.Any() || !ValidRetreat(RetreatPath[^1]) || !SeePath(RetreatPath);
+            bool NeedsRetreatPath() => RetreatPath == null || RetreatPath.Count == 0 || !ValidRetreat(RetreatPath[^1]) || !SeePath(RetreatPath);
             bool ValidRetreat(Point point) => ValidRetreatTile(Game.Map.GetTile(point));
             bool ValidRetreatTile(Tile tile) => tile is not null && tile.Piece is null
                 && (Game.TEST_MAP_GEN.HasValue || Game.GameOver || !tile.ShowMove()) && !playerAttacks.ContainsKey(tile);

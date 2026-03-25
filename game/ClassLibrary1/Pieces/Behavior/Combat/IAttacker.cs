@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using static ClassLibrary1.Map.Map;
 using static ClassLibrary1.Pieces.Behavior.Combat.Attacker;
 using AttackType = ClassLibrary1.Pieces.Behavior.Combat.CombatTypes.AttackType;
@@ -34,6 +35,7 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
         internal void RaiseAttackEvent(Attack attack, IKillable killable, Tile targetTile);
 
         [Serializable]
+        [DataContract(IsReference = true)]
         public readonly struct Values
         {
             public readonly AttackType Type;

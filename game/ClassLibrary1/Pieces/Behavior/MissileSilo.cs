@@ -3,13 +3,15 @@ using ClassLibrary1.Pieces.Enemies;
 using ClassLibrary1.Pieces.Players;
 using System;
 using System.Linq;
+using System.Runtime.Serialization;
 using static ClassLibrary1.Pieces.Behavior.Combat.CombatTypes;
 using static ClassLibrary1.ResearchUpgValues;
 
 namespace ClassLibrary1.Pieces.Behavior
 {
     [Serializable]
-    internal class MissileSilo : IMissileSilo
+    [DataContract(IsReference = true)]
+    internal class MissileSilo(Piece piece) : IMissileSilo
     {
         public static double START_RANGE = 26;
 
@@ -32,16 +34,9 @@ namespace ClassLibrary1.Pieces.Behavior
         }
         public int NumMissiles => _numMissiles;
 
-        private readonly Piece _piece;
-        private bool _producing;
-        private int _numMissiles;
-
-        public MissileSilo(Piece piece)
-        {
-            _piece = piece;
-            _producing = false;
-            _numMissiles = 0;
-        }
+        private readonly Piece _piece = piece;
+        private bool _producing = false;
+        private int _numMissiles = 0;
 
         public T GetBehavior<T>() where T : class, IBehavior
         {
@@ -72,7 +67,7 @@ namespace ClassLibrary1.Pieces.Behavior
 
             //no range or CanAttack checks
             var defenders = Combat.Attack.GetDefenders(Piece.Side, killable.Piece);
-            if (defenders.Any())
+            if (defenders.Count > 0)
             {
                 killable = Game.Rand.SelectValue(defenders);
 
@@ -164,6 +159,7 @@ namespace ClassLibrary1.Pieces.Behavior
         }
 
         [Serializable]
+        [DataContract(IsReference = true)]
         private class Values : IUpgradeValues
         {
             private IAttacker.Values attack;

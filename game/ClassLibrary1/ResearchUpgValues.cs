@@ -3,7 +3,9 @@ using ClassLibrary1.Pieces.Behavior.Combat;
 using ClassLibrary1.Pieces.Players;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
+using static ClassLibrary1.ResearchUpgValues;
 using Type = ClassLibrary1.Research.Type;
 
 namespace ClassLibrary1
@@ -44,11 +46,11 @@ namespace ClassLibrary1
         //internal const double Turret_Range_Pow = ;
         //internal const double Turret_Vision_Pow = ;
 
-        private static readonly IReadOnlyDictionary<UpgType, UpgParam> UpgParams = new Dictionary<UpgType, UpgParam>() {
-            { UpgType.AmbientGenerator, new(Consts.GeneratorEnergyInc, 0.65) },
+        private static readonly ReadOnlyDictionary<UpgType, UpgParam> UpgParams = new Dictionary<UpgType, UpgParam>() {
+            { UpgType.AmbientGenerator, new(Consts.GeneratorEnergyInc, 0.35) },
             { UpgType.AmbientGeneratorCost, new(0.20, true) },
             { UpgType.ConstructorCost, new(0.70, true) },
-            { UpgType.ConstructorDefense, new(8, 0.45, add: 2) },
+            { UpgType.ConstructorDefense, new(8.50, 0.45, add: 2) },
             { UpgType.ConstructorMove, new(Constructor.BASE_MOVE_INC * Constructor.MOVE_RAMP, 0.30, Constructor.MOVE_RAMP) },
             { UpgType.ConstructorRange, new(5.2, 0.35,  add: .3) },
             { UpgType.ConstructorVision, new(Constructor.BASE_VISION, 0.25) },
@@ -69,10 +71,15 @@ namespace ClassLibrary1
             { UpgType.FactoryCost, new(0.60, true) },
             { UpgType.FactoryDefense, new(9, 0.40, 9 / 5.0) },
             { UpgType.FactoryRepair, new(1, 0.50, Math.E, .65) },
-            { UpgType.FactoryVision, new(6.5, 0.90, 6.5 / 4.5 ) },
-            { UpgType.MissileAttack, new(16.9, 0.80) },
+            { UpgType.FactoryVision, new(6.75, 0.90, 6.5 / 4.5 ) },
+            { UpgType.MissileAttack, new(17.5, 0.80) },
             { UpgType.MissileCost, new(0.50, true) },
             { UpgType.MissileRange, new(MissileSilo.START_RANGE, 0.55) },
+            { UpgType.OutpostAttack, new(3.00, 0.55, 1.95) },
+            { UpgType.OutpostCost, new(0.35, true) },
+            { UpgType.OutpostDefense, new(11.50, 0.20) },
+            { UpgType.OutpostRepair, new(3.50, 0.25, 1.60) },
+            { UpgType.OutpostVision, new(9.10, 0.40 ) },
             { UpgType.TurretArmorDefense, new(11, 0.55, 5.2, 1.69) },
             { UpgType.TurretAttack, new(8, 0.70, 1.69, .39) },
             { UpgType.TurretCost, new(0.30, true) },
@@ -145,25 +152,25 @@ namespace ClassLibrary1
             private double CalcCost(double mult) => 1 / Math.Pow(mult, pow);
         }
 
-        private static readonly UpgType[] BaseZero = new[] { UpgType.CoreShields, UpgType.FactoryRepair, // UpgType.RepairDrone,
+        private static readonly UpgType[] BaseZero = [ UpgType.CoreShields, UpgType.FactoryRepair, // UpgType.RepairDrone,
             UpgType.TurretLaserAttack, UpgType.TurretExplosivesAttack, UpgType.TurretShieldDefense,
-            UpgType.TurretArmorDefense, UpgType.TurretLaserRange, UpgType.TurretExplosivesRange, };
-
-        private static readonly IReadOnlyDictionary<Type, UpgType[]> UpgTypes = new Dictionary<Type, UpgType[]>() {
+            UpgType.TurretArmorDefense, UpgType.TurretLaserRange, UpgType.TurretExplosivesRange, ];
+         
+        private static readonly ReadOnlyDictionary<Type, UpgType[]> UpgTypes = new Dictionary<Type, UpgType[]>() {
             { Type.AmbientGenerator, new[] { UpgType.AmbientGenerator, } },
-            { Type.BuildingCost, new[] { UpgType.ExtractorCost, UpgType.FactoryCost, UpgType.TurretCost, UpgType.AmbientGeneratorCost, } },
-            { Type.BuildingDefense, new[] { UpgType.ExtractorDefense, UpgType.ExtractorVision, UpgType.FactoryDefense, UpgType.FactoryVision, } },
+            { Type.BuildingCost, new[] {  UpgType.ExtractorCost, UpgType.OutpostCost, UpgType.TurretCost, UpgType.FactoryCost, UpgType.AmbientGeneratorCost, } },
+            { Type.BuildingDefense, new[] { UpgType.ExtractorDefense, UpgType.ExtractorVision, UpgType.OutpostDefense, UpgType.OutpostVision, UpgType.FactoryDefense, UpgType.FactoryVision, } },
             { Type.ConstructorCost, new[] { UpgType.ConstructorCost, UpgType.DroneCost, } },
             { Type.ConstructorDefense, new[] { UpgType.ConstructorDefense, UpgType.DroneDefense, } },
             { Type.ConstructorMove, new[] { UpgType.ConstructorMove, UpgType.ConstructorVision, UpgType.ConstructorRange, UpgType.DroneMove, } },
             { Type.CoreDefense, new[] { UpgType.CoreShields, } },
             { Type.ExtractorValue, new[] { UpgType.ExtractorValue, UpgType.ExtractorSustain, } },
-            { Type.FactoryRepair, new[] { UpgType.FactoryRepair } },
+            { Type.FactoryRepair, new[] { UpgType.FactoryRepair, UpgType.OutpostRepair, } },
             { Type.Missile, new[] { UpgType.MissileAttack, } },
             { Type.MissileCost, new[] { UpgType.MissileCost, } },
             { Type.MissileRange, new[] { UpgType.MissileRange, } },
             { Type.RepairDrone, new[] { UpgType.DroneRepair, UpgType.DroneTurns, } },
-            { Type.TurretAttack, new[] { UpgType.TurretAttack, UpgType.TurretLaserAttack, UpgType.TurretExplosivesAttack, } },
+            { Type.TurretAttack, new[] { UpgType.TurretAttack, UpgType.TurretLaserAttack, UpgType.TurretExplosivesAttack, UpgType.OutpostAttack, } },
             { Type.TurretDefense, new[] { UpgType.TurretDefense, UpgType.TurretShieldDefense, UpgType.TurretArmorDefense, UpgType.TurretVision, } },
             { Type.TurretRange, new[] { UpgType.TurretRange, UpgType.TurretLaserRange, UpgType.TurretExplosivesRange, } },
         }.AsReadOnly();
@@ -199,6 +206,11 @@ namespace ClassLibrary1
             MissileAttack,
             MissileCost,
             MissileRange,
+            OutpostAttack,
+            OutpostCost,
+            OutpostDefense,
+            OutpostRepair,
+            OutpostVision,
             //ResearchChoices,
             TurretArmorDefense,
             TurretAttack,

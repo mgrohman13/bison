@@ -11,6 +11,7 @@ using UpgType = ClassLibrary1.ResearchUpgValues.UpgType;
 namespace ClassLibrary1.Pieces.Players
 {
     [Serializable]
+    [DataContract(IsReference = true)]
     public class Core : PlayerPiece, IDeserializationCallback//, IKillable.IRepairable
     {
         private double _income = 1, _incomeTrg = 1, _hitsResearchMult = 1;
@@ -18,12 +19,12 @@ namespace ClassLibrary1.Pieces.Players
         public const double START_VISION = Attack.MIN_RANGED;
         public const int CORE_HITS = 10;
 
-        private readonly IKillable killable;
+        private readonly Killable killable;
 
         private Core(Tile tile, Values values)
-            : base(tile, values.Vision)
+            : base(tile, START_VISION)
         {
-            killable = new Killable(this, new IKillable.Values(DefenseType.Hits, CORE_HITS), values.Resilience);
+            killable = new Killable(this, new IKillable.Values(DefenseType.Hits, CORE_HITS), Values.Resilience);
             SetBehavior(killable, new Repair(this, values.Repair));
             Unlock(tile.Map.Game.Player.Research);
 
@@ -59,10 +60,10 @@ namespace ClassLibrary1.Pieces.Players
             Unlock(Game.Player.Research);
             Values values = GetValues(Game);
 
-            this.Vision = values.Vision;
+            this.Vision = START_VISION;
             //must check research type because defense could drop below rounding threshold from being attacked
             if (type == Research.Type.CoreDefense)
-                GetBehavior<IKillable>().Upgrade(values.GetKillable(killable.Hits.DefenseCur, ref _hitsResearchMult), values.Resilience);
+                GetBehavior<IKillable>().Upgrade(values.GetKillable(killable.Hits.DefenseCur, ref _hitsResearchMult), Values.Resilience);
             GetBehavior<IRepair>().Upgrade(values.Repair);
             Builder.UpgradeAll(this, values.Repair.Builder);
 
@@ -122,9 +123,10 @@ namespace ClassLibrary1.Pieces.Players
         }
 
         [Serializable]
+        [DataContract(IsReference = true)]
         private class Values : IUpgradeValues
         {
-            private const double resilience = 1;
+            public const double Resilience = 1;
             private readonly double energy, mass;
             private readonly IRepair.Values repair;
 
@@ -149,10 +151,9 @@ namespace ClassLibrary1.Pieces.Players
 
             public double HitsResearchMult => hitsResearchMult;
 
-            public double Resilience => resilience;
             public double Energy => energy;
             public double Mass => mass;
-            public double Vision => START_VISION;
+            //public double Vision => START_VISION;
             //public IKillable.Values Hits => hits;
             public IKillable.Values? Shield => shield;
             public IRepair.Values Repair => repair;
@@ -171,10 +172,10 @@ namespace ClassLibrary1.Pieces.Players
                 }
 
                 IKillable.Values hits = new(DefenseType.Hits, def);
-                List<IKillable.Values> defs = new() { hits };
+                List<IKillable.Values> defs = [hits];
                 if (Shield.HasValue)
                     defs.Add(Shield.Value);
-                return defs.ToArray();
+                return [.. defs];
             }
 
             public void Upgrade(Research.Type type, double researchMult)

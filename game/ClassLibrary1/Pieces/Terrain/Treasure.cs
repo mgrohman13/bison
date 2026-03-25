@@ -3,11 +3,13 @@ using ClassLibrary1.Pieces.Players;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using static ClassLibrary1.Map.Map;
 
 namespace ClassLibrary1.Pieces.Terrain
 {
     [Serializable]
+    [DataContract(IsReference = true)]
     public class Treasure : Piece
     {
         private static readonly double ConvertResearch = Consts.MassPerResearchConversion * Consts.EnergyMassRatio / 1.5;
@@ -120,7 +122,7 @@ namespace ClassLibrary1.Pieces.Terrain
             MechBlueprint blueprint;
             do
                 blueprint = MechBlueprint.MechOneOff(new ResearchMinMaxCost(research, min, max), researchLevel);
-            while (Game.Map.PathFindCore(tile, GetMove(blueprint.Movable), blocked => !blocked.Any()) == null);
+            while (Game.Map.PathFindCore(tile, GetMove(blueprint.Movable), blocked => blocked.Count == 0) == null);
             static double GetMove(IMovable.Values movable) => (movable.MoveMax + movable.MoveLimit) / 2.0;
             Players.Mech.NewMech(tile, blueprint);
 
@@ -137,17 +139,11 @@ namespace ClassLibrary1.Pieces.Terrain
 
         public delegate void CollectEventHandler(object sender, CollectEventArgs e);
         public static event CollectEventHandler CollectEvent;
-        public class CollectEventArgs
+        public class CollectEventArgs(Map.Map.Tile tile, string info, bool research)
         {
-            public readonly Tile Tile;
-            public readonly string Info;
-            public readonly bool Research;
-            public CollectEventArgs(Tile tile, string info, bool research)
-            {
-                this.Tile = tile;
-                this.Info = info;
-                this.Research = research;
-            }
+            public readonly Tile Tile = tile;
+            public readonly string Info = info;
+            public readonly bool Research = research;
         }
     }
 }

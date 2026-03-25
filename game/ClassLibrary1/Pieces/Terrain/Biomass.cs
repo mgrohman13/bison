@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Runtime.Serialization;
 using Tile = ClassLibrary1.Map.Map.Tile;
 
 namespace ClassLibrary1.Pieces.Terrain
 {
     [Serializable]
+    [DataContract(IsReference = true)]
     public class Biomass : Resource
     {
         private Biomass(Tile tile)

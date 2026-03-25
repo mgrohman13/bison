@@ -12,6 +12,7 @@ using Tile = ClassLibrary1.Map.Map.Tile;
 namespace ClassLibrary1.Pieces.Enemies
 {
     [Serializable]
+    [DataContract(IsReference = true)]
     public abstract class EnemyPiece : Piece, IDeserializationCallback
     {
         protected AIState _state;
@@ -24,7 +25,7 @@ namespace ClassLibrary1.Pieces.Enemies
         public Tile LastMove => lastMove;
 
         private int numAtts = 0;
-        private readonly List<Tuple<Tile, Tile>> lastAttacks = new();
+        private readonly List<Tuple<Tile, Tile>> lastAttacks = [];
         public ReadOnlyCollection<Tuple<Tile, Tile>> LastAttacks => lastAttacks.AsReadOnly();
 
         internal IEnemySpawn Spawn => _spawn;
@@ -62,12 +63,12 @@ namespace ClassLibrary1.Pieces.Enemies
                 this.lastAttacks.RemoveRange(0, remove);
             this.numAtts = 0;
 
-            bool showAtt = LastAttacks.Any();
+            bool showAtt = LastAttacks.Count > 0;
             this.lastMove = curMove != null && (showAtt || curMove.ShowMove() || Tile.ShowMove()) ? curMove : null;
             this.curMove = Tile;
 
             if (showAtt || LastMove != null)
-                Tile.Map.UpdateVision(new[] { lastMove, curMove });
+                Tile.Map.UpdateVision([lastMove, curMove]);
         }
 
         internal virtual AIState TurnState(double difficulty, bool clearPaths, Dictionary<Tile, double> playerAttacks, HashSet<Tile> moveTiles, HashSet<IKillable> killables,
@@ -99,6 +100,7 @@ namespace ClassLibrary1.Pieces.Enemies
             Rush,
         }
         [Serializable]
+        [DataContract(IsReference = true)]
         internal class PieceSpawn : IEnemySpawn
         {
             private readonly SpawnChance _spawn = new();

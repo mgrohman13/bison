@@ -8,6 +8,7 @@ using Values = ClassLibrary1.Pieces.Behavior.Combat.IKillable.Values;
 namespace ClassLibrary1.Pieces.Behavior.Combat
 {
     [Serializable]
+    [DataContract(IsReference = true)]
     public class Killable : IKillable, IDeserializationCallback
     {
         private readonly Piece _piece;
@@ -31,11 +32,11 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
         public bool Dead => Hits.Dead;
 
         public Killable(Piece piece, Values hits, double resilience)
-            : this(piece, new[] { hits }, resilience)
+            : this(piece, [hits], resilience)
         {
         }
         public Killable(Piece piece, Values hits, IEnumerable<Values> defenses, double resilience)
-            : this(piece, defenses.Concat(new[] { hits }), resilience)
+            : this(piece, defenses.Concat([hits]), resilience)
         {
         }
         public Killable(Piece piece, IEnumerable<Values> values, double resilience)
@@ -44,7 +45,7 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
 
             _piece = piece;
             _hits = new(piece, hits);
-            _defenses = GetOther(values).Select(v => new Defense(piece, v)).ToList();
+            _defenses = [.. GetOther(values).Select(v => new Defense(piece, v))];
 
             _resilience = resilience;
             _defended = true;
@@ -62,7 +63,7 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
         void IKillable.Upgrade(IEnumerable<Values> values, double resilience)
         {
             Values hits = GetHits(values);
-            Values[] defenses = GetOther(values).ToArray();
+            Values[] defenses = [.. GetOther(values)];
 
             _hits.Upgrade(hits);
 
@@ -148,17 +149,11 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
             internal void RaiseDamagedEvent(Attack attack, Defense defense, Tile defTile) =>
                 DamagedEvent?.Invoke(this, new DamagedEventArgs(attack, defense, defTile));
         }
-        public class DamagedEventArgs
+        public class DamagedEventArgs(Attack attack, Defense defense, Map.Map.Tile defTile)
         {
-            public readonly Attack Attack;
-            public readonly Defense Defense;
-            public readonly Tile DefTile;
-            public DamagedEventArgs(Attack attack, Defense defense, Tile defTile)
-            {
-                Attack = attack;
-                Defense = defense;
-                DefTile = defTile;
-            }
+            public readonly Attack Attack = attack;
+            public readonly Defense Defense = defense;
+            public readonly Tile DefTile = defTile;
         }
         void IKillable.RaiseDamagedEvent(Attack attack, Defense defense, Tile defTile)
             => Event.RaiseDamagedEvent(attack, defense, defTile);

@@ -5,11 +5,13 @@ using MattUtil;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using Tile = ClassLibrary1.Map.Map.Tile;
 
 namespace ClassLibrary1
 {
     [Serializable]
+    [DataContract(IsReference = true)]
     public class Player : Side
     {
         private Core _core;
@@ -117,7 +119,7 @@ namespace ClassLibrary1
 
         public Dictionary<Type, double[]> GetIncomeDetails()
         {
-            Dictionary<Type, double[]> details = new();
+            Dictionary<Type, double[]> details = [];
             foreach (PlayerPiece p in Pieces.Cast<PlayerPiece>())
             {
                 double energyInc, massInc, researchInc, energyUpk, massUpk, researchUpk;

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.Serialization;
 
 namespace ClassLibrary1.Map
 {
@@ -12,6 +13,7 @@ namespace ClassLibrary1.Map
         private static double GenK() => Game.Rand.GaussianOE(1, 1 / Math.PI, .5);
 
         [Serializable]
+        [DataContract(IsReference = true)]
         private class Path : IEnemySpawn
         {
 
@@ -106,7 +108,7 @@ namespace ClassLibrary1.Map
                 if (Game.TEST_MAP_GEN.HasValue)
                     generationBuffer = Game.TEST_MAP_GEN.Value;
 
-                List<double> create = new();
+                List<double> create = [];
                 while (ExploredDist + generationBuffer > NextResourceDist)
                 {
                     map.GenResources(_ => map.SpawnTile(GetLinePoint(NextResourceDist), Consts.PathWidth, false));

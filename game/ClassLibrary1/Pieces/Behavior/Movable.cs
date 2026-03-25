@@ -3,18 +3,20 @@ using ClassLibrary1.Pieces.Enemies;
 using ClassLibrary1.Pieces.Players;
 using System;
 using System.Linq;
+using System.Runtime.Serialization;
 using Tile = ClassLibrary1.Map.Map.Tile;
 
 namespace ClassLibrary1.Pieces.Behavior
 {
     [Serializable]
-    public class Movable : IMovable
+    [DataContract(IsReference = true)]
+    public class Movable(Piece piece, IMovable.Values values, double moveCur) : IMovable
     {
-        private readonly Piece _piece;
-        private IMovable.Values _values;
+        private readonly Piece _piece = piece;
+        private IMovable.Values _values = values;
 
-        private double _moveCur;
-        private bool _moved;
+        private double _moveCur = moveCur;
+        private bool _moved = true;
 
         public Piece Piece => _piece;
 
@@ -22,14 +24,7 @@ namespace ClassLibrary1.Pieces.Behavior
             : this(piece, values, 0)
         {
         }
-        public Movable(Piece piece, IMovable.Values values, double moveCur)
-        {
-            _piece = piece;
-            _values = values;
 
-            _moveCur = moveCur;
-            _moved = true;
-        }
         public T GetBehavior<T>() where T : class, IBehavior
         {
             return _piece.GetBehavior<T>();

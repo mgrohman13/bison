@@ -1,9 +1,11 @@
-﻿using System;
+﻿using ClassLibrary1.Pieces.Behavior;
+using ClassLibrary1.Pieces.Behavior.Combat;
+using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
-using ClassLibrary1.Pieces.Behavior;
-using ClassLibrary1.Pieces.Behavior.Combat;
+using System.Runtime.Serialization;
 using static ClassLibrary1.ResearchUpgValues;
 using AttackType = ClassLibrary1.Pieces.Behavior.Combat.CombatTypes.AttackType;
 using DefenseType = ClassLibrary1.Pieces.Behavior.Combat.CombatTypes.DefenseType;
@@ -12,6 +14,7 @@ using Type = ClassLibrary1.Research.Type;
 namespace ClassLibrary1.Pieces.Players
 {
     [Serializable]
+    [DataContract(IsReference = true)]
     public class MechBlueprint : IComparable<MechBlueprint>
     {
         public readonly MechBlueprint UpgradeFrom;
@@ -231,19 +234,19 @@ namespace ClassLibrary1.Pieces.Players
         {
             double resilience = upgrade.Resilience;
             double vision = upgrade.Vision;
-            List<IKillable.Values> killable = upgrade.Killable.ToList();
-            List<IAttacker.Values> attacker = upgrade.Attacker.ToList();
+            List<IKillable.Values> killable = [.. upgrade.Killable];
+            List<IAttacker.Values> attacker = [.. upgrade.Attacker];
             IMovable.Values movable = upgrade.Movable;
 
             Type upgType = research.GetType();
-            HashSet<Type> done = new() { };
+            HashSet<Type> done = [];
             int times = 1 + Game.Rand.OEInt(.5);
             for (int a = 0; a < times; a++)
             {
                 switch (upgType)
                 {
                     case Type.MechAttack:
-                        attacker = Game.Rand.Iterate(attacker).Select(attack =>
+                        attacker = [.. Game.Rand.Iterate(attacker).Select(attack =>
                         {
                             AttackType type = attack.Type;
                             int att = attack.Attack;
@@ -260,10 +263,10 @@ namespace ClassLibrary1.Pieces.Players
                                 }
                             }
                             return UpgAttack(attack, type, att, range);
-                        }).ToList();
+                        })];
                         break;
                     case Type.MechRange:
-                        attacker = Game.Rand.Iterate(attacker).Select(attack =>
+                        attacker = [.. Game.Rand.Iterate(attacker).Select(attack =>
                         {
                             AttackType type = attack.Type;
                             int att = attack.Attack;
@@ -278,7 +281,7 @@ namespace ClassLibrary1.Pieces.Players
                                     type = newAttacker.Type;
                             }
                             return UpgAttack(attack, type, att, range);
-                        }).ToList();
+                        })];
                         break;
                     case Type.MechExplosives:
                         UpgAttackType(AttackType.Explosive);
@@ -290,24 +293,24 @@ namespace ClassLibrary1.Pieces.Players
                     case Type.MechResilience:
                         resilience = GenResilience(research);
                         if (Game.Rand.Bool())
-                            killable = Game.Rand.Iterate(killable).Select(defense =>
+                            killable = [.. Game.Rand.Iterate(killable).Select(defense =>
                             {
                                 IKillable.Values newKillable = GenKillable(research).Where(k => k.Type == DefenseType.Hits).Single();
                                 int def = defense.Defense;
                                 if (defense.Type == DefenseType.Hits)
                                     def = newKillable.Defense;
                                 return new IKillable.Values(defense.Type, def);
-                            }).ToList();
+                            })];
                         break;
                     case Type.MechDefense:
-                        killable = Game.Rand.Iterate(killable).Select(defense =>
+                        killable = [.. Game.Rand.Iterate(killable).Select(defense =>
                         {
                             int def = defense.Defense;
                             IKillable.Values newKillable = Game.Rand.SelectValue(GenKillable(research).Where(k => k.Type == DefenseType.Hits || k.Type == defense.Type));
                             if (Game.Rand.Next(newKillable.Defense + 1) >= Game.Rand.Next(def + 1))
                                 def = newKillable.Defense;
                             return new IKillable.Values(defense.Type, def);
-                        }).ToList();
+                        })];
                         if (Game.Rand.Bool())
                             resilience = GenResilience(research);
                         break;
@@ -344,15 +347,15 @@ namespace ClassLibrary1.Pieces.Players
                 if (!done.Add(upgType))
                     ;
                 upgType = Game.Rand.SelectValue(Enum.GetValues<Research.Type>().Where(Research.IsMech)
-                    .Concat(new[] { Type.MechMove }) //more likely to pick
+                    .Concat([Type.MechMove]) //more likely to pick
                     .Where(t => !done.Contains(t) || Game.Rand.Next(13) == 0) //small chance of picking the same type again
-                    .Concat(new[] { Type.MechResilience, Type.MechVision })); //can pick multiple times
+                    .Concat([Type.MechResilience, Type.MechVision])); //can pick multiple times
             }
             return new(blueprintNum, upgrade, researchLevel, vision, killable, resilience, attacker, movable);
 
             void UpgAttackType(AttackType upgAtt)
             {
-                attacker = Game.Rand.Iterate(attacker).Select(attack =>
+                attacker = [.. Game.Rand.Iterate(attacker).Select(attack =>
                 {
                     AttackType type = attack.Type;
                     int att = attack.Attack;
@@ -367,21 +370,21 @@ namespace ClassLibrary1.Pieces.Players
                             range = newAttacker.Range;
                     }
                     return UpgAttack(attack, type, att, range);
-                }).ToList();
+                })];
 
                 double trgAtts = NumAtts(research);
                 int numAttacks = attacker.Count;
                 if (CheckNumAtts())
                     attacker.Add(GenAtt());
                 numAttacks = attacker.Count;
-                HashSet<AttackType> seen = new();
-                attacker = Game.Rand.Iterate(attacker).Where(a =>
+                HashSet<AttackType> seen = [];
+                attacker = [.. Game.Rand.Iterate(attacker).Where(a =>
                 {
                     bool keep = seen.Add(a.Type) || CheckNumAtts();
                     if (!keep)
                         numAttacks--;
                     return keep;
-                }).ToList();
+                })];
                 if (numAttacks != attacker.Count)
                     throw new Exception();
 
@@ -399,7 +402,7 @@ namespace ClassLibrary1.Pieces.Players
                 attack.Type != newAttacker.Type && (attack.Range > Attack.MELEE_RANGE) != (newAttacker.Range > Attack.MELEE_RANGE);
             void UpgDefenseType(DefenseType upgDef)
             {
-                killable = Game.Rand.Iterate(killable).Select(defense =>
+                killable = [.. Game.Rand.Iterate(killable).Select(defense =>
                 {
                     int def = defense.Defense;
                     IKillable.Values newKillable = GenDef();
@@ -407,11 +410,11 @@ namespace ClassLibrary1.Pieces.Players
                         def = newKillable.Defense;
                     defense = new IKillable.Values(defense.Type, def);
                     return defense;
-                }).ToList();
+                })];
 
                 IKillable.Values addKillable = GenDef();
                 if (!killable.Any(k => k.Type == addKillable.Type))
-                    killable = killable.Concat(new[] { addKillable }).ToList();
+                    killable = [.. killable, .. new[] { addKillable }];
 
                 killable.RemoveAll(k => k.Type != DefenseType.Hits && k.Type != upgDef && Game.Rand.Bool());
 
@@ -505,10 +508,10 @@ namespace ClassLibrary1.Pieces.Players
                 double moveInc = blueprint.Movable.MoveInc;
                 double moveMax = blueprint.Movable.MoveMax;
                 double moveLimit = blueprint.Movable.MoveLimit;
-                double[] def = blueprint.Killable.Select(k => (double)k.Defense).ToArray();
-                double[] att = blueprint.Attacker.Select(a => (double)a.Attack).ToArray();
-                double[] reload = blueprint.Attacker.Select(a => (double)a.Reload).ToArray();
-                double[] range = blueprint.Attacker.Select(a => (double)a.Range).ToArray();
+                double[] def = [.. blueprint.Killable.Select(k => (double)k.Defense)];
+                double[] att = [.. blueprint.Attacker.Select(a => (double)a.Attack)];
+                double[] reload = [.. blueprint.Attacker.Select(a => (double)a.Reload)];
+                double[] range = [.. blueprint.Attacker.Select(a => (double)a.Range)];
 
                 if (increase)
                 {
@@ -554,17 +557,17 @@ namespace ClassLibrary1.Pieces.Players
                     moveInc -= 1;
                     moveMax -= 2;
                     moveLimit -= 3;
-                    def = def.Select(d => d - 2).ToArray();
-                    att = att.Select(a => a - 1).ToArray();
-                    reload = reload.Select(r => r - 1).ToArray();
-                    range = range.Select(r => r - Attack.MIN_RANGED).ToArray();
+                    def = [.. def.Select(d => d - 2)];
+                    att = [.. att.Select(a => a - 1)];
+                    reload = [.. reload.Select(r => r - 1)];
+                    range = [.. range.Select(r => r - Attack.MIN_RANGED)];
                 }
 
                 //weight multipliers 
                 const double resilienceMult = 16.9, rangeMult = .39;
                 resilience *= resilienceMult; //resilienceMult used in inc
-                reload = reload.Select(r => r * (increase ? 3.9 : 6.5)).ToArray(); //inc is unaffected
-                range = range.Select(r => r * rangeMult).ToArray(); //inc is also higher 
+                reload = [.. reload.Select(r => r * (increase ? 3.9 : 6.5))]; //inc is unaffected
+                range = [.. range.Select(r => r * rangeMult)]; //inc is also higher 
                 moveMax /= 2; //inc is unaffected
                 moveLimit /= 3; //inc is unaffected
 
@@ -585,18 +588,18 @@ namespace ClassLibrary1.Pieces.Players
                 if (!increase)
                     inc *= -1;
 
-                Action IncVision = () => newVision += inc;
-                Action IncResilience = () =>
+                void IncVision() => newVision += inc;
+                void IncResilience()
                 {
                     if (increase)
                         newResilience = 1 - newResilience;
                     newResilience -= newResilience / resilienceMult;
                     if (increase)
                         newResilience = 1 - newResilience;
-                };
-                Action IncMoveInc = () => IncMovable(inc, 0, 0);
-                Action IncMoveMax = () => IncMovable(0, inc, 0);
-                Action IncMoveLimit = () => IncMovable(0, 0, inc);
+                }
+                void IncMoveInc() => IncMovable(inc, 0, 0);
+                void IncMoveMax() => IncMovable(0, inc, 0);
+                void IncMoveLimit() => IncMovable(0, 0, inc);
                 void IncMovable(int moveInc, int moveMax, int moveLimit) =>
                     newMovable = new(blueprint.Movable.MoveInc + moveInc, blueprint.Movable.MoveMax + moveMax, blueprint.Movable.MoveLimit + moveLimit);
 
@@ -643,7 +646,7 @@ namespace ClassLibrary1.Pieces.Players
 
         private static double GenVision(IResearch research)
         {
-            const double avgVision = 5.2;
+            const double avgVision = 5.25;
             double avg = avgVision, dev = .39, oe = .169;
             bool isVision = research.GetType() == Type.MechVision;
             ModValues(isVision, 1.7, ref avg, ref dev, ref oe);
@@ -670,10 +673,10 @@ namespace ClassLibrary1.Pieces.Players
                 Game.Rand.Weighted(max, weight);
             return Consts.GetPct(Game.Rand.GaussianCapped(avg, dev) + w, pow);
         }
-        private static IReadOnlyList<IKillable.Values> GenKillable(IResearch research)
+        private static ReadOnlyCollection<IKillable.Values> GenKillable(IResearch research)
         {
             IKillable.Values hits = GenType(DefenseType.Hits, null, 1.04);
-            List<IKillable.Values> defenses = new() { hits };
+            List<IKillable.Values> defenses = [hits];
             if (research.GetType() == Type.MechShields || research.MakeType(Type.MechShields))
                 defenses.Add(GenType(DefenseType.Shield, Type.MechShields, 0.65));
             if (research.GetType() == Type.MechArmor || research.MakeType(Type.MechArmor))
@@ -695,14 +698,14 @@ namespace ClassLibrary1.Pieces.Players
         }
         private static double NumAtts(IResearch research) => 1.13 * research.GetMult(Type.MechAttack, Blueprint_Attacks_Count_Pow);
 
-        private static IReadOnlyList<IAttacker.Values> GenAttacker(IResearch research)
+        private static ReadOnlyCollection<IAttacker.Values> GenAttacker(IResearch research)
         {
             int numAttacks = research.GetType() == Type.Mech ? 1 : Game.Rand.GaussianOEInt(NumAtts(research), .26, .13, 1);
             if (numAttacks < 1)
                 numAttacks = 1;
             List<IAttacker.Values> attacks = new(numAttacks);
 
-            HashSet<AttackType> used = new();
+            HashSet<AttackType> used = [];
             bool usedRange = false;
 
             for (int a = 0; a < numAttacks; a++)
@@ -809,7 +812,7 @@ namespace ClassLibrary1.Pieces.Players
             }
             static HashSet<Type> GetResearchTypes(AttackType type, bool ranged)
             {
-                HashSet<Type> apply = new() { Type.MechAttack };
+                HashSet<Type> apply = [Type.MechAttack];
                 switch (type)
                 {
                     case AttackType.Energy:

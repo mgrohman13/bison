@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.Serialization;
 using AttackType = ClassLibrary1.Pieces.Behavior.Combat.CombatTypes.AttackType;
 using DefenseType = ClassLibrary1.Pieces.Behavior.Combat.CombatTypes.DefenseType;
 using Tile = ClassLibrary1.Map.Map.Tile;
@@ -14,6 +15,7 @@ using UpgType = ClassLibrary1.ResearchUpgValues.UpgType;
 namespace ClassLibrary1.Pieces.Players
 {
     [Serializable]
+    [DataContract(IsReference = true)]
     public class Turret : FoundationPiece, IKillable.IRepairable
     {
         public const int MAX_ATTACKS = 3;
@@ -38,7 +40,7 @@ namespace ClassLibrary1.Pieces.Players
             }
 
             SetBehavior(
-                new Killable(this, values.GetKillable(Game.Player.Research, _shieldMult, _armorMult, _rounding), values.Resilience),
+                new Killable(this, values.GetKillable(Game.Player.Research, _shieldMult, _armorMult, _rounding), Values.Resilience),
                 new Attacker(this, values.GetAttacks(Game.Player.Research, _attMult, _rounding)));
         }
         internal static Turret NewTurret(Foundation foundation)
@@ -62,7 +64,7 @@ namespace ClassLibrary1.Pieces.Players
             Values values = GetValues(Game);
 
             this.Vision = values.Vision;
-            GetBehavior<IKillable>().Upgrade(values.GetKillable(Game.Player.Research, _shieldMult, _armorMult, _rounding), values.Resilience);
+            GetBehavior<IKillable>().Upgrade(values.GetKillable(Game.Player.Research, _shieldMult, _armorMult, _rounding), Values.Resilience);
             GetBehavior<IAttacker>().Upgrade(values.GetAttacks(Game.Player.Research, _attMult, _rounding));
         }
         private static Values GetValues(Game game)
@@ -71,7 +73,7 @@ namespace ClassLibrary1.Pieces.Players
         }
         internal static double GetRounding(Game game)
         {
-            return GetValues(game).Rounding;
+            return GetValues(game).CostRounding;
         }
 
         double IKillable.IRepairable.RepairCost
@@ -91,12 +93,13 @@ namespace ClassLibrary1.Pieces.Players
         }
 
         [Serializable]
+        [DataContract(IsReference = true)]
         private class Values : IUpgradeValues
         {
-            private const double resilience = .6;
+            public const double Resilience = .6;
 
-            private int energy, mass;
-            private double vision, rounding;
+            private int _energy, _mass;
+            private double _vision, _rounding;
 
             //private readonly IKillable.Values hits;
             private readonly IKillable.Values[] defenses;
@@ -118,18 +121,17 @@ namespace ClassLibrary1.Pieces.Players
                 UpgradeTurretAttack(1);
                 UpgradeTurretRange(1);
             }
-
-            public double Resilience => resilience;
-            public int Energy => energy;
-            public int Mass => mass;
-            public double Vision => vision;
-            public double[] AttackRange => attacks.Select(v => v.Range).ToArray();
-            public double Rounding => rounding;
+             
+            public int Energy => _energy;
+            public int Mass => _mass;
+            public double Vision => _vision;
+            public double[] AttackRange => [.. attacks.Select(v => v.Range)];
+            public double CostRounding => _rounding;
             public IKillable.Values[] GetKillable(Research research, double shieldMult, double armorMult, double rounding)
             {
                 double hitsMult = 1;
 
-                List<IKillable.Values> results = new();
+                List<IKillable.Values> results = [];
                 for (int a = MAX_ATTACKS; --a >= 0;)
                 {
                     IKillable.Values defense = defenses[a];
@@ -146,11 +148,11 @@ namespace ClassLibrary1.Pieces.Players
                 if (!research.HasType(Research.Type.TurretShields))
                     results.RemoveAt(1);
 
-                return results.ToArray();
+                return [.. results];
             }
             public IAttacker.Values[] GetAttacks(Research research, double[] _attMult, double rounding)
             {
-                List<IAttacker.Values> results = new();
+                List<IAttacker.Values> results = [];
                 bool offset = false;
                 for (int a = 0; a < MAX_ATTACKS; a++)
                 {
@@ -194,7 +196,7 @@ namespace ClassLibrary1.Pieces.Players
                 if (!research.HasType(Research.Type.TurretLasers))
                     results.RemoveAt(1);
 
-                return results.ToArray();
+                return [.. results];
             }
 
             public void Upgrade(Research.Type type, double researchMult)
@@ -211,13 +213,13 @@ namespace ClassLibrary1.Pieces.Players
             private void UpgradeBuildingCost(double researchMult)
             {
                 double costMult = ResearchUpgValues.Calc(UpgType.TurretCost, researchMult);
-                rounding = Game.Rand.NextDouble();
-                this.energy = MTRandom.Round(1250 * costMult, 1 - rounding);
-                this.mass = MTRandom.Round(1550 * costMult, rounding);
+                _rounding = Game.Rand.NextDouble();
+                this._energy = MTRandom.Round(1250 * costMult, 1 - _rounding);
+                this._mass = MTRandom.Round(1550 * costMult, _rounding);
             }
             private void UpgradeTurretDefense(double researchMult)
             {
-                this.vision = ResearchUpgValues.Calc(UpgType.TurretVision, researchMult);
+                this._vision = ResearchUpgValues.Calc(UpgType.TurretVision, researchMult);
 
                 for (int a = 0; a < MAX_DEFENSES; a++)
                 {

@@ -8,6 +8,7 @@ using Values = ClassLibrary1.Pieces.Behavior.Combat.IAttacker.Values;
 namespace ClassLibrary1.Pieces.Behavior.Combat
 {
     [Serializable]
+    [DataContract(IsReference = true)]
     public class Attacker : IAttacker, IDeserializationCallback
     {
         private readonly Piece _piece;
@@ -35,7 +36,7 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
         internal Attacker(Piece piece, IEnumerable<Values> attacks)
         {
             _piece = piece;
-            _attacks = attacks.Select(a => new Attack(Piece, a)).ToList();
+            _attacks = [.. attacks.Select(a => new Attack(Piece, a))];
 
             OnDeserialization(this);
         }
@@ -47,7 +48,7 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
 
         void IAttacker.Upgrade(IEnumerable<Values> values)
         {
-            Values[] attacks = values.ToArray();
+            Values[] attacks = [.. values];
 
             double energy = 0;
             while (Attacks.Count > attacks.Length)
@@ -86,7 +87,7 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
         {
             bool retVal = false;
             if (fire)
-                foreach (Attack attack in useAtt == null ? Game.Rand.Iterate(Attacks) : new[] { useAtt })
+                foreach (Attack attack in useAtt == null ? Game.Rand.Iterate(Attacks) : [useAtt])
                 {
                     retVal |= attack.Fire(target);
                     if (target.Dead)
@@ -121,18 +122,11 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
             internal void RaiseAttackEvent(Attack attack, IKillable killable, Tile targetTile) =>
                 AttackEvent?.Invoke(this, new AttackEventArgs(attack, killable, targetTile));
         }
-        public class AttackEventArgs
+        public class AttackEventArgs(Attack attack, IKillable killable, Map.Map.Tile targetTile)
         {
-            public readonly Tile From, To;
-            public readonly Attack Attack;
-            public readonly IKillable Killable;
-            public AttackEventArgs(Attack attack, IKillable killable, Tile targetTile)
-            {
-                Attack = attack;
-                Killable = killable;
-                From = attack.Piece.Tile;
-                To = targetTile;
-            }
+            public readonly Tile From = attack.Piece.Tile, To = targetTile;
+            public readonly Attack Attack = attack;
+            public readonly IKillable Killable = killable;
         }
         void IAttacker.RaiseAttackEvent(Attack attack, IKillable killable, Tile targetTile) => Event.RaiseAttackEvent(attack, killable, targetTile);
 

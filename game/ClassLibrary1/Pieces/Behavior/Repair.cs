@@ -1,11 +1,13 @@
 ﻿using System;
+using System.Runtime.Serialization;
 
 namespace ClassLibrary1.Pieces.Behavior
 {
     [Serializable]
-    public class Repair : Builder, IRepair
+    [DataContract(IsReference = true)]
+    public class Repair(Piece piece, IRepair.Values repair) : Builder(piece, repair.Builder), IRepair
     {
-        private IRepair.Values _values;
+        private IRepair.Values _values = repair;
         private bool _repaired = false, _resetRepaired = true;
 
         public double Rate => Consts.GetDamagedValue(Piece, RateBase, 0);
@@ -29,12 +31,6 @@ namespace ClassLibrary1.Pieces.Behavior
         {
             if (_resetRepaired)
                 _repaired = false;
-        }
-
-        public Repair(Piece piece, IRepair.Values repair)
-            : base(piece, repair.Builder)
-        {
-            _values = repair;
         }
 
         void IRepair.Upgrade(IRepair.Values repair)

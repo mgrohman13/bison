@@ -9,11 +9,13 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.Serialization;
 using Point = MattUtil.Point;
 
 namespace ClassLibrary1.Map
 {
     [Serializable]
+    [DataContract(IsReference = true)]
     public partial class Map // : IDeserializationCallback
     {
         internal static readonly Stopwatch watch = new();
@@ -51,7 +53,7 @@ namespace ClassLibrary1.Map
             LogEvalTime();
 
             Game = game;
-            clearTerrain = new();
+            clearTerrain = [];
 
             const double dev = .21, oe = .13;
             featureDist = Game.Rand.GaussianOE(Consts.FeatureDist, dev, oe, Consts.FeatureMin);
@@ -68,7 +70,7 @@ namespace ClassLibrary1.Map
             bool valid;
             do
             {
-                angles = Enumerable.Repeat(0, numPaths).Select(x => Game.Rand.NextDouble() * TWO_PI).ToArray();
+                angles = [.. Enumerable.Repeat(0, numPaths).Select(x => Game.Rand.NextDouble() * TWO_PI)];
                 valid = true;
                 for (int a = 0; valid && a < numPaths - 1; a++)
                     for (int b = a; valid && ++b < numPaths;)
@@ -86,7 +88,7 @@ namespace ClassLibrary1.Map
             separation /= 2.6;
             double caveMult = Math.PI / numPaths;
             int numCaves = Game.Rand.GaussianOEInt(2 + (Math.PI - 2) * caveMult * caveMult, .091, .039, 2);
-            _caves = new();
+            _caves = [];
             for (int e = 0; e < numCaves; e++)
             {
                 int t = 0, tries = numCaves * numCaves * 13 + 169;
@@ -111,8 +113,8 @@ namespace ClassLibrary1.Map
             }
             if (_caves.Count < 2) throw new Exception();
 
-            _pieces = new();
-            _explored = new();
+            _pieces = [];
+            _explored = [];
 
             resourcePool = new() { { ResourceType.Foundation, 1 },
                 { ResourceType.Biomass, 3 }, { ResourceType.Artifact, 3 }, { ResourceType.Metal, 6 }, };
@@ -172,7 +174,7 @@ namespace ClassLibrary1.Map
             int hives = Game.Rand.GaussianOEInt(spawnHives, .091, .039, Game.Rand.Round(3.9));
             spawnHives = (spawnHives + hives) / 2.0 + 1;
 
-            Dictionary<Cave, int> chances = new(), counts = new();
+            Dictionary<Cave, int> chances = [], counts = [];
             foreach (Cave c in _caves)
                 chances[c] = 2;
             while (chances.Values.Sum() < hives)
@@ -241,7 +243,7 @@ namespace ClassLibrary1.Map
         private float Evaluate(Point p)//, out float lineDist)
         {
             int x = p.X, y = p.Y;
-            evaluateCache ??= new();
+            evaluateCache ??= [];
             if (evaluateCache.TryGetValue(p, out var t))
             {
                 //lineDist = t.Item2;
@@ -415,7 +417,7 @@ namespace ClassLibrary1.Map
 
             return found;
         }
-        private HashSet<PointD> _treasures = new();
+        private HashSet<PointD> _treasures = [];
         private void CreateTreasure(Tile tile)
         {
             static bool Clear(Tile t) => t != null && (t.Piece == null || t.Piece.HasBehavior<IMovable>());
@@ -426,7 +428,7 @@ namespace ClassLibrary1.Map
                 Tile core = Game.Player.Core?.Tile;
                 if (core is not null)
                 {
-                    var dist = _treasures.Concat(new[] { new PointD(core.X, core.Y) })
+                    var dist = _treasures.Concat([new PointD(core.X, core.Y)])
                         .Concat(_caves.Select(c => c.Center))
                         .Concat(_paths.Select(p => p.GetClosestPoint(x, y)))
                         .Select(p => GetDistSqr(p, new(x, y))).Concat(_caves.Select(c => c.ConnectionDistSqr(x, y)))
@@ -482,11 +484,11 @@ namespace ClassLibrary1.Map
         }
         internal static bool InvalidStartTile(Tile tile, bool isEnemy)
         {
-            if (tile == null) 
+            if (tile == null)
                 return true;
 
             bool visible = tile.Visible && !tile.Map.Game.GameOver && !Game.TEST_MAP_GEN.HasValue;
-            bool hiveRange = isEnemy && tile.Map._pieces.OfType<Hive>().Any(h => tile.GetDistance(h.Tile) <= h.MaxRange);
+            bool hiveRange = isEnemy && tile.Map._pieces.Values.OfType<Hive>().Any(h => tile.GetDistance(h.Tile) <= h.MaxRange);
             Core core = tile.Map.Game.Player.Core; //
             bool coreRange = core != null && tile.GetDistance(core.Tile) <= core.GetBehavior<IRepair>().Range;
             bool invalid = (visible && !hiveRange) || tile.Piece != null || coreRange;
@@ -601,14 +603,14 @@ namespace ClassLibrary1.Map
         private static double PointLineDistance(double a, double b, double c, Point point) =>
             (a * point.X + b * point.Y + c) / Math.Sqrt(a * a + b * b);
 
-        private readonly Dictionary<Point, FoundPath> corePaths = new();
+        private readonly Dictionary<Point, FoundPath> corePaths = [];
         public Dictionary<Point, FoundPath> EnemyPaths => Game.TEST_MAP_GEN.HasValue ? corePaths : null; //|| Game.GameOver 
         internal List<Point> PathFindCore(Tile from, double movement, Func<HashSet<Point>, bool> Accept)
         {
             if (corePaths.TryGetValue(from.Location, out FoundPath found) && found.Movement <= movement)
-                return found.CompletePath(from.Location).ToList();
+                return [.. found.CompletePath(from.Location)];
 
-            HashSet<Point> known = corePaths.Keys.Where(k => corePaths[k].Movement <= movement).ToHashSet();
+            HashSet<Point> known = [.. corePaths.Keys.Where(k => corePaths[k].Movement <= movement)];
 
             Tile to = Game.Enemy.PiecesOfType<Portal>().Where(p => !p.Exit).Select(p => p.Tile)
                 .Append(Game.Player.Core.Tile).OrderBy(t => from.GetDistance(t)).First();
@@ -640,7 +642,7 @@ namespace ClassLibrary1.Map
                     if (!Game.GameOver && !Game.TEST_MAP_GEN.HasValue && Visible(p))
                         Debug.WriteLine($"!!! Cleared terrain on visible tile! {p}");
 
-                    List<Point> list = new() { p };
+                    List<Point> list = [p];
                     int extra = Game.Rand.OEInt();
                     for (int a = 0; a < extra; a++)
                     {
@@ -680,7 +682,7 @@ namespace ClassLibrary1.Map
 
         private IEnumerable<Tile> FindRetreatTiles(Tile tile, Func<Tile, bool> ValidRetreat)
         {
-            Dictionary<PointD, double> dists = new();
+            Dictionary<PointD, double> dists = [];
             return _paths.Select(p => p.ExploredPoint(Consts.PathWidth))
                 .Concat(_caves.Where(c => !c.Explored).Select(c => c.Center))
                 .OrderBy(p =>
@@ -697,7 +699,7 @@ namespace ClassLibrary1.Map
             var options = FindRetreatTiles(from, ValidRetreat);
             if (targets != null)
                 options = options.Concat(targets);
-            options = options.OrderBy(t => from.GetDistance(t)).ToList();
+            options = [.. options.OrderBy(t => from.GetDistance(t))];
             foreach (Tile tile in options)
             {
                 // Game.Rand.Bool();
@@ -713,7 +715,7 @@ namespace ClassLibrary1.Map
                 },
                 p => ValidRetreat(GetTile(p)),
                 out var blocked);
-                if (!blocked.Any())
+                if (blocked.Count == 0)
                     return path;
             }
             return null;
@@ -723,15 +725,15 @@ namespace ClassLibrary1.Map
         private List<Point> PathFind(Tile fromTile, Tile toTile, double firstMove, bool limitMove, double movement, bool includeBlocked, bool visibleOnly,
             Func<Point, double> Penalty, Func<Point, bool> Stop, out HashSet<Point> blocked)
         {
-            blocked = new();
+            blocked = [];
 
             Point from = fromTile.Location;
             Point to = toTile.Location;
             if (from == to)
-                return new() { from, to, };
+                return [from, to,];
 
             //cache tile penalties at each point so they are consistent 
-            Dictionary<Point, double> cache = new();
+            Dictionary<Point, double> cache = [];
 
             double moveMin = firstMove;
             if (limitMove)

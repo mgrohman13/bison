@@ -4,11 +4,13 @@ using ClassLibrary1.Pieces.Players;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using Tile = ClassLibrary1.Map.Map.Tile;
 
 namespace ClassLibrary1.Pieces
 {
     [Serializable]
+    [DataContract(IsReference = true)]
     public abstract class Piece : IBehavior
     {
         public readonly Game Game;
@@ -16,7 +18,7 @@ namespace ClassLibrary1.Pieces
         public readonly int PieceNum;
 
         Piece IBehavior.Piece => this;
-        protected IReadOnlyList<IBehavior> behavior = Array.Empty<IBehavior>();
+        protected IReadOnlyList<IBehavior> behavior = [];
 
         private Tile _tile;
 

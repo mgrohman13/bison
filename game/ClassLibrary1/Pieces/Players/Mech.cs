@@ -1,13 +1,14 @@
-﻿using System;
+﻿using ClassLibrary1.Pieces.Behavior;
+using ClassLibrary1.Pieces.Behavior.Combat;
+using System;
 using System.Linq;
-using ClassLibrary1.Pieces.Behavior;
-using ClassLibrary1.Pieces.Behavior.Combat;
-using ClassLibrary1.Pieces.Behavior.Combat;
+using System.Runtime.Serialization;
 using Tile = ClassLibrary1.Map.Map.Tile;
 
 namespace ClassLibrary1.Pieces.Players
 {
     [Serializable]
+    [DataContract(IsReference = true)]
     public class Mech : PlayerPiece, IKillable.IRepairable
     {
         public MechBlueprint Blueprint { get; private set; }

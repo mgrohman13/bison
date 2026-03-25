@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using DefenseType = ClassLibrary1.Pieces.Behavior.Combat.CombatTypes.DefenseType;
 using Tile = ClassLibrary1.Map.Map.Tile;
 
@@ -33,6 +34,7 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
         internal double MaxDefenseValue => AllDefenses.Sum(d => Consts.StatValue(d.DefenseMax));
 
         [Serializable]
+        [DataContract(IsReference = true)]
         public readonly struct Values
         {
             public readonly DefenseType Type;

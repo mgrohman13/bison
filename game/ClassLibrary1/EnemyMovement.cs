@@ -25,14 +25,14 @@ namespace ClassLibrary1
             Dictionary<Tile, double> playerAttacks = GetPlayerAttacks(game);
             Dictionary<IKillable, Dictionary<IKillable, int>> allTargets = GetAllTargets(game);
             double avgHp = 1, avgWeight = 1;
-            if (allTargets.Any())
+            if (allTargets.Count > 0)
             {
-                avgHp = allTargets.Keys.Average(k => k.AllDefenses.Sum(d => Consts.StatValue(d.DefenseCur)));
+                avgHp = allTargets.Keys.Average(k => k.AllDefenses.Sum((Func<Defense, double>)(d => Consts.StatValue(d.DefenseCur))));
                 avgWeight = allTargets.Keys.Average(k => GetKillWeight(k, avgHp, null, null));
             }
 
             UpdateProgress(null, progress);
-            HashSet<EnemyPiece> moved = new();
+            HashSet<EnemyPiece> moved = [];
             foreach (var piece in Game.Rand.Iterate(game.Enemy.Pieces.Cast<EnemyPiece>()).OrderBy(p => p is Hive ? 1 : 2))
             {
                 progress += Time(piece) / totalTime;
@@ -45,7 +45,7 @@ namespace ClassLibrary1
         }
         internal static Dictionary<Tile, double> GetPlayerAttacks(Game game)
         {
-            Dictionary<Tile, double> result = new();
+            Dictionary<Tile, double> result = [];
             foreach (var attacker in game.Player.PiecesOfType<IAttacker>())
                 foreach (var t in PlayerAttacks(attacker))
                 {
@@ -80,19 +80,19 @@ namespace ClassLibrary1
             if (movePiece?.MoveCur < 1)
                 movePiece = null;
 
-            IEnumerable<Attack> attacks = Enumerable.Empty<Attack>();
-            IEnumerable<Attack> melee = Enumerable.Empty<Attack>();
-            IEnumerable<Attack> ranged = Enumerable.Empty<Attack>();
+            IEnumerable<Attack> attacks = [];
+            IEnumerable<Attack> melee = [];
+            IEnumerable<Attack> ranged = [];
             if (attPiece != null)
             {
-                attacks = GetAttacks(attPiece).ToList();
-                melee = attacks.Where(a => a.Range == Attack.MELEE_RANGE).ToList();
-                ranged = attacks.Where(a => a.Range > Attack.MELEE_RANGE).ToList();
+                attacks = [.. GetAttacks(attPiece)];
+                melee = [.. attacks.Where(a => a.Range == Attack.MELEE_RANGE)];
+                ranged = [.. attacks.Where(a => a.Range > Attack.MELEE_RANGE)];
             }
 
-            HashSet<Tile> moveTiles = new();
+            HashSet<Tile> moveTiles = [];
             if (movePiece != null)
-                moveTiles = piece.Tile.GetTilesInRange(movePiece, movePiece.MoveCur + (melee.Any() ? Attack.MELEE_RANGE : 0)).ToHashSet();
+                moveTiles = [.. piece.Tile.GetTilesInRange(movePiece, movePiece.MoveCur + (melee.Any() ? Attack.MELEE_RANGE : 0))];
 
             bool usePortal = true;
             bool HasPortal(Tile t) => usePortal && t.Piece is Portal portal && portal.CanPort(movePiece, out _, out _);
@@ -105,10 +105,10 @@ namespace ClassLibrary1
                 filteredMoves = true;
             }
 
-            HashSet<IKillable> targets = new();
+            HashSet<IKillable> targets = [];
             if (attacks.Any())
             {
-                HashSet<Tile> attTiles = piece.Tile.GetTilesInRange(attPiece, attacks.Max(a => a.Range)).ToHashSet();
+                HashSet<Tile> attTiles = [.. piece.Tile.GetTilesInRange(attPiece, attacks.Max(a => a.Range))];
                 if (movePiece != null && melee.Any())
                 {
                     var meleeTiles = moveTiles.ToList();
@@ -116,23 +116,23 @@ namespace ClassLibrary1
                     moveTiles.RemoveWhere(t => t.GetDistance(piece.Tile) > movePiece.MoveCur);
                     attTiles.UnionWith(meleeTiles.Where(t => t.GetTilesInRange(melee.First()).Any(moveTiles.Contains)));
                 }
-                targets = attTiles.Select(t => t.Piece?.GetBehavior<IKillable>()).Where(k => k != null && k.Piece.IsPlayer && !k.Dead).ToHashSet();
+                targets = [.. attTiles.Select(t => t.Piece?.GetBehavior<IKillable>()).Where(k => k != null && k.Piece.IsPlayer && !k.Dead)];
             }
             FilterMoves();
 
             double attValue = SumAttacks(attacks, _ => true);
             double maxMoveAttRange = (movePiece?.MoveCur ?? 0) + (attacks.Max(a => a?.Range) ?? 0);
-            HashSet<IKillable> extendedTargets = allTargets.Keys.Where(k => k.Piece.Tile.GetDistance(piece.Tile) < maxMoveAttRange).SelectMany(k => allTargets[k].Keys).ToHashSet();
+            HashSet<IKillable> extendedTargets = [.. allTargets.Keys.Where(k => k.Piece.Tile.GetDistance(piece.Tile) < maxMoveAttRange).SelectMany(k => allTargets[k].Keys)];
 
             AIState state = piece.TurnState(difficulty, clearPaths, playerAttacks, moveTiles, extendedTargets, out List<Point> fullPath);
             usePortal &= (state == AIState.Fight || state == AIState.Patrol || state == AIState.Rush);
 
             IKillable target = null;
             if (attPiece != null && state != AIState.Retreat)
-                if (targets.Any())
+                if (targets.Count > 0)
                     target = Game.Rand.SelectValue(targets, GetWeight);
                 else if (state == AIState.Fight)
-                    target = Game.Rand.Iterate((IEnumerable<IKillable>)(extendedTargets.Any() ? extendedTargets : allTargets.Keys)).OrderBy(k =>
+                    target = Game.Rand.Iterate((IEnumerable<IKillable>)(extendedTargets.Count > 0 ? extendedTargets : allTargets.Keys)).OrderBy(k =>
                     {
                         double dist = piece.Tile.GetDistance(k.Piece.Tile);
                         double weight = GetWeight(k);
@@ -155,7 +155,7 @@ namespace ClassLibrary1
             if (movePiece != null && state != AIState.Heal)
             {
                 bool seeCore = targets.Any(k => k.Piece is Core);
-                List<Tile> pathTiles = new();
+                List<Tile> pathTiles = [];
                 if (fullPath != null && (fullPath.Count > 2 || piece.Game.Map.GetTile(fullPath[^1]).Piece is Portal))
                 {
                     int keepDiv = 0;
@@ -187,7 +187,7 @@ namespace ClassLibrary1
 
                 //double multiplier = 1;
                 //eventually convert to ulong?
-                Dictionary<Tile, double> dictDbl = new();
+                Dictionary<Tile, double> dictDbl = [];
 #pragma warning disable IDE0018 // Inline variable declaration
                 foreach (var moveTile in Game.Rand.Iterate(moveTiles))
                 {
@@ -257,7 +257,7 @@ namespace ClassLibrary1
                         weight *= weight;
                         pathWeight = weight;
                     }
-                    else if (pathTiles.Any())
+                    else if (pathTiles.Count > 0)
                     {
                         // consolidate
                         Tile final = pathTiles[^1];
@@ -326,7 +326,7 @@ namespace ClassLibrary1
                         var friendly = moveTile.GetAdjacentTiles().Select(t => (t.Piece?.GetBehavior<IKillable>()))
                             .Where(k => k != null && k.Piece.Side == piece.Side && k.Piece != piece && moved.Contains(k.Piece)
                                 && !(piece is Hive && state == AIState.Rush)).ToList();
-                        if (friendly.Any())
+                        if (friendly.Count > 0)
                         {
                             int count = 0;
                             foreach (var killable in friendly)
@@ -405,7 +405,7 @@ namespace ClassLibrary1
                     }
 
 
-                    double[] weights = new double[] { attWeight, pathWeight, coreWeight, playerAttWeight, moveWeight, repairWeight, defWeight, };
+                    double[] weights = [attWeight, pathWeight, coreWeight, playerAttWeight, moveWeight, repairWeight, defWeight,];
                     double result = 1, div = 1;
                     foreach (var w in weights)
                     {
@@ -441,7 +441,7 @@ namespace ClassLibrary1
                 int max = int.MaxValue - dictDbl.Count;
                 if (sum * multiplier > max)
                     multiplier = max / sum;
-                Dictionary<Tile, int> dictInt = new();
+                Dictionary<Tile, int> dictInt = [];
                 foreach (var p in dictDbl)
                     dictInt.Add(p.Key, Game.Rand.Round(p.Value * multiplier));
 
@@ -484,7 +484,7 @@ namespace ClassLibrary1
                     //foreach (double range in attacks.Where(a => inRetreat || IsFull(a)).Select(a => a.Range).Order())
                     foreach (var attack in Game.Rand.Iterate(attacks))
                     {
-                        bool CanTarget(IKillable killable) => attack.GetDefenders(killable.Piece).Any();
+                        bool CanTarget(IKillable killable) => attack.GetDefenders(killable.Piece).Count > 0;
                         if (target == null || !CanTarget(target))
                         {
                             var choices = targets.Where(CanTarget);
@@ -514,7 +514,7 @@ namespace ClassLibrary1
                             if (attPiece.EnemyFire(target, attack))
                             {
                                 //splash damage??
-                                List<Tuple<Tile, double>> trgAttacks = trgGrp.Keys.SelectMany(k => PlayerAttacks(k.GetBehavior<IAttacker>())).ToList();
+                                List<Tuple<Tile, double>> trgAttacks = [.. trgGrp.Keys.SelectMany(k => PlayerAttacks(k.GetBehavior<IAttacker>()))];
                                 foreach (var pair in trgAttacks)
                                     playerAttacks[pair.Item1] -= pair.Item2;
                                 foreach (var killable in trgGrp.Keys)
@@ -544,7 +544,7 @@ namespace ClassLibrary1
         }
 
         private static IEnumerable<Attack> GetAttacks(IAttacker attacker) =>
-            attacker?.Attacks.Where(a => a.CanAttack()) ?? Enumerable.Empty<Attack>();
+            attacker?.Attacks.Where(a => a.CanAttack()) ?? [];
         private static double SumAttacks(IEnumerable<Attack> attacks, Func<Attack, bool> Predicate) => attacks?.Where(Predicate).Sum(AttWeight) ?? 0;
         private static double? AttWeight(Attack a) => Consts.StatValue(a.AttackCur) * Math.Sqrt(a.AttackCur / (double)a.AttackMax) * (IsFull(a) ? 2 : 1);
         private static bool IsFull(Attack a) => a.AttackCur == a.AttackMax || (a.Reload < 1 && Game.Rand.Bool()) //??
@@ -554,7 +554,7 @@ namespace ClassLibrary1
         private static double GetKillWeight(IKillable killable, double avgHp, AIState? state, IKillable target)
         {
             bool inFight = state == AIState.Fight;
-            double attacks = 0, repair = 0;
+            double attacks = 1, repair = 1;
 
             if (killable.Piece.HasBehavior(out IAttacker attacker))
                 attacks += attacker.Attacks.Sum(a => Consts.StatValue(a.AttackCur)
@@ -581,7 +581,7 @@ namespace ClassLibrary1
                 }
             }
 
-            double mass = 0;
+            double mass = 1;
             if (killable.Piece is PlayerPiece playerPiece)
             {
                 double e, r;

@@ -6,11 +6,13 @@ using MattUtil;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.Serialization;
 using static ClassLibrary1.Map.Map;
 
 namespace ClassLibrary1
 {
     [Serializable]
+    [DataContract(IsReference = true)]
     public class Game
     {
         public const int POINTS_TO_WIN = 3;
@@ -54,7 +56,7 @@ namespace ClassLibrary1
             this._gameOver = false;
             this._win = false;
 
-            this._pieceNums = new Dictionary<string, int>();
+            this._pieceNums = [];
 
             Point constructor = Game.Rand.SelectValue(new Point[] {
                 new(-2, -1),

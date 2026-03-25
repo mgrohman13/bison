@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Windows.Forms;
 using Tile = ClassLibrary1.Map.Map.Tile;
 using Type = ClassLibrary1.Research.Type;
@@ -95,7 +96,7 @@ namespace WinFormsApp1
             if (File.Exists(Game.SavePath))
             {
                 string path = Game.SavePath.Replace("\\", "/");
-                path = path[..path.LastIndexOf("/")] + "/" + "auto_" + Game.Turn + "_" + suffix + ".sav";
+                path = path[..path.LastIndexOf('/')] + "/" + "auto_" + Game.Turn + "_" + suffix + ".sav";
                 if (File.Exists(path))
                     File.Delete(path);
                 File.Copy(Game.SavePath, path);
@@ -117,7 +118,7 @@ namespace WinFormsApp1
                     savePath = null;
             }
             savePath ??= ".";
-            if (!savePath.EndsWith("/") && !savePath.EndsWith("\\") && !savePath.EndsWith(Path.PathSeparator))
+            if (!savePath.EndsWith('/') && !savePath.EndsWith('\\') && !savePath.EndsWith(Path.PathSeparator))
                 savePath += Path.DirectorySeparatorChar;
             savePath += "game.sav";
 
@@ -159,7 +160,7 @@ namespace WinFormsApp1
                 SaveGame();
                 CopyAutoSave("e");
 
-                IEnumerable<PlayerPiece> GetRepairs() => data.sleep.Where(p => p.IsRepairing());
+                static IEnumerable<PlayerPiece> GetRepairs() => data.sleep.Where(p => p.IsRepairing());
                 var repairs = GetRepairs().ToHashSet();
 
                 Form.UpdateProgress(null, 0);
@@ -230,9 +231,8 @@ namespace WinFormsApp1
         {
             PlayerPiece playerPiece = Form.MapMain.SelTile?.Piece as PlayerPiece;
             if (playerPiece is not null)
-                if (set.Contains(playerPiece))
+                if (set.Remove(playerPiece))
                 {
-                    set.Remove(playerPiece);
                     RefreshSelected();
                 }
                 else
@@ -247,7 +247,7 @@ namespace WinFormsApp1
             Rectangle gameRect = Game.Map.GameRect();
             var tiles = Game.Player.Pieces.Where(MoveLeft).Select(p => p.Tile);
             if (tiles.Any() && Form.MapMain.SelTile != null)
-                tiles = tiles.Concat(new Tile[] { Form.MapMain.SelTile });
+                tiles = tiles.Concat([Form.MapMain.SelTile]);
 
             var moveLeft = tiles.Distinct().OrderBy(t =>
             {
@@ -368,7 +368,12 @@ namespace WinFormsApp1
                 if (!move)
                     if (builder != null && piece.Tile.GetVisibleTilesInRange(builder).Select(t => t.Piece as Foundation).Any(f => f != null))
                     {
-                        if (piece.HasBehavior<IBuilder.IBuildFactory>())
+                        if (piece.HasBehavior<IBuilder.IBuildOutpost>())
+                        {
+                            Outpost.Cost(Game, out int e, out int m);
+                            move = Game.Player.Has(e, m);
+                        }
+                        if (!move && piece.HasBehavior<IBuilder.IBuildFactory>())
                         {
                             Factory.Cost(Game, out int e, out int m);
                             move = Game.Player.Has(e, m);
@@ -384,6 +389,15 @@ namespace WinFormsApp1
                             move = Game.Player.Has(e, m);
                         }
                     }
+
+                if (!move && piece is Outpost outpost)
+                {
+                    if (piece.HasBehavior(out IBuilder.IReplacer<FoundationPiece> replacer))
+                    {
+                        replacer.Replace(false, outpost, out int e, out int m, out _, out bool canReplace);
+                        move = canReplace && Game.Player.Has(e, m);
+                    }
+                }
 
                 if (!move && piece.HasBehavior(out IMovable movable))
                 {
@@ -423,11 +437,12 @@ namespace WinFormsApp1
         }
 
         [Serializable]
+        [DataContract(IsReference = true)]
         private class UIData // : ISerializable
         {
-            public readonly HashSet<PlayerPiece> moved = new(), sleep = new();
+            public readonly HashSet<PlayerPiece> moved = [], sleep = [];
 
-            public readonly HashSet<MechBlueprint> notifyOff = new();
+            public readonly HashSet<MechBlueprint> notifyOff = [];
             public bool NotifyConstructor = true, NotifyDrone = true;
 
             public bool AlertResearch = false;

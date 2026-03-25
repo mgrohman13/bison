@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Runtime.Serialization;
 using Tile = ClassLibrary1.Map.Map.Tile;
 
 namespace ClassLibrary1.Pieces.Players
 {
     [Serializable]
+    [DataContract(IsReference = true)]
     public abstract class PlayerPiece : Piece
     {
         private double _vision;
