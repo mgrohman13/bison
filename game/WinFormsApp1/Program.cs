@@ -160,7 +160,7 @@ namespace WinFormsApp1
                 SaveGame();
                 CopyAutoSave("e");
 
-                static IEnumerable<PlayerPiece> GetRepairs() => data.sleep.Where(p => p.IsRepairing());
+                static IEnumerable<PlayerPiece> GetRepairs() => data.sleep.Where(p => p.Tile is not null && p.IsRepairing());
                 var repairs = GetRepairs().ToHashSet();
 
                 Form.UpdateProgress(null, 0);
@@ -208,7 +208,7 @@ namespace WinFormsApp1
         {
             Wake(behavior);
             RefreshChanged();
-            //Program.SaveGame();
+            SaveGame();
         }
 
         public static void Hold() => data.sleep.Remove(Toggle(data.moved));
@@ -348,19 +348,19 @@ namespace WinFormsApp1
             {
                 IBuilder builder = piece.GetBehavior<IBuilder>();
                 if (!move && piece.HasBehavior<IBuilder.IBuildMech>())
-                    move = Game.Player.Research.Blueprints.Any(b => Game.Player.Has(b.Energy, b.Mass) && GetNotify(b));
+                    move |= Game.Player.Research.Blueprints.Any(b => Game.Player.Has(b.Energy, b.Mass) && GetNotify(b));
                 if (!move && piece.HasBehavior<IBuilder.IBuildConstructor>())
                 {
                     Constructor.Cost(Game, out int e, out int m);
-                    move = Game.Player.Has(e, m) && NotifyConstructor;
+                    move |= Game.Player.Has(e, m) && NotifyConstructor;
                 }
                 if (!move && piece.HasBehavior<IBuilder.IBuildDrone>())
                 {
                     Drone.Cost(Game, out int e, out int m);
-                    move = Game.Player.Has(e, m) && NotifyDrone;
+                    move |= Game.Player.Has(e, m) && NotifyDrone;
                 }
                 if (!move && piece.HasBehavior<IBuilder.IBuildExtractor>())
-                    move = piece.Tile.GetVisibleTilesInRange(builder).Select(t => t.Piece as Resource).Where(r => r != null).Any(r =>
+                    move |= piece.Tile.GetVisibleTilesInRange(builder).Select(t => t.Piece as Resource).Where(r => r != null).Any(r =>
                     {
                         Extractor.Cost(out int e, out int m, r);
                         return Game.Player.Has(e, m);
@@ -371,22 +371,22 @@ namespace WinFormsApp1
                         if (piece.HasBehavior<IBuilder.IBuildOutpost>())
                         {
                             Outpost.Cost(Game, out int e, out int m);
-                            move = Game.Player.Has(e, m);
+                            move |= Game.Player.Has(e, m);
                         }
                         if (!move && piece.HasBehavior<IBuilder.IBuildFactory>())
                         {
                             Factory.Cost(Game, out int e, out int m);
-                            move = Game.Player.Has(e, m);
+                            move |= Game.Player.Has(e, m);
                         }
                         if (!move && piece.HasBehavior<IBuilder.IBuildTurret>())
                         {
                             Turret.Cost(Game, out int e, out int m);
-                            move = Game.Player.Has(e, m);
+                            move |= Game.Player.Has(e, m);
                         }
                         if (!move && piece.HasBehavior<IBuilder.IBuildGenerator>())
                         {
                             Generator.Cost(Game, out int e, out int m);
-                            move = Game.Player.Has(e, m);
+                            move |= Game.Player.Has(e, m);
                         }
                     }
 
@@ -395,7 +395,7 @@ namespace WinFormsApp1
                     if (piece.HasBehavior(out IBuilder.IReplacer<FoundationPiece> replacer))
                     {
                         replacer.Replace(false, outpost, out int e, out int m, out _, out bool canReplace);
-                        move = canReplace && Game.Player.Has(e, m);
+                        move |= canReplace && Game.Player.Has(e, m);
                     }
                 }
 
@@ -412,6 +412,14 @@ namespace WinFormsApp1
                             .Select(g => Tuple.Create(g.Select(t => t.Item1).Distinct().Sum(a => Consts.StatValue(a.AttackCur)), g.Max(t => t.Item3)));
                         move |= attDefPairs.Any(t => t.Item1 >= t.Item2);
                     }
+                }
+
+                if (!move && piece.HasBehavior(out IMissileSilo silo))
+                {
+                    //move |= !silo.Producing;
+                    if (!move)
+                        move |= silo.Online && Game.Enemy.VisiblePieces.Any(e =>
+                            e.HasBehavior<IKillable>() && piece.Tile.GetDistance(e.Tile) <= silo.SampleAttack.Range);
                 }
 
                 if (piece is Mech mech)

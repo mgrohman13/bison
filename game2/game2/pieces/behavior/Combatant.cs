@@ -44,19 +44,32 @@ namespace game2.pieces.behavior
 
                 int attDmg = 0, defDmg = 0;
 
-                int rounds = AttCur;
-                for (int a = 0; a < rounds && DoAtt() && attDmg < target.HPCur && defDmg < this.HPCur; a++)
-                //if (a == 0 || Game.Rand.Bool())
-                {
-                    ////Defense defense = Game.Rand.Iterate(target.TotalDefenses.Where(d => !d.Dead)).OrderBy(CombatTypes.CompareDef).First();
-                    //Defense defense = Game.Rand.SelectValue(target.AllDefenses, CombatTypes.GetDefenceChance);
-                    //bool activeDefense = target.HasBehavior<IAttacker>();
+                //old:
+                //int rounds = AttCur;
+                //for (int a = 0; a < rounds && DoAtt() && attDmg < target.HPCur && defDmg < this.HPCur; a++)
+                ////if (a == 0 || Game.Rand.Bool())
+                //{
+                //    ////Defense defense = Game.Rand.Iterate(target.TotalDefenses.Where(d => !d.Dead)).OrderBy(CombatTypes.CompareDef).First();
+                //    //Defense defense = Game.Rand.SelectValue(target.AllDefenses, CombatTypes.GetDefenceChance);
+                //    //bool activeDefense = target.HasBehavior<IAttacker>();
 
-                    if (Game.Rand.Next(AttCur + target.DefCur) < AttCur)
-                        attDmg++;
-                    else
-                        defDmg++;
-                }
+                //    if (Game.Rand.Next(AttCur + target.DefCur) < AttCur)
+                //        attDmg++;
+                //    else
+                //        defDmg++;
+                //}
+
+
+                //different choices:
+                // more random - chance to do 0 total damage, chance to damage both (x^2)
+                // less random - guaranteed 1 damage to one side, never damage both (x^2+x) //commented out
+                bool Rand() => (Game.Rand.Next(AttCur + target.DefCur) < AttCur);
+                int Dmg(int stat) => Game.Rand.RangeInt(0, stat);// Game.Rand.RangeInt(1, stat); 
+                if (Rand())
+                    attDmg = Dmg(AttCur);
+                if (!Rand())
+                    //else   
+                    defDmg = Dmg(DefCur);
 
                 this.Damage(attDmg);//, target);
                 target.Damage(defDmg);//, this);

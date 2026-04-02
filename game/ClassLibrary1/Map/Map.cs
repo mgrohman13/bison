@@ -428,7 +428,7 @@ namespace ClassLibrary1.Map
                 Tile core = Game.Player.Core?.Tile;
                 if (core is not null)
                 {
-                    var dist = _treasures.Concat([new PointD(core.X, core.Y)])
+                    var dist = _treasures.Concat([core.LocationD])
                         .Concat(_caves.Select(c => c.Center))
                         .Concat(_paths.Select(p => p.GetClosestPoint(x, y)))
                         .Select(p => GetDistSqr(p, new(x, y))).Concat(_caves.Select(c => c.ConnectionDistSqr(x, y)))
@@ -446,7 +446,7 @@ namespace ClassLibrary1.Map
                     {
                         Treasure.NewTreasure(tile);
                         if (Game.Rand.Bool())//Consts.TreasureSpacingChance
-                            _treasures.Add(new(tile.X, tile.Y));
+                            _treasures.Add(tile.LocationD);
                     }
                 }
                 else
@@ -543,14 +543,13 @@ namespace ClassLibrary1.Map
 
         internal double GetMinSpawnMove(Tile tile)
         {
-            Cave cave = _caves.OrderBy(c => GetDistSqr(new(tile.X, tile.Y), c.Center)).First();
+            Cave cave = _caves.OrderBy(c => GetDistSqr(tile.LocationD, c.Center)).First();
             return cave.MinSpawnMove;
         }
         internal Tile GetEnemyTile(double enemyMove)
         {
-            var choices = _paths.Concat<IEnemySpawn>(_caves)
-                    .Concat(Game.Enemy.PiecesOfType<EnemyPiece>().Select(p => p.Spawn).Where(s => s is not null))
-                .ToDictionary(k => k, v => v.SpawnChance(Game.Turn, enemyMove));
+            var choices = GetSpawners()
+                .ToDictionary(k => k.Item1, v => v.Item1.SpawnChance(Game.Turn, enemyMove));
             foreach (var choice in choices)
                 Debug.WriteLine($"choice - {choice.Key}: {choice.Value}");
             IEnemySpawn spawn = Game.Rand.SelectValue(choices);
@@ -558,12 +557,9 @@ namespace ClassLibrary1.Map
             Debug.WriteLine($"GetEnemyTile: {spawn}");
             return spawn.SpawnTile(this);
         }
-
         internal IEnemySpawn GetClosestSpawner(Point location)
         {
-            var spawns = _paths.Select(p => new Tuple<IEnemySpawn, PointD>(p, p.ExploredPoint()))
-                .Concat(_caves.Select(c => new Tuple<IEnemySpawn, PointD>(c, c.Center)))
-                .Select(t =>
+            var spawns = GetSpawners().Select(t =>
                 {
                     double xDiff = location.X - t.Item2.X;
                     double yDiff = location.Y - t.Item2.Y;
@@ -572,6 +568,13 @@ namespace ClassLibrary1.Map
                 }).ToDictionary(t => t.Item1, t => t.Item2);
             return Game.Rand.SelectValue(spawns);
         }
+        private IEnumerable<Tuple<IEnemySpawn, PointD>> GetSpawners() =>
+            _paths.Select(p => new Tuple<IEnemySpawn, PointD>(p, p.ExploredPoint()))
+                .Concat(_caves.Select(c => new Tuple<IEnemySpawn, PointD>(c, c.Center)))
+                .Concat(Game.Enemy.PiecesOfType<EnemyPiece>().Select(p =>
+                    new Tuple<IEnemySpawn, PointD>(p.Spawn, p.Tile.LocationD)).Where(t => t.Item1 is not null));
+
+
         private static double GetAngle(PointD point) => GetAngle(point.X, point.Y);
         private static double GetAngle(double x, double y) => Math.Atan2(y, x);
         private static PointD GetPoint(double angle, double dist)

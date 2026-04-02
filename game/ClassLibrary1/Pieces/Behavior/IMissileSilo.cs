@@ -15,7 +15,7 @@ namespace ClassLibrary1.Pieces.Behavior
                 return sample;
             }
         }
-        public bool Producing { get; }
+        public bool Producing { get; set; }
         public int NumMissiles { get; }
 
         public bool Online => NumMissiles > 0;

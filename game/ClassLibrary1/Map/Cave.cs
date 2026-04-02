@@ -146,7 +146,7 @@ namespace ClassLibrary1.Map
                 double deviation = deviationMult * (inPath ? PathLength / 6.5 : Consts.CaveSize);
                 Tile tile = map.SpawnTile(spawnCenter, deviation, isEnemy);
                 if (!isEnemy)
-                    Debug.WriteLine($"Cave resource ({inPath}): {tile} ({Math.Sqrt(GetDistSqr(spawnCenter, new(tile.X, tile.Y)))})");
+                    Debug.WriteLine($"Cave resource ({inPath}): {tile} ({Math.Sqrt(GetDistSqr(spawnCenter, tile.LocationD))})");
                 return tile;
             }
 

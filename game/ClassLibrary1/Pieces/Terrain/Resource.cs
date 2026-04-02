@@ -8,7 +8,7 @@ namespace ClassLibrary1.Pieces.Terrain
 {
     [Serializable]
     [DataContract(IsReference = true)]
-    public abstract class Resource : Piece
+    public abstract class Resource : Piece, IIncome
     {
         public readonly double Sustain;
 
@@ -48,7 +48,7 @@ namespace ClassLibrary1.Pieces.Terrain
             this.Sustain = sustain;
         }
 
-        public void GenerateResources(out double energyInc, out double massInc, out double researchInc) =>
+        public void GetIncome(out double energyInc, out double massInc, out double researchInc) =>
             GenerateResources(Value, out energyInc, out massInc, out researchInc); //not using valueMult - values will increase when building extractor
         internal void GenerateResources(Extractor extractor, double valueMult, out double energyInc, out double massInc, out double researchInc) =>
             GenerateResources(GetValue(extractor, valueMult), out energyInc, out massInc, out researchInc);

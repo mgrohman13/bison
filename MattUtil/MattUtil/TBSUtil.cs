@@ -5,6 +5,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Numerics;
 using System.Runtime.Serialization.Formatters.Binary;
+//using System.Runtime.Serialization.Formatters.Binary;
 
 namespace MattUtil
 {
@@ -102,29 +103,34 @@ namespace MattUtil
             return min;
         }
 
-        public static void SaveGame(object game, string path, string fileName)
+        public static void SaveGame<T>(T game, string path, string fileName)
         {
             if (!Directory.Exists(path))
                 Directory.CreateDirectory(path);
             SaveGame(game, path.TrimEnd('/', '\\') + "/" + fileName);
         }
 
-        public static void SaveGame(object game, string filePath)
+        public static void SaveGame<T>(T game, string filePath)
         {
-            using (MemoryStream memory = new MemoryStream())
-            {
-                new BinaryFormatter().Serialize(memory, game);
-                using (Stream file = new FileStream(filePath, FileMode.Create))
-                using (Stream compress = new DeflateStream(file, CompressionMode.Compress))
-                    memory.WriteTo(compress);
-            }
+            using MemoryStream memory = new();
+            Serializer<T>().Serialize(memory, game); //WriteObject
+            using Stream file = new FileStream(filePath, FileMode.Create);
+            using Stream compress = new DeflateStream(file, CompressionMode.Compress);
+            memory.WriteTo(compress);
         }
-
         public static T LoadGame<T>(string filePath)
         {
-            using (Stream file = new FileStream(filePath, FileMode.Open))
-            using (Stream decompress = new DeflateStream(file, CompressionMode.Decompress))
-                return (T)new BinaryFormatter().Deserialize(decompress);
+            using Stream file = new FileStream(filePath, FileMode.Open);
+            using Stream decompress = new DeflateStream(file, CompressionMode.Decompress);
+            return (T)Serializer<T>().Deserialize(decompress); //ReadObject
+        }
+        private static BinaryFormatter Serializer<T>() //XmlObjectSerializer
+        {
+            return new BinaryFormatter();
+            //new DataContractSerializer(typeof(T));
+            //var s = new DataContractSerializer(typeof(T), (IEnumerable<Type>)null, int.MaxValue, ignoreExtensionDataObject: false, preserveObjectReferences: true, null);
+            ////s.PreserveObjectReferences = true;
+            //return s;
         }
 
         //A* Pathfinding Algorithm

@@ -227,6 +227,7 @@ namespace ClassLibrary1
 
             Portal portal = Portal.NewPortal(tile, difficulty, exit, out double cost);
             AddDebt(cost);
+            Loan(Game.Rand.GaussianOE(cost * 1.3, .26, .13));
             this._portalSpawn -= GetPct(exit);
             return true;
         }
@@ -250,9 +251,7 @@ namespace ClassLibrary1
                 inc = amt;
             else if (!hive.Dead)
                 inc = amt / PiecesOfType<Hive>().Average(h =>
-                    h.GetBehavior<IKillable>().AllDefenses.Sum((Func<Defense, int>)(d => d.DefenseMax)));
-            else
-                ;
+                    h.GetBehavior<IKillable>().AllDefenses.Sum((Func<Defense, int>)(d => d.DefenseMax))); 
 
             if (inc > 0)
             {

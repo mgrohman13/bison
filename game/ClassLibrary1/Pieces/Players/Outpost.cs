@@ -14,6 +14,8 @@ namespace ClassLibrary1.Pieces.Players
     [DataContract(IsReference = true)]
     public class Outpost : FoundationPiece, IRepairable
     {
+        public static double Resilience => Values.Resilience;
+
         private readonly double _rounding;
 
         private Outpost(Tile tile, Values values)

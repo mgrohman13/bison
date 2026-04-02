@@ -130,7 +130,7 @@ namespace ClassLibrary1
         public const double MechCostMult = .13;
         public const double EnergyMassRatio = 1.69;
 
-        public const double MissileCostMult = 1 / 2.1;
+        public const double MissileCostMult = 1 / 6.5;
         public const double MissileEnergyCostRatio = 1 / 2.1;
         public static readonly double MissileAttImmobileMult = 1 / Math.Sqrt(5);
 

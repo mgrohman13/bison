@@ -165,6 +165,9 @@ namespace WinFormsApp1
                     lblInf5.Show();
                     lbl5.Text = "Missiles";
                     lblInf5.Text = silo.NumMissiles.ToString();
+
+                    cbxMissile.Show();
+                    cbxMissile.Checked = silo.Producing;
                 }
                 else if (Selected.Piece.HasBehavior(out IMovable movable))
                 {
@@ -268,12 +271,8 @@ namespace WinFormsApp1
                         lblInf2.Text = string.Format("{0} : {1}", (energy), (mass));
                     }
 
-                    double energyInc, massInc, researchInc;
-                    energyInc = massInc = researchInc = 0;
-                    if (extractor == null)
-                        resource.GenerateResources(out energyInc, out massInc, out researchInc);
-                    else
-                        extractor.GetIncome(ref energyInc, ref massInc, ref researchInc);
+                    IIncome income = ((IIncome)extractor ?? resource);
+                    income.GetIncome(out double energyInc, out double massInc, out double researchInc);
 
                     if (energyInc != 0)
                     {
@@ -326,6 +325,7 @@ namespace WinFormsApp1
                     dgvAttacks.Columns["Online"].Visible = attacks.Any(a => !a.CanAttack());
                     dgvAttacks.Columns["Type"].Visible = attacks.Any(a => a.Type != AttackType.Kinetic);
                     dgvAttacks.Columns["Range"].Visible = attacks.Any(a => a.Range > Attack.MELEE_RANGE);
+                    dgvAttacks.Columns["Reload"].Visible = silo is null;
 
                     int labelsY = this.Controls.OfType<Label>().Where(lbl => lbl.Visible && lbl.Parent != this.panel1).Max(lbl => lbl.Location.Y + lbl.Height);
                     dgvAttacks.MaximumSize = new Size(this.Width, this.panel1.Location.Y - labelsY);
@@ -394,6 +394,7 @@ namespace WinFormsApp1
                 else
                     label.Hide();
             lblTurn.Show();
+            cbxMissile.Hide();
         }
 
         #region Log
@@ -787,6 +788,15 @@ namespace WinFormsApp1
         private void BtnInfo_Click(object sender, EventArgs e)
         {
             Details.ShowForm();
+        }
+
+        private void cbxMissile_CheckedChanged(object sender, EventArgs e)
+        {
+            if (Selected.Piece.HasBehavior(out IMissileSilo silo))
+            {
+                silo.Producing = ((CheckBox)sender).Checked;
+                Program.RefreshChanged();
+            }
         }
     }
 }

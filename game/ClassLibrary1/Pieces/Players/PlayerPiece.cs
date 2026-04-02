@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ClassLibrary1.Pieces.Terrain;
+using System;
 using System.Runtime.Serialization;
 using Tile = ClassLibrary1.Map.Map.Tile;
 
@@ -6,7 +7,7 @@ namespace ClassLibrary1.Pieces.Players
 {
     [Serializable]
     [DataContract(IsReference = true)]
-    public abstract class PlayerPiece : Piece
+    public abstract class PlayerPiece : Piece, IIncome
     {
         private double _vision;
         public double Vision
@@ -52,5 +53,11 @@ namespace ClassLibrary1.Pieces.Players
         public bool IsRepairing() => HasBehavior(out Behavior.Combat.IKillable killable) && killable.IsRepairing();
 
         internal abstract void OnResearch(Research.Type type);
+
+        void IIncome.GetIncome(out double energyInc, out double massInc, out double researchInc)
+        {
+            energyInc = massInc = researchInc = 0;
+            GetIncome(ref energyInc, ref massInc, ref researchInc);
+        }
     }
 }

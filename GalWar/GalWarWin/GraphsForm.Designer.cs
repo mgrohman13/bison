@@ -20,209 +20,223 @@ namespace GalWarWin
 			base.Dispose(disposing);
 		}
 
-		#region Windows Form Designer generated code
+        #region Windows Form Designer generated code
 
-		/// <summary>
-		/// Required method for Designer support - do not modify
-		/// the contents of this method with the code editor.
-		/// </summary>
-		private void InitializeComponent()
-		{
-            this.label7 = new System.Windows.Forms.Label();
-            this.label1 = new System.Windows.Forms.Label();
-            this.label2 = new System.Windows.Forms.Label();
-            this.label3 = new System.Windows.Forms.Label();
-            this.label4 = new System.Windows.Forms.Label();
-            this.label5 = new System.Windows.Forms.Label();
-            this.label8 = new System.Windows.Forms.Label();
-            this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.chkSmooth = new System.Windows.Forms.CheckBox();
-            this.checkBox1 = new System.Windows.Forms.CheckBox();
-            this.cbxType = new System.Windows.Forms.ComboBox();
-            this.btnDone = new System.Windows.Forms.Button();
-            this.label9 = new System.Windows.Forms.Label();
-            this.groupBox1.SuspendLayout();
-            this.SuspendLayout();
+        /// <summary>
+        /// Required method for Designer support - do not modify
+        /// the contents of this method with the code editor.
+        /// </summary>
+        private void InitializeComponent()
+        {
+            lblPlayer = new Label();
+            lblArmada = new Label();
+            lblIncome = new Label();
+            lblGrowth = new Label();
+            lblPlanets = new Label();
+            lblQuality = new Label();
+            lblPopulation = new Label();
+            groupBox1 = new GroupBox();
+            chkSmooth = new CheckBox();
+            checkBox1 = new CheckBox();
+            cbxType = new ComboBox();
+            btnDone = new Button();
+            lblResearch = new Label();
+            groupBox1.SuspendLayout();
+            SuspendLayout();
             // 
-            // label7
+            // lblPlayer
             // 
-            this.label7.AutoEllipsis = true;
-            this.label7.Location = new System.Drawing.Point(12, 9);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(100, 23);
-            this.label7.TabIndex = 1;
-            this.label7.Text = "Player";
-            this.label7.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            lblPlayer.AutoEllipsis = true;
+            lblPlayer.Location = new Point(20, 17);
+            lblPlayer.Margin = new Padding(5, 0, 5, 0);
+            lblPlayer.Name = "lblPlayer";
+            lblPlayer.Size = new Size(167, 44);
+            lblPlayer.TabIndex = 1;
+            lblPlayer.Text = "Player";
+            lblPlayer.TextAlign = ContentAlignment.MiddleCenter;
             // 
-            // label1
+            // lblArmada
             // 
-            this.label1.AutoEllipsis = true;
-            this.label1.Location = new System.Drawing.Point(648, 9);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(100, 23);
-            this.label1.TabIndex = 8;
-            this.label1.Text = "Armada";
-            this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            lblArmada.AutoEllipsis = true;
+            lblArmada.Location = new Point(1080, 17);
+            lblArmada.Margin = new Padding(5, 0, 5, 0);
+            lblArmada.Name = "lblArmada";
+            lblArmada.Size = new Size(167, 44);
+            lblArmada.TabIndex = 8;
+            lblArmada.Text = "Armada";
+            lblArmada.TextAlign = ContentAlignment.MiddleCenter;
             // 
-            // label2
+            // lblIncome
             // 
-            this.label2.AutoEllipsis = true;
-            this.label2.Location = new System.Drawing.Point(542, 9);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(100, 23);
-            this.label2.TabIndex = 7;
-            this.label2.Text = "Income";
-            this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            lblIncome.AutoEllipsis = true;
+            lblIncome.Location = new Point(903, 17);
+            lblIncome.Margin = new Padding(5, 0, 5, 0);
+            lblIncome.Name = "lblIncome";
+            lblIncome.Size = new Size(167, 44);
+            lblIncome.TabIndex = 7;
+            lblIncome.Text = "Income";
+            lblIncome.TextAlign = ContentAlignment.MiddleCenter;
             // 
-            // label3
+            // lblGrowth
             // 
-            this.label3.AutoEllipsis = true;
-            this.label3.Location = new System.Drawing.Point(436, 9);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(100, 23);
-            this.label3.TabIndex = 6;
-            this.label3.Text = "Growth";
-            this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            lblGrowth.AutoEllipsis = true;
+            lblGrowth.Location = new Point(727, 17);
+            lblGrowth.Margin = new Padding(5, 0, 5, 0);
+            lblGrowth.Name = "lblGrowth";
+            lblGrowth.Size = new Size(167, 44);
+            lblGrowth.TabIndex = 6;
+            lblGrowth.Text = "Growth";
+            lblGrowth.TextAlign = ContentAlignment.MiddleCenter;
             // 
-            // label4
+            // lblPlanets
             // 
-            this.label4.AutoEllipsis = true;
-            this.label4.Location = new System.Drawing.Point(118, 9);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(100, 23);
-            this.label4.TabIndex = 3;
-            this.label4.Text = "Planets";
-            this.label4.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            lblPlanets.AutoEllipsis = true;
+            lblPlanets.Location = new Point(197, 17);
+            lblPlanets.Margin = new Padding(5, 0, 5, 0);
+            lblPlanets.Name = "lblPlanets";
+            lblPlanets.Size = new Size(167, 44);
+            lblPlanets.TabIndex = 3;
+            lblPlanets.Text = "Planets";
+            lblPlanets.TextAlign = ContentAlignment.MiddleCenter;
             // 
-            // label5
+            // lblQuality
             // 
-            this.label5.AutoEllipsis = true;
-            this.label5.Location = new System.Drawing.Point(224, 9);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(100, 23);
-            this.label5.TabIndex = 4;
-            this.label5.Text = "Quality";
-            this.label5.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            lblQuality.AutoEllipsis = true;
+            lblQuality.Location = new Point(373, 17);
+            lblQuality.Margin = new Padding(5, 0, 5, 0);
+            lblQuality.Name = "lblQuality";
+            lblQuality.Size = new Size(167, 44);
+            lblQuality.TabIndex = 4;
+            lblQuality.Text = "Quality";
+            lblQuality.TextAlign = ContentAlignment.MiddleCenter;
             // 
-            // label8
+            // lblPopulation
             // 
-            this.label8.AutoEllipsis = true;
-            this.label8.Location = new System.Drawing.Point(330, 9);
-            this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(100, 23);
-            this.label8.TabIndex = 5;
-            this.label8.Text = "Population";
-            this.label8.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            lblPopulation.AutoEllipsis = true;
+            lblPopulation.Location = new Point(550, 17);
+            lblPopulation.Margin = new Padding(5, 0, 5, 0);
+            lblPopulation.Name = "lblPopulation";
+            lblPopulation.Size = new Size(167, 44);
+            lblPopulation.TabIndex = 5;
+            lblPopulation.Text = "Population";
+            lblPopulation.TextAlign = ContentAlignment.MiddleCenter;
             // 
             // groupBox1
             // 
-            this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.groupBox1.Controls.Add(this.chkSmooth);
-            this.groupBox1.Controls.Add(this.checkBox1);
-            this.groupBox1.Controls.Add(this.cbxType);
-            this.groupBox1.Controls.Add(this.btnDone);
-            this.groupBox1.Location = new System.Drawing.Point(0, 35);
-            this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(992, 688);
-            this.groupBox1.TabIndex = 0;
-            this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "Graphs";
-            this.groupBox1.Paint += new System.Windows.Forms.PaintEventHandler(this.groupBox1_Paint);
+            groupBox1.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            groupBox1.Controls.Add(chkSmooth);
+            groupBox1.Controls.Add(checkBox1);
+            groupBox1.Controls.Add(cbxType);
+            groupBox1.Controls.Add(btnDone);
+            groupBox1.Location = new Point(0, 67);
+            groupBox1.Margin = new Padding(5, 6, 5, 6);
+            groupBox1.Name = "groupBox1";
+            groupBox1.Padding = new Padding(5, 6, 5, 6);
+            groupBox1.Size = new Size(1653, 1323);
+            groupBox1.TabIndex = 0;
+            groupBox1.TabStop = false;
+            groupBox1.Text = "Graphs";
+            groupBox1.Paint += groupBox1_Paint;
             // 
             // chkSmooth
             // 
-            this.chkSmooth.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.chkSmooth.Location = new System.Drawing.Point(850, 73);
-            this.chkSmooth.Name = "chkSmooth";
-            this.chkSmooth.Size = new System.Drawing.Size(130, 21);
-            this.chkSmooth.TabIndex = 3;
-            this.chkSmooth.Text = "Smooth Lines";
-            this.chkSmooth.UseVisualStyleBackColor = true;
-            this.chkSmooth.Visible = false;
-            this.chkSmooth.CheckedChanged += new System.EventHandler(this.checkBox_CheckedChanged);
+            chkSmooth.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            chkSmooth.Location = new Point(1417, 140);
+            chkSmooth.Margin = new Padding(5, 6, 5, 6);
+            chkSmooth.Name = "chkSmooth";
+            chkSmooth.Size = new Size(217, 40);
+            chkSmooth.TabIndex = 3;
+            chkSmooth.Text = "Smooth Lines";
+            chkSmooth.UseVisualStyleBackColor = true;
+            chkSmooth.Visible = false;
+            chkSmooth.CheckedChanged += checkBox_CheckedChanged;
             // 
             // checkBox1
             // 
-            this.checkBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.checkBox1.Location = new System.Drawing.Point(850, 46);
-            this.checkBox1.Name = "checkBox1";
-            this.checkBox1.Size = new System.Drawing.Size(130, 21);
-            this.checkBox1.TabIndex = 2;
-            this.checkBox1.Text = "Account For Damage";
-            this.checkBox1.UseVisualStyleBackColor = true;
-            this.checkBox1.CheckedChanged += new System.EventHandler(this.checkBox_CheckedChanged);
+            checkBox1.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            checkBox1.Location = new Point(1417, 88);
+            checkBox1.Margin = new Padding(5, 6, 5, 6);
+            checkBox1.Name = "checkBox1";
+            checkBox1.Size = new Size(217, 40);
+            checkBox1.TabIndex = 2;
+            checkBox1.Text = "Account For Damage";
+            checkBox1.UseVisualStyleBackColor = true;
+            checkBox1.CheckedChanged += checkBox_CheckedChanged;
             // 
             // cbxType
             // 
-            this.cbxType.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.cbxType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cbxType.FormattingEnabled = true;
-            this.cbxType.Location = new System.Drawing.Point(850, 19);
-            this.cbxType.Name = "cbxType";
-            this.cbxType.Size = new System.Drawing.Size(130, 21);
-            this.cbxType.TabIndex = 1;
-            this.cbxType.SelectedIndexChanged += new System.EventHandler(this.cbxType_SelectedIndexChanged);
+            cbxType.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            cbxType.DropDownStyle = ComboBoxStyle.DropDownList;
+            cbxType.FormattingEnabled = true;
+            cbxType.Location = new Point(1417, 37);
+            cbxType.Margin = new Padding(5, 6, 5, 6);
+            cbxType.Name = "cbxType";
+            cbxType.Size = new Size(214, 33);
+            cbxType.TabIndex = 1;
+            cbxType.SelectedIndexChanged += cbxType_SelectedIndexChanged;
             // 
             // btnDone
             // 
-            this.btnDone.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnDone.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.btnDone.Location = new System.Drawing.Point(905, 653);
-            this.btnDone.Name = "btnDone";
-            this.btnDone.Size = new System.Drawing.Size(75, 23);
-            this.btnDone.TabIndex = 0;
-            this.btnDone.Text = "Done";
-            this.btnDone.UseVisualStyleBackColor = true;
+            btnDone.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            btnDone.DialogResult = DialogResult.OK;
+            btnDone.Location = new Point(1508, 1256);
+            btnDone.Margin = new Padding(5, 6, 5, 6);
+            btnDone.Name = "btnDone";
+            btnDone.Size = new Size(125, 44);
+            btnDone.TabIndex = 0;
+            btnDone.Text = "Done";
+            btnDone.UseVisualStyleBackColor = true;
             // 
-            // label9
+            // lblResearch
             // 
-            this.label9.AutoEllipsis = true;
-            this.label9.Location = new System.Drawing.Point(754, 9);
-            this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(100, 23);
-            this.label9.TabIndex = 9;
-            this.label9.Text = "Research";
-            this.label9.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            lblResearch.AutoEllipsis = true;
+            lblResearch.Location = new Point(1257, 17);
+            lblResearch.Margin = new Padding(5, 0, 5, 0);
+            lblResearch.Name = "lblResearch";
+            lblResearch.Size = new Size(167, 44);
+            lblResearch.TabIndex = 9;
+            lblResearch.Text = "Research";
+            lblResearch.TextAlign = ContentAlignment.MiddleCenter;
             // 
             // GraphsForm
             // 
-            this.AcceptButton = this.btnDone;
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.CancelButton = this.btnDone;
-            this.ClientSize = new System.Drawing.Size(992, 723);
-            this.Controls.Add(this.label9);
-            this.Controls.Add(this.groupBox1);
-            this.Controls.Add(this.label8);
-            this.Controls.Add(this.label5);
-            this.Controls.Add(this.label4);
-            this.Controls.Add(this.label3);
-            this.Controls.Add(this.label2);
-            this.Controls.Add(this.label1);
-            this.Controls.Add(this.label7);
-            this.Name = "GraphsForm";
-            this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
-            this.SizeChanged += new System.EventHandler(this.GraphsForm_SizeChanged);
-            this.groupBox1.ResumeLayout(false);
-            this.ResumeLayout(false);
+            AcceptButton = btnDone;
+            AutoScaleDimensions = new SizeF(10F, 25F);
+            AutoScaleMode = AutoScaleMode.Font;
+            CancelButton = btnDone;
+            ClientSize = new Size(1653, 1390);
+            Controls.Add(lblResearch);
+            Controls.Add(groupBox1);
+            Controls.Add(lblPopulation);
+            Controls.Add(lblQuality);
+            Controls.Add(lblPlanets);
+            Controls.Add(lblGrowth);
+            Controls.Add(lblIncome);
+            Controls.Add(lblArmada);
+            Controls.Add(lblPlayer);
+            Margin = new Padding(5, 6, 5, 6);
+            Name = "GraphsForm";
+            StartPosition = FormStartPosition.Manual;
+            SizeChanged += GraphsForm_SizeChanged;
+            groupBox1.ResumeLayout(false);
+            ResumeLayout(false);
 
-		}
+        }
 
-		#endregion
+        #endregion
 
-        private System.Windows.Forms.Label label7;
-		private System.Windows.Forms.Label label1;
-		private System.Windows.Forms.Label label2;
-		private System.Windows.Forms.Label label3;
-		private System.Windows.Forms.Label label4;
-		private System.Windows.Forms.Label label5;
-		private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.Label lblPlayer;
+		private System.Windows.Forms.Label lblArmada;
+		private System.Windows.Forms.Label lblIncome;
+		private System.Windows.Forms.Label lblGrowth;
+		private System.Windows.Forms.Label lblPlanets;
+		private System.Windows.Forms.Label lblQuality;
+		private System.Windows.Forms.Label lblPopulation;
 		private System.Windows.Forms.GroupBox groupBox1;
 		private System.Windows.Forms.Button btnDone;
 		private System.Windows.Forms.ComboBox cbxType;
 		private System.Windows.Forms.CheckBox checkBox1;
 		private System.Windows.Forms.CheckBox chkSmooth;
-		private System.Windows.Forms.Label label9;
+		private System.Windows.Forms.Label lblResearch;
 	}
 }

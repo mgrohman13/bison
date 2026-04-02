@@ -1,4 +1,4 @@
-turret mass to expensive early?
+turret mass too expensive early?
 	enable early turrets somehow (orrr push back research?)
 	swap turret/factory mass/energy?
 	both too expensive early???
@@ -11,17 +11,102 @@ AI
 	weight paths taken last turn to tend to keep goin same dir?	
 	better group behavior
 		e.g. all healthy aliens in area of a hive switch to rush at once?
+	retarded vs turrets?
+	need to use portal entrances better, path to them
+	store alien target in fight mode so it doesn't switch back and forth??
+
+wormholes need to be more threatening in general
 
 fix map gen
 	caves too obvious
+	noise drive feature presence/width?
 
 fix core rush angle
 	gives away intent too clearly
 	ugh.. pathing....
-
-does repeating research increment int counter?
  
+calc alien cost correctly?
 
+EXP!
+
+research 
+	does repeating research increment int counter?
+	keep tech research costs more consistent in between appearances (esp when they stick around)
+		dont want everything being super expensive or cheap at once
+			only very occasionally
+			less randomization common to all options?? 
+			high multipliers also add constant amount?
+
+clicking log doesnt select own mechs anymore
+
+outpost->factory loses repair
+	allow self-upgrade back down?
+	factory can also self upgrade to anything?
+	so only turret and generator are dead ends
+
+buff outpost lategame def
+
+fix move left quadrant order
+
+constructor def
+	nerf overall, but increase pow?
+
+hive range upg when shelled??
+
+choose weapon to fire
+	or... limit units to one melee, one ranged
+		if can fire both, fire ranged first?
+
+ensure foundations never placed too close to core
+	and hive?
+core missile silo???
+	makes no sense, impossible to lose core?
+missiles too weak??
+	dont refund full amt??
+	reduce cost instead?
+
+drone/missile costs should use similar rounding/random logic 
+
+info form show missile cost
+	time to fix form....
+
+missile explosive attack
+	need to ensure splash damage on immobile wouldn't be more than direct target
+missile mouseover on target can give you info about hidden adjacent alien
+	usually isn't going to change any values, but what if its on a wormhole and there is a defender out of vision?
+log splash damage
+
+missile take into account overkill somehow?
+	also defensive damage?
+
+missile
+	decrease att
+	only give enemy 91%
+	decrease cost 2x
+
+shrink core and factory repair ranges? outpost?
+
+aliens really should be numbered in order of scouting
+
+nerf high end extractor defense
+	beef up factory, outpost instead?
+
+late game constructor still too OP?
+	inc cost?
+		bundle cost upg with X?? (extractor cost?)
+
+increase PassiveRepairCost?
+
+better/more consistent cur stat handling on upg/replace
+
+speed up game?
+make hives weaker? only kill 2? closer?
+increase enemy exponent?
+decrease resource inc with dist?
+
+enemy trg weight check missiles
+
+boost enemy on hive death as well?
 
 
 Consts.PathWidth	11.944130354249044	double
@@ -31,17 +116,17 @@ use debt instead of negative energy for hive spawns
 unused upkeep on death?
 exploration spawn chance?
 upgrade OP??
-	increase cost based on reasearch diff???
+	increase cost based on research diff???
 	based on time youve had mech??
 biomass/metal ratio - but ambient generator??
 icon for sleep
 trying to sleep when cant moves next anyways
-finish reasearch too fast?
+finish research too fast?
 	add more...
 ambient gen power decreases over time??
 	decrease dependent on total amount used that turn?
 	generators still use shared value, the shared value is decreased
-		applies to furutre generators
+		applies to future generators
 	can be counteracted by research
 	min value = Consts.GeneratorResearchUpk * Consts.MassPerResearchConversion / Consts.BurnMassPerEnergy (5.5901699437494745)
 		some const multiplier? between 1.69 - 5.2
@@ -104,10 +189,10 @@ rethink replace foundation generator meta
 				cheaper will help early turrets be a things
 				cost might need to scale with power like drone
 		decrease foundation occurence? increase turret range??
-expoenential move cost too extreme?
+exponential move cost too extreme?
 	1.3 might be too low though 
 random research costs
-	corrlate somehow? 
+	correlate somehow? 
 	waiting around for same tech to appear cheaper isnt great
 	rethink concept? go to more fixed structure somehow?
 	simple check to ensure *total* research required for same tech is never lower?
@@ -124,7 +209,7 @@ NEW
 	decrease HP when shields,armor?
 	armor + shields less likely
 	attack consistency in single unit?
-		make multpl attacks more interesintg
+		make multiple attacks more interesting
 	mouse move stops scroll
 	show avg damage
 	detailed combat breakdown
@@ -206,7 +291,7 @@ FEATURES
 
 map
 	use deterministic prng (or separate noise func?) to create curves, width changes
-		give terrain features a max range of effectg and use that to generate
+		give terrain features a max range of effect and use that to generate
 		use same noise func, but interp points somehow?
 	better ensuring of path that doesnt rely on spawns?
 		when skinnier, increase mult in mid
@@ -219,7 +304,7 @@ prevent mechs with move being high pct of cost without att/dev/vision...
 
 wormholes
 	reduce max hp with decay, not with hit (like drone)
-	auto reapair?
+	auto repair?
 portal 
 	needed avgs gt,lt should be swapped?
 	start with .5 inc, increase turns
@@ -232,7 +317,7 @@ research
 	require more to finish tree
 
 map
-	convert everthing to lines (actually segments or rays)
+	convert everything to lines (actually segments or rays)
 	paths have 2 parallel rays
 	evaluate calc based on distance from nearest 2 lines
 		set such that paths are filled in the center
@@ -262,7 +347,7 @@ calc generator roi when going turret->gen->turret
 	ensure auto-repair before replace is always efficient	
 decrease hive str??
 combine factory/drone repair upgs?
-	+core?? (rangle only???)
+	+core?? (range only???)
 allow/handle multiple mech upg paths/branches, allow interim upg?
 stop move/att after treasure collect?
 	randomly??
@@ -274,7 +359,7 @@ bold research button when will pop up at turn end
 	other buttons? build/upg?	
 move left for constructor that can be targeted at all?
 	any ibuilder?
-add slight difference to can heal indicater when can move
+add slight difference to can heal indicator when can move
 	3rd option for can heal but not in move list?
 allow sleep to be used for reloading? 
 replace dialog should pop up build form
@@ -297,15 +382,15 @@ treasure placed in hidden areas???
 create log file
 alien late game ways to bust mech packs?
 core repair range shrink over time?
-	need to not be annoying when reapiring on edge...
+	need to not be annoying when repairing on edge...
 BPs get more expensive the more you make??
 	ones you dont make get cheaper over time???
 	how does this work with upgrades?
 
-some upgs dramatically reduce in usefullness late
-	categorize, analyse
+some upgs dramatically reduce in usefulness late
+	categorize, analyze
 	combine some? separate more unlocks/upgs
-targetting constructor over core/extractor when in fight?
+targeting constructor over core/extractor when in fight?
 make sure enemy targeting group properly when can not hit best target, but adjacent 
 save research dialog checkbox settings?
 
@@ -315,7 +400,7 @@ increase extractor defense??
 mass fabricator for foundations, but needs to be disable-able
 
 portal entrance probabilities should be based on str/value
-mulitple enemy groups should be better at jumping into turret range?
+multiple enemy groups should be better at jumping into turret range?
 new high level overall enemy state that changes morale cutoffs?
 	e.g. increased rush mode when portals are placed
 aliens move towards mechs with range on them
@@ -365,7 +450,7 @@ keep cache of target tiles for IMovable, IAttacker at game level
 extended ranges
 	show with enemy attacks? toggle? on selected?
 		
-on game over show visiual distinction for visible tiles
+on game over show visual distinction for visible tiles
 
 pathfinding to portal (and retreat) has issues
 Points/Tiles??
@@ -423,7 +508,7 @@ way to extend turret range in specific direction?
 escape close upg dialog
 preprocess general pathfinding??
 	look up algorithms
-random aliens path differnt directions if possible/available??
+random aliens path different directions if possible/available??
 	esp faster aliens
 	tough to do efficiently
 research popup on turn start too?
@@ -431,7 +516,7 @@ research popup on turn start too?
 	maybe time to eliminate weight for stored research entirely...
 fog of war??
 	might be more annoying than positive for gameplay
-	but, vision should matter somehwat even if not scouting new areas
+	but, vision should matter somewhat even if not scouting new areas
 	maybe very delayed fog of war??
 player pathfinding fallback when no space within initial restricted range
 enemy move calc tile probabilities in parallel
@@ -459,7 +544,7 @@ move letter on mechs up
 show alien numbers on map?
 better drawing when zoomed out
 	popups on mouse over?
-	range lines too thicc?
+	range lines too thick?
 	stop drawing bars in enemy range
 		use colors to show str?
 	blend rectangles?
@@ -488,9 +573,9 @@ walls
 better handling of fractional repair amts 
 research upgs show bonus show exact where can 
 	e.g. core shields	
-	hide upg info for unaquired types
+	hide upg info for unacquired types
 
-should reasearch progress be included in any calcs?
+should research progress be included in any calcs?
 	remove altogether?
 	maybe factor into research mults somehow?
 		included as overage bonus in blueprint research level?
@@ -506,7 +591,7 @@ fix weights
 	normalize coreWeight
 	attPct too high due to inclusion of weight?
 	quit using killweight, avoid using raw stat values
-		bring everything down to an fairly consisten level similar to repair 
+		bring everything down to an fairly consistent level similar to repair 
 		crank up powers, mults at the end
 	OR crank everything up to exp and sqrt end
 	pathWeight maybe looking good rn
@@ -519,7 +604,7 @@ improve getkillweight
 		add another state to attack extractors 
 			weight higher 
 			path to nearest
-				any near defenceless target? so incl constructor, factory
+				any near defenseless target? so incl constructor, factory
 			or have them kill extractors during rush?	
 redo GetKillWeight
 	repair/build numbers??
@@ -550,7 +635,7 @@ auto repair mech add-on
 units that can move on Block terrain?
 limit some upgrades? 
 	move, range, build cost?
-	find otehr ways to counter?
+	find other ways to counter?
 lock extra extractor resources (biomass research, artifact mass) behind research??
 upgs to reduce repair costs? other upkeep??
 multiple turret blueprints like mechs?
@@ -587,7 +672,7 @@ research aliens
 random aliens alien auto repair for increased cost??
 	if we ever take out auto repair in vision range
 Tile should just be a struct...?
-	eqaluity always there, stores no real data, piece looks up in collection 
+	equality always there, stores no real data, piece looks up in collection 
 	no need for a million points?
 dont serialize Noise, save seed/params instead
 TEST_MAP_GEN poorly designed, have to reference it everywhere we use visible 
@@ -597,7 +682,7 @@ tie shield regen to StatValue (so regen more when lower)??
 		reduce with dmg pct?
 	regen rate lowered by hppct/resilience efficiency
 	only regen when not attacked?? regen less?? chance to stop regen?? specific att types??
-		new system use canrecover flag that get changed by diffe evtns? 
+		new system use canrecover flag that get changed by diff evens? 
 explosives 
 	splash damage not tied to initial dmg??
 	does friendly damage?
@@ -608,9 +693,9 @@ make shield regen variable
 hardcoded references to .5, .25 terrain cuttoffs			
 movement - long term
 	start with just inc, lose all at turn end
-	reserach "battery" or "booster" 
+	research "battery" or "booster" 
 		gives a max value to save up to
-		actual limit is always 2x (3x?) max? no seperate variable?
+		actual limit is always 2x (3x?) max? no separate variable?
 show inc/upk breakdown
 	eng break down by att/shield/move/mech/constructor
 	mass break down by building/mech (types??)
@@ -666,7 +751,7 @@ animations
 true fractal noise... build on smaller with larger as map grows?
 	how not retroactively affect explored??
 alien types
-	discover, reasearch?
+	discover, research?
 	weaknesses? learn??
 metagame system pts
 	-1 to play
@@ -702,7 +787,7 @@ fix build/repair/upgrade weirdness?
 minimap
 shroud
 	show last spotted aliens
-varaible scroll speed doesnt quite work
+variable scroll speed doesnt quite work
 game stats
 refactor Consts.MechMassDiv - only apply in one spot?
 make researches with progress less likely to appear?

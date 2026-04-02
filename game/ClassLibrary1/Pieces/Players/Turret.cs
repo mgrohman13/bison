@@ -20,6 +20,7 @@ namespace ClassLibrary1.Pieces.Players
     {
         public const int MAX_ATTACKS = 3;
         public const int MAX_DEFENSES = 3;
+        public static double Resilience => Values.Resilience;
 
         private readonly double _shieldMult, _armorMult, _rounding;
         private readonly double[] _attMult = new double[MAX_ATTACKS];

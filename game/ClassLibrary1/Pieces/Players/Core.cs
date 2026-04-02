@@ -1,5 +1,6 @@
 ﻿using ClassLibrary1.Pieces.Behavior;
 using ClassLibrary1.Pieces.Behavior.Combat;
+using ClassLibrary1.Pieces.Terrain;
 using MattUtil;
 using System;
 using System.Collections.Generic;
@@ -12,7 +13,7 @@ namespace ClassLibrary1.Pieces.Players
 {
     [Serializable]
     [DataContract(IsReference = true)]
-    public class Core : PlayerPiece, IDeserializationCallback//, IKillable.IRepairable
+    public class Core : PlayerPiece, IDeserializationCallback, IIncome
     {
         private double _income = 1, _incomeTrg = 1, _hitsResearchMult = 1;
 

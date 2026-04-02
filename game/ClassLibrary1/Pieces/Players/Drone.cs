@@ -14,6 +14,8 @@ namespace ClassLibrary1.Pieces.Players
     [DataContract(IsReference = true)]
     public class Drone : PlayerPiece, IDeserializationCallback
     {
+        public static double Resilience => Values.Resilience;
+
         private int _turns;
         private readonly int _baseTurns, _baseDef;
         private double _treasure = 1;

@@ -17,6 +17,7 @@ namespace ClassLibrary1.Pieces.Players
             + Consts.MetalExtractorEnergyCost + Consts.ArtifactExtractorEnergyCost
             + (Consts.BiomassExtractorMassCost + Consts.MetalExtractorMassCost
                 + Consts.ArtifactExtractorMassCost) * Consts.EnergyMassRatio) / 3.0;
+        public static double Resilience => Values.Resilience;
 
         public readonly Resource Resource;
 
@@ -113,7 +114,7 @@ namespace ClassLibrary1.Pieces.Players
         }
         private double VanishStr()
         {
-            Resource.GenerateResources(out double energyInc, out double massInc, out double researchInc);
+            Resource.GetIncome(out double energyInc, out double massInc, out double researchInc);
             return Math.Abs(energyInc) + Math.Abs(massInc) + Math.Abs(researchInc);
         }
 
@@ -150,7 +151,7 @@ namespace ClassLibrary1.Pieces.Players
         }
         private bool ShutOff()
         {
-            Resource.GenerateResources(out double energyInc, out _, out _);
+            Resource.GetIncome(out double energyInc, out _, out _);
             return energyInc < 0 && Side.Energy < 0;
         }
 

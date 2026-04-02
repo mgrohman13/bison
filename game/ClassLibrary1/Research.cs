@@ -146,9 +146,7 @@ namespace ClassLibrary1
                     }
                     else
                         ;
-                }
-                else
-                    ;
+                } 
                 if (filtered.Any())
                     types = filtered;
                 else
@@ -163,13 +161,9 @@ namespace ClassLibrary1
                     {
                         double factor = pLimit / (double)p;
                         p = Game.Rand.Round(pLimit * factor * factor);
-                    }
-                    else
-                        ;
+                    } 
                     if (!_choices.TryGetValue(t, out int c))
-                        c = max * 2;
-                    else
-                        ;
+                        c = max * 2; 
                     return 6 * p + c + 1;
                 });
 

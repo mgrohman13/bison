@@ -114,7 +114,7 @@ namespace ClassLibrary1.Pieces.Players
             Consts.StatValue(a.Attack) * CombatTypes.Cost(a.Type);
         private static double MultAttCost(double cost, double researchMult) =>
             cost / researchMult * StatsCostMult;
-        internal static double MissileCost(IAttacker.Values missile, double researchMult) =>
+        internal static double MissileCost(IAttacker.Values missile, double researchMult) =>  
              (MultAttCost(BaseAttCost(missile), researchMult) + 0)
                 * (StatsCostMult + MoveCostAdd * MoveCostMult) * 1 * Consts.MechCostMult;
 

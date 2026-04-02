@@ -24,6 +24,7 @@ namespace ClassLibrary1.Map
             public Piece Piece => Map.GetPiece(Location) ?? Terrain;
             public bool Visible => Map.Visible(Location);
             public Point Location => new(X, Y);
+            public PointD LocationD => new(X, Y);
 
             static Tile()
             {

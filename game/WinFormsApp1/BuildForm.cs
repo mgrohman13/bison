@@ -103,13 +103,13 @@ namespace WinFormsApp1
             if (buildConstructor != null && selected.Piece == null)
             {
                 Constructor.Cost(Program.Game, out int energy, out int mass);
-                BuildRow row = new(buildConstructor, "Constructor", energy, mass);
+                BuildRow row = new(buildConstructor, "Constructor", energy, mass, Constructor.Resilience);
                 rows.Add(row);
             }
             if (buildDrone != null && selected.Piece == null)
             {
                 Drone.Cost(Program.Game, out int energy, out int mass);
-                BuildRow row = new(buildDrone, "Drone", energy, mass);
+                BuildRow row = new(buildDrone, "Drone", energy, mass, Drone.Resilience);
                 rows.Add(row);
             }
             if (buildMech != null && selected.Piece == null)
@@ -119,36 +119,47 @@ namespace WinFormsApp1
             if (buildExtractor != null && selected.Piece is Resource resource)
             {
                 Extractor.Cost(out int energy, out int mass, resource);
-                BuildRow row = new(buildExtractor, "Extractor", energy, mass);
+                BuildRow row = new(buildExtractor, "Extractor", energy, mass, Extractor.Resilience);
                 rows.Add(row);
             }
             Foundation foundation = selected.Piece as Foundation;
             if (buildOutpost != null && foundation != null)
             {
                 Outpost.Cost(Program.Game, out int energy, out int mass);
-                BuildRow row = new(buildOutpost, "Outpost", energy, mass);
+                BuildRow row = new(buildOutpost, "Outpost", energy, mass, Outpost.Resilience);
                 rows.Add(row);
             }
             if (buildFactory != null && foundation != null)
             {
                 Factory.Cost(Program.Game, out int energy, out int mass);
-                BuildRow row = new(buildFactory, "Factory", energy, mass);
+                BuildRow row = new(buildFactory, "Factory", energy, mass, Factory.Resilience);
                 rows.Add(row);
             }
             if (buildTurret != null && foundation != null)
             {
                 Turret.Cost(Program.Game, out int energy, out int mass);
-                BuildRow row = new(buildTurret, "Turret", energy, mass);
+                BuildRow row = new(buildTurret, "Turret", energy, mass, Turret.Resilience);
                 rows.Add(row);
             }
             if (buildGenerator != null && foundation != null)
             {
                 Generator.Cost(Program.Game, out int energy, out int mass);
-                BuildRow row = new(buildGenerator, "Generator", energy, mass);
+                BuildRow row = new(buildGenerator, "Generator", energy, mass, Generator.Resilience);
                 rows.Add(row);
             }
 
             Display();
+
+            if (rows.All(r => r.Blueprint == null))
+            {
+                dataGridView1.Columns["Upgraded"].Visible = false;
+                dataGridView1.Columns["Blueprint"].Visible = false;
+                dataGridView1.Columns["Research"].Visible = false;
+                dataGridView1.Columns["Vision"].Visible = false;
+                dataGridView1.Columns["Movement"].Visible = false;
+                dataGridView1.Columns["Attack"].Visible = false;
+                dataGridView1.Columns["Defense"].Visible = false;
+            }
 
             ShowDialog();
             return result;
@@ -165,7 +176,7 @@ namespace WinFormsApp1
             {
                 buildExtractor.Replace(false, extractor, out int energy, out int mass, out bool couldReplace, out _);
                 if (couldReplace)
-                    rows.Add(new(buildExtractor, "Extractor", energy, mass));
+                    rows.Add(new(buildExtractor, "Extractor", energy, mass, Extractor.Resilience));
             }
             else if (selected.Piece is FoundationPiece foundationPiece)
             {
@@ -173,25 +184,25 @@ namespace WinFormsApp1
                 {
                     buildOutpost.Replace(false, foundationPiece, out int energy, out int mass, out bool couldReplace, out _);
                     if (couldReplace)
-                        rows.Add(new(buildOutpost, "Outpost", energy, mass));
+                        rows.Add(new(buildOutpost, "Outpost", energy, mass, Outpost.Resilience));
                 }
                 if (builder.HasBehavior<IBuilder.IBuildFactory>(out var buildFactory))
                 {
                     buildFactory.Replace(false, foundationPiece, out int energy, out int mass, out bool couldReplace, out _);
                     if (couldReplace)
-                        rows.Add(new(buildFactory, "Factory", energy, mass));
+                        rows.Add(new(buildFactory, "Factory", energy, mass, Factory.Resilience));
                 }
                 if (builder.HasBehavior<IBuilder.IBuildTurret>(out var buildTurret))
                 {
                     buildTurret.Replace(false, foundationPiece, out int energy, out int mass, out bool couldReplace, out _);
                     if (couldReplace)
-                        rows.Add(new(buildTurret, "Turret", energy, mass));
+                        rows.Add(new(buildTurret, "Turret", energy, mass, Turret.Resilience));
                 }
                 if (builder.HasBehavior<IBuilder.IBuildGenerator>(out var buildGenerator))
                 {
                     buildGenerator.Replace(false, foundationPiece, out int energy, out int mass, out bool couldReplace, out _);
                     if (couldReplace)
-                        rows.Add(new(buildGenerator, "Generator", energy, mass));
+                        rows.Add(new(buildGenerator, "Generator", energy, mass, Generator.Resilience));
                 }
             }
 
@@ -238,10 +249,15 @@ namespace WinFormsApp1
             {
                 dataGridView1.DataSource = rows;
 
+                dataGridView1.Columns["Blueprint"].Visible = true;
+                dataGridView1.Columns["Research"].Visible = true;
+                dataGridView1.Columns["Vision"].Visible = true;
+                dataGridView1.Columns["Movement"].Visible = true;
+                dataGridView1.Columns["Attack"].Visible = true;
+                dataGridView1.Columns["Defense"].Visible = true;
                 dataGridView1.Columns["Name"].Visible = true;
-                dataGridView1.Columns["Upgraded"].Visible = true;
-                dataGridView1.Columns["Build"].Visible = true;
                 dataGridView1.Columns["Notify"].Visible = true;
+                dataGridView1.Columns["Build"].Visible = true;
 
                 dataGridView1.Columns["Upgraded"].Visible = rows.Any(r => r.Upgraded != null);
                 dataGridView1.Columns["Resilience"].Visible = rows.Count > 1;
@@ -329,8 +345,14 @@ namespace WinFormsApp1
             }
         }
 
-        public class BuildRow(IBuilder builder, string name, double energy, double mass)
+        public class BuildRow(IBuilder builder, string name, double energy, double mass, double resilience)
         {
+            public BuildRow(IBuilder builder, string name, double energy, double mass, MechBlueprint blueprint)
+                : this(builder, name, energy, mass, blueprint.Resilience)
+            {
+                this.Blueprint = blueprint;
+            }
+
             public static DataGridView DataGridView1 { private get; set; }
 
             public IBuilder Builder { get; } = builder;
@@ -364,7 +386,7 @@ namespace WinFormsApp1
             public MechBlueprint Blueprint { get; }
             public MechBlueprint Upgraded => Blueprint?.UpgradeFrom;
             public int? Research => Blueprint?.ResearchLevel;
-            public double? Resilience => Blueprint?.Resilience;
+            public double Resilience => resilience;
             public string Vision => Info.FormatDown(Blueprint?.Vision);
             public string Movement => Blueprint == null ? null : string.Format("{1} / {2} +{0:0.0}",
                 Blueprint.Movable.MoveInc, Blueprint.Movable.MoveMax, Blueprint.Movable.MoveLimit);
@@ -392,12 +414,6 @@ namespace WinFormsApp1
                 if (data.All("0".Equals))
                     return "0";
                 return string.Join(" , ", data);
-            }
-
-            public BuildRow(IBuilder builder, string name, double energy, double mass, MechBlueprint blueprint)
-                : this(builder, name, energy, mass)
-            {
-                this.Blueprint = blueprint;
             }
         }
     }

@@ -65,7 +65,7 @@ namespace ClassLibrary1.Pieces.Enemies
         }
 
         internal override double Cost => _energy
-            * Research.GetResearchMult(_research) / Research.GetResearchMult(Game.Enemy.Research.GetBlueprintLevel());
+            * Research.GetResearchMult(_research) / Research.GetResearchMult(Game.Enemy.Research.GetBlueprintLevel()); //Math.Sqrt()
 
         public override void OnDeserialization(object sender)
         {
@@ -107,14 +107,14 @@ namespace ClassLibrary1.Pieces.Enemies
             offset += ((IRepairable)this).RepairCost / Consts.RepairCost;
             double pct = offset / (cost + offset);
 
-            pct = Math.Pow(pct, Math.Sqrt(EventDistMult(enemyPiece, 1)));
+            pct = Math.Pow(pct, Math.Sqrt(EventDistMult(enemyPiece.Tile, 1)));
 
             this._morale *= Game.Rand.Weighted(pct);
         }
-        internal void MissileFired(Piece piece, double mult)
+        internal void MissileFired(Tile tile, double mult)
         {
             double pct = DefPct();
-            double dist = EventDistMult(piece, Consts.CaveSize);
+            double dist = EventDistMult(tile, Consts.CaveSize);
 
             mult--;
             mult *= pct * pct * dist;
@@ -123,11 +123,11 @@ namespace ClassLibrary1.Pieces.Enemies
             mult++;
 
             this._morale = 1 - (1 - this._morale) / mult;
-            if (Game.Rand.Bool(1 - 1 / mult) && MoraleCheck(.5 / mult, true))
+            if (_state != AIState.Heal && Game.Rand.Bool(1 - 1 / mult) && MoraleCheck(.5 / mult, true))
                 _state = AIState.Rush;
         }
-        private double EventDistMult(Piece piece, double offset) =>
-            Consts.CaveSize / (Tile.GetDistance(piece.Tile) + offset);
+        private double EventDistMult(Tile tile, double offset) =>
+            Consts.CaveSize / (Tile.GetDistance(tile) + offset);
 
         internal override AIState TurnState(double difficulty, bool clearPaths, Dictionary<Tile, double> playerAttacks, HashSet<Tile> moveTiles, HashSet<IKillable> killables,
             out List<Point> path)

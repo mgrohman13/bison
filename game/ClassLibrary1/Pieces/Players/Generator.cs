@@ -14,6 +14,8 @@ namespace ClassLibrary1.Pieces.Players
     [DataContract(IsReference = true)]
     public class Generator : FoundationPiece, IKillable.IRepairable
     {
+        public static double Resilience => Values.Resilience;
+
         private readonly double _rounding;//_mult
 
         private Generator(Tile tile, Values values)

@@ -15,6 +15,8 @@ namespace ClassLibrary1.Pieces.Players
     [DataContract(IsReference = true)]
     public class Factory : FoundationPiece, IRepairable
     {
+        public static double Resilience => Values.Resilience;
+
         private readonly double _rangeMult, _rounding;
 
         private Factory(Tile tile, Values values)

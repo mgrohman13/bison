@@ -103,7 +103,8 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
 
         internal bool Missile(IKillable target, double attMult)
         {
-            if (Piece.HasBehavior<IMissileSilo>())
+            if (Piece.HasBehavior<IMissileSilo>() && target != null && target.Piece.Side != this.Piece.Side
+                && target.HasBehavior(out IKillable killable) && !killable.Dead)
             {
                 double att = AttackCur * attMult;
                 _attackCur = Game.Rand.GaussianCappedInt(att, 1 / att, 1);
@@ -141,14 +142,11 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
                         {
                             defense.DoDamage(this);
                         }
-                        else
+                        else if (activeDefense)
                         {
-                            if (activeDefense)
-                            {
-                                _attackCur--;
-                                if (Game.Rand.Bool())
-                                    rounds--;
-                            }
+                            _attackCur--;
+                            if (Game.Rand.Bool())
+                                rounds--;
                         }
                     }
 
