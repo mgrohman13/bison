@@ -2,7 +2,6 @@
 using ClassLibrary1.Pieces.Enemies;
 using ClassLibrary1.Pieces.Players;
 using System;
-using System.Collections.Generic;
 using System.Runtime.Serialization;
 using static ClassLibrary1.Pieces.Behavior.Combat.CombatTypes;
 using static ClassLibrary1.ResearchUpgValues;
@@ -19,7 +18,6 @@ namespace ClassLibrary1.Pieces.Behavior
         public Piece Piece => _piece;
 
         public IAttacker.Values Attack => GetValues().Attack;
-        //TODO
         public bool Producing
         {
             get => _producing;
@@ -49,85 +47,66 @@ namespace ClassLibrary1.Pieces.Behavior
             return Piece.Game.Player.GetUpgradeValues<Values>();
         }
 
-        //TODO
-        public double GetAttack(IKillable killable)
-        {
-            int att = GetValues().Attack.Attack;
+        public double GetAttack(IKillable killable) => Attack.Attack * GetAttackMult(killable);
 
-            double totalAtt = 0, totalWeight = 0;
-
-            var defenders = GetDefenders(killable);
-            if (defenders.Count > 1)
-                ;
-            foreach (var pair in defenders)
-            {
-                totalAtt += att * GetAttackMult(killable) * pair.Value;
-                totalWeight += pair.Value;
-            }
-
-            return totalAtt / totalWeight;
-        }
-
-        //TODO
         public bool Fire(IKillable killable)
         {
             bool fired = false;
 
             if (((IMissileSilo)this).Online)
             {
-                //no range or CanAttack checks
-                var defenders = GetDefenders(killable);
-                if (defenders.Count > 0)
+                EnemyPiece enemy = killable.Piece as EnemyPiece;
+                if (enemy is not null)
                 {
-                    killable = Game.Rand.SelectValue(defenders);
-                    EnemyPiece enemy = killable.Piece as EnemyPiece;
-                    if (enemy is not null)
+                    double energy = enemy.Cost * Consts.MissileRefundPct;
+                    double hitPct = killable.CurDefenseValue / killable.MaxDefenseValue;
+
+                    Tile[] tiles = [this.Piece.Tile, enemy.Tile];
+
+                    double attMult = GetAttackMult(killable);
+                    double a = Attack.Attack * attMult;
+                    int att = Game.Rand.GaussianCappedInt(a, 1 / a, 1);
+                    Attack attack = new(Piece, new(Attack.Type, att, Attack.Range));
+                    fired = attack.Missile(killable);
+                    if (fired)
                     {
-                        double energy = enemy.Cost;
-                        double hitPct = killable.CurDefenseValue / killable.MaxDefenseValue;
+                        _numMissiles--;
 
-                        Tile[] tiles = [this.Piece.Tile, enemy.Tile];
+                        hitPct -= killable.CurDefenseValue / killable.MaxDefenseValue;
+                        energy *= hitPct;
 
-                        Attack attack = new(Piece, Attack);
-                        fired = attack.Missile(killable, GetAttackMult(killable));
-                        if (fired)
-                        {
-                            _numMissiles--;
+                        Values values = GetValues();
+                        double attLoss = Consts.StatValue(attack.AttackMax);
+                        attLoss = (attLoss - Consts.StatValue(attack.AttackCur)) / attLoss;
+                        attLoss *= values.Energy + values.Mass * Consts.EnergyMassRatio;
+                        energy += attLoss * attMult;
 
-                            hitPct -= killable.CurDefenseValue / killable.MaxDefenseValue;
-                            energy *= hitPct;
-                            Piece.Game.Enemy.AddEnergy(energy); // full amt???
+                        Piece.Game.Enemy.AddEnergy(energy);
 
-                            double income = Piece.Game.Enemy.IncomeReference();
-                            double mult = (energy + income) / income;
+                        double income = Piece.Game.Enemy.IncomeReference();
+                        double mult = (energy + income) / income;
 
-                            double spawnerMult = Math.Sqrt(mult);
-                            foreach (Tile tile in tiles)
-                                Piece.Game.Map.GetClosestSpawner(tile.Location).Spawner.Mult(Game.Rand.Range(1, spawnerMult));
+                        double spawnerMult = Math.Sqrt(mult);
+                        foreach (Tile tile in tiles)
+                            Piece.Game.Map.GetClosestSpawner(tile.Location).Spawner.Mult(Game.Rand.Range(1, spawnerMult));
 
-                            mult *= mult;
-                            foreach (Alien a in Game.Rand.Iterate(Piece.Game.Enemy.PiecesOfType<Alien>()))
-                                if (a != enemy)
-                                {
-                                    foreach (Tile tile in tiles)
-                                        a.MissileFired(tile, Game.Rand.Range(1, mult));
-                                }
-                        }
-                        else
-                            ;
+                        mult *= mult;
+                        foreach (Alien alien in Game.Rand.Iterate(Piece.Game.Enemy.PiecesOfType<Alien>()))
+                            if (alien != enemy)
+                            {
+                                foreach (Tile tile in tiles)
+                                    alien.MissileFired(tile, Game.Rand.Range(1, mult));
+                            }
                     }
                     else
                         ;
                 }
                 else
                     ;
-            } 
+            }
 
             return fired;
         }
-        private Dictionary<IKillable, int> GetDefenders(IKillable killable) =>
-            Combat.Attack.GetDefenders(Piece.Side, killable.Piece);
-
         private double GetAttackMult(IKillable killable)
         {
             double mult;
@@ -171,22 +150,19 @@ namespace ClassLibrary1.Pieces.Behavior
         [DataContract(IsReference = true)]
         private class Values : IUpgradeValues
         {
-            private IAttacker.Values attack;
-            private double costMult, attResearchMult;
-            private int energy, mass;
+            private double _costMult, _range, _rangeMult = 1;
+            private int _energy, _mass, _att;
 
             public Values()
             {
-                attack = new(AttackType.Kinetic, 1, Combat.Attack.MELEE_RANGE, 1);
-
                 UpgradeMissileAttack(1);
                 UpgradeMissileRange(1);
                 UpgradeMissileCost(1);
             }
 
-            public IAttacker.Values Attack => attack;
-            public int Energy => energy;
-            public int Mass => mass;
+            public IAttacker.Values Attack => new(AttackType.Kinetic, _att, _range, 1);
+            public int Energy => _energy;
+            public int Mass => _mass;
 
             public void Upgrade(Research.Type type, double researchMult)
             {
@@ -200,33 +176,35 @@ namespace ClassLibrary1.Pieces.Behavior
             private void UpgradeMissileAttack(double researchMult)
             {
                 double attAvg = Calc(UpgType.MissileAttack, researchMult);
-                int att = Game.Rand.Round(attAvg);
-                attack = new(attack.Type, att, attack.Range, 1);
-                attResearchMult = researchMult;
-                SetCost();
+                this._att = Game.Rand.Round(attAvg);
+
+                this._range /= _rangeMult;
+                this._rangeMult = Math.Sqrt(Consts.StatValue(attAvg) / Consts.StatValue(_att));
+                this._range *= _rangeMult;
+
+                SetCost(researchMult);
             }
             private void UpgradeMissileRange(double researchMult)
             {
-                double range = Calc(UpgType.MissileRange, researchMult);
-                attack = new(attack.Type, attack.Attack, range, 1);
-                SetCost();
+                this._range = Calc(UpgType.MissileRange, researchMult) * _rangeMult;
+                SetCost(researchMult);
             }
             private void UpgradeMissileCost(double researchMult)
             {
-                costMult = Calc(UpgType.MissileCost, researchMult);
-                SetCost();
+                this._costMult = Calc(UpgType.MissileCost, researchMult);
+                SetCost(researchMult);
             }
-            private void SetCost()
+            private void SetCost(double researchMult)
             {
-                double cost = MechBlueprint.MissileCost(attack, attResearchMult);
-                double rangeMult = Math.Sqrt(attack.Range / START_RANGE);
-                cost *= rangeMult * costMult * Consts.MissileCostMult;
+                double cost = MechBlueprint.MissileCost(Attack, researchMult);
+                double rangeMult = Math.Sqrt(_range / START_RANGE);
+                cost *= rangeMult * _costMult * Consts.MissileCostMult;
 
                 double costE = cost * Consts.MissileEnergyCostRatio;
-                energy = Game.Rand.GaussianCappedInt(costE, 1 / costE);
+                this._energy = Game.Rand.GaussianCappedInt(costE, 1 / costE);
 
-                double costM = (cost - energy) / Consts.EnergyMassRatio;
-                mass = Game.Rand.GaussianCappedInt(costM, 1 / costM);
+                double costM = (cost - _energy) / Consts.EnergyMassRatio;
+                this._mass = Game.Rand.GaussianCappedInt(costM, 1 / costM);
             }
         }
     }

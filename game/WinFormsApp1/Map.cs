@@ -150,11 +150,11 @@ namespace WinFormsApp1
                                     mousePath = p;
                             }
 
-                    ShowMouseInfo();
                     //if (invalidate || InRange())
                     if (!timer.Enabled)
                         this.Invalidate();
                 }
+                ShowMouseInfo();
             }
         }
 
@@ -797,7 +797,8 @@ namespace WinFormsApp1
             foreach (var l in lines)
                 foreach (var t in l.Value)
                     e.Graphics.DrawLine(l.Key, t.Item1.X, t.Item1.Y, t.Item2.X, t.Item2.Y);
-            e.Graphics.DrawRectangles(Pens.Yellow, rectsAlt.ToArray());
+            if (rectsAlt.Count > 0)
+                e.Graphics.DrawRectangles(Pens.Yellow, rectsAlt.ToArray());
             if (SelTile != null)
             {
                 using Pen sel = new(Color.Black, penSize + 2);
@@ -1364,7 +1365,7 @@ namespace WinFormsApp1
         bool shift = false;
         public void Map_KeyDown(object sender, KeyEventArgs e)
         {
-            Debug.WriteLine("Map_KeyDown");
+            //Debug.WriteLine("Map_KeyDown");
 
             shift = false;
             if (e.Shift)
@@ -1383,14 +1384,14 @@ namespace WinFormsApp1
             if (scrollDown || scrollLeft || scrollUp || scrollRight)
                 timer.Start();
 
-            Debug.WriteLine(scrollDown || scrollLeft || scrollUp || scrollRight);
-            Debug.WriteLine(timer.Enabled);
+            //Debug.WriteLine(scrollDown || scrollLeft || scrollUp || scrollRight);
+            //Debug.WriteLine(timer.Enabled);
         }
 
         public void Map_KeyUp(object sender, KeyEventArgs e)
         {
-            Debug.WriteLine("Map_KeyUp");
-            Debug.WriteLine(timer.Enabled);
+            //Debug.WriteLine("Map_KeyUp");
+            //Debug.WriteLine(timer.Enabled);
 
             if (shift)
             {
@@ -1435,8 +1436,7 @@ namespace WinFormsApp1
 
             timer.Interval = Math.Max(1, Game.Rand.Round(scrollTime - paintTime));
 
-            Debug.WriteLine("Timer_Tick");
-            Debug.WriteLine(timer.Interval);
+            Debug.WriteLine("timer.Interval " + timer.Interval);
         }
         public void Map_MouseWheel(object sender, MouseEventArgs e)
         {

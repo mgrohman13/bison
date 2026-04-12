@@ -148,7 +148,7 @@ namespace ClassLibrary1.Map
                 Piece piece = GetTile(p).Piece;
                 if (piece is Terrain)
                 {
-                    if (piece.Tile.Visible)
+                    if (!Game.TEST_MAP_GEN.HasValue && piece.Tile.Visible)
                         throw new Exception();
                 }
                 else if (piece != null && !piece.IsPlayer)

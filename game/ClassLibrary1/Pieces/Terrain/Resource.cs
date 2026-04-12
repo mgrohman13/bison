@@ -24,21 +24,23 @@ namespace ClassLibrary1.Pieces.Terrain
             : base(null, tile)
         {
             double distMult = Math.Pow((tile.GetDistance(0, 0) + Consts.ResourceDistAdd) / Consts.ResourceDistDiv, Consts.ResourceDistPow);
+            while (distMult > 1 && Game.Rand.Bool())
+                distMult = Math.Sqrt(distMult);
             if (limit)
                 distMult = Math.Sqrt(distMult);
-            double oeDiv = limit ? Math.Sqrt(baseValue) : 1;
 
+            double oeDiv = limit ? Math.Sqrt(baseValue) : 1;
             baseValue *= distMult;
             double value = Game.Rand.GaussianOE(baseValue, Consts.ResourceDev, Consts.ResourceOE / oeDiv, 1.3);
 
             sustainMult *= Math.Pow(baseValue / value, Consts.ResourceSustainValuePow);
             double sustain = Game.Rand.GaussianOE(sustainMult, Consts.ResourceDev, Consts.ResourceOE, .05);
-            if (Game.Rand.Bool(.26 * sustain / (sustain + 1)))
+            if (Game.Rand.Bool(.91 * sustain / (sustain + 1)))
             {
                 double mult = Game.Rand.Next(sustain > 1 ? 2 : 3) == 0 ? 10 : 20;
                 sustain = Game.Rand.Round(sustain * mult) / mult;
                 const double offset = .01;
-                sustain += Game.Rand.GaussianCapped(offset, 1 / 3.0, offset / 2.0) - offset;
+                sustain += Game.Rand.Range(1.0, 3.0) * offset / 2.0 - offset;
             }
 
             this._energyMult = Game.Rand.GaussianOE(1, .065, .021);

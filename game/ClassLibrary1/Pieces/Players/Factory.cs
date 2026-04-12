@@ -3,6 +3,7 @@ using ClassLibrary1.Pieces.Behavior.Combat;
 using ClassLibrary1.Pieces.Terrain;
 using MattUtil;
 using System;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 using DefenseType = ClassLibrary1.Pieces.Behavior.Combat.CombatTypes.DefenseType;
 using IRepairable = ClassLibrary1.Pieces.Behavior.Combat.IKillable.IRepairable;
@@ -25,7 +26,7 @@ namespace ClassLibrary1.Pieces.Players
             this._rangeMult = Game.Rand.GaussianOE(values.BuilderRange, .169, .13, 1) / values.BuilderRange;
             this._rounding = Game.Rand.NextDouble();
 
-            SetBehavior(new Killable(this, values.Killable, Values.Resilience));
+            SetBehavior(new Killable(this, values.GetKillable(Game, _rounding), Values.Resilience));
             Unlock();
         }
 
@@ -51,7 +52,7 @@ namespace ClassLibrary1.Pieces.Players
             Values values = GetValues(Game);
 
             this.Vision = values.Vision;
-            GetBehavior<IKillable>().Upgrade([values.Killable], Values.Resilience);
+            GetBehavior<IKillable>().Upgrade(values.GetKillable(Game, _rounding), Values.Resilience);
             if (HasBehavior(out IRepair repair))
                 repair.Upgrade(values.GetRepair(Game, _rangeMult, _rounding));
             Builder.UpgradeAll(this, values.GetRepair(Game, _rangeMult, _rounding).Builder);
@@ -60,14 +61,18 @@ namespace ClassLibrary1.Pieces.Players
         {
             Research research = Game.Player.Research;
             Values values = GetValues(Game);
-            if (!HasBehavior<IBuilder.IBuildMech>() && research.HasType(Research.Type.Mech))
-                SetBehavior(new Builder.BuildMech(this, values.GetRepair(Game, _rangeMult, _rounding).Builder));
+
             if (!HasBehavior<IRepair>() && research.HasType(Research.Type.FactoryRepair))
                 SetBehavior(new Repair(this, values.GetRepair(Game, _rangeMult, _rounding)));
-            if (!HasBehavior<IBuilder.IBuildConstructor>() && research.HasType(Research.Type.FactoryConstructor))
-                SetBehavior(new Builder.BuildConstructor(this, values.GetRepair(Game, _rangeMult, _rounding).Builder));
             if (!HasBehavior<IMissileSilo>() && research.HasType(Research.Type.Missile))
                 SetBehavior(new MissileSilo(this));
+
+            if (!HasBehavior<IBuilder.IBuildMech>() && research.HasType(Research.Type.Mech))
+                SetBehavior(new Builder.BuildMech(this, values.GetRepair(Game, _rangeMult, _rounding).Builder));
+            if (!HasBehavior<IBuilder.IBuildConstructor>() && research.HasType(Research.Type.FactoryConstructor))
+                SetBehavior(new Builder.BuildConstructor(this, values.GetRepair(Game, _rangeMult, _rounding).Builder));
+            if (!HasBehavior<IBuilder.IBuildOutpost>() && research.HasType(Research.Type.Outpost))
+                SetBehavior(new Builder.BuildOutpost(this, new(.5)));
         }
         private static Values GetValues(Game game)
         {
@@ -100,10 +105,10 @@ namespace ClassLibrary1.Pieces.Players
         {
             public const double Resilience = .5;
 
-            private int _energy, _mass;
+            private int _energy, _mass, _def;
             private double _vision, _rounding, _repairRate;
 
-            private IKillable.Values killable;
+            //private IKillable.Values killable;
             private IRepair.Values repair;
 
             public Values()
@@ -112,13 +117,21 @@ namespace ClassLibrary1.Pieces.Players
                 UpgradeBuildingDefense(1);
                 UpgradeFactoryRepair(1);
             }
-             
+
             public int Energy => _energy;
             public int Mass => _mass;
             public double Vision => _vision;
-            public IKillable.Values Killable => killable;
+            //public IKillable.Values Killable => killable;
             public double BuilderRange => repair.Builder.Range;
             public double CostRounding => _rounding;
+
+            public IKillable.Values[] GetKillable(Game game, double rounding)
+            {
+                List<IKillable.Values> defenses = [new(DefenseType.Hits, _def)];
+                if (game.Player.Research.HasType(Research.Type.FactoryShields))
+                    defenses.Add(new IKillable.Values(DefenseType.Armor, MTRandom.Round(_def / Math.PI, 1 - rounding)));
+                return [.. defenses];
+            }
             public IRepair.Values GetRepair(Game game, double rangeMult, double rounding)
             {
                 IRepair.Values repair = this.repair;
@@ -148,9 +161,9 @@ namespace ClassLibrary1.Pieces.Players
             private void UpgradeBuildingDefense(double researchMult)
             {
                 double defAvg = ResearchUpgValues.Calc(UpgType.FactoryDefense, researchMult);
-                int defense = Game.Rand.Round(defAvg);
+                this._def = Game.Rand.Round(defAvg);
                 this._vision = ResearchUpgValues.Calc(UpgType.FactoryVision, researchMult);
-                this.killable = new(DefenseType.Hits, defense);
+                //this.killable = new(DefenseType.Hits, defense);
             }
             private void UpgradeFactoryRepair(double researchMult)
             {

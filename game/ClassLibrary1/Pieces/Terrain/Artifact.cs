@@ -17,7 +17,8 @@ namespace ClassLibrary1.Pieces.Terrain
             double caveDist = tile.Map.ClosestCaveDistSqr(tile);
             double factor = Consts.CaveSize * Consts.CaveSize;
             caveDist = 1 + factor / (caveDist + factor);
-
+            while (caveDist > 1 && Game.Rand.Bool())
+                caveDist = Math.Sqrt(caveDist);
             Artifact artifact = new(tile, caveDist);
             tile.Map.Game.AddPiece(artifact);
             return artifact;

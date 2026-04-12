@@ -8,7 +8,7 @@ namespace ClassLibrary1
 {
     public static class Consts
     {
-        public const double Scale = Math.E * .26;
+        public const double Scale = Math.E * .21;
 
         public const double ShapesDistance = CaveDistance * Math.PI;
         public const double PathMinSeparation = Scale * Math.PI * 1.3;
@@ -50,11 +50,12 @@ namespace ClassLibrary1
         public static readonly double PortalMinDist = Math.Sqrt(Scale) * 78;
         public const double PortalSpawnTime = 39;
         public const double PortalSpawnStrMult = 1.3;
-        public const double PortalCost = 6.5;
+        public const double PortalCost = 9.1;
         public const double PortalExitDef = 390;
         public const double PortalEntranceDef = 169;
         public const double PortalDecayRate = 16.9;
         public const double PortalRewardPct = .39;
+        public const double PortalLoan = 10.4;
 
         public const double MoveDev = .013;
         public const double MoveLimitPow = 1.3;
@@ -92,7 +93,7 @@ namespace ClassLibrary1
         public const double MetalMassInc = 52;
         public const double MetalSustain = 1.17;
         public const double MetalEnergyUpkDiv = 4;
-        public const double ArtifactResearchInc = 10.4;
+        public const double ArtifactResearchInc = 9.1;
         public const double ArtifactSustain = 1.69;
         public const double ArtifactMassIncDiv = 3;
         public const double ArtifactEnergyUpkMult = 2.5;
@@ -130,13 +131,14 @@ namespace ClassLibrary1
         public const double MechCostMult = .13;
         public const double EnergyMassRatio = 1.69;
 
-        public const double MissileCostMult = 1 / 6.5;
+        public const double MissileCostMult = .1;
         public const double MissileEnergyCostRatio = 1 / 2.1;
         public static readonly double MissileAttImmobileMult = 1 / Math.Sqrt(5);
+        public const double MissileRefundPct = .78;
 
         public const double RepairCost = .169;
-        public const double PassiveRepairCost = .13; //
-        public const double EnergyRepairDiv = 2.1;
+        public const double PassiveRepairCost = .21; //
+        public const double EnergyRepairDiv = 1.3;
         public const int AutoRepair = 1;
         public const double ReplaceRefundPct = .8;
 
@@ -203,7 +205,7 @@ namespace ClassLibrary1
         public static double GetRepairCost(Piece piece, double energy, double mass)
         {
             double costMult = piece.HasBehavior<IAttacker>() ? RepairCost : PassiveRepairCost;
-            return (mass + energy / EnergyRepairDiv) * costMult;
+            return (mass + energy / EnergyMassRatio / EnergyRepairDiv) * costMult;
         }
 
         public static double GetDamagedValue(Piece piece, double value, double min) =>

@@ -1,7 +1,6 @@
 ﻿using ClassLibrary1.Pieces.Behavior;
 using ClassLibrary1.Pieces.Behavior.Combat;
 using ClassLibrary1.Pieces.Terrain;
-using MattUtil;
 using System;
 using System.Runtime.Serialization;
 using DefenseType = ClassLibrary1.Pieces.Behavior.Combat.CombatTypes.DefenseType;
@@ -67,7 +66,9 @@ namespace ClassLibrary1.Pieces.Players
 
         public static void Cost(Game game, out int energy, out int mass)
         {
-            GetValues(game).GetCost(out energy, out mass);
+            Values values = GetValues(game);
+            energy = values.Energy;
+            mass = values.Mass;
         }
 
         internal override void OnResearch(Research.Type type)
@@ -150,44 +151,37 @@ namespace ClassLibrary1.Pieces.Players
         {
             public const double Resilience = .7;
 
-            private double turns, hits, repairRate, moveInc, moveMax, moveLimit, costMult, energyRounding, massRounding;
+            private int _energy, _mass;
+
+            private double _turns, _hits, _repairRate, _moveInc, _moveMax, _moveLimit, _costMult;//, energyRounding, massRounding;
             public Values()
             {
                 UpgradeConstructorCost(1);
                 UpgradeConstructorDefense(1);
                 UpgradeConstructorMove(1);
                 UpgradeRepairDrone(1);
-                energyRounding = massRounding = .5;
-            } 
-
-            public void GetCost(out int energy, out int mass)
-            {
-                double turn = turns * 3.9 + Math.Sqrt(Consts.StatValue(hits));
-                double repair = repairRate * 3.9 + Consts.MoveValue(moveInc, moveMax, moveLimit);
-
-                double cost = Consts.DroneCost * costMult * Math.Sqrt(turn * repair);
-
-                energy = MTRandom.Round(cost, energyRounding);
-                mass = MTRandom.Round(cost * Consts.DroneMassCostMult, massRounding);
+                //energyRounding = massRounding = .5;
             }
+            public int Energy => _energy;
+            public int Mass => _mass;
 
             public int GetTurns(int defense)
             {
-                double mult = Math.Sqrt(Consts.StatValue(hits) / Consts.StatValue(defense));
-                return Game.Rand.Round(this.turns * mult);
+                double mult = Math.Sqrt(Consts.StatValue(_hits) / Consts.StatValue(defense));
+                return Game.Rand.Round(_turns * mult);
             }
             public IKillable.Values GetKillable(double defMult)
             {
-                int def = Game.Rand.Round(hits * defMult);
+                int def = Game.Rand.Round(_hits * defMult);
                 return new(DefenseType.Hits, def);
             }
             public IMovable.Values GetMovable(int repair)
             {
-                double mult = repairRate / repair;
+                double mult = _repairRate / repair;
                 mult *= mult;
 
-                double avgMax = moveMax * mult;
-                double avgLimit = moveLimit * mult;
+                double avgMax = _moveMax * mult;
+                double avgLimit = _moveLimit * mult;
                 int max = Game.Rand.Round(avgMax);
                 int limit = Game.Rand.Round(avgLimit);
                 if (max >= limit)
@@ -198,7 +192,7 @@ namespace ClassLibrary1.Pieces.Players
                 do
                 {
                     double m = mult * Math.Sqrt(avgLimit / limit * avgMax / max);
-                    inc = moveInc * Math.Sqrt(m);
+                    inc = _moveInc * Math.Sqrt(m);
 
                     loop = inc >= max;
                     if (loop)
@@ -212,7 +206,7 @@ namespace ClassLibrary1.Pieces.Players
             }
             public IRepair.Values GetRepair(double moveMult)
             {
-                int rate = Math.Max(1, Game.Rand.Round(repairRate / moveMult));
+                int rate = Math.Max(1, Game.Rand.Round(_repairRate / moveMult));
                 return new(new(Attack.MELEE_RANGE), rate);
             }
 
@@ -230,34 +224,40 @@ namespace ClassLibrary1.Pieces.Players
 
             private void UpgradeConstructorCost(double researchMult)
             {
-                this.costMult = ResearchUpgValues.Calc(UpgType.DroneCost, researchMult);
-                SetCostRounding();
+                this._costMult = ResearchUpgValues.Calc(UpgType.DroneCost, researchMult);
+                SetCost();
             }
 
             private void UpgradeConstructorDefense(double researchMult)
             {
-                this.hits = ResearchUpgValues.Calc(UpgType.DroneDefense, researchMult);
-                SetCostRounding();
+                this._hits = ResearchUpgValues.Calc(UpgType.DroneDefense, researchMult);
+                SetCost();
             }
             private void UpgradeConstructorMove(double researchMult)
             {
                 double move = ResearchUpgValues.Calc(UpgType.DroneMove, researchMult);
-                this.moveInc = move;
-                this.moveMax = move + 1.5;
-                this.moveLimit = move * 1.69;
-                SetCostRounding();
+                this._moveInc = move;
+                this._moveMax = move + 1.5;
+                this._moveLimit = move * 1.69;
+                SetCost();
             }
             private void UpgradeRepairDrone(double researchMult)
             {
-                this.turns = ResearchUpgValues.Calc(UpgType.DroneTurns, researchMult);
-                this.repairRate = ResearchUpgValues.Calc(UpgType.DroneRepair, researchMult);
-                SetCostRounding();
+                this._turns = ResearchUpgValues.Calc(UpgType.DroneTurns, researchMult);
+                this._repairRate = ResearchUpgValues.Calc(UpgType.DroneRepair, researchMult);
+                SetCost();
             }
 
-            private void SetCostRounding()
+            private void SetCost()
             {
-                this.energyRounding = Game.Rand.NextDouble();
-                this.massRounding = Game.Rand.NextDouble();
+                double turn = _turns * 3.9 + Math.Sqrt(Consts.StatValue(_hits));
+                double repair = _repairRate * 3.9 + Consts.MoveValue(_moveInc, _moveMax, _moveLimit);
+
+                double costE = Consts.DroneCost * _costMult * Math.Sqrt(turn * repair);
+                this._energy = Game.Rand.GaussianCappedInt(costE, 1 / costE);
+
+                double costM = costE * Consts.DroneMassCostMult + (costE - _energy) / Consts.EnergyMassRatio;
+                this._mass = Game.Rand.GaussianCappedInt(costM, 1 / costM);
             }
         }
     }

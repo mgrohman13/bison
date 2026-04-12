@@ -3,7 +3,9 @@ using ClassLibrary1.Pieces.Behavior.Combat;
 using ClassLibrary1.Pieces.Terrain;
 using MattUtil;
 using System;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
+using static ClassLibrary1.Pieces.Behavior.Combat.CombatTypes;
 using IRepairable = ClassLibrary1.Pieces.Behavior.Combat.IKillable.IRepairable;
 using Tile = ClassLibrary1.Map.Map.Tile;
 using UpgType = ClassLibrary1.ResearchUpgValues.UpgType;
@@ -23,7 +25,7 @@ namespace ClassLibrary1.Pieces.Players
         {
             this._rounding = Game.Rand.NextDouble();
 
-            SetBehavior(new Killable(this, values.GetKillable(_rounding), Values.Resilience));
+            SetBehavior(new Killable(this, values.GetKillable(Game, _rounding), Values.Resilience));
             Unlock();
         }
 
@@ -65,7 +67,7 @@ namespace ClassLibrary1.Pieces.Players
         {
             Values values = GetValues(Game);
             IKillable killable = GetBehavior<IKillable>();
-            killable.Upgrade([values.GetKillable(_rounding)], Values.Resilience);
+            killable.Upgrade(values.GetKillable(Game, _rounding), Values.Resilience);
             if (HasBehavior(out IAttacker attacker))
                 attacker.Upgrade([values.GetAttack(_rounding)]);
             if (HasBehavior(out IRepair repair))
@@ -111,10 +113,15 @@ namespace ClassLibrary1.Pieces.Players
             public int Mass => _mass;
             public double CostRounding => _rounding;
 
-            public IKillable.Values GetKillable(double rounding) =>
-                new(CombatTypes.DefenseType.Hits, MTRandom.Round(_def, rounding));
+            public IKillable.Values[] GetKillable(Game game, double rounding)
+            {
+                List<IKillable.Values> defenses = [new(DefenseType.Hits, MTRandom.Round(_def, rounding))];
+                if (game.Player.Research.HasType(Research.Type.OutpostArmor))
+                    defenses.Add(new IKillable.Values(DefenseType.Armor, MTRandom.Round(_def / 1.69, 1 - rounding)));
+                return [.. defenses];
+            }
             public IAttacker.Values GetAttack(double rounding) =>
-                new(CombatTypes.AttackType.Kinetic, MTRandom.Round(_att, 1 - rounding), Attack.MELEE_RANGE, 1);
+                new(AttackType.Kinetic, MTRandom.Round(_att, 1 - rounding), Attack.MELEE_RANGE, 1);
             public IRepair.Values GetRepair(IKillable killable, IAttacker attacker) =>
                 new(new(Math.Max(Attack.MELEE_RANGE, GetRepairBase(killable, attacker))), 1);
             private double GetRepairBase(IKillable killable, IAttacker attacker) =>
@@ -155,8 +162,8 @@ namespace ClassLibrary1.Pieces.Players
             {
                 double costMult = ResearchUpgValues.Calc(UpgType.OutpostCost, researchMult);
                 _rounding = Game.Rand.NextDouble();
-                this._energy = MTRandom.Round(450 * costMult, 1 - _rounding);
-                this._mass = MTRandom.Round(350 * costMult, _rounding);
+                this._energy = MTRandom.Round(700 * costMult, 1 - _rounding);
+                this._mass = MTRandom.Round(450 * costMult, _rounding);
             }
             private void UpgradeBuildingDefense(double researchMult)
             {

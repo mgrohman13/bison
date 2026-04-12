@@ -12,6 +12,11 @@ namespace ClassLibrary1
     [DataContract(IsReference = true)]
     public class Research : IResearch
     {
+        static Research()
+        {
+
+        }
+
         public const int StartResearch = 20;
         public readonly Game Game;
         Game IResearch.Game => Game;
@@ -146,7 +151,7 @@ namespace ClassLibrary1
                     }
                     else
                         ;
-                } 
+                }
                 if (filtered.Any())
                     types = filtered;
                 else
@@ -161,9 +166,9 @@ namespace ClassLibrary1
                     {
                         double factor = pLimit / (double)p;
                         p = Game.Rand.Round(pLimit * factor * factor);
-                    } 
+                    }
                     if (!_choices.TryGetValue(t, out int c))
-                        c = max * 2; 
+                        c = max * 2;
                     return 6 * p + c + 1;
                 });
 
@@ -411,7 +416,7 @@ namespace ClassLibrary1
                 all.Remove(type);
                 research = GetResearch(research, (double)type);
                 int min = 0;
-                if (GetAllDependencies(type).Count > 2)
+                if (GetAllDependencies(type).Count > (IsMech(type) ? 2 : 3))
                     min = Game.Rand.GaussianCappedInt(research, dev / Math.Sqrt(research));
                 else
                     Debug.WriteLine($"Early type: {type}");
@@ -462,7 +467,8 @@ namespace ClassLibrary1
             return allDependencies;
         }
 
-        public static readonly Type[] NoUpgrades = [ Type.Mech, Type.Outpost, Type.OutpostAttack, Type.OutpostRepair, Type.Constructor, Type.Turret, Type.Factory,
+        public static readonly Type[] NoUpgrades = [ Type.Mech, Type.Constructor, Type.Turret, Type.Factory,
+            Type.Outpost, Type.OutpostAttack, Type.OutpostRepair, Type.OutpostArmor, Type.FactoryShields,
             Type.TurretLasers, Type.TurretExplosives, Type.TurretShields, Type.TurretArmor, Type.TurretAutoRepair,
             Type.FactoryConstructor, Type.FactoryAutoRepair, Type.BuildingAutoRepair, Type.BurnMass, Type.ScrapResearch, Type.FabricateMass, ];
         public static readonly Type[] UpgradeOnly = [ Type.ConstructorCost, Type.ConstructorMove,
@@ -509,7 +515,8 @@ namespace ClassLibrary1
             { Type.TurretExplosives, new Type[]     { Type.Turret, Type.TurretRange, Type.MechExplosives } }, //end
             { Type.TurretShields, new Type[]        { Type.Turret, } }, //quick
             { Type.TurretDefense, new Type[]        { Type.Turret, Type.MechDefense, } },
-            { Type.TurretArmor, new Type[]          { Type.Turret, Type.TurretDefense, Type.MechArmor, } },
+            { Type.OutpostArmor, new Type[]         { Type.Turret, Type.MechArmor, } },
+            { Type.TurretArmor, new Type[]          { Type.Turret, Type.TurretDefense, Type.OutpostArmor, } },
             { Type.TurretAutoRepair, new Type[]     { Type.Turret, Type.TurretArmor, Type.FactoryAutoRepair, } },
 
             { Type.ConstructorCost, new Type[]      { Type.Constructor, } }, //quick
@@ -519,6 +526,7 @@ namespace ClassLibrary1
 
             { Type.FactoryRepair, new Type[]        { Type.Factory, } },
             { Type.FactoryConstructor, new Type[]   { Type.Factory, Type.FactoryRepair, Type.ConstructorCost, } },
+            { Type.FactoryShields, new Type[]       { Type.Factory, Type.FactoryConstructor, Type.ConstructorDefense, Type.BuildingDefense, } }, //end
             { Type.FactoryAutoRepair, new Type[]    { Type.Factory, Type.FactoryRepair, Type.BuildingAutoRepair, } },
             { Type.Missile, new Type[]              { Type.FactoryConstructor, Type.FactoryAutoRepair, Type.TurretExplosives } },
             { Type.MissileCost, new Type[]          { Type.Missile, } }, //end
@@ -566,6 +574,7 @@ namespace ClassLibrary1
             OutpostAttack = 80, //quick
             TurretShields = 110, //quick
             TurretRange = 120,
+            OutpostArmor = 130,
             TurretLasers = 140, //end
             TurretDefense = 160,
             TurretExplosives = 170, //end
@@ -580,11 +589,12 @@ namespace ClassLibrary1
 
             OutpostRepair = 90, //quick
             MissileCost = 95, //end
+            FactoryShields = 155, //end
             MissileRange = 195, //end
             FactoryAutoRepair = 205,
             FactoryRepair = 240, //key
             FactoryConstructor = 290, //key
-            Missile = 305,
+            Missile = 390,
 
             BuildingDefense = 115, //quick
             FabricateMass = 135,
@@ -593,8 +603,8 @@ namespace ClassLibrary1
             BurnMass = 175,
             BuildingCost = 225, //delay
             BuildingAutoRepair = 285, //key
-            AmbientGenerator = 310, //end   
-            ExtractorValue = 390, //end   
+            AmbientGenerator = 350, //end   
+            ExtractorValue = 450, //end   
         }
     }
 }

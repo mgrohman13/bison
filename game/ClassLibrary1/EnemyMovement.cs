@@ -365,7 +365,7 @@ namespace ClassLibrary1
                         weight = Math.Pow(weight, Math.Sqrt(pow));
                         if (double.IsInfinity(weight))
                         {
-                            Debug.WriteLine("weight overflow");
+                            Debug.WriteLine("!!! weight overflow");
                             weight = double.MaxValue;
                         }
                     }
@@ -557,8 +557,11 @@ namespace ClassLibrary1
             double attacks = 1, repair = 1;
 
             if (killable.Piece.HasBehavior(out IAttacker attacker))
-                attacks += attacker.Attacks.Sum(a => Consts.StatValue(a.AttackCur)
-                    * (Math.Max(a.Range, Attack.MIN_RANGED) + Attack.MIN_RANGED) / Attack.MIN_RANGED / 2.0);
+                attacks += attacker.Attacks.Sum(AttValue);
+            if (killable.Piece.HasBehavior(out IMissileSilo silo))
+                attacks += AttValue(silo.SampleAttack) * Math.Sqrt(silo.NumMissiles) / 3.0;
+            static double AttValue(Attack a) => Consts.StatValue(a.AttackCur) * (a.Range == Attack.MELEE_RANGE ? 2 : 1)
+                * (Math.Max(a.Range, Attack.MIN_RANGED) + Attack.MIN_RANGED) / Attack.MIN_RANGED / 3.0;
 
             double ConstructorValue(double range) => avgHp * (range + 21) / 9.1;
             if (killable.Piece.HasBehavior(out IRepair repairs))

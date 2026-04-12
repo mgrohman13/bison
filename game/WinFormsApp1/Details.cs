@@ -32,8 +32,8 @@ namespace WinFormsApp1
             this.lblGM.Text = gm.ToString();
             this.lblDE.Text = de.ToString();
             this.lblDM.Text = dm.ToString();
-            this.lblOE.Text = de.ToString();
-            this.lblOM.Text = dm.ToString();
+            this.lblOE.Text = oe.ToString();
+            this.lblOM.Text = om.ToString();
 
             this.txtVictory.Text = $"{Program.Game.Victory}/{Game.POINTS_TO_WIN}";
 

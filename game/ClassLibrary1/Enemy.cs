@@ -227,7 +227,7 @@ namespace ClassLibrary1
 
             Portal portal = Portal.NewPortal(tile, difficulty, exit, out double cost);
             AddDebt(cost);
-            Loan(Game.Rand.GaussianOE(cost * 1.3, .26, .13));
+            Loan(Game.Rand.GaussianOE(IncomeReference() * Consts.PortalLoan + cost * 1.69, .26, .13));
             this._portalSpawn -= GetPct(exit);
             return true;
         }
@@ -240,23 +240,23 @@ namespace ClassLibrary1
         private void PortalIncome()
         {
             var portals = PiecesOfType<Portal>();
-            double energy = portals.Any(p => p.Exit) ? Math.Sqrt(IncomeReference()) : 0;
-            Loan(portals.Count() * energy);
+            double energy = portals.Any(p => p.Exit) ? IncomeReference() : 0;
+            Loan(Math.Sqrt(portals.Count() / 2.0) * energy);
         }
         private void IncPortals(Hive hive)
         {
-            const double amt = 1 / 4.0;
+            const double amt = 1 / 3.0;
             double inc = 0;
             if (hive == null)
                 inc = amt;
             else if (!hive.Dead)
                 inc = amt / PiecesOfType<Hive>().Average(h =>
-                    h.GetBehavior<IKillable>().AllDefenses.Sum((Func<Defense, int>)(d => d.DefenseMax))); 
+                    h.GetBehavior<IKillable>().AllDefenses.Sum((Func<Defense, int>)(d => d.DefenseMax)));
 
             if (inc > 0)
             {
                 this._portalSpawn += Game.Rand.Gaussian(inc, .039 / Math.Sqrt(inc));
-                Loan(13 / amt * inc * IncomeReference());
+                Loan(26 * inc * IncomeReference());
             }
         }
         internal void VictoryPoint() => IncPortals(null);

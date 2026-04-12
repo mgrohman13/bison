@@ -1,21 +1,107 @@
-turret mass too expensive early?
-	enable early turrets somehow (orrr push back research?)
-	swap turret/factory mass/energy?
-	both too expensive early???
-		maybe different early building 
+map
+	consolidate caves/paths/cavepaths
+foundations
+	lumps with multiple build spots
+		allow 1 factory, generator
+			the rest turrets/outposts
+		separate turret/laser turret
+			rebalance turrets to use cost calc
+	balance vs resources??
+		cannot appear in treasure
+	instead of replace, demolish existing for much less refund
+		refund mass only?? idk
+	separate missile silo
+ai
+	group behavior
+	needs to attack into turrets en masse
+late game micro
+	combine mechs
+	
 
-prevent low-value upgs appearing?
-	what about if its a preq tho
+reduce energy att ReloadAvg?
+
+swap missile mass/energy cost?
+
+dont show move left when <1?
+
+weight energy less in hive cost calc
+	could then re-increase reward?
+drone hp largely irrelevant
+	combine constructor def into building def?? something else?
+	give attack but heavily nerf def?
+
+ai move to heal needs to account for auto explore logic
+red attack indicator not accurate when attack squares blocked
+show same mouse over damage as missile on regular mech attack?
+
+mech squads
+	combine in any formation
+	all get average move
+	attacks work from any individual?
+	always defend each other? even if farther away??
+	or all mechs in squad have to be in 4x4 (9x9?) area
+	reasearch more to add more
+	more benefits??
+	needs to be worth doing to cut down on micromanagement
+	costs to move in<->out of squad
+		discouage un-squadding
+
+interp foundationMult on distance from core?
+
+research 
+	does repeating research increment int counter?
+	keep tech research costs more consistent in between appearances (esp when they stick around)
+		dont want everything being super expensive or cheap at once
+			only very occasionally
+			less randomization common to all options?? 
+			high multipliers also add constant amount?
+	prevent low-value upgs appearing?
+		what about if its a preq tho
+
+info form show missile cost
+	time to fix form....
+	
+separate building replace from repairing?
+	replace keeps hp%
+		cost??
+	separate immediate rebuild ability to repair with constructor??
+		full cost?
+	better/more consistent cur stat handling on upg/replace
+
+if uninjured alien moves into turrent range give uninjured nearby aliens morale boost
+	also apply on enemy turn start for any already in range?
+	apply logic to all ranged attacks, not just turrets?
+		use all playerattacks
+			compare before move to after move
+		but scale up for higher att/range
+		use simlar logic in missile range????
+
+turret
+	OP? enemy sucks vs?
+		maybe can fix with AI
+	turret mass too expensive early?
+		enable early turrets somehow (orrr push back research?)
+		swap turret/factory mass/energy?
+		both too expensive early???
+			maybe different early building 
+	remove explosive attack
+	two different turrts? long range laser?
+		turret can replace itself between types??
+
+clean up / streamline player piece randomness, rounding, upgrades, etc.
+	drone/missile costs should use similar rounding/random logic 
+	
+ 
+one melee, one ranged att per unit
+	add turret melle attack
 
 AI
-	weight paths taken last turn to tend to keep goin same dir?	
+	weight paths taken last turn to tend to keep going same dir?	
 	better group behavior
 		e.g. all healthy aliens in area of a hive switch to rush at once?
 	retarded vs turrets?
 	need to use portal entrances better, path to them
 	store alien target in fight mode so it doesn't switch back and forth??
-
-wormholes need to be more threatening in general
 
 fix map gen
 	caves too obvious
@@ -25,33 +111,24 @@ fix core rush angle
 	gives away intent too clearly
 	ugh.. pathing....
  
+mobile missile launcher?
+
 calc alien cost correctly?
 
 EXP!
-
-research 
-	does repeating research increment int counter?
-	keep tech research costs more consistent in between appearances (esp when they stick around)
-		dont want everything being super expensive or cheap at once
-			only very occasionally
-			less randomization common to all options?? 
-			high multipliers also add constant amount?
+lategame combine mechs?
 
 clicking log doesnt select own mechs anymore
-
-outpost->factory loses repair
-	allow self-upgrade back down?
-	factory can also self upgrade to anything?
-	so only turret and generator are dead ends
-
-buff outpost lategame def
-
-fix move left quadrant order
+log splash damage
 
 constructor def
-	nerf overall, but increase pow?
+	bundle with something else better??
+	
+fix move left quadrant order?
 
-hive range upg when shelled??
+hive range upg when shelled???
+	store internal max range, interpolate towards that with hp loss
+	must change during enemy turn, not player turn for QOL
 
 choose weapon to fire
 	or... limit units to one melee, one ranged
@@ -59,54 +136,11 @@ choose weapon to fire
 
 ensure foundations never placed too close to core
 	and hive?
-core missile silo???
-	makes no sense, impossible to lose core?
-missiles too weak??
-	dont refund full amt??
-	reduce cost instead?
-
-drone/missile costs should use similar rounding/random logic 
-
-info form show missile cost
-	time to fix form....
-
-missile explosive attack
-	need to ensure splash damage on immobile wouldn't be more than direct target
-missile mouseover on target can give you info about hidden adjacent alien
-	usually isn't going to change any values, but what if its on a wormhole and there is a defender out of vision?
-log splash damage
-
-missile take into account overkill somehow?
-	also defensive damage?
-
-missile
-	decrease att
-	only give enemy 91%
-	decrease cost 2x
 
 shrink core and factory repair ranges? outpost?
 
 aliens really should be numbered in order of scouting
 
-nerf high end extractor defense
-	beef up factory, outpost instead?
-
-late game constructor still too OP?
-	inc cost?
-		bundle cost upg with X?? (extractor cost?)
-
-increase PassiveRepairCost?
-
-better/more consistent cur stat handling on upg/replace
-
-speed up game?
-make hives weaker? only kill 2? closer?
-increase enemy exponent?
-decrease resource inc with dist?
-
-enemy trg weight check missiles
-
-boost enemy on hive death as well?
 
 
 Consts.PathWidth	11.944130354249044	double

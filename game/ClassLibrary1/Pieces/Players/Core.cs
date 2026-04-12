@@ -78,8 +78,8 @@ namespace ClassLibrary1.Pieces.Players
                 SetBehavior(new Builder.BuildMech(this, values.Repair.Builder));
             if (!HasBehavior<IBuilder.IBuildConstructor>() && research.HasType(Research.Type.Constructor))
                 SetBehavior(new Builder.BuildConstructor(this, values.Repair.Builder));
-            if (!HasBehavior<IMissileSilo>() && research.HasType(Research.Type.Missile))
-                SetBehavior(new MissileSilo(this));
+            //if (!HasBehavior<IMissileSilo>() && research.HasType(Research.Type.Missile))
+            //    SetBehavior(new MissileSilo(this));
         }
         private static Values GetValues(Game game)
         {
