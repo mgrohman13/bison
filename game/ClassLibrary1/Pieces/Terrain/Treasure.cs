@@ -53,7 +53,7 @@ namespace ClassLibrary1.Pieces.Terrain
         private void Collect()
         {
             Tile tile = Tile;
-            this.Die();
+            Die();
 
             Dictionary<Func<Tile, double, double>, int> choices = new() {
                 { Alien, 6 },
@@ -70,9 +70,11 @@ namespace ClassLibrary1.Pieces.Terrain
             double min = _value.HasValue ? 13 : Game.Rand.Range(260, 910);
             if (value < min)
                 min = value * .21;
-            value = Func(tile, Game.Rand.GaussianOE(value, .26, .13, min));
-            Game.Enemy.Income(value * Consts.EnemyTreasureMatch);
+            value = Func(tile, Rand(value, min));
+            Game.Enemy.AddResources(value * Consts.EnemyTreasureMatch);
         }
+        internal static double Rand(double value, double min) =>
+            Game.Rand.GaussianOE(value, .26, .13, min);
 
         private double CollectResources(Tile tile, double value)
         {
@@ -92,7 +94,7 @@ namespace ClassLibrary1.Pieces.Terrain
         }
         private double NewResource(Tile tile, double value)
         {
-            Game.Map.GenResources(_ => tile, Game.Rand.DoubleHalf());
+            Game.Map.GenResources(() => tile, Game.Rand.DoubleHalf());
             //RaiseCollectEvent($"");
             return 0;
         }

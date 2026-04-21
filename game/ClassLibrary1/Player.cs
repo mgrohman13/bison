@@ -20,9 +20,8 @@ namespace ClassLibrary1
 
         new public IReadOnlyList<Piece> Pieces => base.Pieces;
         new public IEnumerable<T> PiecesOfType<T>() where T : class, IBehavior
-        {
-            return base.PiecesOfType<T>();
-        }
+            => base.PiecesOfType<T>();
+
         public Core Core => _core;
         new public int Energy => base.Energy;
         new public int Mass => base.Mass;
@@ -31,12 +30,11 @@ namespace ClassLibrary1
             : base(game, 0, 1000)
         {
             this.Research = new(game);
-            this.upgradeValues = AppDomain.CurrentDomain.GetAssemblies()
+            this.upgradeValues = [.. AppDomain.CurrentDomain.GetAssemblies()
                 .SelectMany(a => a.GetTypes())
                 .Where(t => t.IsClass && typeof(IUpgradeValues).IsAssignableFrom(t))
                 .Select(Activator.CreateInstance)
-                .OfType<IUpgradeValues>()
-                .ToArray();
+                .OfType<IUpgradeValues>()];
         }
         internal void NewGame(Point constructorOffset)
         {
@@ -48,8 +46,8 @@ namespace ClassLibrary1
 
                 if (tile != null)
                 {
-                    var checkTiles = Tile.GetPointsInRangeUnblocked(Game.Map, tile.Location, Core.START_VISION);
-                    checkTiles = checkTiles.Union(Tile.GetPointsInRangeUnblocked(Game.Map, new(tile.X + constructorOffset.X, tile.Y + constructorOffset.Y), Constructor.BASE_VISION));
+                    var checkTiles = Tile.GetPointsInRangeUnblocked(Game.Map,
+                        new(tile.X + constructorOffset.X, tile.Y + constructorOffset.Y), Constructor.BASE_VISION);
                     if (checkTiles.Select(Game.Map.GetTile).Any(t => t == null || t.Piece != null))
                         tile = null;
                 }
@@ -59,6 +57,8 @@ namespace ClassLibrary1
             this._core = Core.NewCore(tile);
         }
 
+        private IEnumerable<PlayerPiece> IteratePieces() => Game.Rand.Iterate(Pieces.Cast<PlayerPiece>());
+
         internal T GetUpgradeValues<T>() where T : IUpgradeValues
         {
             return upgradeValues.OfType<T>().Single();
@@ -67,7 +67,7 @@ namespace ClassLibrary1
         {
             foreach (IUpgradeValues values in Game.Rand.Iterate(upgradeValues))
                 values.Upgrade(type, researchMult);
-            foreach (PlayerPiece piece in Game.Rand.Iterate(Pieces.Cast<PlayerPiece>()))
+            foreach (PlayerPiece piece in IteratePieces())
                 piece.OnResearch(type);
         }
 
@@ -100,27 +100,25 @@ namespace ClassLibrary1
             }
         }
 
-        internal void AddResources(int energy, int mass)
+        internal override void AddResources(double energy, double mass = 0)
         {
-            this._energy += energy;
-            this._mass += mass;
+            this._energy += Game.Rand.Round(energy);
+            this._mass += Game.Rand.Round(mass);
         }
-        internal override bool Spend(int energy, int mass)
+        internal bool Spend(int energy, int mass)
         {
             bool has = Has(energy, mass);
             if (has)
                 AddResources(-energy, -mass);
             return has;
         }
-        public bool Has(double energy, double mass)
-        {
-            return ((Energy >= energy || energy <= 0) && (Mass >= mass || mass <= 0));
-        }
+        public bool Has(double energy, double mass) =>
+            ((Energy >= energy || energy <= 0) && (Mass >= mass || mass <= 0));
 
         public Dictionary<Type, double[]> GetIncomeDetails()
         {
             Dictionary<Type, double[]> details = [];
-            foreach (PlayerPiece p in Pieces.Cast<PlayerPiece>())
+            foreach (PlayerPiece p in IteratePieces())
             {
                 double energyInc, massInc, researchInc, energyUpk, massUpk, researchUpk;
                 energyInc = massInc = researchInc = energyUpk = massUpk = researchUpk = 0;
@@ -159,26 +157,28 @@ namespace ClassLibrary1
         public void GetIncome(out double energyInc, out double massInc, out double researchInc)
         {
             energyInc = massInc = researchInc = 0;
-            foreach (PlayerPiece piece in Game.Rand.Iterate(Pieces.Cast<PlayerPiece>()))
+            foreach (PlayerPiece piece in IteratePieces())
                 piece.GetIncome(ref energyInc, ref massInc, ref researchInc);
-            PostProcess(ref energyInc, ref massInc, ref researchInc);
+            PostProcess(ref energyInc, ref researchInc);
         }
         internal void GenerateResources(out double energyInc, out double massInc, out double researchInc)
         {
             energyInc = massInc = researchInc = 0;
-            foreach (PlayerPiece piece in Game.Rand.Iterate(Pieces.Cast<PlayerPiece>()))
+            foreach (PlayerPiece piece in IteratePieces())
                 piece.GenerateResources(ref energyInc, ref massInc, ref researchInc);
         }
         internal new void StartTurn()
         {
             base.StartTurn();
+            this._energy = Consts.IncomeRounding(Energy);
+            this._mass = Consts.IncomeRounding(Mass);
         }
         internal Research.Type? EndTurn()
         {
             GenerateResources(out double energyInc, out double massInc, out double researchInc);
 
             base.EndTurn(out double energyUpk, out double massUpk);
-            PostProcess(ref energyInc, ref massInc, ref researchInc);
+            PostProcess(ref energyInc, ref researchInc);
 
             this._energy = Consts.Income(Energy, energyInc - energyUpk);
             this._mass = Consts.Income(Mass, massInc - massUpk);
@@ -186,11 +186,11 @@ namespace ClassLibrary1
             return this.Research.AddResearch(researchInc, out _);
         }
 
-        private static void PostProcess(ref double energyInc, ref double massInc, ref double researchInc)
+        private static void PostProcess(ref double energyInc, ref double researchInc)
         {
             if (researchInc < 0)
             {
-                energyInc += researchInc * Consts.MassForScrapResearch * Consts.EnergyPerFabricateMass;
+                energyInc += researchInc * Consts.MassPerResearchConversion * Consts.EnergyMassRatio;
                 researchInc = 0;
             }
         }

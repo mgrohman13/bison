@@ -120,12 +120,13 @@ namespace ClassLibrary1.Pieces.Enemies
                 Die();
         }
 
-        internal override void Die()
+        internal override void Die(out Tile tile, out double treasure)
         {
-            Tile tile = this.Tile;
-            base.Die();
+            base.Die(out tile, out double energy);
+            Side.AddResources(energy + (_cost - _collect) * Consts.PortalRewardPct);
+
             Treasure.NewTreasure(tile, _collect * Consts.PortalRewardPct);
-            Game.Enemy.Income((_cost - _collect) * Consts.PortalRewardPct);
+            treasure = 0;
         }
 
         private static List<IKillable.Values> GenKillable(double difficulty, bool exit)

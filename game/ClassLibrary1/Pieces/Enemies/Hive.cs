@@ -34,7 +34,7 @@ namespace ClassLibrary1.Pieces.Enemies
         {
             this.spawner = spawner;
 
-            this._cost = cost + energy;
+            this._cost = cost + energy / 1.69;
             this._energy = energy;
 
             this.killable = new Killable(this, killable, resilience);
@@ -107,16 +107,18 @@ namespace ClassLibrary1.Pieces.Enemies
             spawner.Mult(1 + 1.0 / 65);
         }
 
-        internal override void Die()
+        internal override void Die(out Tile tile, out double treasure)
         {
-            Tile tile = this.Tile;
-            base.Die();
+            base.Die(out Tile t, out double energy);
             Game.VictoryPoint();
-            tile.Map.GenResources(_ => tile, .065);
+            t.Map.GenResources(() => t, .13);
 
-            double treasure = Cost / 2.6;
-            Game.CollectResources(tile, treasure, out _, out _);
-            Game.Enemy.AddEnergy(treasure / 1.69);
+            treasure = Cost / 1.69;
+            Game.CollectResources(t, treasure, out _, out _);
+            Side.AddResources(energy + treasure / 1.69);
+
+            tile = t;
+            treasure = 0;
         }
 
         private static List<IKillable.Values> GenKillable(int hiveIdx)

@@ -155,5 +155,11 @@ namespace ClassLibrary1.Pieces.Behavior
         {
             energyUpk += IncMove(doEndTurn) * Consts.EnergyPerMove;
         }
+        double IBehavior.Die()
+        {
+            double treasure = MoveCur * Consts.EnergyPerMove;
+            this._moveCur = 0;
+            return treasure; 
+        }
     }
 }

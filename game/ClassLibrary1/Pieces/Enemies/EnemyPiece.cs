@@ -78,12 +78,11 @@ namespace ClassLibrary1.Pieces.Enemies
             return _state;
         }
 
-        internal override void Die()
+        internal override void Die(out Tile tile, out double treasure)
         {
-            foreach (EnemyPiece piece in Side.Pieces.OfType<EnemyPiece>())
+            foreach (EnemyPiece piece in Game.Rand.Iterate(Side.Pieces.OfType<EnemyPiece>()))
                 piece.OnDeath(this);
-            base.Die();
-            //Game.CountKill();
+            base.Die(out tile, out treasure);
         }
 
         protected virtual void OnDeath(EnemyPiece enemyPiece)

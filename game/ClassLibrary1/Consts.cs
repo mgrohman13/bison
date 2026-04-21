@@ -17,18 +17,17 @@ namespace ClassLibrary1
         public const double PathWidthMin = Math.E;
         public const double FeatureDist = Scale * 169;
         public const double FeatureMin = FeatureDist / Math.PI;
-        public static readonly double NoiseDistance = CaveDistance / Math.Sqrt(Scale);
 
         public const double CaveDistance = Scale * 210;
         public const double CaveDistanceDev = .13;
         public const double CaveDistanceOE = .169;
         public const double CaveMinDist = Scale * 91;
         public const double CaveSize = Scale * 13;
-        public static readonly double CavePathWidth = Scale * 6.5;
+        public const double CavePathWidth = Scale * 6.5;
         public const double CaveDistPow = 1.13;
 
-        public static readonly double ResourceAvgDist = Math.Sqrt(Scale) * 21;
-        public static readonly double TreasureDiv = Scale * 13;
+        public const double TreasureDiv = Scale * 13;
+
         //public const double TreasureSpacingChance = .5;
         public const double ResearchFactor = 2600;
         public const int ExploreForResearch = 39;
@@ -36,18 +35,17 @@ namespace ClassLibrary1
         public const double DifficultySetting = 2.6 / Math.PI;
         public const double EnemyStartEnergy = 1690;
         public const double ExploreEnergy = 5200;
-        public const double EnemyTreasureMatch = .52;
+        public const double EnemyTreasureMatch = .5 * DifficultySetting;
         public const double EnemyIncomeMatchFactor = 6500;
         public const double EnemyEnergy = 390;
         public const double EnemyEnergyRampTurns = 169;
         public const double EnemyUnlockTurns = 210;
 
-        public const double DifficultyIncTurns = 91;
+        public const double DifficultyIncTurns = 78 / DifficultySetting;
         public const double DifficultyEnergyPow = 1.3;
         public const double DifficultyResearchPow = 3.9 / Math.E;
         public const double DifficultyAIPow = .52;
 
-        public static readonly double PortalMinDist = Math.Sqrt(Scale) * 78;
         public const double PortalSpawnTime = 39;
         public const double PortalSpawnStrMult = 1.3;
         public const double PortalCost = 9.1;
@@ -62,7 +60,7 @@ namespace ClassLibrary1
 
         public const double CoreEnergyLow = 260;
         public const double CoreEnergyMid = 91;
-        public const double CoreEnergyHigh = CoreEnergy - CoreEnergyMid - CoreEnergyLow;
+        public const double CoreEnergyHigh = CoreEnergy - CoreEnergyMid - CoreEnergyLow; //199
         public const double CoreEnergy = 550;
         public const double CoreMass = 250;
         public const double CoreResearch = 20;
@@ -114,9 +112,6 @@ namespace ClassLibrary1
         public const int EnergyPerFabricateMass = 10;
         public const int BurnMassPerEnergy = 2;
         public const int MassForScrapResearch = 5; //inverted value from the other two
-        public static readonly double MassPerResearchConversion = MassForScrapResearch
-            * Math.Sqrt(EnergyPerFabricateMass * BurnMassPerEnergy);
-        //public static readonly double EnergyPerResearchConversion = MassPerResearchConversion * EnergyMassRatio;
 
         public const double BaseConstructorUpkeep = 5;
         public const double BaseDroneUpkeep = 2;
@@ -132,15 +127,26 @@ namespace ClassLibrary1
         public const double EnergyMassRatio = 1.69;
 
         public const double MissileCostMult = .1;
-        public const double MissileEnergyCostRatio = 1 / 2.1;
-        public static readonly double MissileAttImmobileMult = 1 / Math.Sqrt(5);
-        public const double MissileRefundPct = .78;
+        public const double MissileEnergyCostRatio = 2.0 / (3 * EnergyMassRatio + 2);
+        public const double MissileHitRefundPct = .78;
+        public const double MissileScrapRefund = .26;
 
         public const double RepairCost = .169;
-        public const double PassiveRepairCost = .21; //
+        public const double PassiveRepairCost = .91 * RepairCost;
         public const double EnergyRepairDiv = 1.3;
         public const int AutoRepair = 1;
         public const double ReplaceRefundPct = .8;
+
+        public static readonly double NoiseDistance = CaveDistance / Math.Sqrt(Scale);
+        public static readonly double ResourceAvgDist = Math.Sqrt(Scale) * 21;
+        public static readonly double PortalMinDist = Math.Sqrt(Scale) * 78;
+        public static readonly double MissileAttImmobileMult = 1 / Math.Sqrt(5);
+
+        public static readonly double MassPerResearchConversion = MassForScrapResearch
+            * Math.Sqrt(EnergyPerFabricateMass * BurnMassPerEnergy);
+        public static readonly double GeneratorConstValue = GeneratorResearchUpk
+            * Math.Sqrt((MassPerResearchConversion * EnergyMassRatio) * (MassForScrapResearch / (double)BurnMassPerEnergy));
+        //public static readonly double EnergyPerResearchConversion = MassPerResearchConversion * EnergyMassRatio;
 
         public static double StatValue(double stat)
         {
@@ -161,7 +167,7 @@ namespace ClassLibrary1
         //    return StatValueInverse(stats.Sum(StatValue));
         //}
         public static double MoveValue(IMovable.Values? movable) =>
-            MoveValue(movable?.MoveInc ?? 0, movable?.MoveMax ?? 0, movable?.MoveLimit ?? 0);
+            Math.Pow(MoveValue(movable?.MoveInc ?? 0, movable?.MoveMax ?? 0, movable?.MoveLimit ?? 0), 1.5);
         public static double MoveValue(double moveInc, double moveMax, double moveLimit)
         {
             const double mi = 25, mm = 10, ml = 4;
@@ -170,11 +176,8 @@ namespace ClassLibrary1
             return move;
         }
 
-        internal static int Income(int cur, double income)
-        {
-            double avg = cur + Income(income);
-            return IncomeRounding(avg);
-        }
+        internal static int Income(int cur, double income) =>
+            IncomeRounding(cur + Income(income));
         internal static int IncomeRounding(double avg)
         {
             const int divMult = 5;
@@ -202,12 +205,10 @@ namespace ClassLibrary1
                 canRepair = false;
             return canRepair;
         }
-        public static double GetRepairCost(Piece piece, double energy, double mass)
-        {
-            double costMult = piece.HasBehavior<IAttacker>() ? RepairCost : PassiveRepairCost;
-            return (mass + energy / EnergyMassRatio / EnergyRepairDiv) * costMult;
-        }
-
+        public static double GetRepairCost(Piece piece, double energy, double mass) =>
+            (mass + energy / EnergyMassRatio / EnergyRepairDiv) * GetRepairMult(piece);
+        public static double GetRepairMult(Piece piece) =>
+            piece.HasBehavior<IAttacker>() ? RepairCost : PassiveRepairCost;
         public static double GetDamagedValue(Piece piece, double value, double min) =>
             GetDamagedValue(piece, value, min, false);
         public static double GetDamagedValue(Piece piece, double value, double min, bool sqrt)
@@ -244,12 +245,13 @@ namespace ClassLibrary1
                 newValue = Math.Min(max, cur + regen);
                 if (doEndTurn)
                     newValue = Game.Rand.Round(newValue);
-                double cost = StatValue(newValue) - StatValue(cur);
-                cost *= upkeepRate;
-                upkeep += cost;
+                upkeep += StatValueCost(cur, newValue, upkeepRate);
             }
             return newValue;
         }
+        public static double StatValueCost(int before, double after, double upkeepRate) =>
+            (StatValue(after) - StatValue(before)) * upkeepRate;
+
         public static double IncValueWithMaxLimit(double cur, double inc, double dev, double max, double limit, double pow, bool rand)
         {
             double start = cur;

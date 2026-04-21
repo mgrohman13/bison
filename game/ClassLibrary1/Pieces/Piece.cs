@@ -1,6 +1,7 @@
 ﻿using ClassLibrary1.Pieces.Behavior;
 using ClassLibrary1.Pieces.Behavior.Combat;
 using ClassLibrary1.Pieces.Players;
+using ClassLibrary1.Pieces.Terrain;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -69,8 +70,55 @@ namespace ClassLibrary1.Pieces
                 throw new Exception();
         }
 
-        internal virtual void Die()
+        internal void Die() => ((IBehavior)this).Die();
+        double IBehavior.Die()
         {
+            Die(out Tile tile, out double treasure);
+
+            if (Side is null)
+            {
+                CollectTreasure();// false);
+            }
+            else
+            {
+                if (this is IKillable.IRepairable repairable)
+                {
+                    double repairMult = Consts.GetRepairMult(this);
+                    double value = repairable.RepairCost / repairMult;
+                    value *= (1 - repairMult) / 7.8;
+                    treasure += Game.Rand.Weighted(value, 1 / 5.2);
+                }
+
+                if (Side.IsPlayer)
+                    CollectTreasure();// true);
+                else
+                    Side.AddResources(treasure);
+            }
+
+            void CollectTreasure()//bool canCollect)
+            {
+                int offset = Game.Rand.OEInt(13);
+                double min = Game.Rand.Range(1, 13 + offset);
+                bool Test(double value) => value > Game.Rand.GaussianCapped(39 + offset, .52, min);
+
+                double matchMult = 1 / (1 - Consts.EnemyTreasureMatch);
+                if (tile.Piece is null && Test(treasure * matchMult))
+                    Treasure.NewTreasure(tile, treasure * matchMult);
+                else if (Test(treasure))//canCollect &&
+                    Game.CollectResources(tile, Treasure.Rand(treasure, min), out _, out _);
+                else
+                    Game.Enemy.AddResources(-treasure);
+            }
+
+            return 0;
+        }
+
+        internal virtual void Die(out Tile tile, out double treasure)
+        {
+            tile = this.Tile;
+            treasure = 0;
+            foreach (IBehavior behavior in Game.Rand.Iterate(behavior))
+                treasure += behavior.Die();
             Game.RemovePiece(this);
         }
 
@@ -89,7 +137,7 @@ namespace ClassLibrary1.Pieces
         }
         internal virtual void GetUpkeep(ref double energyUpk, ref double massUpk)
         {
-            foreach (IBehavior behavior in this.behavior)
+            foreach (IBehavior behavior in Game.Rand.Iterate(behavior))
                 behavior.GetUpkeep(ref energyUpk, ref massUpk);
         }
 

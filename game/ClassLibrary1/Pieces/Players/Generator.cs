@@ -3,6 +3,7 @@ using ClassLibrary1.Pieces.Behavior.Combat;
 using ClassLibrary1.Pieces.Terrain;
 using MattUtil;
 using System;
+using System.Linq;
 using System.Runtime.Serialization;
 using DefenseType = ClassLibrary1.Pieces.Behavior.Combat.CombatTypes.DefenseType;
 using Tile = ClassLibrary1.Map.Map.Tile;
@@ -71,10 +72,28 @@ namespace ClassLibrary1.Pieces.Players
 
         internal override void GenerateResources(ref double energyInc, ref double massInc, ref double researchInc)
         {
-            energyInc += Consts.GetDamagedValue(this, GetValues(Game).EnergyInc, 0);
-            researchInc -= Consts.GetDamagedValue(this, Consts.GeneratorResearchUpk, 0);
+            energyInc += Consts.GetDamagedValue(this, GetGenValue(), 0);
+            researchInc -= Consts.GeneratorResearchUpk;
 
             base.GenerateResources(ref energyInc, ref massInc, ref researchInc);
+        }
+        private double GetGenValue(Tile testNew = null) => GetGenValue(Tile, this, testNew);
+        private static double GetGenValue(Tile tile, Generator generator = null, Tile testNew = null)
+        {
+            Game game = tile.Map.Game;
+            static double Logistic(double dist) =>
+                (1 - 1 / (1.0 + Math.Pow(Math.E, -9.1 * (dist / (Consts.ResourceAvgDist * 1.13) - 1))));
+            double div = 1 + game.Player.PiecesOfType<Generator>().Where(g => g != generator)
+                .Select(g => g.Tile).Append(testNew).Where(t => t != null)
+                .Select(t => t.GetDistance(tile)).Sum(Logistic);
+            return GetValues(game).EnergyInc / div + Consts.GeneratorConstValue;
+        }
+        public static void PlacementEfficiency(Tile testNew, out double energy, out double pct)
+        {
+            Game game = testNew.Map.Game;
+            double Sum(Func<Generator, double> GetGenValue) => game.Player.PiecesOfType<Generator>().Sum(GetGenValue);
+            energy = GetGenValue(testNew) + Sum(g => g.GetGenValue(testNew)) - Sum(g => g.GetGenValue());
+            pct = energy / GetValues(game).EnergyInc;
         }
 
         private static double HitsMult() =>
@@ -99,7 +118,7 @@ namespace ClassLibrary1.Pieces.Players
                 UpgradeAmbientGenerator(1);
             }
 
-            public static double Vision => Attack.MELEE_RANGE; 
+            public static double Vision => Attack.MELEE_RANGE;
             public double CostRounding => _rounding;
             public double EnergyInc => _inc;
 

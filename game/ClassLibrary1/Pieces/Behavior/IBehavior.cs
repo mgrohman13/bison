@@ -13,5 +13,6 @@
         internal void GetUpkeep(ref double energy, ref double mass);
         internal void StartTurn();
         internal void EndTurn(ref double energyUpk, ref double massUpk);
+        internal double Die();
     }
 }

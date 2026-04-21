@@ -65,13 +65,7 @@ namespace ClassLibrary1.Pieces.Players
         {
         }
 
-        double IKillable.IRepairable.RepairCost
-        {
-            get
-            {
-                return Consts.GetRepairCost(this, Blueprint.Energy, Blueprint.Mass);
-            }
-        }
+        double IKillable.IRepairable.RepairCost => Consts.GetRepairCost(this, Blueprint.Energy, Blueprint.Mass);
         bool IKillable.IRepairable.AutoRepair => false;
         public bool CanRepair() => Consts.CanRepair(this);
 

@@ -50,7 +50,8 @@ namespace ClassLibrary1.Map
             public double GetDistance(Tile other) => GetDistance(other.X, other.Y);
             public double GetDistance(int x, int y) => GetDistance(X, Y, x, y);
             public static double GetDistance(Point p1, Point p2) => GetDistance(p1.X, p1.Y, p2.X, p2.Y);
-            public static double GetDistance(int x1, int y1, int x2, int y2)
+            public static double GetDistance(int x1, int y1, int x2, int y2) => GetDistanceD(x1, y1, x2, y2);
+            public static double GetDistanceD(double x1, double y1, double x2, double y2)
             {
                 double xDiff = x1 - x2;
                 double yDiff = y1 - y2;
@@ -120,7 +121,7 @@ namespace ClassLibrary1.Map
                 ////            && GetDistance(point, p.Key) <= range))
                 ////        AddBlock(pair.Key, pair.Value.Side != null && pair.Value.Side != blockFor.Side ? enemyBlock : baseBlock);
 
-                List<Point> block = [.. Game.Rand.Iterate(GetPointsInRangeUnblocked(map, point, range).Where(p => map.GetTile(p) == null)).OrderBy(b => GetDistance(point, b))];
+                List<Point> block = [.. GetPointsInRangeUnblocked(map, point, range).Where(p => map.GetTile(p) == null).OrderBy(b => GetDistance(point, b))];
                 double blockRadius = (1 + Math.Sqrt(2)) / 4.0;// Math.Sqrt(2) / 2
 
                 int max = (int)Math.Ceiling(range);

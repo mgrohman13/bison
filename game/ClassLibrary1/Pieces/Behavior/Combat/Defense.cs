@@ -165,6 +165,7 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
         }
         internal void StartTurn()
         {
+            ToString();
         }
         internal void EndTurn(ref double energyUpk, ref double massUpk)
         {
@@ -194,6 +195,30 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
         private double IncDefense(bool doEndTurn, ref double energyUpk, ref double massUpk)
         {
             return Consts.IncDefense(doEndTurn, Type, Piece.HasBehavior<IAttacker>(), DefenseCur, DefenseMax, GetRepair(), ref energyUpk, ref massUpk);
+        }
+
+        internal double Die()
+        {
+            bool mass = false;
+            double treasure = 1;
+            switch (Type)
+            {
+                case DefenseType.Hits:
+                    treasure *= 0;
+                    break;
+                case DefenseType.Armor:
+                    treasure *= -1;
+                    goto case DefenseType.Shield;
+                case DefenseType.Shield:
+                    treasure *= CombatTypes.GetRegenCostMult(Type, Piece.HasBehavior<IAttacker>(), out mass);
+                    break;
+            }
+            if (mass)
+                treasure *= Consts.EnergyMassRatio;
+
+            treasure = Consts.StatValueCost(0, DefenseCur, treasure);
+            this._defenseCur = 0;
+            return treasure;
         }
     }
 }

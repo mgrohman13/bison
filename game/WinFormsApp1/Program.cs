@@ -244,44 +244,46 @@ namespace WinFormsApp1
         }
         public static void Next(bool dir)
         {
-            Rectangle gameRect = Game.Map.GameRect();
+            //Rectangle gameRect = Game.Map.GameRect();
+
             var tiles = Game.Player.Pieces.Where(MoveLeft).Select(p => p.Tile);
             if (tiles.Any() && Form.MapMain.SelTile != null)
                 tiles = tiles.Concat([Form.MapMain.SelTile]);
 
-            var moveLeft = tiles.Distinct().OrderBy(t =>
-            {
-                var tiles = Game.Player.Pieces.Where(MoveLeft).Select(p => p.Tile);
-                Point p = new(t.X - Game.Player.Core.Tile.X, t.Y - Game.Player.Core.Tile.Y);
-                int main, secondary;
-                if (p.X > p.Y && p.X < -p.Y)
-                {
-                    main = 1;
-                    secondary = p.Y * gameRect.Width + p.X;
-                }
-                else if (p.X < p.Y && p.X < -p.Y)
-                {
-                    main = 2;
-                    secondary = p.X * gameRect.Height + p.Y;
-                }
-                else if (p.X > p.Y && p.X > -p.Y)
-                {
-                    main = 4;
-                    secondary = -p.X * gameRect.Height + p.Y;
-                }
-                else if (p.X < p.Y && p.X > -p.Y)
-                {
-                    main = 5;
-                    secondary = -p.Y * gameRect.Width + p.X;
-                }
-                else
-                {
-                    main = 3;
-                    secondary = p.Y * gameRect.Width + p.X;
-                }
-                main *= 2 * gameRect.Width * gameRect.Height;
-                return main + secondary;
-            }).ToList();
+            var moveLeft = Game.Rand.Iterate(tiles.Distinct())
+                .OrderByDescending(t => t.GetDistance(Game.Player.Core.Tile))
+                .ToList();
+            //{
+            //Point p = new(t.X - Game.Player.Core.Tile.X, t.Y - Game.Player.Core.Tile.Y);
+            //int main, secondary;
+            //if (p.X > p.Y && p.X < -p.Y)
+            //{
+            //    main = 1;
+            //    secondary = p.Y * gameRect.Width + p.X;
+            //}
+            //else if (p.X < p.Y && p.X < -p.Y)
+            //{
+            //    main = 2;
+            //    secondary = p.X * gameRect.Height + p.Y;
+            //}
+            //else if (p.X > p.Y && p.X > -p.Y)
+            //{
+            //    main = 4;
+            //    secondary = -p.X * gameRect.Height + p.Y;
+            //}
+            //else if (p.X < p.Y && p.X > -p.Y)
+            //{
+            //    main = 5;
+            //    secondary = -p.Y * gameRect.Width + p.X;
+            //}
+            //else
+            //{
+            //    main = 3;
+            //    secondary = p.Y * gameRect.Width + p.X;
+            //}
+            //main *= 2 * gameRect.Width * gameRect.Height;
+            //return main + secondary;
+            //}
 
             if (moveLeft.Count > 0)
             {
@@ -402,7 +404,7 @@ namespace WinFormsApp1
                 if (!move && piece.HasBehavior(out IMovable movable))
                 {
                     //need to support rallying long distances to uncomment this enhancement
-                    move |= movable.CanMove && movable.MoveCur > 1 && movable.MoveCur + movable.MoveInc > movable.MoveMax;// + (movable.MoveLimit - movable.MoveMax > 1 ? 1 : 0);
+                    move |= movable.CanMove && movable.MoveCur > 1 && movable.MoveCur + movable.MoveInc > movable.MoveMax + (movable.MoveLimit - movable.MoveMax > 1 ? 1 : 0);
                     if (!move && killable != null)
                     {
                         var flattenedDef = attacks.Select(t => t.Item2.Keys

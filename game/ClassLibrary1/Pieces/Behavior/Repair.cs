@@ -32,6 +32,10 @@ namespace ClassLibrary1.Pieces.Behavior
             if (_resetRepaired)
                 _repaired = false;
         }
+        double IBehavior.Die()
+        {
+            return 0;
+        }
 
         void IRepair.Upgrade(IRepair.Values repair)
         {

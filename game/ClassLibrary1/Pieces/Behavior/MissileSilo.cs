@@ -58,7 +58,7 @@ namespace ClassLibrary1.Pieces.Behavior
                 EnemyPiece enemy = killable.Piece as EnemyPiece;
                 if (enemy is not null)
                 {
-                    double energy = enemy.Cost * Consts.MissileRefundPct;
+                    double energy = enemy.Cost * Consts.MissileHitRefundPct;
                     double hitPct = killable.CurDefenseValue / killable.MaxDefenseValue;
 
                     Tile[] tiles = [this.Piece.Tile, enemy.Tile];
@@ -81,20 +81,20 @@ namespace ClassLibrary1.Pieces.Behavior
                         attLoss *= values.Energy + values.Mass * Consts.EnergyMassRatio;
                         energy += attLoss * attMult;
 
-                        Piece.Game.Enemy.AddEnergy(energy);
+                        killable.Piece.Side.AddResources(energy);
 
                         double income = Piece.Game.Enemy.IncomeReference();
                         double mult = (energy + income) / income;
 
                         double spawnerMult = Math.Sqrt(mult);
-                        foreach (Tile tile in tiles)
+                        foreach (Tile tile in Game.Rand.Iterate(tiles))
                             Piece.Game.Map.GetClosestSpawner(tile.Location).Spawner.Mult(Game.Rand.Range(1, spawnerMult));
 
                         mult *= mult;
                         foreach (Alien alien in Game.Rand.Iterate(Piece.Game.Enemy.PiecesOfType<Alien>()))
                             if (alien != enemy)
                             {
-                                foreach (Tile tile in tiles)
+                                foreach (Tile tile in Game.Rand.Iterate(tiles))
                                     alien.MissileFired(tile, Game.Rand.Range(1, mult));
                             }
                     }
@@ -146,11 +146,18 @@ namespace ClassLibrary1.Pieces.Behavior
             }
         }
 
+        double IBehavior.Die()
+        {
+            Values values = GetValues();
+            double value = _numMissiles * Consts.MissileScrapRefund;
+            return (values.Energy + values.Mass * Consts.EnergyMassRatio) * value;
+        }
+
         [Serializable]
         [DataContract(IsReference = true)]
         private class Values : IUpgradeValues
         {
-            private double _costMult, _range, _rangeMult = 1;
+            private double _costMult, _range = START_RANGE, _rangeMult = 1;
             private int _energy, _mass, _att;
 
             public Values()

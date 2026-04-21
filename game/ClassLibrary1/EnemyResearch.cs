@@ -16,7 +16,7 @@ namespace ClassLibrary1
         public Game Game { get; private set; }
 
         private Type _type;
-        private double _research;
+        //private double _research;
         private double _difficulty;
 
         private readonly Dictionary<Type, int> _unlockTurns;
@@ -28,7 +28,7 @@ namespace ClassLibrary1
         {
             Game = game;
             _type = NoType;
-            _research = 0;
+            //_research = 0;
             _difficulty = 1;
 
             _unlockTurns = GenUnlockTurns();
@@ -70,12 +70,12 @@ namespace ClassLibrary1
             if (Game.Rand.Bool())
                 _type = Game.Rand.Bool() ? NoType : Game.Rand.SelectValue(Enum.GetValues<Type>()
                     .Where(t => Research.IsMech(t) && TypeVailable(t)));
-            _research += Game.Rand.OE(difficulty);
+            //_research += Game.Rand.OE(difficulty);
             _difficulty = difficulty;
         }
 
         internal bool TypeVailable(Type type) => !_unlockTurns.ContainsKey(type) || _unlockTurns[type] < Game.Turn;
-        public int GetBlueprintLevel() => Game.Rand.Round(Consts.ResearchFactor * (_difficulty - 1) + _research);
+        public int GetBlueprintLevel() => Game.Rand.Round(Consts.ResearchFactor * (_difficulty - 1));// + _research);
         public int GetMinCost() => Game.Rand.Round(Math.Pow(GetBlueprintLevel() + 7.8 * Consts.ResearchFactor, 0.65));
         public int GetMaxCost() => Game.Rand.Round(Math.Pow(GetBlueprintLevel() + 0.169 * Consts.ResearchFactor, 1.04)) + 390;
 

@@ -57,7 +57,9 @@ namespace ClassLibrary1
             EnemyMovement.PlayTurn(Game, Math.Pow(difficulty, Consts.DifficultyAIPow), portal, UpdateProgress);
 
             base.EndTurn(out double energyUpk, out double massUpk);
-            AddEnergy((this.Mass - massUpk) * Consts.EnergyMassRatio - energyUpk);
+
+            Debug.WriteIf(this.Mass != 0, "Enemy mass: " + this.Mass);
+            AddResources((this.Mass - massUpk) * Consts.EnergyMassRatio - energyUpk);
             this._mass = 0;
 
             Income(GetEnergyIncome());
@@ -283,7 +285,7 @@ namespace ClassLibrary1
         private void Loan(double energy)
         {
             int loan = Game.Rand.GaussianOEInt(energy, .13, .13);
-            AddEnergy(loan);
+            AddResources(loan);
             AddDebt(loan);
         }
         private void AddDebt(double loan)
@@ -299,7 +301,7 @@ namespace ClassLibrary1
             double payment = GetPayment();
             if (Math.Min(interest, payment) > Game.Rand.DoubleFull(inc))
             {
-                Spend(Game.Rand.Round(payment), 0);
+                AddResources(-payment);
                 AddDebt(-payment);
             }
 
@@ -325,7 +327,7 @@ namespace ClassLibrary1
                 xfer = Game.Rand.GaussianInt(energy * hitsPct, 1);
                 hitsPct /= Math.Sqrt(hits);
             }
-            AddEnergy(xfer);
+            AddResources(xfer);
             energy -= xfer;
             Debug.WriteLine($"Enemy energy: {_energy} ({(xfer > 0 ? "+" : "")}{xfer})");
 
@@ -355,12 +357,11 @@ namespace ClassLibrary1
             }
         }
 
-        internal void Income(double energy) => AddEnergy(energy * Consts.DifficultySetting);
-        internal void AddEnergy(double energy) => this._energy += Game.Rand.Round(energy);
+        internal void Income(double energy) => AddResources(energy * Consts.DifficultySetting);
         private void RandIncome()
         {
             double modify = Math.Min(Math.Max(0, Energy), IncomeReference());
-            AddEnergy(Game.Rand.OEInt(modify) - modify);
+            AddResources(Game.Rand.OEInt(modify) - modify);
         }
 
         private void SpawnAlien() => SpawnAlien(() => Game.Map.GetEnemyTile(Alien.GetPathFindingMovement(NextAlien.Movable)));
@@ -394,17 +395,14 @@ namespace ClassLibrary1
             }
 
             double energy = NextAlien.EnergyEquivalent();
-            Spend(Game.Rand.Round(energy), 0);
+            AddResources(-energy);
             Alien.NewAlien(tile, path, energy, NextAlien.ResearchLevel, NextAlien.Killable, NextAlien.Resilience, NextAlien.Attacker, NextAlien.Movable);
             value = null;
             GenAlien();
 
             return energy;
         }
-        internal override bool Spend(int energy, int mass)
-        {
-            this._energy = Game.Rand.Round(this.Energy - energy - mass * Consts.EnergyMassRatio);
-            return true;
-        }
+        internal override void AddResources(double energy, double mass = 0) =>
+            this._energy += Game.Rand.Round(energy + mass * Consts.EnergyMassRatio);
     }
 }

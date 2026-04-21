@@ -44,8 +44,8 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
             double avg = ReloadAvg(attack) - 1;
             avg *= attackType switch
             {
-                AttackType.Kinetic => 1.69,
-                AttackType.Energy => 1,
+                AttackType.Kinetic => 1.5,
+                AttackType.Energy => .78,
                 AttackType.Explosive => .65,
                 _ => throw new Exception(),
             };
@@ -154,7 +154,7 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
                     result = Consts.MassPerArmor;
                     break;
                 default: throw new Exception();
-            };
+            }
             if (!isAttacker)
                 result /= Consts.RegenCostPassiveDiv;
             return result;

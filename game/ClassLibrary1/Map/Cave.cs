@@ -137,11 +137,10 @@ namespace ClassLibrary1.Map
                     return Game.Rand.Round(_spawn.Chance * Math.Sqrt(2.1 + hives.Count));
                 return 0;
             }
-            public Tile SpawnTile(Map map) => SpawnTile(map, null, 1.69);
-            public Tile SpawnTile(Map map, ResourceType? type, double deviationMult = 1)
+            public Tile SpawnTile(Map map) => SpawnTile(map, true , 1.69);
+            public Tile SpawnTile(Map map, bool isEnemy, double deviationMult = 1)
             {
-                bool isEnemy = !type.HasValue;
-                bool inPath = !isEnemy && Game.Rand.Bool(type == ResourceType.Foundation ? .65 : .39);
+                bool inPath = !isEnemy && Game.Rand.Bool();
                 PointD spawnCenter = inPath ? PathCenter : Center;
                 double deviation = deviationMult * (inPath ? PathLength / 6.5 : Consts.CaveSize);
                 Tile tile = map.SpawnTile(spawnCenter, deviation, isEnemy);

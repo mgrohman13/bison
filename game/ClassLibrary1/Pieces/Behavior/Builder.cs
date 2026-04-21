@@ -46,6 +46,10 @@ namespace ClassLibrary1.Pieces.Behavior
         void IBehavior.EndTurn(ref double energyUpk, ref double massUpk)
         {
         }
+        double IBehavior.Die()
+        {
+            return 0;
+        }
 
         private bool Validate(Tile tile, bool empty)
         {
@@ -112,7 +116,11 @@ namespace ClassLibrary1.Pieces.Behavior
                     if (doReplace)
                     {
                         Tile tile = piece.Tile;
-                        piece.Die();
+
+                        piece.Die(out _, out _);
+                        //todo: replace??
+                        //Piece.Game.Player.AddResources(treasure);
+
                         if (tile.Piece is not null && tile.Piece is not Treasure && Piece.Game.Player.Spend(energy, mass))
                             newPiece = NewPiece();
                     }

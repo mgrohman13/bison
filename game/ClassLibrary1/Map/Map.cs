@@ -161,7 +161,7 @@ namespace ClassLibrary1.Map
         private void GenerateStartResources()
         {
             const int startResources = 8;
-            GenResources(_ => StartTile(), 1.3 / startResources, startResources);
+            GenResources(StartTile, 1.3 / startResources, startResources);
         }
         private void InitExplorePaths()
         {
@@ -208,15 +208,15 @@ namespace ClassLibrary1.Map
                 cavesLeft--;
                 resources -= spawn;
                 double foundationMult = Math.Min(1, caveHives / spawnHives);
-                GenResources(type => cave.SpawnTile(this, type), foundationMult, spawn);
+                GenResources(() => cave.SpawnTile(this, false), foundationMult, spawn);
             }
         }
 
         internal void PlayTurn(int turn)
         {
-            foreach (var p in _paths)
+            foreach (var p in Game.Rand.Iterate(_paths))
                 p.Spawner.Turn(turn);
-            foreach (var c in _caves)
+            foreach (var c in Game.Rand.Iterate(_caves))
                 c.Spawner.Turn(turn);
         }
 
@@ -240,11 +240,11 @@ namespace ClassLibrary1.Map
 
         [NonSerialized]
         private Dictionary<Point, float> evaluateCache;//Tuple<float, float>> evaluateCache;
-        private float Evaluate(Point p)//, out float lineDist)
+        private float Evaluate(Point point)//, out float lineDist)
         {
-            int x = p.X, y = p.Y;
+            int x = point.X, y = point.Y;
             evaluateCache ??= [];
-            if (evaluateCache.TryGetValue(p, out var t))
+            if (evaluateCache.TryGetValue(point, out var t))
             {
                 //lineDist = t.Item2;
                 return t;//.Item1;
@@ -256,21 +256,17 @@ namespace ClassLibrary1.Map
             //double minLineDist = double.MaxValue;
 
             double mult = 0;
-            foreach (var path in _paths)
-                //{
-                //minLineDist =
-                mult += path.Evaluate(p);
-            //}
-            mult += _caves.Max(c => c.Evaluate(x, y));
+            mult += _paths.Sum(p => p.Evaluate(point));
+            mult += _caves.Sum(c => c.Evaluate(x, y));
 
             double eval = noise.Evaluate(x, y);
-            double dist = Tile.GetDistance(p, new(0, 0));
+            double dist = Tile.GetDistance(point, new(0, 0));
             mult += (featureDist / dist / dist / Math.Abs(eval - .5));
             //mult++;
 
             //lineDist = (float)minLineDist;
             float value = (float)(eval * mult);
-            evaluateCache.Add(p, value);// new(value, lineDist));
+            evaluateCache.Add(point, value);// new(value, lineDist));
 
             watch.Stop();
             return value;
@@ -381,10 +377,16 @@ namespace ClassLibrary1.Map
         {
             _pieces.Remove(piece.Tile.Location);
         }
-        internal bool UpdateVision(PlayerPiece playerPiece) => UpdateVision(playerPiece.Tile.Location, playerPiece.Vision);
+        internal bool UpdateVision(PlayerPiece playerPiece)
+        {
+            double vision = playerPiece.Vision;
+            if (vision > 0)
+                return UpdateVision(playerPiece.Tile.Location, vision);
+            return false;
+        }
         internal void UpdateVision(IEnumerable<Tile> tiles)
         {
-            foreach (var t in tiles)
+            foreach (var t in Game.Rand.Iterate(tiles))
                 if (t != null)
                     UpdateVision(t.Location, 0);
         }
@@ -499,15 +501,22 @@ namespace ClassLibrary1.Map
 
         internal void Explore(Point point, double vision)
         {
-            foreach (Path p in _paths)
+            foreach (Path p in Game.Rand.Iterate(_paths))
                 p.Explore(this, point, vision);
-            foreach (Cave c in _caves)
+            foreach (Cave c in Game.Rand.Iterate(_caves))
                 c.Explore(point, vision);
         }
-        internal void GenResources(Func<ResourceType, Tile> GetTile, double foundationMult = 1, int numResources = 1)
+        internal void GenResources(Func<Tile> GetTile, double foundationMult, int numResources = 1)
         {
             for (int a = 0; a < numResources; a++)
             {
+                Tile tile = GetTile();
+                double distMult = _caves.Select(c => c.Center).Append(Game.Player.Core.Tile.LocationD)
+                    .Concat(AllPieces.Where(p => p is Foundation || p is FoundationPiece).Select(p => p.Tile.LocationD))
+                    .Min(p => Tile.GetDistanceD(tile.X, tile.Y, p.X, p.Y));
+                distMult /= (distMult + (Consts.CaveSize + Consts.PathWidth) / 6.5);
+                distMult *= distMult * distMult;
+
                 if (resourcePool.Values.Any(v => v == 0))
                 {
                     resourcePool[ResourceType.Artifact] += 2;
@@ -519,10 +528,9 @@ namespace ClassLibrary1.Map
                 ResourceType type;
                 do
                     type = Game.Rand.SelectValue(resourcePool);
-                while (type == ResourceType.Foundation && !Game.Rand.Bool(foundationMult));
+                while (type == ResourceType.Foundation && !Game.Rand.Bool(foundationMult * distMult));
                 resourcePool[type]--;
 
-                Tile tile = GetTile(type);
                 switch (type)
                 {
                     case ResourceType.Artifact:
@@ -535,7 +543,25 @@ namespace ClassLibrary1.Map
                         Metal.NewMetal(tile);
                         break;
                     case ResourceType.Foundation:
-                        Foundation.NewFoundation(tile);
+                        static int CountAdjacent(Tile tile)
+                        {
+                            int count = tile.GetAdjacentTiles().Where(t => t.Piece is Foundation).Count();
+                            return 1 + (1 + count) * count;// * count;
+                        }
+                        int size = Game.Rand.GaussianOEInt(Math.PI, .21, .39, 1);
+                        for (int b = 0; b < size; b++)
+                        {
+                            Foundation.NewFoundation(tile);
+                            Dictionary<Tile, int> neighbors = [];
+                            while (neighbors.Count == 0 && Game.Rand.Bool(1 - 1 / 169.0))
+                                neighbors = tile.GetPointsInRangeUnblocked(1 + Game.Rand.OE())
+                                    .Select(this.GetTile)
+                                    .Where(t => t != null && t.Piece == null && (Game.TEST_MAP_GEN.HasValue || !t.Visible))
+                                    .ToDictionary(t => t, CountAdjacent);
+                            if (neighbors.Count == 0)
+                                break;
+                            tile = Game.Rand.SelectValue(neighbors);
+                        }
                         break;
                 }
             }

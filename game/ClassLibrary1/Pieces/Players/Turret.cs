@@ -47,7 +47,7 @@ namespace ClassLibrary1.Pieces.Players
         internal static Turret NewTurret(Foundation foundation)
         {
             Tile tile = foundation.Tile;
-            foundation.Die();
+            foundation.Die(); 
 
             Turret obj = new(tile, GetValues(foundation.Game));
             foundation.Game.AddPiece(obj);
@@ -122,7 +122,7 @@ namespace ClassLibrary1.Pieces.Players
                 UpgradeTurretAttack(1);
                 UpgradeTurretRange(1);
             }
-             
+
             public int Energy => _energy;
             public int Mass => _mass;
             public double Vision => _vision;

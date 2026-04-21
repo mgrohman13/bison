@@ -111,7 +111,7 @@ namespace ClassLibrary1.Map
                 List<double> create = [];
                 while (ExploredDist + generationBuffer > NextResourceDist)
                 {
-                    map.GenResources(_ => map.SpawnTile(GetLinePoint(NextResourceDist), Consts.PathWidth, false));
+                    map.GenResources(() => map.SpawnTile(GetLinePoint(NextResourceDist), Consts.PathWidth, false), 1);
 
                     ResourceNum++;
                     GetNextDist();

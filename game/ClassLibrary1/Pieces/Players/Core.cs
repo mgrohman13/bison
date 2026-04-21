@@ -17,13 +17,13 @@ namespace ClassLibrary1.Pieces.Players
     {
         private double _income = 1, _incomeTrg = 1, _hitsResearchMult = 1;
 
-        public const double START_VISION = Attack.MIN_RANGED;
+        //public const double START_VISION = 0;
         public const int CORE_HITS = 10;
 
         private readonly Killable killable;
 
         private Core(Tile tile, Values values)
-            : base(tile, START_VISION)
+            : base(tile, 0)
         {
             killable = new Killable(this, new IKillable.Values(DefenseType.Hits, CORE_HITS), Values.Resilience);
             SetBehavior(killable, new Repair(this, values.Repair));
@@ -61,7 +61,7 @@ namespace ClassLibrary1.Pieces.Players
             Unlock(Game.Player.Research);
             Values values = GetValues(Game);
 
-            this.Vision = START_VISION;
+            //this.Vision = START_VISION;
             //must check research type because defense could drop below rounding threshold from being attacked
             if (type == Research.Type.CoreDefense)
                 GetBehavior<IKillable>().Upgrade(values.GetKillable(killable.Hits.DefenseCur, ref _hitsResearchMult), Values.Resilience);
@@ -86,8 +86,10 @@ namespace ClassLibrary1.Pieces.Players
             return game.Player.GetUpgradeValues<Values>();
         }
 
-        internal override void Die()
+        internal override void Die(out Tile tile, out double treasure)
         {
+            tile = this.Tile;
+            treasure = 0;
             Game.End();
         }
 

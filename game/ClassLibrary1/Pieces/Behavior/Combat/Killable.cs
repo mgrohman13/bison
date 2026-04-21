@@ -78,9 +78,8 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
                     mass += cost;
                 else
                     energy += cost;
-            }
-            // need method 
-            Piece.Side.Spend(Game.Rand.Round(-energy), Game.Rand.Round(-mass));
+            } 
+            Piece.Side.AddResources(energy, mass);
 
             foreach (var upg in defenses)
             {
@@ -97,6 +96,8 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
             values.Where(d => d.Type == CombatTypes.DefenseType.Hits).Single();
         private static IEnumerable<Values> GetOther(IEnumerable<Values> values) =>
             values.Where(d => d.Type != CombatTypes.DefenseType.Hits);
+        private IEnumerable<Defense> IterateDefenses() =>
+            Game.Rand.Iterate(((IKillable)this).AllDefenses);
 
         void IKillable.OnAttacked()
         {
@@ -119,12 +120,12 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
 
         void IBehavior.GetUpkeep(ref double energyUpk, ref double massUpk)
         {
-            foreach (Defense defense in ((IKillable)this).AllDefenses)
+            foreach (Defense defense in IterateDefenses())
                 defense.GetUpkeep(ref energyUpk, ref massUpk);
         }
         void IBehavior.StartTurn()
         {
-            foreach (Defense defense in Game.Rand.Iterate(((IKillable)this).AllDefenses))
+            foreach (Defense defense in IterateDefenses())
                 defense.StartTurn();
 
             if (_resetDefended)
@@ -132,10 +133,17 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
         }
         void IBehavior.EndTurn(ref double energyUpk, ref double massUpk)
         {
-            foreach (Defense defense in Game.Rand.Iterate(((IKillable)this).AllDefenses))
+            foreach (Defense defense in IterateDefenses())
                 defense.EndTurn(ref energyUpk, ref massUpk);
 
             _resetDefended = true;
+        }
+        double IBehavior.Die()
+        {
+            double treasure = 0;
+            foreach (Defense defense in IterateDefenses())
+                treasure += defense.Die();
+            return treasure;
         }
 
         [NonSerialized]

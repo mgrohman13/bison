@@ -38,7 +38,7 @@ namespace ClassLibrary1
             this._pieces.Remove(piece);
         }
 
-        internal abstract bool Spend(int energy, int mass);
+        internal abstract void AddResources(double energy, double mass = 0);
 
         protected void StartTurn()
         {

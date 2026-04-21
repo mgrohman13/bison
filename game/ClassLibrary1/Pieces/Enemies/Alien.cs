@@ -29,7 +29,7 @@ namespace ClassLibrary1.Pieces.Enemies
         //var atts = attacker.Attacks.Select(a => new IAttacker.Values(a.Type, a.AttackMax, a.Range));
         //var move = new IMovable.Values(movable.MoveInc, movable.MoveMax, movable.MoveLimit);
         //MechBlueprint.CalcCost(Enemy.GetDifficulty(Game), 0, defs, killable.Resilience, atts, move, out double e, out double m);
-        double IRepairable.RepairCost => Consts.GetRepairCost(this, _energy, 0);
+        double IRepairable.RepairCost => Consts.GetRepairCost(this, Cost, 0);
         bool IRepairable.AutoRepair => !Tile.Visible;
 
         private List<Point> PathToCore { get; set; }
@@ -96,15 +96,9 @@ namespace ClassLibrary1.Pieces.Enemies
         protected override void OnDeath(EnemyPiece enemyPiece)
         {
             double offset = Game.Enemy.IncomeReference() * 3.9;
-            double cost;
-            if (enemyPiece is Hive hive)
-                cost = 1.69 * hive.Cost + offset;
-            else if (enemyPiece is IRepairable reparable)
-                cost = reparable.RepairCost / Consts.RepairCost;
-            else
-                cost = offset;
+            double cost = enemyPiece.Cost;
 
-            offset += ((IRepairable)this).RepairCost / Consts.RepairCost;
+            offset += this.Cost;
             double pct = offset / (cost + offset);
 
             pct = Math.Pow(pct, Math.Sqrt(EventDistMult(enemyPiece.Tile, 1)));

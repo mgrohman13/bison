@@ -1,4 +1,5 @@
-﻿using ClassLibrary1.Pieces.Behavior.Combat;
+﻿using ClassLibrary1.Pieces.Behavior;
+using ClassLibrary1.Pieces.Behavior.Combat;
 using ClassLibrary1.Pieces.Terrain;
 using MattUtil;
 using System;
@@ -36,7 +37,7 @@ namespace ClassLibrary1.Pieces.Players
         internal static Extractor NewExtractor(Resource resource)
         {
             Tile tile = resource.Tile;
-            resource.Die();
+            resource.Die(); 
 
             Extractor obj = new(tile, resource, GetValues(resource.Game));
             resource.Game.AddPiece(obj);
@@ -74,23 +75,21 @@ namespace ClassLibrary1.Pieces.Players
         bool IKillable.IRepairable.AutoRepair => Game.Player.Research.HasType(Research.Type.BuildingAutoRepair);
         public bool CanRepair() => Consts.CanRepair(this);
 
-        internal override void Die()
+        internal override void Die(out Tile tile, out double treasure)
         {
-            Die(true);
+            Die(true, out tile, out treasure);
         }
-        private void Die(bool resource)
+        private void Die(bool resource, out Tile tile, out double treasure)
         {
-            Tile tile = this.Tile;
-            base.Die();
-
+            base.Die(out tile, out treasure);
             if (resource && VanishStr() > Game.Rand.GaussianOE(13, .26, .13))
             {
-                Resource.SetTile(tile);
+                Resource.SetTile(tile); 
             }
             else
             {
                 Resource.GetCost(1, out int energy, out int mass);
-                Treasure.NewTreasure(tile, energy + mass * Consts.EnergyMassRatio);
+                treasure += energy + mass * Consts.EnergyMassRatio;
             }
         }
 
@@ -99,7 +98,7 @@ namespace ClassLibrary1.Pieces.Players
             base.StartTurn();
             if (VanishStr() <= Math.Min(Game.Rand.OEInt(), Game.Rand.OE()))
             {
-                Die(false);
+                Die(false, out _, out _);
             }
             else
             {
@@ -175,7 +174,7 @@ namespace ClassLibrary1.Pieces.Players
                 UpgradeBuildingHits(1);
                 UpgradeExtractorValue(1);
             }
-             
+
             public double CostMult => costMult;
             public double Vision => vision;
             public double ValueMult => valueMult;

@@ -32,7 +32,7 @@ namespace ClassLibrary1.Pieces.Players
         internal static Outpost NewOutpost(Foundation foundation)
         {
             Tile tile = foundation.Tile;
-            foundation.Die();
+            foundation.Die(); 
 
             Outpost obj = new(tile, GetValues(tile.Map.Game));
             foundation.Game.AddPiece(obj);

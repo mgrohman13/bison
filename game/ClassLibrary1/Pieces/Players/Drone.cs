@@ -122,11 +122,10 @@ namespace ClassLibrary1.Pieces.Players
             this._treasure = Game.Rand.GaussianCapped(value, diff * .169);
         }
 
-        internal override void Die()
+        internal override void Die(out Tile tile, out double treasure)
         {
-            Tile tile = this.Tile;
-            base.Die();
-            Treasure.NewTreasure(tile, _treasure);
+            base.Die(out tile, out treasure); 
+            treasure += _treasure;
         }
 
         internal override void GetUpkeep(ref double energyUpk, ref double massUpk)

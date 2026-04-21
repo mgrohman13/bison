@@ -790,7 +790,7 @@ namespace WinFormsApp1
             Details.ShowForm();
         }
 
-        private void cbxMissile_CheckedChanged(object sender, EventArgs e)
+        private void CbxMissile_CheckedChanged(object sender, EventArgs e)
         {
             if (Selected.Piece.HasBehavior(out IMissileSilo silo))
             {

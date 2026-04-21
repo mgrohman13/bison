@@ -37,7 +37,7 @@ namespace ClassLibrary1
             {
                 progress += Time(piece) / totalTime;
 
-                allTargets = PlayTurn(piece, Math.Pow(difficulty, Consts.DifficultyAIPow), clearPaths, moved, playerAttacks, allTargets, avgHp, avgWeight);
+                allTargets = PlayTurn(piece, difficulty, clearPaths, moved, playerAttacks, allTargets, avgHp, avgWeight);
 
                 UpdateProgress(piece.Tile.Visible ? piece.Tile : null, Math.Min(progress, 1));
             }
@@ -481,7 +481,6 @@ namespace ClassLibrary1
                 var attacks = GetAttacks(attPiece).Where(a => useMelee || a.Range > Attack.MELEE_RANGE);
                 if (attacks.Any() && (state != AIState.Heal || Game.Rand.Bool()))
                 {
-                    //foreach (double range in attacks.Where(a => inRetreat || IsFull(a)).Select(a => a.Range).Order())
                     foreach (var attack in Game.Rand.Iterate(attacks))
                     {
                         bool CanTarget(IKillable killable) => attack.GetDefenders(killable.Piece).Count > 0;

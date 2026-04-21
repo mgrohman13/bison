@@ -12,18 +12,13 @@ namespace ClassLibrary1
     [DataContract(IsReference = true)]
     public class Research : IResearch
     {
-        static Research()
-        {
-
-        }
-
         public const int StartResearch = 20;
         public readonly Game Game;
         Game IResearch.Game => Game;
 
         private Type _researching;
         private readonly IReadOnlyDictionary<Type, int> _minResearch;
-        private readonly Dictionary<Type, int> _lastSeen;
+        private readonly Dictionary<Type, Tuple<int, int>> _lastSeen;
         private readonly Dictionary<Type, int> _researchedTypes;
         private readonly Dictionary<Type, int> _progress;
         private readonly Dictionary<Type, int> _choices;
@@ -48,11 +43,11 @@ namespace ClassLibrary1
         public IReadOnlyCollection<Type> Available => _choices.Keys;
         public IReadOnlyCollection<Type> Done => _researchedTypes.Keys;
         public int ResearchCur => _researchLast + _progress.Values.Sum();
-        public int TurnLastAvailable(Type type)
-        {
-            _lastSeen.TryGetValue(type, out int result);
-            return result;
-        }
+        //public int TurnLastAvailable(Type type)
+        //{
+        //    _lastSeen.TryGetValue(type, out int result);
+        //    return result;
+        //}
         public int GetLast(Type type)
         {
             _researchedTypes.TryGetValue(type, out int result);
@@ -105,7 +100,7 @@ namespace ClassLibrary1
         internal Type? AddResearch(double research, out int add)
         {
             foreach (Type type in _choices.Keys)
-                _lastSeen[type] = Game.Turn;
+                _lastSeen[type] = Tuple.Create(Game.Turn, _progress[type]);
 
             if (_researching != Type.Mech)
                 research = Consts.Income(research);
@@ -261,7 +256,7 @@ namespace ClassLibrary1
         {
             return Enum.GetValues<Type>().ToDictionary(t => t, type =>
             {
-                int lastSeen = TurnLastAvailable(type);
+                int lastSeen = _lastSeen[type].Item1;
                 double mult = lastSeen > 0 ? 1 : 1.3;
                 mult *= 1.3 - lastSeen / ((double)Game.Turn + 16.9);
 

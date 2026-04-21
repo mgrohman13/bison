@@ -58,8 +58,7 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
 
                 energy += Consts.StatValue(cur.AttackCur) * Consts.EnergyPerAttack;
             }
-            // need method 
-            Piece.Side.Spend(Game.Rand.Round(-energy), 0);
+            Piece.Side.AddResources(energy);
 
             for (int a = 0; a < attacks.Length; a++)
             {
@@ -98,7 +97,7 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
 
         void IBehavior.GetUpkeep(ref double energyUpk, ref double massUpk)
         {
-            foreach (Attack attack in Attacks)
+            foreach (Attack attack in Game.Rand.Iterate(Attacks))
                 attack.GetUpkeep(ref energyUpk, ref massUpk);
         }
         void IBehavior.StartTurn()
@@ -110,6 +109,13 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
         {
             foreach (Attack attack in Game.Rand.Iterate(Attacks))
                 attack.EndTurn(ref energyUpk, ref massUpk);
+        }
+        double IBehavior.Die()
+        {
+            double treasure = 0;
+            foreach (Attack attack in Game.Rand.Iterate(Attacks))
+                treasure += attack.Die();
+            return treasure;
         }
 
         [NonSerialized]

@@ -182,5 +182,12 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
                 _attackCur = (int)newValue;
             }
         }
+
+        internal double Die()
+        {
+            double treasure = Consts.StatValueCost(0, AttackCur, Consts.EnergyPerAttack);
+            this._attackCur = 0;
+            return treasure;
+        }
     }
 }

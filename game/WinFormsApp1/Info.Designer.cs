@@ -397,7 +397,7 @@ namespace WinFormsApp1
             cbxMissile.Size = new System.Drawing.Size(22, 21);
             cbxMissile.TabIndex = 29;
             cbxMissile.UseVisualStyleBackColor = true;
-            cbxMissile.CheckedChanged += cbxMissile_CheckedChanged;
+            cbxMissile.CheckedChanged += CbxMissile_CheckedChanged;
             // 
             // Info
             // 

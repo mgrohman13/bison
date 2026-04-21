@@ -14,11 +14,14 @@ namespace ClassLibrary1.Pieces.Players
         {
         }
 
-        internal override void Die()
+        internal override void Die(out Tile tile, out double treasure)
         {
-            Tile tile = this.Tile;
-            base.Die();
+            base.Die(out tile, out treasure);
             Foundation.NewFoundation(tile);
+
+            //todo: replace??
+            //Side.AddResources(treasure);
+            treasure = 0;
         }
     }
 }

@@ -63,7 +63,7 @@ namespace ClassLibrary1.Pieces.Players
             IEnumerable<IAttacker.Values> attacker, IMovable.Values? movable, out double energy, out double mass)
         {
 
-            double baseMove = Math.Pow(Consts.MoveValue(movable), 1.69);
+            double baseMove = Consts.MoveValue(movable);
             double r = Math.Pow(Math.Pow(resilience, Math.Log(3) / Math.Log(2)) * 1.5 + 0.5, .26);
 
             double AttCost(IAttacker.Values a)
@@ -75,7 +75,8 @@ namespace ClassLibrary1.Pieces.Players
                 return BaseAttCost(a)
                     * Math.Sqrt(a.Reload / CombatTypes.ReloadAvg(a.Attack))
                     * rangeMult;
-            };
+            }
+            ;
             double DefCost(IKillable.Values d) => Consts.StatValue(d.Defense) * CombatTypes.Cost(d.Type)
                 * (d.Type == DefenseType.Hits ? Math.Pow(r, 1.56) * .78 : 1.04);
 
@@ -114,7 +115,7 @@ namespace ClassLibrary1.Pieces.Players
             Consts.StatValue(a.Attack) * CombatTypes.Cost(a.Type);
         private static double MultAttCost(double cost, double researchMult) =>
             cost / researchMult * StatsCostMult;
-        internal static double MissileCost(IAttacker.Values missile, double researchMult) =>  
+        internal static double MissileCost(IAttacker.Values missile, double researchMult) =>
              (MultAttCost(BaseAttCost(missile), researchMult) + 0)
                 * (StatsCostMult + MoveCostAdd * MoveCostMult) * 1 * Consts.MechCostMult;
 
@@ -193,9 +194,9 @@ namespace ClassLibrary1.Pieces.Players
                     blueprint = CheckCost(NewBlueprint(research, blueprintNum, researchLevel, alien),
                         upgrade, research, blueprintNum, researchLevel, alien);
                 else do
-                        blueprint = CheckCost(UpgradeBlueprint(upgrade, research, blueprintNum, researchLevel),
-                            upgrade, research, blueprintNum, researchLevel, alien);
-                    while (!UpgradeValid(blueprint, upgrade, research));
+                    blueprint = CheckCost(UpgradeBlueprint(upgrade, research, blueprintNum, researchLevel),
+                        upgrade, research, blueprintNum, researchLevel, alien);
+                while (!UpgradeValid(blueprint, upgrade, research));
 
                 valid = research.GetType() switch
                 {
@@ -444,7 +445,7 @@ namespace ClassLibrary1.Pieces.Players
                 Type.MechDefense => b => b.Killable.Sum(k => (double?)Consts.StatValue(k.Defense)),
                 Type.MechArmor => b => b.Killable.Where(k => k.Type == DefenseType.Armor).Sum(k => (double?)Consts.StatValue(k.Defense)),
                 Type.MechShields => b => b.Killable.Where(k => k.Type == DefenseType.Shield).Sum(k => (double?)Consts.StatValue(k.Defense)),
-                Type.MechMove => b => Consts.StatValue(Consts.MoveValue(b.Movable) * 1.3),
+                Type.MechMove => b => Consts.StatValue(Consts.MoveValue(b.Movable)),
                 Type.MechVision => b => Consts.StatValue(b.Vision),
                 _ => throw new Exception(),
             };
