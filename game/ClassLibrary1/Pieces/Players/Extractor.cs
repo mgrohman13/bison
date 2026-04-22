@@ -1,5 +1,4 @@
-﻿using ClassLibrary1.Pieces.Behavior;
-using ClassLibrary1.Pieces.Behavior.Combat;
+﻿using ClassLibrary1.Pieces.Behavior.Combat;
 using ClassLibrary1.Pieces.Terrain;
 using MattUtil;
 using System;
@@ -37,7 +36,7 @@ namespace ClassLibrary1.Pieces.Players
         internal static Extractor NewExtractor(Resource resource)
         {
             Tile tile = resource.Tile;
-            resource.Die(); 
+            resource.Die();
 
             Extractor obj = new(tile, resource, GetValues(resource.Game));
             resource.Game.AddPiece(obj);
@@ -47,6 +46,8 @@ namespace ClassLibrary1.Pieces.Players
         {
             resource.GetCost(GetValues(resource.Game).CostMult, out energy, out mass);
         }
+        internal override void Cost(out int energy, out int mass) =>
+            Cost(out energy, out mass, Resource);
 
         internal override void OnResearch(Research.Type type)
         {
@@ -68,7 +69,7 @@ namespace ClassLibrary1.Pieces.Players
         {
             get
             {
-                Cost(out int energy, out int mass, Resource);
+                Cost(out int energy, out int mass);
                 return Consts.GetRepairCost(this, energy, mass);
             }
         }
@@ -84,7 +85,7 @@ namespace ClassLibrary1.Pieces.Players
             base.Die(out tile, out treasure);
             if (resource && VanishStr() > Game.Rand.GaussianOE(13, .26, .13))
             {
-                Resource.SetTile(tile); 
+                Resource.SetTile(tile);
             }
             else
             {

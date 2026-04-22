@@ -115,7 +115,7 @@ namespace ClassLibrary1.Map
                             double div = 1;
                             if (tile == null)
                                 div = 1 + Consts.CaveSize * Consts.CaveSize;
-                            else if (tile.Piece is Terrain)
+                            else if (tile.Piece is ITerrain)
                                 div = 1 + Consts.CaveSize / minSpawnMove;
                             if (div > 1)
                                 penalty += div;

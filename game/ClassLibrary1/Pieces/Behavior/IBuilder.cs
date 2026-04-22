@@ -17,7 +17,7 @@ namespace ClassLibrary1.Pieces.Behavior
         {
             public Constructor Build(Tile tile);
         }
-        public interface IBuildExtractor : IReplacer<Extractor>
+        public interface IBuildExtractor : IBuilder //: IReplacer<Extractor>
         {
             public Extractor Build(Resource resource);
         }
@@ -25,26 +25,26 @@ namespace ClassLibrary1.Pieces.Behavior
         {
             public Mech Build(Tile tile, MechBlueprint blueprint);
         }
-        public interface IBuildOutpost : IReplacer<FoundationPiece>
+        public interface IBuildOutpost : IBuilder //: IReplacer<FoundationPiece>
         {
             public Outpost Build(Foundation foundation);
         }
-        public interface IBuildFactory : IReplacer<FoundationPiece>
+        public interface IBuildFactory : IBuilder //: IReplacer<FoundationPiece>
         {
             public Factory Build(Foundation foundation);
         }
-        public interface IBuildTurret : IReplacer<FoundationPiece>
+        public interface IBuildTurret : IBuilder//: IReplacer<FoundationPiece>
         {
             public Turret Build(Foundation foundation);
         }
-        public interface IBuildGenerator : IReplacer<FoundationPiece>
+        public interface IBuildGenerator : IBuilder //: IReplacer<FoundationPiece>
         {
             public Generator Build(Foundation foundation);
         }
-        public interface IReplacer<T> : IBuilder
-        {
-            public T Replace(bool doReplace, T old, out int energy, out int mass, out bool couldReplace, out bool canReplace);
-        }
+        //public interface IReplacer<T> : IBuilder
+        //{
+        //    public T Replace(bool doReplace, T old, out int energy, out int mass, out bool couldReplace, out bool canReplace);
+        //}
         public interface IBuildDrone : IBuilder
         {
             public Drone Build(Tile tile);

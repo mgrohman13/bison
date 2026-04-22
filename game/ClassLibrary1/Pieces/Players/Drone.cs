@@ -70,6 +70,8 @@ namespace ClassLibrary1.Pieces.Players
             energy = values.Energy;
             mass = values.Mass;
         }
+        internal override void Cost(out int energy, out int mass) =>
+            Cost(Game, out energy, out mass);
 
         internal override void OnResearch(Research.Type type)
         {

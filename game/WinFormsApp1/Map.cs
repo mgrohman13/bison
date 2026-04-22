@@ -136,7 +136,7 @@ namespace WinFormsApp1
 
                     mousePath = null;
                     if (!timer.Enabled && SelTile?.Piece != null && SelTile.Piece.HasBehavior(out IMovable movable)
-                        && MouseTile != null && SelTile.GetDistance(MouseTile) > movable.MoveCur && MouseTile.Piece is not Terrain)
+                        && MouseTile != null && SelTile.GetDistance(MouseTile) > movable.MoveCur && MouseTile.Piece is not ITerrain)
                         if (!SelTile.Piece.HasBehavior(out IAttacker attacker)
                                || !attacker.Attacks.Any(a => a.GetDefenders(MouseTile.Piece).Count > 0 && SelTile.GetPointsInRange(a).Contains(MouseTile.Location)))
                             if (shift)
@@ -693,14 +693,17 @@ namespace WinFormsApp1
                     if (Program.Game.Map.Visible(x, y))
                     {
                         Tile tile = Program.Game.Map.GetVisibleTile(x, y);
-                        Terrain terrain = tile?.Terrain;
-                        if (terrain != null)
+                        ITerrain terrain = tile?.Terrain;
+                        if (terrain != null && (tile.Piece is null || tile.Piece is ITerrain))
                         {
-                            int color = 260;
+                            Color color = Color.LightGoldenrodYellow;
                             if (terrain is Block block)
-                                color = Game.Rand.Round(color * (.75 - block.Value) - 21);
+                                color = Color.FromArgb(130, Game.Rand.Round(260 * (.75 - block.Value) - 21), 26);
+                            else if (terrain is Island)
+                                tileRects.Add(rect);
                             //Color.Brown
-                            AddFill(new SolidBrush(Color.FromArgb(130, color, 26)), rect);
+                            //if ( )
+                            AddFill(new SolidBrush(color), rect);
                         }
                         else if (tile != null)// && Scale > scaleCutoff)
                             tileRects.Add(rect);

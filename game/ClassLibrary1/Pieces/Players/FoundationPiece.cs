@@ -18,10 +18,6 @@ namespace ClassLibrary1.Pieces.Players
         {
             base.Die(out tile, out treasure);
             Foundation.NewFoundation(tile);
-
-            //todo: replace??
-            //Side.AddResources(treasure);
-            treasure = 0;
         }
     }
 }

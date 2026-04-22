@@ -35,7 +35,7 @@ namespace ClassLibrary1.Pieces.Players
             Tile tile = foundation.Tile;
             foundation.Die();
 
-            Factory obj = new(tile, GetValues(tile.Map.Game));
+            Factory obj = new(tile, GetValues(foundation.Game));
             foundation.Game.AddPiece(obj);
             return obj;
         }
@@ -45,6 +45,8 @@ namespace ClassLibrary1.Pieces.Players
             energy = values.Energy;
             mass = values.Mass;
         }
+        internal override void Cost(out int energy, out int mass) =>
+            Cost(Game, out energy, out mass);
 
         internal override void OnResearch(Research.Type type)
         {
@@ -87,7 +89,7 @@ namespace ClassLibrary1.Pieces.Players
         {
             get
             {
-                Cost(Game, out int energy, out int mass);
+                Cost(out int energy, out int mass);
                 return Consts.GetRepairCost(this, energy, mass);
             }
         }

@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Runtime.Serialization;
-using Tile = ClassLibrary1.Map.Map.Tile;
-
 
 namespace ClassLibrary1.Pieces.Terrain
 {
     [Serializable]
     [DataContract(IsReference = true)]
-    public class Block(Map.Map.Tile tile, double value) : Terrain(tile)
+    public class Block(Map.Map.Tile tile, double value) : Piece(null, tile), ITerrain
     {
         public readonly double Value = value;
 

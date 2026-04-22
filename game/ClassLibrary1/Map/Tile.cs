@@ -19,9 +19,9 @@ namespace ClassLibrary1.Map
         {
             public readonly Map Map;
             public readonly int X, Y;
-            private Terrain _terrain;
-            public Terrain Terrain => _terrain;
-            public Piece Piece => Map.GetPiece(Location) ?? Terrain;
+            private ITerrain _terrain;
+            public ITerrain Terrain => _terrain;
+            public Piece Piece => Map.GetPiece(Location) ?? Terrain as Block;
             public bool Visible => Map.Visible(Location);
             public Point Location => new(X, Y);
             public PointD LocationD => new(X, Y);

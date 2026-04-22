@@ -65,6 +65,12 @@ namespace ClassLibrary1.Pieces.Players
         {
         }
 
+        internal override void Cost(out int energy, out int mass)
+        {
+            energy = Blueprint.Energy;
+            mass = Blueprint.Mass;
+        }
+
         double IKillable.IRepairable.RepairCost => Consts.GetRepairCost(this, Blueprint.Energy, Blueprint.Mass);
         bool IKillable.IRepairable.AutoRepair => false;
         public bool CanRepair() => Consts.CanRepair(this);

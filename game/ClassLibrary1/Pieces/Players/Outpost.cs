@@ -32,9 +32,9 @@ namespace ClassLibrary1.Pieces.Players
         internal static Outpost NewOutpost(Foundation foundation)
         {
             Tile tile = foundation.Tile;
-            foundation.Die(); 
+            foundation.Die();
 
-            Outpost obj = new(tile, GetValues(tile.Map.Game));
+            Outpost obj = new(tile, GetValues(foundation.Game));
             foundation.Game.AddPiece(obj);
             return obj;
         }
@@ -43,6 +43,45 @@ namespace ClassLibrary1.Pieces.Players
             Values values = GetValues(game);
             energy = values.Energy;
             mass = values.Mass;
+        }
+        internal override void Cost(out int energy, out int mass) =>
+            Cost(Game, out energy, out mass);
+
+        public Factory ReplaceFactory(bool doReplace, out int energy, out int mass, out bool canReplace)
+        {
+            canReplace = HasBehavior<IBuilder.IBuildFactory>();
+            Factory.Cost(Game, out int energyCost, out int massCost);
+            return Replace(doReplace, out energy, out mass, ref canReplace,
+                    energyCost, massCost, f => Factory.NewFactory(f));
+        }
+        public Turret ReplaceTurret(bool doReplace, out int energy, out int mass, out bool canReplace)
+        {
+            canReplace = HasBehavior<IBuilder.IBuildTurret>();
+            Turret.Cost(Game, out int energyCost, out int massCost);
+            return Replace(doReplace, out energy, out mass, ref canReplace,
+                energyCost, massCost, f => Turret.NewTurret(f));
+        }
+        private T Replace<T>(bool doReplace, out int energy, out int mass, ref bool canReplace,
+            double massCost, double energyCost, Func<Foundation, T> NewPiece) where T : FoundationPiece
+        {
+            T newPiece = null;
+
+            this.DisbandValue(out double e, out double m);
+            double rounding = 1 - GetValues(Game).CostRounding;
+            energy = MTRandom.Round(e - energyCost, rounding);
+            mass = MTRandom.Round(m - massCost, 1 - rounding);
+
+            canReplace |= Game.Player.Has(energy, mass);
+            if (doReplace && canReplace)
+            {
+                this.Die(out Tile tile, out double treasure);
+                Game.Enemy.AddResources(-treasure);
+                if (tile.Piece is Foundation f && Game.Player.Spend(energy, mass))
+                    newPiece = NewPiece(f);
+                else
+                    ;
+            }
+            return newPiece;
         }
 
         internal override void OnResearch(Research.Type type) => Unlock();
@@ -53,13 +92,16 @@ namespace ClassLibrary1.Pieces.Players
 
             if (!HasBehavior<IAttacker>() && research.HasType(Research.Type.OutpostAttack))
                 SetBehavior(new Attacker(this, [values.GetAttack(_rounding)]));
+
+            IRepair.Values repair = values.GetRepair(GetBehavior<IKillable>(), GetBehavior<IAttacker>());
+            double range = repair.Builder.Range;
             if (!HasBehavior<IRepair>() && research.HasType(Research.Type.OutpostRepair))
-                SetBehavior(new Repair(this, values.GetRepair(GetBehavior<IKillable>(), GetBehavior<IAttacker>())));
+                SetBehavior(new Repair(this, repair));
 
             if (!HasBehavior<IBuilder.IBuildFactory>() && research.HasType(Research.Type.Factory))
-                SetBehavior(new Builder.BuildFactory(this, new(.5)));
+                SetBehavior(new Builder.BuildFactory(this, new(range)));
             if (!HasBehavior<IBuilder.IBuildTurret>() && research.HasType(Research.Type.Turret))
-                SetBehavior(new Builder.BuildTurret(this, new(.5)));
+                SetBehavior(new Builder.BuildTurret(this, new(range)));
 
             Upgrade();
         }
@@ -83,7 +125,7 @@ namespace ClassLibrary1.Pieces.Players
         {
             get
             {
-                Cost(Game, out int energy, out int mass);
+                Cost(out int energy, out int mass);
                 return Consts.GetRepairCost(this, energy, mass);
             }
         }

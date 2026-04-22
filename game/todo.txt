@@ -1,3 +1,17 @@
+AllFoundations jankiness
+	if object places before foundation, tile is never updated
+		refresh tiles under pieces on insert foundation
+		shouldnt serisalize tiles either 
+
+dont show vision increase until unit steps on?
+
+Island
+	Ranged att?
+	not def?
+	move/range blocker?
+	??/
+	<3.3 vision gives away foundation
+
 Attack.Die needs to check type, reverse sign for kinetic/explosive
 
 DifficultySetting 
@@ -19,6 +33,7 @@ separate building replace from repairing?
 		cost??
 	separate immediate rebuild ability to repair with constructor??
 		full cost?
+		not necessary with disband
 	better/more consistent cur stat handling on upg/replace
 rethink replace foundation generator meta
 	move to build/upgrade model??
@@ -79,6 +94,7 @@ radar/fog of war
 		with possible movement range?
 
 ai
+	use high ground
 	group behavior
 	needs to attack into turrets en masse
 	only defend when under threat?
@@ -165,6 +181,8 @@ upgrade OP??
 can upgrade to just interim step 
 keep log on upgrade
 
+enemy move/attack range indicators should show as if can move on selected mech?
+	problem - need to recalculate on select
 red attack indicator not accurate when attack squares blocked
 show same mouse over damage as missile on regular mech attack?
 info form show missile cost

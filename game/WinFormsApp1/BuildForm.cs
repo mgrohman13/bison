@@ -49,20 +49,16 @@ namespace WinFormsApp1
                     if (buildDrone != null)
                         return true;
                 }
-                else if (piece is Resource || piece is IBuilder.IReplacer<Extractor>)
+                //else if (piece is Resource || piece is IBuilder.IReplacer<Extractor>)
+                //{
+                //    if (buildExtractor != null)
+                //        return true;
+                //}
+                else if (piece is Outpost outpost)
                 {
-                    if (buildExtractor != null)
-                        return true;
-                }
-                else if (piece is Foundation || piece is IBuilder.IReplacer<FoundationPiece>)
-                {
-                    if (buildOutpost != null)
-                        return true;
                     if (buildFactory != null)
                         return true;
                     if (buildTurret != null)
-                        return true;
-                    if (buildGenerator != null)
                         return true;
                 }
             }
@@ -172,38 +168,41 @@ namespace WinFormsApp1
             rows = [];
             result = null;
 
-            if (builder.HasBehavior(out IBuilder.IBuildExtractor buildExtractor) && selected.Piece is Extractor extractor)
+            //if (builder.HasBehavior(out IBuilder.IBuildExtractor buildExtractor) && selected.Piece is Extractor extractor)
+            //{
+            //    buildExtractor.Replace(false, extractor, out int energy, out int mass, out bool couldReplace, out _);
+            //    if (couldReplace)
+            //        rows.Add(new(buildExtractor, "Extractor", energy, mass, Extractor.Resilience));
+            //}
+            //else
+            if (selected.Piece is Outpost outpost)
             {
-                buildExtractor.Replace(false, extractor, out int energy, out int mass, out bool couldReplace, out _);
-                if (couldReplace)
-                    rows.Add(new(buildExtractor, "Extractor", energy, mass, Extractor.Resilience));
-            }
-            else if (selected.Piece is FoundationPiece foundationPiece)
-            {
-                if (builder.HasBehavior<IBuilder.IBuildOutpost>(out var buildOutpost))
-                {
-                    buildOutpost.Replace(false, foundationPiece, out int energy, out int mass, out bool couldReplace, out _);
-                    if (couldReplace)
-                        rows.Add(new(buildOutpost, "Outpost", energy, mass, Outpost.Resilience));
-                }
+                //if (builder.HasBehavior<IBuilder.IBuildOutpost>(out var buildOutpost))
+                //{
+                //    buildOutpost.Replace(false, foundationPiece, out int energy, out int mass, out bool couldReplace, out _);
+                //    if (couldReplace)
+                //        rows.Add(new(buildOutpost, "Outpost", energy, mass, Outpost.Resilience));
+                //}
                 if (builder.HasBehavior<IBuilder.IBuildFactory>(out var buildFactory))
                 {
-                    buildFactory.Replace(false, foundationPiece, out int energy, out int mass, out bool couldReplace, out _);
-                    if (couldReplace)
+                    outpost.ReplaceFactory(false, out int energy, out int mass, out bool canReplace);
+                    //buildFactory.Replace(false, foundationPiece, out int energy, out int mass, out bool couldReplace, out _);
+                    if (canReplace)
                         rows.Add(new(buildFactory, "Factory", energy, mass, Factory.Resilience));
                 }
                 if (builder.HasBehavior<IBuilder.IBuildTurret>(out var buildTurret))
                 {
-                    buildTurret.Replace(false, foundationPiece, out int energy, out int mass, out bool couldReplace, out _);
-                    if (couldReplace)
+                    outpost.ReplaceTurret(false, out int energy, out int mass, out bool canReplace);
+                    //buildTurret.Replace(false, foundationPiece, out int energy, out int mass, out bool couldReplace, out _);
+                    if (canReplace)
                         rows.Add(new(buildTurret, "Turret", energy, mass, Turret.Resilience));
                 }
-                if (builder.HasBehavior<IBuilder.IBuildGenerator>(out var buildGenerator))
-                {
-                    buildGenerator.Replace(false, foundationPiece, out int energy, out int mass, out bool couldReplace, out _);
-                    if (couldReplace)
-                        rows.Add(new(buildGenerator, "Generator", energy, mass, Generator.Resilience));
-                }
+                //if (builder.HasBehavior<IBuilder.IBuildGenerator>(out var buildGenerator))
+                //{
+                //    buildGenerator.Replace(false, foundationPiece, out int energy, out int mass, out bool couldReplace, out _);
+                //    if (couldReplace)
+                //        rows.Add(new(buildGenerator, "Generator", energy, mass, Generator.Resilience));
+                //}
             }
 
             Display();
@@ -312,21 +311,23 @@ namespace WinFormsApp1
                 if (builder is IBuilder.IBuildDrone buildDrone)
                     this.result = buildDrone.Build(selected);
 
-                if (selected.Piece is Extractor extractor && builder is IBuilder.IReplacer<Extractor> replaceExtractor)
-                    this.result = replaceExtractor.Replace(true, extractor, out _, out _, out _, out _);
+                //if (selected.Piece is Extractor extractor && builder is IBuilder.IReplacer<Extractor> replaceExtractor)
+                //    this.result = replaceExtractor.Replace(true, extractor, out _, out _, out _, out _); 
                 else if (builder is IBuilder.IBuildExtractor buildExtractor)
                     this.result = buildExtractor.Build(selected.Piece as Resource);
 
-                if (selected.Piece is FoundationPiece foundationPiece && builder is IBuilder.IReplacer<FoundationPiece>)
+                if (selected.Piece is Outpost outpost)// && builder is IBuilder.IReplacer<FoundationPiece>)
                 {
-                    if (row.Name == "Outpost")
-                        this.result = builder.GetBehavior<IBuilder.IBuildOutpost>().Replace(true, foundationPiece, out _, out _, out _, out _);
+                    //if (row.Name == "Outpost")
+                    //    this.result = builder.GetBehavior<IBuilder.IBuildOutpost>().Replace(true, foundationPiece, out _, out _, out _, out _);
                     if (row.Name == "Factory")
-                        this.result = builder.GetBehavior<IBuilder.IBuildFactory>().Replace(true, foundationPiece, out _, out _, out _, out _);
+                        this.result = outpost.ReplaceFactory(true, out _, out _, out _);
+                    //this.result = builder.GetBehavior<IBuilder.IBuildFactory>().Replace(true, foundationPiece, out _, out _, out _, out _);
                     if (row.Name == "Turret")
-                        this.result = builder.GetBehavior<IBuilder.IBuildTurret>().Replace(true, foundationPiece, out _, out _, out _, out _);
-                    if (row.Name == "Generator")
-                        this.result = builder.GetBehavior<IBuilder.IBuildGenerator>().Replace(true, foundationPiece, out _, out _, out _, out _);
+                        this.result = outpost.ReplaceTurret(true, out _, out _, out _);
+                    //this.result = builder.GetBehavior<IBuilder.IBuildTurret>().Replace(true, foundationPiece, out _, out _, out _, out _);
+                    //if (row.Name == "Generator")
+                    //    this.result = builder.GetBehavior<IBuilder.IBuildGenerator>().Replace(true, foundationPiece, out _, out _, out _, out _);
                 }
                 else
                 {

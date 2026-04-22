@@ -59,16 +59,11 @@ namespace ClassLibrary1.Pieces.Enemies
 
             Tile ResourceSpawn() => Game.Rand.SelectValue(tile.GetTilesInRange(obj.attacker).Where(t => t.Piece == null));
             if (Game.Rand.Bool())
-            {
                 Artifact.NewArtifact(ResourceSpawn());
-            }
             else if (Game.Rand.Bool())
-            {
-                if (Game.Rand.Bool())
-                    Biomass.NewBiomass(ResourceSpawn());
-                else
-                    Metal.NewMetal(ResourceSpawn());
-            }
+                Biomass.NewBiomass(ResourceSpawn());
+            else if (Game.Rand.Bool())
+                Metal.NewMetal(ResourceSpawn());
 
             return obj;
         }

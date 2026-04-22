@@ -21,7 +21,7 @@ namespace ClassLibrary1.Map
         internal static readonly Stopwatch watch = new();
         private static int evalCount = 0;
 
-        private static Func<Map, Point, Func<Tile, Terrain>, Tile> NewTile;
+        private static Func<Map, Point, Func<Tile, ITerrain>, Tile> NewTile;
 
         private const double TWO_PI = Math.PI * 2;
         private const double HALF_PI = Math.PI / 2.0;
@@ -41,6 +41,8 @@ namespace ClassLibrary1.Map
         private readonly Dictionary<ResourceType, int> resourcePool;
 
         internal IEnumerable<Piece> AllPieces => _pieces.Values;
+        internal IEnumerable<PointD> AllFoundations =>
+            AllPieces.Where(p => p is Foundation || p is FoundationPiece).Select(p => p.Tile.LocationD);
 
         static Map()
         {
@@ -139,6 +141,9 @@ namespace ClassLibrary1.Map
                 foreach (var p in Game.Rand.Iterate(-v, v, -v, v))
                     CreateTreasure(GetTile(p));
             }
+
+            clearTerrain.UnionWith(_explored.SelectMany(e => Tile.GetAllPointsInRange(this, e, Rand())));
+            static double Rand() => Game.Rand.GaussianCapped(Constructor.BASE_VISION / 2.0, 1);
         }
         internal void CheckStart()
         {
@@ -146,7 +151,7 @@ namespace ClassLibrary1.Map
             foreach (Point p in Game.Rand.Iterate(_explored.Concat(core.Tile.GetAllPointsInRange(core.GetBehavior<IBuilder>().Range))))
             {
                 Piece piece = GetTile(p).Piece;
-                if (piece is Terrain)
+                if (piece is ITerrain)
                 {
                     if (!Game.TEST_MAP_GEN.HasValue && piece.Tile.Visible)
                         throw new Exception();
@@ -239,21 +244,16 @@ namespace ClassLibrary1.Map
         //}
 
         [NonSerialized]
-        private Dictionary<Point, float> evaluateCache;//Tuple<float, float>> evaluateCache;
-        private float Evaluate(Point point)//, out float lineDist)
+        private Dictionary<Point, Tuple<float, float>> evaluateCache;
+        private Tuple<float, float> Evaluate(Point point)
         {
             int x = point.X, y = point.Y;
             evaluateCache ??= [];
             if (evaluateCache.TryGetValue(point, out var t))
-            {
-                //lineDist = t.Item2;
-                return t;//.Item1;
-            }
+                return t;
 
             watch.Start();
             evalCount++;
-
-            //double minLineDist = double.MaxValue;
 
             double mult = 0;
             mult += _paths.Sum(p => p.Evaluate(point));
@@ -261,15 +261,16 @@ namespace ClassLibrary1.Map
 
             double eval = noise.Evaluate(x, y);
             double dist = Tile.GetDistance(point, new(0, 0));
-            mult += (featureDist / dist / dist / Math.Abs(eval - .5));
-            //mult++;
 
-            //lineDist = (float)minLineDist;
-            float value = (float)(eval * mult);
-            evaluateCache.Add(point, value);// new(value, lineDist));
+            mult += (featureDist / dist / dist / Math.Abs(eval - .5));
+
+            float value1 = (float)(eval);
+            float value2 = (float)(eval * mult);
+            Tuple<float, float> retVal = Tuple.Create(value1, value2);
+            evaluateCache.Add(point, retVal);
 
             watch.Stop();
-            return value;
+            return retVal;
         }
 
         private static double GetDistSqr(PointD v, PointD w) => GetDistSqr(v.X, v.Y, w);
@@ -299,24 +300,54 @@ namespace ClassLibrary1.Map
         }
         internal Tile GetTile(Point p)
         {
+            Tuple<float, float> evaluate = null;
             double terrain = 1;
-            bool chasm = false;
-            if (!clearTerrain.Contains(p))
+            bool block = false, clear = clearTerrain.Contains(p);
+            if (!clear)
             {
-                terrain = Evaluate(p);//, out float lineDist);
-                                      //also use dist from center?
-                                      // (5 * terrain * Consts.PathWidth + lineDist) / 2.0 % Consts.PathWidth < 1;
-                                      //double dist = Tile.GetDistance(p, new(0, 0));
-                bool clear = false;// Math.Abs(noise.Evaluate(p.X, p.Y) - .5) < Consts.CaveDistance / dist / dist;
-                if (!chasm && !clear && terrain < 1 / 4.0)
+                evaluate = Evaluate(p);
+                terrain = evaluate.Item2;
+                //, out float lineDist);
+                //also use dist from center?
+                // (5 * terrain * Consts.PathWidth + lineDist) / 2.0 % Consts.PathWidth < 1;
+                //double dist = Tile.GetDistance(p, new(0, 0));
+                //bool clear = false;// Math.Abs(noise.Evaluate(p.X, p.Y) - .5) < Consts.CaveDistance / dist / dist;
+                if (!block && terrain < 1 / 4.0)//&& !clear
                     return null;
-                chasm |= !clear && terrain < 1 / 2.0;
+                block |= terrain < 1 / 2.0;//!clear && 
             }
             else
                 ;
 
+            double vision = 0;
+            bool island = false;
+            if (!block && !clear && AllFoundations.Any())
+            {
+                double mult = AllFoundations.Select(f => GetDistSqr(p.X, p.Y, f)).Min();
+                if (mult > 0)
+                {
+                    mult = Consts.PathWidth * Consts.PathWidth / mult;  //const double l1 = .21;
+                    const double l1 = .39;
+                    if (mult < l1)
+                        mult = Math.Pow(mult / l1, 1.0 / 65) * l1;
+                    //mult = Math.Max(mult, .39);
+                    const double l2 = 1.3;
+                    if (mult > l2)
+                        mult = l2 + Math.Pow(1 + mult - l2, 1.0 / 13) - 1;
+                    double m2 = evaluate.Item1 / .5;
+                    m2 *= m2 * m2;
+                    island = m2 * mult > 1;
+                    vision = Math.Max(0, m2 * Math.Sqrt(mult) - 1);
+                    vision *= Consts.IslandVisionMult;
+                    vision++;
+                }
+            }
+
             Piece piece = GetPiece(p);
-            return piece == null ? NewTile(this, p, t => chasm ? new Block(t, terrain) : null) : piece.Tile;
+            return piece == null ? NewTile(this, p, GetTerrain) : piece.Tile;
+
+            ITerrain GetTerrain(Tile t) =>
+                block ? new Block(t, terrain) : island ? new Island(t, vision) : null;
         }
         private Piece GetPiece(Point p)
         {
@@ -403,7 +434,7 @@ namespace ClassLibrary1.Map
 
                     Tile explored = GetTile(p);
                     CreateTreasure(explored);
-                    found |= explored != null && explored.Piece != null && explored.Piece is not Terrain;
+                    found |= explored != null && explored.Piece != null && explored.Piece is not ITerrain;
                 }
 
             Explore(point, range);
@@ -511,13 +542,16 @@ namespace ClassLibrary1.Map
             for (int a = 0; a < numResources; a++)
             {
                 Tile tile = GetTile();
-                double distMult = _caves.Select(c => c.Center).Append(Game.Player.Core.Tile.LocationD)
-                    .Concat(AllPieces.Where(p => p is Foundation || p is FoundationPiece).Select(p => p.Tile.LocationD))
+                double distMult = _caves.Select(c => c.Center).Concat(AllFoundations)
+                    .Concat(clearTerrain.Concat(Game.Player.Core.Tile.GetAllPointsInRange(Constructor.BASE_VISION))
+                        .Select(p => new PointD(p.X, p.Y)))
                     .Min(p => Tile.GetDistanceD(tile.X, tile.Y, p.X, p.Y));
                 distMult /= (distMult + (Consts.CaveSize + Consts.PathWidth) / 6.5);
                 distMult *= distMult * distMult;
+                if (!Game.TEST_MAP_GEN.HasValue && tile.Visible)
+                    foundationMult = 0;
 
-                if (resourcePool.Values.Any(v => v == 0))
+                if (resourcePool.Values.Any(v => v <= 0))
                 {
                     resourcePool[ResourceType.Artifact] += 2;
                     resourcePool[ResourceType.Foundation] += 4;
@@ -543,17 +577,19 @@ namespace ClassLibrary1.Map
                         Metal.NewMetal(tile);
                         break;
                     case ResourceType.Foundation:
-                        static int CountAdjacent(Tile tile)
+
+                        int count = 0;
+                        double avg = (Math.E + Math.PI) / 2.0; //~2.930
+                        int size = Game.Rand.GaussianOEInt(avg, .21, .26, 1);
+                        while (true)
                         {
-                            int count = tile.GetAdjacentTiles().Where(t => t.Piece is Foundation).Count();
-                            return 1 + (1 + count) * count;// * count;
-                        }
-                        int size = Game.Rand.GaussianOEInt(Math.PI, .21, .39, 1);
-                        for (int b = 0; b < size; b++)
-                        {
+                            count++;
                             Foundation.NewFoundation(tile);
+                            if (count >= size)
+                                break;
+
                             Dictionary<Tile, int> neighbors = [];
-                            while (neighbors.Count == 0 && Game.Rand.Bool(1 - 1 / 169.0))
+                            while (neighbors.Count == 0 && Game.Rand.Next(169) > 0)
                                 neighbors = tile.GetPointsInRangeUnblocked(1 + Game.Rand.OE())
                                     .Select(this.GetTile)
                                     .Where(t => t != null && t.Piece == null && (Game.TEST_MAP_GEN.HasValue || !t.Visible))
@@ -562,8 +598,15 @@ namespace ClassLibrary1.Map
                                 break;
                             tile = Game.Rand.SelectValue(neighbors);
                         }
+
+                        resourcePool[type] -= Game.Rand.Round(count / avg) - 1; //- 1 to account for the first one already removed from the pool
                         break;
                 }
+            }
+            static int CountAdjacent(Tile tile)
+            {
+                int count = tile.GetAdjacentTiles().Where(t => t.Piece is Foundation).Count();
+                return 1 + (1 + count) * count;// * count;
             }
         }
 
@@ -676,7 +719,7 @@ namespace ClassLibrary1.Map
                     for (int a = 0; a < extra; a++)
                     {
                         Tile tile = Game.Map.GetTile(p.X + Game.Rand.GaussianInt(), p.Y + Game.Rand.GaussianInt());
-                        if (tile != null && tile.Piece is Terrain && (Game.TEST_MAP_GEN.HasValue || Game.GameOver || !tile.Visible))
+                        if (tile != null && tile.Piece is ITerrain && (Game.TEST_MAP_GEN.HasValue || Game.GameOver || !tile.Visible))
                             list.Add(tile.Location);
                     }
                     return list;
@@ -786,7 +829,7 @@ namespace ClassLibrary1.Map
                             if (visibleOnly && !Visible(p))
                                 return false;
                             var piece = tile?.Piece;
-                            if (tile == null || piece is Terrain)
+                            if (tile == null || piece is ITerrain)
                                 return includeBlocked;
                             return p == from || p == to || piece is null || piece.HasBehavior<IMovable>();
                         }).Select(p2 =>
@@ -807,7 +850,7 @@ namespace ClassLibrary1.Map
                 foreach (var p in path)
                 {
                     Tile tile = GetTile(p);
-                    if (tile == null || tile.Piece is Terrain)
+                    if (tile == null || tile.Piece is ITerrain)
                         blocked.Add(p);
                 }
 

@@ -100,237 +100,258 @@ namespace WinFormsApp1
 
             this.btnTrade.Visible = Program.Game.Player.CanBurnMass() || Program.Game.Player.CanFabricateMass() || Program.Game.Player.CanScrapResearch();
 
-            if (Selected != null && Selected.Piece != null)
+            if (Selected != null && (Selected.Piece != null || Selected.Terrain != null))
             {
                 lblHeading.Show();
-                lblHeading.Text = Selected.Piece.ToString();
+                lblHeading.Text = ((object)Selected.Piece ?? Selected.Terrain)!.ToString();
 
                 PlayerPiece playerPiece = Selected.Piece as PlayerPiece;
 
-                if (Selected.Piece.HasBehavior(out IKillable killable))
+                IMissileSilo silo = null;
+                if (Selected.Piece != null)
                 {
-                    double repairInc = 0;
-                    if (playerPiece != null)
-                        repairInc = playerPiece.GetRepairInc();
-
-                    lbl1.Show();
-                    lblInf1.Show();
-                    lbl1.Text = "Defense";
-
-                    lblInf1.Text = $"{killable.Hits.DefenseCur}"
-                        + (killable.Hits.DefenseCur < killable.Hits.DefenseMax ? $"/{killable.Hits.DefenseMax}" : "")
-                        + (repairInc > 0 ? $"+{FormatUsuallyInt(repairInc)}" : "");
-
-                    Defense armor = killable.Protection.Where(d => d.Type == DefenseType.Armor).FirstOrDefault();
-                    if (playerPiece is Drone drone)
+                    if (Selected.Piece.HasBehavior(out IKillable killable))
                     {
+                        double repairInc = 0;
+                        if (playerPiece != null)
+                            repairInc = playerPiece.GetRepairInc();
+
+                        lbl1.Show();
+                        lblInf1.Show();
+                        lbl1.Text = "Defense";
+
+                        lblInf1.Text = $"{killable.Hits.DefenseCur}"
+                            + (killable.Hits.DefenseCur < killable.Hits.DefenseMax ? $"/{killable.Hits.DefenseMax}" : "")
+                            + (repairInc > 0 ? $"+{FormatUsuallyInt(repairInc)}" : "");
+
+                        Defense armor = killable.Protection.Where(d => d.Type == DefenseType.Armor).FirstOrDefault();
+                        if (playerPiece is Drone drone)
+                        {
+                            if (armor != null)
+                                throw new Exception();
+                            lbl2.Show();
+                            lblInf2.Show();
+                            lbl2.Text = "Duration";
+                            lblInf2.Text = drone.Turns.ToString();
+                        }
                         if (armor != null)
-                            throw new Exception();
-                        lbl2.Show();
-                        lblInf2.Show();
-                        lbl2.Text = "Duration";
-                        lblInf2.Text = drone.Turns.ToString();
+                        {
+                            lbl2.Show();
+                            lblInf2.Show();
+                            lbl2.Text = "Armor";
+                            lblInf2.Text = $"{armor.DefenseCur}"
+                                + (armor.DefenseCur < armor.DefenseMax ? $"/{armor.DefenseMax}" : "")
+                                + (armor.GetRegen() > 0 ? $"+{FormatUsuallyInt(armor.GetRegen())}" : "");
+                        }
+                        Defense shield = killable.Protection.Where(d => d.Type == DefenseType.Shield).FirstOrDefault();
+                        if (shield != null)
+                        {
+                            lbl3.Show();
+                            lblInf3.Show();
+                            lbl3.Text = "Shields";
+                            lblInf3.Text = $"{shield.DefenseCur}"
+                                + (shield.DefenseCur < shield.DefenseMax ? $"/{shield.DefenseMax}" : "")
+                                + (shield.GetRegen() > 0 ? $"+{shield.GetRegen()}" : "");
+                        }
+
+                        lbl4.Show();
+                        lblInf4.Show();
+                        lbl4.Text = killable.Hits.DefenseCur < killable.Hits.DefenseMax ? "Efficiency" : "Resilience";
+                        lblInf4.Text = string.Format("{0}{1}",
+                            FormatPct(killable.Hits.DefenseCur < killable.Hits.DefenseMax ? Consts.GetDamagedValue(killable.Piece, 1, 0) : killable.Resilience),
+                            killable.Hits.DefenseCur < killable.Hits.DefenseMax ? string.Format(" ({0})", FormatPct(killable.Resilience)) : "");
                     }
-                    if (armor != null)
+
+                    if (Selected.Piece.HasBehavior(out silo))
                     {
-                        lbl2.Show();
-                        lblInf2.Show();
-                        lbl2.Text = "Armor";
-                        lblInf2.Text = $"{armor.DefenseCur}"
-                            + (armor.DefenseCur < armor.DefenseMax ? $"/{armor.DefenseMax}" : "")
-                            + (armor.GetRegen() > 0 ? $"+{FormatUsuallyInt(armor.GetRegen())}" : "");
+                        lbl5.Show();
+                        lblInf5.Show();
+                        lbl5.Text = "Missiles";
+                        lblInf5.Text = silo.NumMissiles.ToString();
+
+                        cbxMissile.Show();
+                        cbxMissile.Checked = silo.Producing;
                     }
-                    Defense shield = killable.Protection.Where(d => d.Type == DefenseType.Shield).FirstOrDefault();
-                    if (shield != null)
+                    else if (Selected.Piece.HasBehavior(out IMovable movable))
                     {
-                        lbl3.Show();
-                        lblInf3.Show();
-                        lbl3.Text = "Shields";
-                        lblInf3.Text = $"{shield.DefenseCur}"
-                            + (shield.DefenseCur < shield.DefenseMax ? $"/{shield.DefenseMax}" : "")
-                            + (shield.GetRegen() > 0 ? $"+{shield.GetRegen()}" : "");
+                        lbl5.Show();
+                        lblInf5.Show();
+                        lbl5.Text = "Movement";
+                        lblInf5.Text = string.Format("{0} / {1} / {2} +{3}{4}",
+                                Format(movable.MoveCur), (movable.MoveMax), (movable.MoveLimit), Format(movable.GetInc()),
+                                CheckBase(movable.MoveIncBase, movable.GetInc()));
                     }
 
-                    lbl4.Show();
-                    lblInf4.Show();
-                    lbl4.Text = killable.Hits.DefenseCur < killable.Hits.DefenseMax ? "Efficiency" : "Resilience";
-                    lblInf4.Text = string.Format("{0}{1}",
-                        FormatPct(killable.Hits.DefenseCur < killable.Hits.DefenseMax ? Consts.GetDamagedValue(killable.Piece, 1, 0) : killable.Resilience),
-                        killable.Hits.DefenseCur < killable.Hits.DefenseMax ? string.Format(" ({0})", FormatPct(killable.Resilience)) : "");
-                }
-
-                if (Selected.Piece.HasBehavior(out IMissileSilo silo))
-                {
-                    lbl5.Show();
-                    lblInf5.Show();
-                    lbl5.Text = "Missiles";
-                    lblInf5.Text = silo.NumMissiles.ToString();
-
-                    cbxMissile.Show();
-                    cbxMissile.Checked = silo.Producing;
-                }
-                else if (Selected.Piece.HasBehavior(out IMovable movable))
-                {
-                    lbl5.Show();
-                    lblInf5.Show();
-                    lbl5.Text = "Movement";
-                    lblInf5.Text = string.Format("{0} / {1} / {2} +{3}{4}",
-                            Format(movable.MoveCur), (movable.MoveMax), (movable.MoveLimit), Format(movable.GetInc()),
-                            CheckBase(movable.MoveIncBase, movable.GetInc()));
-                }
-
-                if (playerPiece != null)
-                {
-                    lbl6.Show();
-                    lblInf6.Show();
-                    lbl6.Text = "Vision";
-                    lblInf6.Text = string.Format("{0}{1}", FormatDown(playerPiece.Vision), CheckBase(playerPiece.VisionBase, playerPiece.Vision, FormatDown));
-
-                    if (playerPiece is not Extractor)
+                    if (playerPiece != null)
                     {
-                        double energyInc, massInc, researchInc;
-                        energyInc = massInc = researchInc = 0;
-                        playerPiece.GetIncome(ref energyInc, ref massInc, ref researchInc);
+                        lbl6.Show();
+                        lblInf6.Show();
+                        lbl6.Text = "Vision";
+                        lblInf6.Text = string.Format("{0}{1}", FormatDown(playerPiece.Vision), CheckBase(playerPiece.VisionBase, playerPiece.Vision, FormatDown));
+
+                        if (playerPiece is not Extractor)
+                        {
+                            double energyInc, massInc, researchInc;
+                            energyInc = massInc = researchInc = 0;
+                            playerPiece.GetIncome(ref energyInc, ref massInc, ref researchInc);
+                            if (energyInc != 0)
+                            {
+                                lbl7.Show();
+                                lblInf7.Show();
+                                lbl7.Text = "Energy";
+                                lblInf7.Text = FormatInc(energyInc, Consts.CoreEnergy);
+                            }
+                            if (massInc != 0)
+                            {
+                                lbl8.Show();
+                                lblInf8.Show();
+                                lbl8.Text = "Mass";
+                                lblInf8.Text = FormatInc(massInc, Consts.CoreMass);
+                            }
+                            if (researchInc != 0)
+                            {
+                                lbl9.Show();
+                                lblInf9.Show();
+                                lbl9.Text = "Research";
+                                lblInf9.Text = FormatInc(researchInc, Consts.CoreResearch);
+                            }
+                            string FormatInc(double inc, double coreValue)
+                            {
+                                if (playerPiece is not Core)
+                                    coreValue = inc;
+                                return string.Format("{1}{0}{2}", Format(inc), inc < 0 ? "" : "+", playerPiece is Core core ? $" ({FormatPct(inc / coreValue)})" : "");
+                            }
+                        }
+                    }
+                    //if (Selected.Piece is Alien alien)
+                    //{
+                    //    lbl6.Show();
+                    //    lblInf6.Show();
+                    //    lbl6.Text = "Behavior";
+                    //    lblInf6.Text = alien.State.ToString();
+
+                    //    lbl7.Show();
+                    //    lblInf7.Show();
+                    //    lbl7.Text = "Morale";
+                    //    lblInf7.Text = FormatPct(alien.Morale);
+                    //}
+
+                    var builder = Selected.Piece.GetBehavior<IBuilder>();
+                    var repair = Selected.Piece.GetBehavior<IRepair>();
+                    if (repair != null)
+                    {
+                        lbl10.Text = "Repair";
+                        lblInf10.Text = string.Format("+{0}{1}", FormatUsuallyInt(repair.Rate), CheckBase(repair.RateBase, repair.Rate, v => FormatUsuallyInt(v.Value)));
+                    }
+                    else
+                    {
+                        lbl10.Text = null;
+                        lblInf10.Text = null;
+                    }
+                    if (builder != null)
+                    {
+                        lbl10.Show();
+                        lblInf10.Show();
+                        bool noRepair = (lbl10.Text == null || lbl10.Text.Trim().Length == 0);
+                        if (noRepair)
+                            lbl10.Text = "Range";
+                        lblInf10.Text = string.Format(noRepair ? "{0}{1}" : "{2}, {0}{1}",
+                            Format(builder.Range), CheckBase(builder.RangeBase, builder.Range), lblInf10.Text);
+                    }
+
+                    Resource resource = Selected.Piece as Resource;
+                    Extractor extractor = Selected.Piece as Extractor;
+                    if (resource == null && extractor != null)
+                        resource = extractor.Resource;
+                    if (resource != null)
+                    {
+                        if (extractor == null)
+                        {
+                            Extractor.Cost(out int energy, out int mass, resource);
+                            lbl2.Show();
+                            lblInf2.Show();
+                            lbl2.Text = "Build Cost";
+                            lblInf2.Text = string.Format("{0} : {1}", (energy), (mass));
+                        }
+
+                        IIncome income = ((IIncome)extractor ?? resource);
+                        income.GetIncome(out double energyInc, out double massInc, out double researchInc);
+
                         if (energyInc != 0)
                         {
                             lbl7.Show();
                             lblInf7.Show();
                             lbl7.Text = "Energy";
-                            lblInf7.Text = FormatInc(energyInc, Consts.CoreEnergy);
+                            lblInf7.Text = string.Format("{1}{0}{2}", Format(energyInc), energyInc > 0 ? "+" : "", CheckBase(resource as Biomass, energyInc));
                         }
                         if (massInc != 0)
                         {
                             lbl8.Show();
                             lblInf8.Show();
                             lbl8.Text = "Mass";
-                            lblInf8.Text = FormatInc(massInc, Consts.CoreMass);
+                            lblInf8.Text = string.Format("{1}{0}{2}", Format(massInc), massInc > 0 ? "+" : "", CheckBase(resource as Metal, massInc));
                         }
                         if (researchInc != 0)
                         {
                             lbl9.Show();
                             lblInf9.Show();
                             lbl9.Text = "Research";
-                            lblInf9.Text = FormatInc(researchInc, Consts.CoreResearch);
+                            lblInf9.Text = string.Format("{1}{0}{2}", Format(researchInc), researchInc > 0 ? "+" : "", CheckBase(resource as Artifact, researchInc));
                         }
-                        string FormatInc(double inc, double coreValue)
+
+                        double sustain = extractor?.Sustain ?? resource.Sustain;
+                        lbl10.Show();
+                        lblInf10.Show();
+                        lbl10.Text = "Sustainability";
+                        lblInf10.Text = string.Format("{0}{1}", FormatPct(sustain), CheckBase(resource.Sustain, sustain, FormatPct));
+                    }
+
+                    var attacks = Enumerable.Empty<Attack>();
+                    if (Selected.Piece.HasBehavior(out IAttacker attacker))
+                        attacks = attacker.Attacks;
+                    if (silo != null)
+                        attacks = [silo.SampleAttack];
+                    if (attacks.Any())
+                    {
+                        dgvAttacks.Show();
+
+                        //int idx = 0;
+                        dgvAttacks.DataSource = attacks.OrderByDescending(a => a.Range).Select(a => new
                         {
-                            if (playerPiece is not Core)
-                                coreValue = inc;
-                            return string.Format("{1}{0}{2}", Format(inc), inc < 0 ? "" : "+", playerPiece is Core core ? $" ({FormatPct(inc / coreValue)})" : "");
-                        }
-                    }
-                }
-                //if (Selected.Piece is Alien alien)
-                //{
-                //    lbl6.Show();
-                //    lblInf6.Show();
-                //    lbl6.Text = "Behavior";
-                //    lblInf6.Text = alien.State.ToString();
+                            Online = a.CanAttack().ToString(),
+                            a.Type,
+                            Range = a.Range > Attack.MELEE_RANGE ?
+                                $"{a.Range:0.0}" + (a.Range.ToString("0.0") != a.RangeBase.ToString("0.0") ? $" / {a.RangeBase:0.0}" : "") : "Melee",
+                            Attack = $"{a.AttackCur}" + (a.AttackCur < a.AttackMax ? $" / {a.AttackMax}" : ""),
+                            Reload = $"+{FormatUsuallyInt(a.Reload)}" + (FormatUsuallyInt(a.Reload) != a.ReloadBase.ToString() ? $" / {a.ReloadBase}" : ""),
+                        }).ToList();
+                        dgvAttacks.Columns["Online"].Visible = attacks.Any(a => !a.CanAttack());
+                        dgvAttacks.Columns["Type"].Visible = attacks.Any(a => a.Type != AttackType.Kinetic);
+                        dgvAttacks.Columns["Range"].Visible = attacks.Any(a => a.Range > Attack.MELEE_RANGE);
+                        dgvAttacks.Columns["Reload"].Visible = silo is null;
 
-                //    lbl7.Show();
-                //    lblInf7.Show();
-                //    lbl7.Text = "Morale";
-                //    lblInf7.Text = FormatPct(alien.Morale);
-                //}
-
-                var builder = Selected.Piece.GetBehavior<IBuilder>();
-                var repair = Selected.Piece.GetBehavior<IRepair>();
-                if (repair != null)
-                {
-                    lbl10.Text = "Repair";
-                    lblInf10.Text = string.Format("+{0}{1}", FormatUsuallyInt(repair.Rate), CheckBase(repair.RateBase, repair.Rate, v => FormatUsuallyInt(v.Value)));
-                }
-                else
-                {
-                    lbl10.Text = null;
-                    lblInf10.Text = null;
-                }
-                if (builder != null)
-                {
-                    lbl10.Show();
-                    lblInf10.Show();
-                    bool noRepair = (lbl10.Text == null || lbl10.Text.Trim().Length == 0);
-                    if (noRepair)
-                        lbl10.Text = "Range";
-                    lblInf10.Text = string.Format(noRepair ? "{0}{1}" : "{2}, {0}{1}",
-                        Format(builder.Range), CheckBase(builder.RangeBase, builder.Range), lblInf10.Text);
-                }
-
-                Resource resource = Selected.Piece as Resource;
-                Extractor extractor = Selected.Piece as Extractor;
-                if (resource == null && extractor != null)
-                    resource = extractor.Resource;
-                if (resource != null)
-                {
-                    if (extractor == null)
-                    {
-                        Extractor.Cost(out int energy, out int mass, resource);
-                        lbl2.Show();
-                        lblInf2.Show();
-                        lbl2.Text = "Build Cost";
-                        lblInf2.Text = string.Format("{0} : {1}", (energy), (mass));
+                        int labelsY = this.Controls.OfType<Label>().Where(lbl => lbl.Visible && lbl.Parent != this.panel1).Max(lbl => lbl.Location.Y + lbl.Height);
+                        dgvAttacks.MaximumSize = new Size(this.Width, this.panel1.Location.Y - labelsY);
+                        dgvAttacks.Size = dgvAttacks.PreferredSize;
+                        dgvAttacks.Location = new Point(0, this.panel1.Location.Y - dgvAttacks.Height);
                     }
 
-                    IIncome income = ((IIncome)extractor ?? resource);
-                    income.GetIncome(out double energyInc, out double massInc, out double researchInc);
-
-                    if (energyInc != 0)
+                    if (Selected.Terrain is Island island)
                     {
-                        lbl7.Show();
-                        lblInf7.Show();
-                        lbl7.Text = "Energy";
-                        lblInf7.Text = string.Format("{1}{0}{2}", Format(energyInc), energyInc > 0 ? "+" : "", CheckBase(resource as Biomass, energyInc));
+                        lblHeading.Text = $"{lblHeading.Text} ({island})";
                     }
-                    if (massInc != 0)
-                    {
-                        lbl8.Show();
-                        lblInf8.Show();
-                        lbl8.Text = "Mass";
-                        lblInf8.Text = string.Format("{1}{0}{2}", Format(massInc), massInc > 0 ? "+" : "", CheckBase(resource as Metal, massInc));
-                    }
-                    if (researchInc != 0)
-                    {
-                        lbl9.Show();
-                        lblInf9.Show();
-                        lbl9.Text = "Research";
-                        lblInf9.Text = string.Format("{1}{0}{2}", Format(researchInc), researchInc > 0 ? "+" : "", CheckBase(resource as Artifact, researchInc));
-                    }
-
-                    double sustain = extractor?.Sustain ?? resource.Sustain;
-                    lbl10.Show();
-                    lblInf10.Show();
-                    lbl10.Text = "Sustainability";
-                    lblInf10.Text = string.Format("{0}{1}", FormatPct(sustain), CheckBase(resource.Sustain, sustain, FormatPct));
                 }
-
-                var attacks = Enumerable.Empty<Attack>();
-                if (Selected.Piece.HasBehavior(out IAttacker attacker))
-                    attacks = attacker.Attacks;
-                if (silo != null)
-                    attacks = [silo.SampleAttack];
-                if (attacks.Any())
+                else if (Selected.Terrain is Island island)
                 {
-                    dgvAttacks.Show();
+                    lbl1.Show();
+                    lblInf1.Show();
+                    lbl1.Text = "Defense";
+                    lblInf1.Text = "+" + Island.Defense.ToString();
 
-                    //int idx = 0;
-                    dgvAttacks.DataSource = attacks.OrderByDescending(a => a.Range).Select(a => new
-                    {
-                        Online = a.CanAttack().ToString(),
-                        a.Type,
-                        Range = a.Range > Attack.MELEE_RANGE ?
-                            $"{a.Range:0.0}" + (a.Range.ToString("0.0") != a.RangeBase.ToString("0.0") ? $" / {a.RangeBase:0.0}" : "") : "Melee",
-                        Attack = $"{a.AttackCur}" + (a.AttackCur < a.AttackMax ? $" / {a.AttackMax}" : ""),
-                        Reload = $"+{FormatUsuallyInt(a.Reload)}" + (FormatUsuallyInt(a.Reload) != a.ReloadBase.ToString() ? $" / {a.ReloadBase}" : ""),
-                    }).ToList();
-                    dgvAttacks.Columns["Online"].Visible = attacks.Any(a => !a.CanAttack());
-                    dgvAttacks.Columns["Type"].Visible = attacks.Any(a => a.Type != AttackType.Kinetic);
-                    dgvAttacks.Columns["Range"].Visible = attacks.Any(a => a.Range > Attack.MELEE_RANGE);
-                    dgvAttacks.Columns["Reload"].Visible = silo is null;
-
-                    int labelsY = this.Controls.OfType<Label>().Where(lbl => lbl.Visible && lbl.Parent != this.panel1).Max(lbl => lbl.Location.Y + lbl.Height);
-                    dgvAttacks.MaximumSize = new Size(this.Width, this.panel1.Location.Y - labelsY);
-                    dgvAttacks.Size = dgvAttacks.PreferredSize;
-                    dgvAttacks.Location = new Point(0, this.panel1.Location.Y - dgvAttacks.Height);
+                    lbl6.Show();
+                    lblInf6.Show();
+                    lbl6.Text = "Vision";
+                    lblInf6.Text = "+" + island.Vision.ToString("0.0");
                 }
             }
 
@@ -752,12 +773,12 @@ namespace WinFormsApp1
         private bool CanReplace(out Piece piece)
         {
             IBuilder builder = null;
-            if (Selected != null)
+            if (Selected != null && Selected.Piece is Outpost outpost)
             {
-                if (Selected.Piece is Extractor)
-                    builder = BuildForm.GetBuilder<IBuilder.IReplacer<Extractor>>(Selected);
-                else if (Selected.Piece is FoundationPiece)
-                    builder = BuildForm.GetBuilder<IBuilder.IReplacer<FoundationPiece>>(Selected);
+                builder ??= BuildForm.GetBuilder<IBuilder.IBuildFactory>(Selected);
+                builder ??= BuildForm.GetBuilder<IBuilder.IBuildTurret>(Selected);
+                //else if (Selected.Piece is FoundationPiece)
+                //builder = BuildForm.GetBuilder<IBuilder.IReplacer<FoundationPiece>>(Selected);
             }
             piece = builder?.Piece;
             return builder != null;

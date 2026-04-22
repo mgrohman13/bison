@@ -1,12 +1,27 @@
 ﻿using System;
 using System.Runtime.Serialization;
-using Tile = ClassLibrary1.Map.Map.Tile;
+using static ClassLibrary1.Map.Map;
 
 namespace ClassLibrary1.Pieces.Terrain
 {
     [Serializable]
     [DataContract(IsReference = true)]
-    public class Terrain(Map.Map.Tile tile) : Piece(null, tile)
+    public class Island(Tile tile, double vision) : Terain(tile)
     {
+        public const int Defense = 1;
+        public readonly double Vision = vision;
+
+        public override string ToString() => "Hill";
+    }
+    [Serializable]
+    [DataContract(IsReference = true)]
+    public class Terain(Tile tile) : ITerrain
+    {
+        private readonly Tile _tile = tile;
+        public Tile Tile => _tile;
+    }
+    public interface ITerrain
+    {
+        Tile Tile { get; }
     }
 }

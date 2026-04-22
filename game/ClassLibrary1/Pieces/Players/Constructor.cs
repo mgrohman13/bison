@@ -56,6 +56,8 @@ namespace ClassLibrary1.Pieces.Players
             energy = values.Energy;
             mass = values.Mass;
         }
+        internal override void Cost(out int energy, out int mass) =>
+            Cost(Game, out energy, out mass);
 
         public bool CanUpgrade => _canUpgrade;
         internal override void OnResearch(Research.Type type)
@@ -124,7 +126,7 @@ namespace ClassLibrary1.Pieces.Players
         {
             get
             {
-                Cost(Game, out int energy, out int mass);
+                Cost(out int energy, out int mass);
                 return Consts.GetRepairCost(this, energy, mass);
             }
         }

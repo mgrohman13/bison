@@ -57,79 +57,79 @@ namespace ClassLibrary1.Pieces.Behavior
             return tile != null && tile.Visible && tile.GetDistance(Piece.Tile) <= Range
                 && (empty ? tile.Piece == null : !tile.Piece.HasBehavior(out IMissileSilo silo) || silo.NumMissiles == 0);
         }
-        private T Replace<T>(bool doReplace, T piece, CostFunc GetNewCost, Func<double> GetRounding, Func<T> NewPiece, bool validateHits,
-            out int energy, out int mass, out bool couldReplace, out bool canReplace)
-            where T : PlayerPiece
-        {
-            T newPiece = null;
-            IKillable killable = null;
-            energy = mass = 0;
-            couldReplace = piece != null && Validate(piece.Tile, false) && piece.HasBehavior(out killable)
-                && (!validateHits || killable.Hits.DefenseCur < killable.Hits.DefenseMax);
-            canReplace = false;
-            if (couldReplace)
-            {
-                GetNewCost(out int newEnergy, out int newMass);
-                if (piece is Extractor)
-                {
-                    energy = newEnergy;
-                    mass = newMass;
-                }
-                else if (piece is Outpost)
-                    Outpost.Cost(piece.Game, out energy, out mass);
-                else if (piece is Factory)
-                    Factory.Cost(piece.Game, out energy, out mass);
-                else if (piece is Turret)
-                    Turret.Cost(piece.Game, out energy, out mass);
-                else if (piece is Generator)
-                    Generator.Cost(piece.Game, out energy, out mass);
-                else throw new Exception();
+        //private T Replace<T>(bool doReplace, T piece, CostFunc GetNewCost, Func<double> GetRounding, Func<T> NewPiece, bool validateHits,
+        //    out int energy, out int mass, out bool couldReplace, out bool canReplace)
+        //    where T : PlayerPiece
+        //{
+        //    T newPiece = null;
+        //    IKillable killable = null;
+        //    energy = mass = 0;
+        //    couldReplace = piece != null && Validate(piece.Tile, false) && piece.HasBehavior(out killable)
+        //        && (!validateHits || killable.Hits.DefenseCur < killable.Hits.DefenseMax);
+        //    canReplace = false;
+        //    if (couldReplace)
+        //    {
+        //        GetNewCost(out int newEnergy, out int newMass);
+        //        if (piece is Extractor)
+        //        {
+        //            energy = newEnergy;
+        //            mass = newMass;
+        //        }
+        //        else if (piece is Outpost)
+        //            Outpost.Cost(piece.Game, out energy, out mass);
+        //        else if (piece is Factory)
+        //            Factory.Cost(piece.Game, out energy, out mass);
+        //        else if (piece is Turret)
+        //            Turret.Cost(piece.Game, out energy, out mass);
+        //        else if (piece is Generator)
+        //            Generator.Cost(piece.Game, out energy, out mass);
+        //        else throw new Exception();
 
-                double totCur = 0, totStart = 0, addEnergy = 0;
-                void ApplyValue(double cur, double start, double energyMult)
-                {
-                    cur = Consts.StatValue(cur);
-                    start = Consts.StatValue(start);
-                    if (cur > start)
-                    {
-                        addEnergy += (cur - start) * energyMult;
-                        cur = start;
-                    }
-                    totCur += cur;
-                    totStart += start;
-                }
-                foreach (var d in killable.Protection)
-                    ApplyValue(d.DefenseCur, CombatTypes.GetStartCur(d.Type, d.DefenseMax), Consts.EnergyPerShield); //assuming EnergyPerShield...
-                if (piece.HasBehavior(out IAttacker attacker))
-                    foreach (var a in attacker.Attacks)
-                        ApplyValue(a.AttackCur, CombatTypes.GetStartCur(a.Type, a.AttackMax), Consts.EnergyPerAttack);
-                if (totCur > totStart) throw new Exception();
-                double mult = totStart == 0 ? 1 : (totCur / totStart + 1.0) / 2.0;
+        //        double totCur = 0, totStart = 0, addEnergy = 0;
+        //        void ApplyValue(double cur, double start, double energyMult)
+        //        {
+        //            cur = Consts.StatValue(cur);
+        //            start = Consts.StatValue(start);
+        //            if (cur > start)
+        //            {
+        //                addEnergy += (cur - start) * energyMult;
+        //                cur = start;
+        //            }
+        //            totCur += cur;
+        //            totStart += start;
+        //        }
+        //        foreach (var d in killable.Protection)
+        //            ApplyValue(d.DefenseCur, CombatTypes.GetStartCur(d.Type, d.DefenseMax), Consts.EnergyPerShield); //assuming EnergyPerShield...
+        //        if (piece.HasBehavior(out IAttacker attacker))
+        //            foreach (var a in attacker.Attacks)
+        //                ApplyValue(a.AttackCur, CombatTypes.GetStartCur(a.Type, a.AttackMax), Consts.EnergyPerAttack);
+        //        if (totCur > totStart) throw new Exception();
+        //        double mult = totStart == 0 ? 1 : (totCur / totStart + 1.0) / 2.0;
 
-                mult *= Consts.ReplaceRefundPct * Consts.StatValue(killable.Hits.DefenseCur) / Consts.StatValue(killable.Hits.DefenseMax);
-                double rounding = GetRounding();
-                energy = MTRandom.Round(newEnergy - energy * mult - addEnergy, 1 - rounding);
-                mass = MTRandom.Round(newMass - mass * mult, rounding);
+        //        mult *= Consts.ReplaceRefundPct * Consts.StatValue(killable.Hits.DefenseCur) / Consts.StatValue(killable.Hits.DefenseMax);
+        //        double rounding = GetRounding();
+        //        energy = MTRandom.Round(newEnergy - energy * mult - addEnergy, 1 - rounding);
+        //        mass = MTRandom.Round(newMass - mass * mult, rounding);
 
-                if (Piece.Game.Player.Has(energy, mass))
-                {
-                    if (doReplace)
-                    {
-                        Tile tile = piece.Tile;
+        //        if (Piece.Game.Player.Has(energy, mass))
+        //        {
+        //            if (doReplace)
+        //            {
+        //                Tile tile = piece.Tile;
 
-                        piece.Die(out _, out _);
-                        //todo: replace??
-                        //Piece.Game.Player.AddResources(treasure);
+        //                piece.Die(out _, out _);
+        //                //todo: replace??
+        //                //Piece.Game.Player.AddResources(treasure);
 
-                        if (tile.Piece is not null && tile.Piece is not Treasure && Piece.Game.Player.Spend(energy, mass))
-                            newPiece = NewPiece();
-                    }
-                    canReplace = true;
-                }
-            }
-            return newPiece;
-        }
-        private delegate void CostFunc(out int energy, out int mass);
+        //                if (tile.Piece is not null && tile.Piece is not Treasure && Piece.Game.Player.Spend(energy, mass))
+        //                    newPiece = NewPiece();
+        //            }
+        //            canReplace = true;
+        //        }
+        //    }
+        //    return newPiece;
+        //}
+        //private delegate void CostFunc(out int energy, out int mass);
 
         [Serializable]
         [DataContract(IsReference = true)]
@@ -160,14 +160,14 @@ namespace ClassLibrary1.Pieces.Behavior
                 }
                 return null;
             }
-            public Extractor Replace(bool doReplace, Extractor extractor, out int energy, out int mass, out bool couldReplace, out bool canReplace)
-            {
-                return Replace(doReplace, extractor,
-                    (out e, out m) => Extractor.Cost(out e, out m, extractor.Resource),
-                    () => extractor.Resource.Rounding,
-                    () => Extractor.NewExtractor(extractor.Resource),
-                    false, out energy, out mass, out couldReplace, out canReplace); //true
-            }
+            //public Extractor Replace(bool doReplace, Extractor extractor, out int energy, out int mass, out bool couldReplace, out bool canReplace)
+            //{
+            //    return Replace(doReplace, extractor,
+            //        (out e, out m) => Extractor.Cost(out e, out m, extractor.Resource),
+            //        () => extractor.Resource.Rounding,
+            //        () => Extractor.NewExtractor(extractor.Resource),
+            //        false, out energy, out mass, out couldReplace, out canReplace); //true
+            //}
         }
         [Serializable]
         [DataContract(IsReference = true)]
@@ -197,15 +197,15 @@ namespace ClassLibrary1.Pieces.Behavior
                 }
                 return null;
             }
-            public FoundationPiece Replace(bool doReplace, FoundationPiece foundationPiece, out int energy, out int mass, out bool couldReplace, out bool canReplace)
-            {
-                Tile tile = foundationPiece?.Tile;
-                return Replace(doReplace, foundationPiece,
-                    (out e, out m) => Outpost.Cost(Piece.Game, out e, out m),
-                    () => Outpost.GetRounding(Piece.Game),
-                    () => Outpost.NewOutpost((Foundation)tile.Piece),
-                    false, out energy, out mass, out couldReplace, out canReplace);
-            }
+            //public FoundationPiece Replace(bool doReplace, FoundationPiece foundationPiece, out int energy, out int mass, out bool couldReplace, out bool canReplace)
+            //{
+            //    Tile tile = foundationPiece?.Tile;
+            //    return Replace(doReplace, foundationPiece,
+            //        (out e, out m) => Outpost.Cost(Piece.Game, out e, out m),
+            //        () => Outpost.GetRounding(Piece.Game),
+            //        () => Outpost.NewOutpost((Foundation)tile.Piece),
+            //        false, out energy, out mass, out couldReplace, out canReplace);
+            //}
         }
         [Serializable]
         [DataContract(IsReference = true)]
@@ -221,15 +221,15 @@ namespace ClassLibrary1.Pieces.Behavior
                 }
                 return null;
             }
-            public FoundationPiece Replace(bool doReplace, FoundationPiece foundationPiece, out int energy, out int mass, out bool couldReplace, out bool canReplace)
-            {
-                Tile tile = foundationPiece?.Tile;
-                return Replace(doReplace, foundationPiece,
-                    (out e, out m) => Factory.Cost(Piece.Game, out e, out m),
-                    () => Factory.GetRounding(Piece.Game),
-                    () => Factory.NewFactory((Foundation)tile.Piece),
-                    false, out energy, out mass, out couldReplace, out canReplace);
-            }
+            //public FoundationPiece Replace(bool doReplace, FoundationPiece foundationPiece, out int energy, out int mass, out bool couldReplace, out bool canReplace)
+            //{
+            //    Tile tile = foundationPiece?.Tile;
+            //    return Replace(doReplace, foundationPiece,
+            //        (out e, out m) => Factory.Cost(Piece.Game, out e, out m),
+            //        () => Factory.GetRounding(Piece.Game),
+            //        () => Factory.NewFactory((Foundation)tile.Piece),
+            //        false, out energy, out mass, out couldReplace, out canReplace);
+            //}
         }
         [Serializable]
         [DataContract(IsReference = true)]
@@ -245,15 +245,15 @@ namespace ClassLibrary1.Pieces.Behavior
                 }
                 return null;
             }
-            public FoundationPiece Replace(bool doReplace, FoundationPiece foundationPiece, out int energy, out int mass, out bool couldReplace, out bool canReplace)
-            {
-                Tile tile = foundationPiece?.Tile;
-                return Replace(doReplace, foundationPiece,
-                    (out e, out m) => Turret.Cost(Piece.Game, out e, out m),
-                    () => Turret.GetRounding(Piece.Game),
-                    () => Turret.NewTurret((Foundation)tile.Piece),
-                    false, out energy, out mass, out couldReplace, out canReplace);
-            }
+            //public FoundationPiece Replace(bool doReplace, FoundationPiece foundationPiece, out int energy, out int mass, out bool couldReplace, out bool canReplace)
+            //{
+            //    Tile tile = foundationPiece?.Tile;
+            //    return Replace(doReplace, foundationPiece,
+            //        (out e, out m) => Turret.Cost(Piece.Game, out e, out m),
+            //        () => Turret.GetRounding(Piece.Game),
+            //        () => Turret.NewTurret((Foundation)tile.Piece),
+            //        false, out energy, out mass, out couldReplace, out canReplace);
+            //}
         }
         [Serializable]
         [DataContract(IsReference = true)]
@@ -269,15 +269,15 @@ namespace ClassLibrary1.Pieces.Behavior
                 }
                 return null;
             }
-            public FoundationPiece Replace(bool doReplace, FoundationPiece foundationPiece, out int energy, out int mass, out bool couldReplace, out bool canReplace)
-            {
-                Tile tile = foundationPiece?.Tile;
-                return Replace(doReplace, foundationPiece,
-                    (out e, out m) => Generator.Cost(Piece.Game, out e, out m),
-                    () => Generator.GetRounding(Piece.Game),
-                    () => Generator.NewGenerator((Foundation)tile.Piece),
-                    false, out energy, out mass, out couldReplace, out canReplace);
-            }
+            //public FoundationPiece Replace(bool doReplace, FoundationPiece foundationPiece, out int energy, out int mass, out bool couldReplace, out bool canReplace)
+            //{
+            //    Tile tile = foundationPiece?.Tile;
+            //    return Replace(doReplace, foundationPiece,
+            //        (out e, out m) => Generator.Cost(Piece.Game, out e, out m),
+            //        () => Generator.GetRounding(Piece.Game),
+            //        () => Generator.NewGenerator((Foundation)tile.Piece),
+            //        false, out energy, out mass, out couldReplace, out canReplace);
+            //}
         }
         [Serializable]
         [DataContract(IsReference = true)]

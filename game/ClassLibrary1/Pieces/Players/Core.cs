@@ -120,6 +120,12 @@ namespace ClassLibrary1.Pieces.Players
             this._income = Game.Rand.GaussianCapped(Math.Sqrt(_incomeTrg * _income), 1 - factor, _incomeTrg / 2.0);
         }
 
+        public override void Disband() { }
+        internal override void DisbandValue(out double energy, out double mass) =>
+            energy = mass = 0;
+        internal override void Cost(out int energy, out int mass) =>
+            throw new Exception();
+
         public override string ToString()
         {
             return "Core";
@@ -130,7 +136,7 @@ namespace ClassLibrary1.Pieces.Players
         private class Values : IUpgradeValues
         {
             public const double Resilience = 1;
-            private readonly double energy, mass;
+            //private readonly double energy, mass;
             private readonly IRepair.Values repair;
 
             //private double vision;
@@ -141,7 +147,7 @@ namespace ClassLibrary1.Pieces.Players
 
             public Values()
             {
-                this.energy = this.mass = 1300;
+                //this.energy = this.mass = 1300;
                 this.repair = new(new(8.5), 1);
 
                 //this.vision = -1;
@@ -154,8 +160,8 @@ namespace ClassLibrary1.Pieces.Players
 
             public double HitsResearchMult => hitsResearchMult;
 
-            public double Energy => energy;
-            public double Mass => mass;
+            //public double Energy => energy;
+            //public double Mass => mass;
             //public double Vision => START_VISION;
             //public IKillable.Values Hits => hits;
             public IKillable.Values? Shield => shield;

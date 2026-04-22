@@ -26,15 +26,16 @@ namespace ClassLibrary1
         new public int Energy => base.Energy;
         new public int Mass => base.Mass;
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0305:Simplify collection initialization", Justification = "Must be serializable")]
         internal Player(Game game)
             : base(game, 0, 1000)
         {
             this.Research = new(game);
-            this.upgradeValues = [.. AppDomain.CurrentDomain.GetAssemblies()
+            this.upgradeValues = AppDomain.CurrentDomain.GetAssemblies()
                 .SelectMany(a => a.GetTypes())
                 .Where(t => t.IsClass && typeof(IUpgradeValues).IsAssignableFrom(t))
                 .Select(Activator.CreateInstance)
-                .OfType<IUpgradeValues>()];
+                .OfType<IUpgradeValues>().ToList();
         }
         internal void NewGame(Point constructorOffset)
         {

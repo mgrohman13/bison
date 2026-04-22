@@ -1,5 +1,4 @@
-﻿using ClassLibrary1.Pieces.Behavior;
-using ClassLibrary1.Pieces.Behavior.Combat;
+﻿using ClassLibrary1.Pieces.Behavior.Combat;
 using ClassLibrary1.Pieces.Terrain;
 using MattUtil;
 using System;
@@ -32,7 +31,7 @@ namespace ClassLibrary1.Pieces.Players
         {
             get
             {
-                Cost(Game, out int energy, out int mass);
+                Cost(out int energy, out int mass);
                 return Consts.GetRepairCost(this, energy, mass);
             }
         }
@@ -44,7 +43,7 @@ namespace ClassLibrary1.Pieces.Players
             Tile tile = foundation.Tile;
             foundation.Die();
 
-            Generator obj = new(tile, GetValues(tile.Map.Game));
+            Generator obj = new(tile, GetValues(foundation.Game));
             foundation.Game.AddPiece(obj);
             return obj;
         }
@@ -52,6 +51,8 @@ namespace ClassLibrary1.Pieces.Players
         {
             GetValues(game).GetCost(out energy, out mass);
         }
+        internal override void Cost(out int energy, out int mass) =>
+            Cost(Game, out energy, out mass);
 
         internal override void OnResearch(Research.Type type)
         {

@@ -29,6 +29,8 @@ namespace ClassLibrary1.Pieces
         public bool IsPlayer => Side?.IsPlayer ?? false;
         public bool IsEnemy => Side?.IsEnemy ?? false;
 
+        private bool DropsTreasure { get; }
+
         internal Piece(Side side, Tile tile)
         {
             this.Game = tile.Map.Game;
@@ -73,7 +75,7 @@ namespace ClassLibrary1.Pieces
         internal void Die() => ((IBehavior)this).Die();
         double IBehavior.Die()
         {
-            Die(out Tile tile, out double treasure);
+            this.Die(out Tile tile, out double treasure);
 
             if (Side is null)
             {
@@ -81,7 +83,7 @@ namespace ClassLibrary1.Pieces
             }
             else
             {
-                if (this is IKillable.IRepairable repairable)
+                if (this.DropsTreasure && this is IKillable.IRepairable repairable)
                 {
                     double repairMult = Consts.GetRepairMult(this);
                     double value = repairable.RepairCost / repairMult;

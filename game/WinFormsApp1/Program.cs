@@ -6,7 +6,6 @@ using ClassLibrary1.Pieces.Players;
 using ClassLibrary1.Pieces.Terrain;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -394,10 +393,12 @@ namespace WinFormsApp1
 
                 if (!move && piece is Outpost outpost)
                 {
-                    if (piece.HasBehavior(out IBuilder.IReplacer<FoundationPiece> replacer))
+                    if (piece.HasBehavior<IBuilder.IBuildFactory>() || piece.HasBehavior<IBuilder.IBuildTurret>())
+                    //out IBuilder.IReplacer<FoundationPiece> replacer))
                     {
-                        replacer.Replace(false, outpost, out int e, out int m, out _, out bool canReplace);
-                        move |= canReplace && Game.Player.Has(e, m);
+                        outpost.ReplaceFactory(false, out _, out _, out bool f);
+                        outpost.ReplaceTurret(false, out _, out _, out bool t);
+                        move |= t || f;
                     }
                 }
 

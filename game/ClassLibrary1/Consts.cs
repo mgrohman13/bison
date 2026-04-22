@@ -27,6 +27,7 @@ namespace ClassLibrary1
         public const double CaveDistPow = 1.13;
 
         public const double TreasureDiv = Scale * 13;
+        public const double IslandVisionMult = 6.5;
 
         //public const double TreasureSpacingChance = .5;
         public const double ResearchFactor = 2600;
@@ -131,11 +132,12 @@ namespace ClassLibrary1
         public const double MissileHitRefundPct = .78;
         public const double MissileScrapRefund = .26;
 
+        public const double DisbandValue = .21;
         public const double RepairCost = .169;
         public const double PassiveRepairCost = .91 * RepairCost;
-        public const double EnergyRepairDiv = 1.3;
+        public const double EnergyRepairDiv = 1.3 * EnergyMassRatio;
         public const int AutoRepair = 1;
-        public const double ReplaceRefundPct = .8;
+        //public const double ReplaceRefundPct = .8;
 
         public static readonly double NoiseDistance = CaveDistance / Math.Sqrt(Scale);
         public static readonly double ResourceAvgDist = Math.Sqrt(Scale) * 21;
@@ -206,7 +208,7 @@ namespace ClassLibrary1
             return canRepair;
         }
         public static double GetRepairCost(Piece piece, double energy, double mass) =>
-            (mass + energy / EnergyMassRatio / EnergyRepairDiv) * GetRepairMult(piece);
+            (mass + energy / EnergyRepairDiv) * GetRepairMult(piece);
         public static double GetRepairMult(Piece piece) =>
             piece.HasBehavior<IAttacker>() ? RepairCost : PassiveRepairCost;
         public static double GetDamagedValue(Piece piece, double value, double min) =>

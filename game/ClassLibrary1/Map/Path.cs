@@ -104,7 +104,7 @@ namespace ClassLibrary1.Map
             }
             private void CreateResources(Map map)
             {
-                double generationBuffer = Consts.ResourceAvgDist;
+                double generationBuffer = Consts.ResourceAvgDist + Consts.PathWidth;
                 if (Game.TEST_MAP_GEN.HasValue)
                     generationBuffer = Game.TEST_MAP_GEN.Value;
 
