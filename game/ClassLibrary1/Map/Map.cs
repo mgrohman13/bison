@@ -327,8 +327,8 @@ namespace ClassLibrary1.Map
                 if (mult > 0)
                 {
                     mult = Consts.PathWidth * Consts.PathWidth / mult;  //const double l1 = .21;
-                    const double l1 = .39;
-                    if (mult < l1)
+                    const double l1 = .39; 
+                    if (mult < l1) //go back to Math.Min so only affects close by
                         mult = Math.Pow(mult / l1, 1.0 / 65) * l1;
                     //mult = Math.Max(mult, .39);
                     const double l2 = 1.3;
