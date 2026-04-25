@@ -321,26 +321,32 @@ namespace ClassLibrary1.Map
 
             double vision = 0;
             bool island = false;
-            if (!block && !clear && AllFoundations.Any())
+            if (!block && !clear)//&& AllFoundations.Any())
             {
-                double mult = AllFoundations.Select(f => GetDistSqr(p.X, p.Y, f)).Min();
-                if (mult > 0)
-                {
-                    mult = Consts.PathWidth * Consts.PathWidth / mult;  //const double l1 = .21;
-                    const double l1 = .39; 
-                    if (mult < l1) //go back to Math.Min so only affects close by
-                        mult = Math.Pow(mult / l1, 1.0 / 65) * l1;
-                    //mult = Math.Max(mult, .39);
-                    const double l2 = 1.3;
-                    if (mult > l2)
-                        mult = l2 + Math.Pow(1 + mult - l2, 1.0 / 13) - 1;
-                    double m2 = evaluate.Item1 / .5;
-                    m2 *= m2 * m2;
-                    island = m2 * mult > 1;
-                    vision = Math.Max(0, m2 * Math.Sqrt(mult) - 1);
-                    vision *= Consts.IslandVisionMult;
-                    vision++;
-                }
+                double m = evaluate.Item2 / .5;
+                m = Math.Pow(m, .13) * .5;
+                vision = Math.Pow(evaluate.Item1, 2.1) * m;
+                island = vision > .21;
+                vision++;
+                //vision *= Island.MAX_VISION;
+                ////double mult = AllFoundations.Select(f => GetDistSqr(p.X, p.Y, f)).Min();
+                ////if (mult > 0)
+                ////{
+                ////    mult = Consts.PathWidth * Consts.PathWidth / mult;  //const double l1 = .21;
+                ////const double l1 = .39; 
+                ////if (mult < l1) //go back to Math.Min so only affects close by
+                ////    mult = Math.Pow(mult / l1, 1.0 / 65) * l1;
+                //////mult = Math.Max(mult, .39);
+                ////const double l2 = 1.3;
+                ////if (mult > l2)
+                ////    mult = l2 + Math.Pow(1 + mult - l2, 1.0 / 13) - 1;
+                //double m2 = evaluate.Item1 / .5;
+                ////m2 *= m2 * m2;
+                //island = m2 > 1;//* mult
+                //                //vision = Math.Max(0, m2 * Math.Sqrt(mult) - 1);
+                //                //    vision *= Consts.IslandVisionMult;
+                //                //    vision++;
+                //                //}
             }
 
             Piece piece = GetPiece(p);

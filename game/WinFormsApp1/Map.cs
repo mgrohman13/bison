@@ -696,11 +696,23 @@ namespace WinFormsApp1
                         ITerrain terrain = tile?.Terrain;
                         if (terrain != null && (tile.Piece is null || tile.Piece is ITerrain))
                         {
-                            Color color = Color.LightGoldenrodYellow;
+                            Color color = Color.Empty;
                             if (terrain is Block block)
+                            {
                                 color = Color.FromArgb(130, Game.Rand.Round(260 * (.75 - block.Value) - 21), 26);
-                            else if (terrain is Island)
+                            }
+                            else if (terrain is Island island)
+                            {
+                                if (double.IsInfinity(island.Vision))
+                                    ;
+                                int v = Game.Rand.Round(island.Vision / Island.MAX_VISION * 128);
+                                if (v > 128)
+                                    v = 128 + 128 * v / (v + 128);
+                                if (double.IsInfinity(v))
+                                    ;
+                                color = Color.FromArgb(0, v, v);
                                 tileRects.Add(rect);
+                            }
                             //Color.Brown
                             //if ( )
                             AddFill(new SolidBrush(color), rect);

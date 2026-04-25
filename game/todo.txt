@@ -1,7 +1,16 @@
+
+randomize hilliness each game
+	randomize many, many constants....
+div foundations into plateaus of chunks of same height
+	increase vision, att range w/ height value
+	blocks incoming ranged damage?
+	just adds def??
 AllFoundations jankiness
 	if object places before foundation, tile is never updated
 		refresh tiles under pieces on insert foundation
 		shouldnt serisalize tiles either 
+	redo correctly using only noise
+		but make plateau tiles much more likely to spawn fountations  
 
 dont show vision increase until unit steps on?
 
