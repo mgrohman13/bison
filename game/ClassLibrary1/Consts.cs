@@ -15,7 +15,7 @@ namespace ClassLibrary1
         public const double PathWidth = Scale * 16.9;
         public const double PathWidthDev = .21;
         public const double PathWidthMin = Math.E;
-        public const double FeatureDist = Scale * 169;
+        public const double FeatureDist = Scale * 210;
         public const double FeatureMin = FeatureDist / Math.PI;
 
         public const double CaveDistance = Scale * 210;

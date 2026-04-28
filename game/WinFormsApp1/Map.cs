@@ -705,9 +705,7 @@ namespace WinFormsApp1
                             {
                                 if (double.IsInfinity(island.Vision))
                                     ;
-                                int v = Game.Rand.Round(island.Vision / Island.MAX_VISION * 128);
-                                if (v > 128)
-                                    v = 128 + 128 * v / (v + 128);
+                                int v = 255 - Game.Rand.Round(island.Vision / Island.MAX_VISION * 255);
                                 if (double.IsInfinity(v))
                                     ;
                                 color = Color.FromArgb(0, v, v);

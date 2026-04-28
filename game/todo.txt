@@ -1,4 +1,8 @@
-
+hills?
+	generate hill center points?
+	generate as anything touches farther away
+		keep same density at all radii?
+	use center points for consistent plateaus
 randomize hilliness each game
 	randomize many, many constants....
 div foundations into plateaus of chunks of same height

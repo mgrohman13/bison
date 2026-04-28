@@ -28,17 +28,20 @@ namespace ClassLibrary1.Map
 
         public readonly Game Game;
 
-        private readonly double featureDist;
-        private readonly Noise noise;
+        private readonly double _featureDist;
+        private readonly Noise _noise;
         private readonly Path[] _paths;
         private readonly List<Cave> _caves;
         private readonly HashSet<Point> clearTerrain;
 
         private readonly Dictionary<Point, Piece> _pieces;
         private readonly HashSet<Point> _explored;
+        //private readonly HashSet<PointD> _plateaus;
+        //private readonly double _plateauDist;
+        private readonly double _hillInc, _hillRounding;
         private Rectangle _gameBounds;
 
-        private readonly Dictionary<ResourceType, int> resourcePool;
+        private readonly Dictionary<ResourceType, int> _resourcePool;
 
         internal IEnumerable<Piece> AllPieces => _pieces.Values;
         internal IEnumerable<PointD> AllFoundations =>
@@ -58,12 +61,12 @@ namespace ClassLibrary1.Map
             clearTerrain = [];
 
             const double dev = .21, oe = .13;
-            featureDist = Game.Rand.GaussianOE(Consts.FeatureDist, dev, oe, Consts.FeatureMin);
+            _featureDist = Game.Rand.GaussianOE(Consts.FeatureDist, dev, oe, Consts.FeatureMin);
             double max = Game.Rand.GaussianOE(Consts.NoiseDistance, dev, oe, Consts.FeatureMin);
             double min = Game.Rand.GaussianOE(13, dev, oe, Game.Rand.Range(2, 4));
             int steps = Game.Rand.GaussianOEInt(5.2, dev, oe, Game.Rand.RangeInt(2, 5));
             double weightScale = Game.Rand.Weighted(.78) + Game.Rand.OE(.13);
-            noise = new Noise(Game.Rand, min, max, steps, .065, weightScale);
+            _noise = new Noise(Game.Rand, min, max, steps, .065, weightScale);
 
             int numPaths = Game.Rand.GaussianOEInt(Math.PI, .091, .039, 2);
             double separation = Consts.PathMinSeparation;
@@ -118,8 +121,16 @@ namespace ClassLibrary1.Map
             _pieces = [];
             _explored = [];
 
-            resourcePool = new() { { ResourceType.Foundation, 1 },
+            _resourcePool = new() { { ResourceType.Foundation, 1 },
                 { ResourceType.Biomass, 3 }, { ResourceType.Artifact, 3 }, { ResourceType.Metal, 6 }, };
+
+            //GeneratePlateaus(0);
+
+            // Game.Rand.GaussianOEInt(1.0 / Island.MAX_VISION, 1, .13);
+            const double maxHill = Island.MAX_VISION / 2.0;
+            _hillInc = Game.Rand.Weighted(.91) + Game.Rand.OE(1 / maxHill)
+                + Game.Rand.Weighted(maxHill, 1 / maxHill);// + Game.Rand.Weighted(maxHill, Math.Sqrt(1.0 / maxHill));
+            _hillRounding = Game.Rand.NextDouble();
 
             LogEvalTime();
         }
@@ -259,13 +270,16 @@ namespace ClassLibrary1.Map
             mult += _paths.Sum(p => p.Evaluate(point));
             mult += _caves.Sum(c => c.Evaluate(x, y));
 
-            double eval = noise.Evaluate(x, y);
-            double dist = Tile.GetDistance(point, new(0, 0));
+            double eval = _noise.Evaluate(x, y);
+            double dist = Tile.GetDistance(point, new(0, 0)) + 1;
 
-            mult += (featureDist / dist / dist / Math.Abs(eval - .5));
+            double offset = Math.Pow(float.Epsilon, 1.0 / 3);
+            mult += (_featureDist / dist / dist / (offset + Math.Abs(eval - .5)));
 
             float value1 = (float)(eval);
             float value2 = (float)(eval * mult);
+            if (double.IsInfinity(value2))
+                ;
             Tuple<float, float> retVal = Tuple.Create(value1, value2);
             evaluateCache.Add(point, retVal);
 
@@ -300,13 +314,14 @@ namespace ClassLibrary1.Map
         }
         internal Tile GetTile(Point p)
         {
-            Tuple<float, float> evaluate = null;
-            double terrain = 1;
-            bool block = false, clear = clearTerrain.Contains(p);
-            if (!clear)
+            Func<Tile, ITerrain> GetTerrain = t => null;
+            if (!clearTerrain.Contains(p))
             {
-                evaluate = Evaluate(p);
-                terrain = evaluate.Item2;
+                bool block = false, island = false;
+                double vision = 0;
+
+                Tuple<float, float> evaluate = Evaluate(p);
+                double terrain = evaluate.Item2;
                 //, out float lineDist);
                 //also use dist from center?
                 // (5 * terrain * Consts.PathWidth + lineDist) / 2.0 % Consts.PathWidth < 1;
@@ -314,46 +329,59 @@ namespace ClassLibrary1.Map
                 //bool clear = false;// Math.Abs(noise.Evaluate(p.X, p.Y) - .5) < Consts.CaveDistance / dist / dist;
                 if (!block && terrain < 1 / 4.0)//&& !clear
                     return null;
-                block |= terrain < 1 / 2.0;//!clear && 
-            }
-            else
-                ;
+                block |= terrain < 1 / 2.0;//!clear &&  
 
-            double vision = 0;
-            bool island = false;
-            if (!block && !clear)//&& AllFoundations.Any())
-            {
-                double m = evaluate.Item2 / .5;
-                m = Math.Pow(m, .13) * .5;
-                vision = Math.Pow(evaluate.Item1, 2.1) * m;
-                island = vision > .21;
-                vision++;
-                //vision *= Island.MAX_VISION;
-                ////double mult = AllFoundations.Select(f => GetDistSqr(p.X, p.Y, f)).Min();
-                ////if (mult > 0)
-                ////{
-                ////    mult = Consts.PathWidth * Consts.PathWidth / mult;  //const double l1 = .21;
-                ////const double l1 = .39; 
-                ////if (mult < l1) //go back to Math.Min so only affects close by
-                ////    mult = Math.Pow(mult / l1, 1.0 / 65) * l1;
-                //////mult = Math.Max(mult, .39);
-                ////const double l2 = 1.3;
-                ////if (mult > l2)
-                ////    mult = l2 + Math.Pow(1 + mult - l2, 1.0 / 13) - 1;
-                //double m2 = evaluate.Item1 / .5;
-                ////m2 *= m2 * m2;
-                //island = m2 > 1;//* mult
-                //                //vision = Math.Max(0, m2 * Math.Sqrt(mult) - 1);
-                //                //    vision *= Consts.IslandVisionMult;
-                //                //    vision++;
-                //                //}
+                if (!block)//&& AllFoundations.Any())
+                {
+                    double m = evaluate.Item2 / .5;
+                    m = Math.Sqrt(m);
+                    if (m > 1)
+                        m = .013 + Math.Pow(m, .13);
+                    vision = Math.Pow(evaluate.Item1, 2.1) * m;
+                    const double cutoff = .39;
+                    island = vision > cutoff;
+                    double max = Island.MAX_VISION;
+                    vision -= cutoff;
+                    vision /= 1 - cutoff;
+                    vision = max * vision;
+                    max /= 2;
+                    if (vision > max)
+                        vision = max + max * (vision - max) / vision;
+
+                    //use some kind of offset into a lookup table???
+                    vision = 1 + MTRandom.Round(vision / _hillInc, _hillRounding) * _hillInc;
+
+                    //vision *= Island.MAX_VISION;
+                    ////double mult = AllFoundations.Select(f => GetDistSqr(p.X, p.Y, f)).Min();
+                    ////if (mult > 0)
+                    ////{
+                    ////    mult = Consts.PathWidth * Consts.PathWidth / mult;  //const double l1 = .21;
+                    ////const double l1 = .39; 
+                    ////if (mult < l1) //go back to Math.Min so only affects close by
+                    ////    mult = Math.Pow(mult / l1, 1.0 / 65) * l1;
+                    //////mult = Math.Max(mult, .39);
+                    ////const double l2 = 1.3;
+                    ////if (mult > l2)
+                    ////    mult = l2 + Math.Pow(1 + mult - l2, 1.0 / 13) - 1;
+                    //double m2 = evaluate.Item1 / .5;
+                    ////m2 *= m2 * m2;
+                    //island = m2 > 1;//* mult
+                    //                //vision = Math.Max(0, m2 * Math.Sqrt(mult) - 1);
+                    //                //    vision *= Consts.IslandVisionMult;
+                    //                //    vision++;
+                    //                //}
+
+                }
+                if (double.IsInfinity(vision))
+                    ;
+                GetTerrain = t => block ? new Block(t, terrain) : island ? new Island(t, vision) : null;
             }
 
             Piece piece = GetPiece(p);
             return piece == null ? NewTile(this, p, GetTerrain) : piece.Tile;
 
-            ITerrain GetTerrain(Tile t) =>
-                block ? new Block(t, terrain) : island ? new Island(t, vision) : null;
+            //ITerrain GetTerrain(Tile t) =>
+            //    block ? new Block(t, terrain) : island ? new Island(t, vision) : null;
         }
         private Piece GetPiece(Point p)
         {
@@ -435,6 +463,8 @@ namespace ClassLibrary1.Map
             foreach (Point p in Tile.GetPointsInRangeBlocked(this, point, range))
                 if (_explored.Add(p))
                 {
+                    //GeneratePlateaus(Tile.GetDistance(p, new Point(0, 0)));
+
                     if (Game.Rand.Next(Consts.ExploreForResearch) == 0)
                         Game.Player.Research.AddBackground();
 
@@ -456,6 +486,15 @@ namespace ClassLibrary1.Map
 
             return found;
         }
+
+        //private void GeneratePlateaus(double v)
+        //{
+        //    //generate constant density
+        //    //set generation buffer accordingly
+        //    //use for constant heights
+        //    //_plateausl
+        //}
+
         private HashSet<PointD> _treasures = [];
         private void CreateTreasure(Tile tile)
         {
@@ -557,19 +596,19 @@ namespace ClassLibrary1.Map
                 if (!Game.TEST_MAP_GEN.HasValue && tile.Visible)
                     foundationMult = 0;
 
-                if (resourcePool.Values.Any(v => v <= 0))
+                if (_resourcePool.Values.Any(v => v <= 0))
                 {
-                    resourcePool[ResourceType.Artifact] += 2;
-                    resourcePool[ResourceType.Foundation] += 4;
-                    resourcePool[ResourceType.Biomass] += 5;//swap?
-                    resourcePool[ResourceType.Metal] += 6;//swap? - inc start metal further?
+                    _resourcePool[ResourceType.Artifact] += 2;
+                    _resourcePool[ResourceType.Foundation] += 4;
+                    _resourcePool[ResourceType.Biomass] += 5;//swap?
+                    _resourcePool[ResourceType.Metal] += 6;//swap? - inc start metal further?
                 }
 
                 ResourceType type;
                 do
-                    type = Game.Rand.SelectValue(resourcePool);
+                    type = Game.Rand.SelectValue(_resourcePool);
                 while (type == ResourceType.Foundation && !Game.Rand.Bool(foundationMult * distMult));
-                resourcePool[type]--;
+                _resourcePool[type]--;
 
                 switch (type)
                 {
@@ -605,7 +644,7 @@ namespace ClassLibrary1.Map
                             tile = Game.Rand.SelectValue(neighbors);
                         }
 
-                        resourcePool[type] -= Game.Rand.Round(count / avg) - 1; //- 1 to account for the first one already removed from the pool
+                        _resourcePool[type] -= Game.Rand.Round(count / avg) - 1; //- 1 to account for the first one already removed from the pool
                         break;
                 }
             }
