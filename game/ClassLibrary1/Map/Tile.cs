@@ -1,6 +1,7 @@
 ﻿using ClassLibrary1.Pieces;
 using ClassLibrary1.Pieces.Behavior;
 using ClassLibrary1.Pieces.Behavior.Combat;
+using ClassLibrary1.Pieces.Players;
 using ClassLibrary1.Pieces.Terrain;
 using MattUtil;
 using System;
@@ -93,12 +94,27 @@ namespace ClassLibrary1.Map
                     int y = point.Y + p.Y;
                     double distance = GetDistance(point.X, point.Y, x, y);
                     if (distance <= range)
-                    {
                         yield return new(x, y);
-                    }
                 }
             }
-            public static IEnumerable<Point> GetPointsInRangeBlocked(Map map, Point point, double range)//, bool blockMap, Piece blockFor)
+            public static IEnumerable<Point> GetVision(Map map, Point point, double vision)
+            {
+                return GetPointsInRangeBlocked(map, point, vision, true);
+            }
+            public static IEnumerable<Point> GetVision(PlayerPiece piece, Point moveTo)
+            {
+                Map map = piece?.Tile.Map;
+                Tile to = map?.GetVisibleTile(moveTo);
+                if (map != null && to != null && piece.HasBehavior<IMovable>())
+                {
+                    IEnumerable<Point> enumerable = (piece.Tile == to ? [moveTo] : (IEnumerable<Point>)Movable.GetMovePoints(piece.Tile, to));
+                    return enumerable.SelectMany(p => GetVision(map, p, piece.GetVision(map.GetVisibleTile(p))));
+                }
+
+                return [];
+            }
+            internal static IEnumerable<Point> GetPointsInRangeBlocked(Map map, Point point, double range, bool visibleOnly = false)
+            //, bool blockMap, Piece blockFor)
             {
                 ////SortedDictionary<Point, double> block = new(Comparer<Point>.Create(
                 ////    (p1, p2) => GetDistance(point, p1).CompareTo(GetDistance(point, p2))));
@@ -121,7 +137,8 @@ namespace ClassLibrary1.Map
                 ////            && GetDistance(point, p.Key) <= range))
                 ////        AddBlock(pair.Key, pair.Value.Side != null && pair.Value.Side != blockFor.Side ? enemyBlock : baseBlock);
 
-                List<Point> block = [.. GetPointsInRangeUnblocked(map, point, range).Where(p => map.GetTile(p) == null).OrderBy(b => GetDistance(point, b))];
+                List<Point> block = [.. GetPointsInRangeUnblocked(map, point, range).Where(Blocks).OrderBy(b => GetDistance(point, b))];
+                bool Blocks(Point p) => map.GetTile(p) == null && (!visibleOnly || map.Visible(p));
                 double blockRadius = (1 + Math.Sqrt(2)) / 4.0;// Math.Sqrt(2) / 2
 
                 int max = (int)Math.Ceiling(range);

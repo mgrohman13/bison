@@ -13,16 +13,16 @@ namespace ClassLibrary1.Pieces.Players
         private double _vision;
         public double Vision
         {
-            get
-            {
-                return Consts.GetDamagedValue(this, VisionBase, 0);
-            }
+            get => GetVision(Tile);
             protected set
             {
                 this._vision = value;
                 Game.Map.UpdateVision(this);
             }
         }
+        public double GetVision(Tile tile) => VisionBase > 0 ? Consts.GetDamagedValue(this, VisionBase + TerrainVision(tile), 0) : 0;
+        public static double TerrainVision(Tile tile) => tile?.Terrain is Island i ? i.Vision : 0;
+
         public double VisionBase => _vision;
 
         internal PlayerPiece(Tile tile, double vision)
@@ -74,7 +74,7 @@ namespace ClassLibrary1.Pieces.Players
             if (HasBehavior(out IKillable killable))
             {
                 double totCur = 0, totMax = 0;
-                foreach (var d in killable.Protection)
+                foreach (var d in killable.AllDefenses)
                 {
                     double mult = d.Type == CombatTypes.DefenseType.Hits ? 2 : 1;
                     totCur += Consts.StatValue(d.DefenseCur) * mult;

@@ -38,7 +38,7 @@ namespace ClassLibrary1.Map
         private readonly HashSet<Point> _explored;
         //private readonly HashSet<PointD> _plateaus;
         //private readonly double _plateauDist;
-        private readonly double _hillInc, _hillRounding;
+        private readonly double _hillStart, _hillInc, _hillRounding;
         private Rectangle _gameBounds;
 
         private readonly Dictionary<ResourceType, int> _resourcePool;
@@ -127,9 +127,11 @@ namespace ClassLibrary1.Map
             //GeneratePlateaus(0);
 
             // Game.Rand.GaussianOEInt(1.0 / Island.MAX_VISION, 1, .13);
+
             const double maxHill = Island.MAX_VISION / 2.0;
-            _hillInc = Game.Rand.Weighted(.91) + Game.Rand.OE(1 / maxHill)
-                + Game.Rand.Weighted(maxHill, 1 / maxHill);// + Game.Rand.Weighted(maxHill, Math.Sqrt(1.0 / maxHill));
+            _hillStart = Game.Rand.GaussianCapped(1, .169) + Game.Rand.Weighted(maxHill - 1, .13 / (maxHill - 1));
+            _hillInc = Game.Rand.Weighted(.91) + Game.Rand.DoubleFull()
+                + Game.Rand.OE(_hillStart / 13) + Game.Rand.Weighted(maxHill, 1 / maxHill);
             _hillRounding = Game.Rand.NextDouble();
 
             LogEvalTime();
@@ -153,7 +155,7 @@ namespace ClassLibrary1.Map
                     CreateTreasure(GetTile(p));
             }
 
-            clearTerrain.UnionWith(_explored.SelectMany(e => Tile.GetAllPointsInRange(this, e, Rand())));
+            ClearTerrain(_explored.SelectMany(e => Tile.GetAllPointsInRange(this, e, Rand())));
             static double Rand() => Game.Rand.GaussianCapped(Constructor.BASE_VISION / 2.0, 1);
         }
         internal void CheckStart()
@@ -340,16 +342,16 @@ namespace ClassLibrary1.Map
                     vision = Math.Pow(evaluate.Item1, 2.1) * m;
                     const double cutoff = .39;
                     island = vision > cutoff;
-                    double max = Island.MAX_VISION;
                     vision -= cutoff;
                     vision /= 1 - cutoff;
+                    double max = Island.MAX_VISION - _hillStart;
                     vision = max * vision;
                     max /= 2;
                     if (vision > max)
-                        vision = max + max * (vision - max) / vision;
+                        vision = max + max * Math.Sqrt((vision - max) / vision);
 
                     //use some kind of offset into a lookup table???
-                    vision = 1 + MTRandom.Round(vision / _hillInc, _hillRounding) * _hillInc;
+                    vision = _hillStart + MTRandom.Round(vision / _hillInc, _hillRounding) * _hillInc;
 
                     //vision *= Island.MAX_VISION;
                     ////double mult = AllFoundations.Select(f => GetDistSqr(p.X, p.Y, f)).Min();
@@ -587,27 +589,38 @@ namespace ClassLibrary1.Map
             for (int a = 0; a < numResources; a++)
             {
                 Tile tile = GetTile();
-                double distMult = _caves.Select(c => c.Center).Concat(AllFoundations)
+                if (!Game.TEST_MAP_GEN.HasValue && tile.Visible)
+                    foundationMult = 0;
+
+                double fMult2 = _caves.Select(c => c.Center).Concat(AllFoundations)
                     .Concat(clearTerrain.Concat(Game.Player.Core.Tile.GetAllPointsInRange(Constructor.BASE_VISION))
                         .Select(p => new PointD(p.X, p.Y)))
                     .Min(p => Tile.GetDistanceD(tile.X, tile.Y, p.X, p.Y));
-                distMult /= (distMult + (Consts.CaveSize + Consts.PathWidth) / 6.5);
-                distMult *= distMult * distMult;
-                if (!Game.TEST_MAP_GEN.HasValue && tile.Visible)
-                    foundationMult = 0;
+                fMult2 /= (fMult2 + (Consts.CaveSize + Consts.PathWidth) / 6.5);
+                fMult2 *= fMult2 * fMult2 * foundationMult;
+                bool island = tile.Terrain is Island;
+                if (island)
+                    fMult2 = Math.Sqrt(fMult2) * 5.2;
+                else
+                    fMult2 *= .39;
 
                 if (_resourcePool.Values.Any(v => v <= 0))
                 {
                     _resourcePool[ResourceType.Artifact] += 2;
                     _resourcePool[ResourceType.Foundation] += 4;
-                    _resourcePool[ResourceType.Biomass] += 5;//swap?
-                    _resourcePool[ResourceType.Metal] += 6;//swap? - inc start metal further?
+                    _resourcePool[ResourceType.Biomass] += 5;
+                    _resourcePool[ResourceType.Metal] += 6;
                 }
 
-                ResourceType type;
-                do
-                    type = Game.Rand.SelectValue(_resourcePool);
-                while (type == ResourceType.Foundation && !Game.Rand.Bool(foundationMult * distMult));
+                double Mult(ResourceType r) => r switch
+                {
+                    ResourceType.Foundation => fMult2,
+                    ResourceType.Metal => island ? 2.6 : .65,
+                    _ => 1
+                };
+                ResourceType type = Game.Rand.SelectValue(_resourcePool.Keys, r =>
+                    Game.Rand.Round(_resourcePool[r] * Mult(r)));
+
                 _resourcePool[type]--;
 
                 switch (type)
@@ -624,7 +637,7 @@ namespace ClassLibrary1.Map
                     case ResourceType.Foundation:
 
                         int count = 0;
-                        double avg = (Math.E + Math.PI) / 2.0; //~2.930
+                        const double avg = 1.13;// (Math.E + Math.PI) / 2.0; //~2.930
                         int size = Game.Rand.GaussianOEInt(avg, .21, .26, 1);
                         while (true)
                         {
@@ -644,14 +657,16 @@ namespace ClassLibrary1.Map
                             tile = Game.Rand.SelectValue(neighbors);
                         }
 
-                        _resourcePool[type] -= Game.Rand.Round(count / avg) - 1; //- 1 to account for the first one already removed from the pool
+                        //- 1 to account for the first one already removed from the pool
+                        _resourcePool[type] -= Game.Rand.Round(count / avg) - 1;
                         break;
                 }
             }
             static int CountAdjacent(Tile tile)
             {
-                int count = tile.GetAdjacentTiles().Where(t => t.Piece is Foundation).Count();
-                return 1 + (1 + count) * count;// * count;
+                static double Weight(Tile t) => t.Piece is Foundation ? 1 : t.Terrain is Island i ? .5 + .5 * i.Vision / Island.MAX_VISION : 0;
+                double count = tile.GetAdjacentTiles().Sum(Weight) + Weight(tile) * 2;
+                return Game.Rand.Round(1 + (1 + count) * count);
             }
         }
 
@@ -742,7 +757,7 @@ namespace ClassLibrary1.Map
                     }
                     else if (tile.Piece is Block block)
                     {
-                        double mult = .5 + 4 * (.5 - block.Value); //ranges from 0.5 - 1.5
+                        double mult = .5 + block.Value; //ranges from 0.5 - 1.5
                         mult *= mult; //ranges from 0.25 - 2.25
                         penalty = Game.Rand.GaussianCapped((Consts.PathWidth + movement) * mult, .065);
                     }
@@ -754,7 +769,7 @@ namespace ClassLibrary1.Map
             if (Accept(blocked))
             {
                 //clear any blocked terrain we pathed through 
-                clearTerrain.UnionWith(blocked.SelectMany(p =>
+                ClearTerrain(blocked.SelectMany(p =>
                 {
                     if (!Game.GameOver && !Game.TEST_MAP_GEN.HasValue && Visible(p))
                         Debug.WriteLine($"!!! Cleared terrain on visible tile! {p}");
@@ -790,6 +805,21 @@ namespace ClassLibrary1.Map
             }
 
             return path;
+        }
+
+        private void ClearTerrain(IEnumerable<Point> clear)
+        {
+            foreach (var point in clear)
+                if (clearTerrain.Add(point))
+                {
+                    Piece piece = GetPiece(point);
+                    if (piece != null)
+                    {
+                        RemovePiece(piece);
+                        Tile tile = GetTile(point);
+                        piece.SetTile(tile);
+                    }
+                }
         }
 
         //internal Tile GetRetreatTo(Tile tile)

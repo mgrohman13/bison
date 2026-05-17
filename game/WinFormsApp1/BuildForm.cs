@@ -49,16 +49,27 @@ namespace WinFormsApp1
                     if (buildDrone != null)
                         return true;
                 }
-                //else if (piece is Resource || piece is IBuilder.IReplacer<Extractor>)
-                //{
-                //    if (buildExtractor != null)
-                //        return true;
-                //}
-                else if (piece is Outpost outpost)
+                else if (piece is Resource)// || piece is IBuilder.IReplacer<Extractor>)
+                {
+                    if (buildExtractor != null)
+                        return true;
+                }
+                else if (piece is Outpost)
                 {
                     if (buildFactory != null)
                         return true;
                     if (buildTurret != null)
+                        return true;
+                }
+                else if (piece is Foundation)
+                {
+                    if (buildOutpost != null)
+                        return true;
+                    if (buildFactory != null)
+                        return true;
+                    if (buildTurret != null)
+                        return true;
+                    if (buildGenerator != null)
                         return true;
                 }
             }
@@ -81,11 +92,31 @@ namespace WinFormsApp1
         }
         public Piece BuilderDialog(Tile selected)
         {
-            this.selected = selected;
             dataGridView1.Hide();
 
-            rows = [];
             result = null;
+            SetBuilderRows(selected);
+
+            Display();
+
+            if (rows.All(r => r.Blueprint == null))
+            {
+                dataGridView1.Columns["Upgraded"].Visible = false;
+                dataGridView1.Columns["Blueprint"].Visible = false;
+                dataGridView1.Columns["Research"].Visible = false;
+                dataGridView1.Columns["Vision"].Visible = false;
+                dataGridView1.Columns["Movement"].Visible = false;
+                dataGridView1.Columns["Attack"].Visible = false;
+                dataGridView1.Columns["Defense"].Visible = false;
+            }
+
+            ShowDialog();
+            return result;
+        }
+        private void SetBuilderRows(Tile selected)
+        {
+            this.selected = selected;
+            rows = [];
 
             IBuilder.IBuildMech buildMech = GetBuilder<IBuilder.IBuildMech>(selected);
             IBuilder.IBuildConstructor buildConstructor = GetBuilder<IBuilder.IBuildConstructor>(selected);
@@ -143,30 +174,36 @@ namespace WinFormsApp1
                 BuildRow row = new(buildGenerator, "Generator", energy, mass, Generator.Resilience);
                 rows.Add(row);
             }
-
-            Display();
-
-            if (rows.All(r => r.Blueprint == null))
-            {
-                dataGridView1.Columns["Upgraded"].Visible = false;
-                dataGridView1.Columns["Blueprint"].Visible = false;
-                dataGridView1.Columns["Research"].Visible = false;
-                dataGridView1.Columns["Vision"].Visible = false;
-                dataGridView1.Columns["Movement"].Visible = false;
-                dataGridView1.Columns["Attack"].Visible = false;
-                dataGridView1.Columns["Defense"].Visible = false;
-            }
-
-            ShowDialog();
-            return result;
         }
+        internal void BuilderCost(Tile selected, out int energy, out int mass)
+        {
+            SetBuilderRows(selected);
+            GetCost(out energy, out mass);
+        }
+
         internal Piece ReplaceDialog(Piece builder, Tile selected)
         {
-            this.selected = selected;
             dataGridView1.Hide();
 
-            rows = [];
             result = null;
+            SetReplaceRows(builder, selected);
+
+            Display();
+            dataGridView1.Columns["Upgraded"].Visible = false;
+            dataGridView1.Columns["Blueprint"].Visible = false;
+            dataGridView1.Columns["Research"].Visible = false;
+            dataGridView1.Columns["Vision"].Visible = false;
+            dataGridView1.Columns["Movement"].Visible = false;
+            dataGridView1.Columns["Attack"].Visible = false;
+            dataGridView1.Columns["Defense"].Visible = false;
+            ShowDialog();
+
+            return result;
+        }
+        private void SetReplaceRows(Piece builder, Tile selected)
+        {
+            this.selected = selected;
+            rows = [];
 
             //if (builder.HasBehavior(out IBuilder.IBuildExtractor buildExtractor) && selected.Piece is Extractor extractor)
             //{
@@ -185,17 +222,17 @@ namespace WinFormsApp1
                 //}
                 if (builder.HasBehavior<IBuilder.IBuildFactory>(out var buildFactory))
                 {
-                    outpost.ReplaceFactory(false, out int energy, out int mass, out bool canReplace);
+                    outpost.ReplaceFactory(false, out int energy, out int mass, out bool _);
                     //buildFactory.Replace(false, foundationPiece, out int energy, out int mass, out bool couldReplace, out _);
-                    if (canReplace)
-                        rows.Add(new(buildFactory, "Factory", energy, mass, Factory.Resilience));
+                    //if (canReplace)
+                    rows.Add(new(buildFactory, "Factory", energy, mass, Factory.Resilience));
                 }
                 if (builder.HasBehavior<IBuilder.IBuildTurret>(out var buildTurret))
                 {
-                    outpost.ReplaceTurret(false, out int energy, out int mass, out bool canReplace);
+                    outpost.ReplaceTurret(false, out int energy, out int mass, out bool _);
                     //buildTurret.Replace(false, foundationPiece, out int energy, out int mass, out bool couldReplace, out _);
-                    if (canReplace)
-                        rows.Add(new(buildTurret, "Turret", energy, mass, Turret.Resilience));
+                    //if (canReplace)
+                    rows.Add(new(buildTurret, "Turret", energy, mass, Turret.Resilience));
                 }
                 //if (builder.HasBehavior<IBuilder.IBuildGenerator>(out var buildGenerator))
                 //{
@@ -204,20 +241,29 @@ namespace WinFormsApp1
                 //        rows.Add(new(buildGenerator, "Generator", energy, mass, Generator.Resilience));
                 //}
             }
-
-            Display();
-            dataGridView1.Columns["Upgraded"].Visible = false;
-            dataGridView1.Columns["Blueprint"].Visible = false;
-            dataGridView1.Columns["Research"].Visible = false;
-            dataGridView1.Columns["Vision"].Visible = false;
-            dataGridView1.Columns["Movement"].Visible = false;
-            dataGridView1.Columns["Attack"].Visible = false;
-            dataGridView1.Columns["Defense"].Visible = false;
-            ShowDialog();
-
-            return result;
         }
-        internal bool UpgradeDialog(MechBlueprint blueprint)
+        internal void ReplaceCost(Tile selected, Piece builder, out int energy, out int mass)
+        {
+            SetReplaceRows(builder, selected);
+            GetCost(out energy, out mass);
+        }
+        private void GetCost(out int energy, out int mass)
+        {
+            energy = 0;
+            mass = 0;
+            if (rows.Count == 1)
+            {
+                energy = (int)rows[0].Energy;
+                mass = (int)rows[0].Mass;
+            }
+            //if (rows.Count > 0)
+            //{
+            //    energy = (int)rows[rows.Count - 1].Energy;
+            //    mass = (int)rows[rows.Count - 1].Mass;
+            //}
+        }
+
+        internal bool UpgradeDialog(MechBlueprint blueprint, int energy, int mass)
         {
             this.selected = null;
             dataGridView1.Hide();
@@ -225,11 +271,17 @@ namespace WinFormsApp1
             rows = [];
             result = null;
 
-            rows.Add(new(null, null, blueprint.Energy, blueprint.Mass, blueprint));
+            rows.Add(new(null, null, 0, 0, blueprint));//blueprint.Energy, blueprint.Mass
             MechBlueprint upgrade = blueprint.UpgradeTo;
             while (upgrade != null)
             {
-                rows.Add(new(null, null, upgrade.Energy, upgrade.Mass, upgrade));
+                int e = 0, m = 0;
+                if (upgrade.UpgradeTo == null)
+                {
+                    e = energy;
+                    m = mass;
+                }
+                rows.Add(new(null, null, e, m, upgrade));
                 upgrade = upgrade.UpgradeTo;
             }
 

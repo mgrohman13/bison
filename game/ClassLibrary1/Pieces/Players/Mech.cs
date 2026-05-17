@@ -36,8 +36,8 @@ namespace ClassLibrary1.Pieces.Players
                 while (upgradeTo.UpgradeTo != null)
                     upgradeTo = upgradeTo.UpgradeTo;
 
-                energy = upgradeTo.Energy - Blueprint.Energy;
-                mass = upgradeTo.Mass - Blueprint.Mass;
+                energy = upgradeTo.Energy - (int)(Blueprint.Energy * Consts.UpgRefundValue);
+                mass = upgradeTo.Mass - (int)(Blueprint.Mass * Consts.UpgRefundValue);
 
                 Defense hits = GetBehavior<IKillable>().Hits;
                 double hp = hits.DefenseCur / (double)hits.DefenseMax * upgradeTo.Hits.Defense;

@@ -128,7 +128,7 @@ namespace ClassLibrary1.Pieces.Terrain
             static double GetMove(IMovable.Values movable) => (movable.MoveMax + movable.MoveLimit) / 2.0;
             Players.Mech.NewMech(tile, blueprint);
 
-            RaiseCollectEvent(tile, $"Research Level: {researchLevel}");
+            RaiseCollectEvent(tile, $"Research Level: {researchLevel}"); //
             return blueprint.EnergyEquivalent() + researchCost;
         }
 

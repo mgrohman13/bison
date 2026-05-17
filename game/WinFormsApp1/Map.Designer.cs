@@ -30,7 +30,7 @@ namespace WinFormsApp1
         private void InitializeComponent()
         {
             lblMouse = new System.Windows.Forms.Label();
-            lblMissile = new System.Windows.Forms.Label();
+            lblMouseAtt = new System.Windows.Forms.Label();
             SuspendLayout();
             // 
             // lblMouse
@@ -46,24 +46,24 @@ namespace WinFormsApp1
             // 
             // lblMissile
             // 
-            lblMissile.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
-            lblMissile.AutoSize = true;
-            lblMissile.BackColor = System.Drawing.Color.White;
-            lblMissile.Font = new System.Drawing.Font("Arial Black", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, 0);
-            lblMissile.Location = new System.Drawing.Point(3, 0);
-            lblMissile.Name = "lblMissile";
-            lblMissile.Size = new System.Drawing.Size(63, 33);
-            lblMissile.TabIndex = 1;
-            lblMissile.Text = "999";
-            lblMissile.TextAlign = System.Drawing.ContentAlignment.BottomLeft;
-            lblMissile.Visible = false;
-            lblMissile.MouseClick += lblMissile_MouseClick;
+            lblMouseAtt.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
+            lblMouseAtt.AutoSize = true;
+            lblMouseAtt.BackColor = System.Drawing.Color.White;
+            lblMouseAtt.Font = new System.Drawing.Font("Arial Black", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, 0);
+            lblMouseAtt.Location = new System.Drawing.Point(3, 0);
+            lblMouseAtt.Name = "lblMissile";
+            lblMouseAtt.Size = new System.Drawing.Size(63, 33);
+            lblMouseAtt.TabIndex = 1;
+            lblMouseAtt.Text = "999";
+            lblMouseAtt.TextAlign = System.Drawing.ContentAlignment.BottomLeft;
+            lblMouseAtt.Visible = false;
+            lblMouseAtt.MouseClick += LblMouseAtt_MouseClick;
             // 
             // Map
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(10F, 25F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            Controls.Add(lblMissile);
+            Controls.Add(lblMouseAtt);
             Controls.Add(lblMouse);
             Name = "Map";
             Size = new System.Drawing.Size(600, 902);
@@ -79,6 +79,6 @@ namespace WinFormsApp1
         #endregion
 
         private System.Windows.Forms.Label lblMouse;
-        private System.Windows.Forms.Label lblMissile;
+        private System.Windows.Forms.Label lblMouseAtt;
     }
 }

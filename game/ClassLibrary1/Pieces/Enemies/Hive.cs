@@ -106,7 +106,7 @@ namespace ClassLibrary1.Pieces.Enemies
         {
             base.Die(out Tile t, out double energy);
             Game.VictoryPoint();
-            t.Map.GenResources(() => t, .13);
+            t.Map.GenResources(() => t, .39);
 
             treasure = Cost / 1.69;
             Game.CollectResources(t, treasure, out _, out _);

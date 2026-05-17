@@ -34,9 +34,9 @@ namespace ClassLibrary1
             return entries ?? [];
         }
 
-        internal void LogAttack(Attack attack, int startAttack, IKillable target, Dictionary<Defense, int> startDefense)
+        internal void LogAttack(Attack attack, int startAttack, int attMod, IKillable target, Dictionary<Defense, int> startDefense)
         {
-            LogEntry entry = new(_logNumInc++, Game.Turn, attack, startAttack, target, startDefense);
+            LogEntry entry = new(_logNumInc++, Game.Turn, attack, startAttack, attMod, target, startDefense);
             AddLog(entry, attack.Piece, target.Piece);
         }
 
@@ -72,7 +72,7 @@ namespace ClassLibrary1
             public readonly Stat Attack;
             public readonly Stat[] Defense;
 
-            public LogEntry(int logNum, int turn, Attack attack, int startAttack, IKillable target, Dictionary<Defense, int> startDefense)
+            public LogEntry(int logNum, int turn, Attack attack, int startAttack, int attMod, IKillable target, Dictionary<Defense, int> startDefense)
             {
                 static string GetName(Piece p) => p is Mech mech ? mech.Name : p.ToString();
                 static string GetBlueprint(Piece p) => p is Mech mech ? $" ({mech.BlueprintName})" : "";
@@ -92,7 +92,7 @@ namespace ClassLibrary1
 
                 this.Killed = target.Dead;
 
-                this.Attack = new(startAttack, attack.AttackCur, attack.AttackMax);
+                this.Attack = new(Consts.ModAtt(startAttack, attMod), Consts.ModAtt(attack.AttackCur, attMod), Consts.ModAtt(attack.AttackMax, attMod));
                 this.Defense = [.. target.AllDefenses.Select(d => new Stat(startDefense[d], d.DefenseCur, d.DefenseMax))];
                 //.OrderBy(d => d.Type switch
                 //{

@@ -78,7 +78,7 @@ namespace WinFormsApp1
             label1.TabIndex = 4;
             label1.Text = "Energy";
             label1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            label1.Click += lblResources_Click;
+            label1.Click += LblResources_Click;
             // 
             // lblEnergy
             // 
@@ -90,7 +90,7 @@ namespace WinFormsApp1
             lblEnergy.TabIndex = 5;
             lblEnergy.Text = "9999999.9";
             lblEnergy.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            lblEnergy.Click += lblResources_Click;
+            lblEnergy.Click += LblResources_Click;
             // 
             // label2
             // 
@@ -102,7 +102,7 @@ namespace WinFormsApp1
             label2.TabIndex = 6;
             label2.Text = "Mass";
             label2.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            label2.Click += lblResources_Click;
+            label2.Click += LblResources_Click;
             // 
             // lblMass
             // 
@@ -114,7 +114,7 @@ namespace WinFormsApp1
             lblMass.TabIndex = 7;
             lblMass.Text = "999999.9";
             lblMass.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            lblMass.Click += lblResources_Click;
+            lblMass.Click += LblResources_Click;
             // 
             // label3
             // 
@@ -126,7 +126,7 @@ namespace WinFormsApp1
             label3.TabIndex = 8;
             label3.Text = "Research";
             label3.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            label3.Click += lblResources_Click;
+            label3.Click += LblResources_Click;
             // 
             // lblResearch
             // 
@@ -138,7 +138,7 @@ namespace WinFormsApp1
             lblResearch.TabIndex = 9;
             lblResearch.Text = "999999.9";
             lblResearch.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            lblResearch.Click += lblResources_Click;
+            lblResearch.Click += LblResources_Click;
             // 
             // lblEnergyInc
             // 
@@ -150,7 +150,7 @@ namespace WinFormsApp1
             lblEnergyInc.TabIndex = 10;
             lblEnergyInc.Text = "+99999.9";
             lblEnergyInc.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            lblEnergyInc.Click += lblResources_Click;
+            lblEnergyInc.Click += LblResources_Click;
             // 
             // lblMassInc
             // 
@@ -162,7 +162,7 @@ namespace WinFormsApp1
             lblMassInc.TabIndex = 11;
             lblMassInc.Text = "+99999.9";
             lblMassInc.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            lblMassInc.Click += lblResources_Click;
+            lblMassInc.Click += LblResources_Click;
             // 
             // lblResearchInc
             // 
@@ -174,7 +174,7 @@ namespace WinFormsApp1
             lblResearchInc.TabIndex = 12;
             lblResearchInc.Text = "+99999.9";
             lblResearchInc.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            lblResearchInc.Click += lblResources_Click;
+            lblResearchInc.Click += LblResources_Click;
             // 
             // lblResearching
             // 
@@ -186,7 +186,7 @@ namespace WinFormsApp1
             lblResearching.TabIndex = 13;
             lblResearching.Text = "lblResearching";
             lblResearching.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            lblResearching.Click += lblResearching_Click;
+            lblResearching.Click += LblResearching_Click;
             // 
             // infoMain
             // 
@@ -194,7 +194,7 @@ namespace WinFormsApp1
             infoMain.Location = new System.Drawing.Point(0, 30);
             infoMain.Margin = new System.Windows.Forms.Padding(2);
             infoMain.Name = "infoMain";
-            infoMain.Selected = null;
+            //infoMain.Selected = null;
             infoMain.Size = new System.Drawing.Size(350, 520);
             infoMain.TabIndex = 14;
             // 

@@ -73,7 +73,7 @@ namespace ClassLibrary1.Pieces.Enemies
             cost = Consts.PortalCost * (Consts.StatValue(killable.First().Defense) + Consts.PortalDecayRate * range);
 
             PieceSpawn spawn = exit ? new PieceSpawn() : null;
-            spawn?.Spawner?.Mult(3.9);
+            spawn?.Spawner?.Mult(3.9); //
             Portal obj = new(tile, exit, killable, 1, range, cost, spawn);
             tile.Map.Game.AddPiece(obj);
 

@@ -62,16 +62,20 @@ namespace ClassLibrary1.Pieces.Players
                 energyCost, massCost, f => Turret.NewTurret(f));
         }
         private T Replace<T>(bool doReplace, out int energy, out int mass, ref bool canReplace,
-            double massCost, double energyCost, Func<Foundation, T> NewPiece) where T : FoundationPiece
+            double energyCost, double massCost, Func<Foundation, T> NewPiece) where T : FoundationPiece
         {
             T newPiece = null;
 
-            this.DisbandValue(out double e, out double m);
-            double rounding = 1 - GetValues(Game).CostRounding;
-            energy = MTRandom.Round(e - energyCost, rounding);
-            mass = MTRandom.Round(m - massCost, 1 - rounding);
+            DisbandValue(out double e, out double m);
+            static void Mult(ref double v) => v *= Consts.UpgRefundValue / Consts.DisbandValue;
+            Mult(ref e);
+            Mult(ref m);
 
-            canReplace |= Game.Player.Has(energy, mass);
+            double rounding = 1 - GetValues(Game).CostRounding;
+            energy = MTRandom.Round(energyCost - e, rounding);
+            mass = MTRandom.Round(massCost - m, 1 - rounding);
+
+            canReplace &= Game.Player.Has(energy, mass);
             if (doReplace && canReplace)
             {
                 this.Die(out Tile tile, out double treasure);

@@ -26,7 +26,7 @@ namespace WinFormsApp1
         private const float padding = 1f, scrollTime = 39f, scrollSpeed = 13f, scaleCutoff = 13f;
 
         private float xStart, yStart, _scale;
-        private Tile _selected, _moused;
+        private Point? _selected, _moused;
         private bool viewAttacks = true, extendedRange = false, viewMoves = false, inEnemyTurn = false;
 
         private readonly Timer timer;
@@ -43,7 +43,7 @@ namespace WinFormsApp1
         {
             InitializeComponent();
             lblMouse.Text = "";
-            lblMissile.Font = new Font(FontFamily.GenericSansSerif, 11.7f, FontStyle.Bold);
+            lblMouseAtt.Font = new Font(FontFamily.GenericSansSerif, 11.7f, FontStyle.Bold);
             //lblMouse.AutoSize\
             //lblMouse.
 
@@ -93,70 +93,73 @@ namespace WinFormsApp1
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public Tile SelTile
         {
-            get { return _selected; }
-            set
+            get => GetTile(_selected);
+            set => SetSelP(GetPoint(value));
+        }
+        private void SetSelP(Point? p)
+        {
+            if (!_selected.Equals(p))
             {
-                if (_selected != value)
-                {
-                    _selected = value;
-                    Center();
-                    this.Invalidate();
-                    if (Program.Form != null)
-                    {
-                        Program.Form.Info.Selected = SelTile;
-                        Program.RefreshSelected();
-                    }
-                }
+                _selected = p;
+                Center();
+                this.Invalidate();
+            }
+            if (Program.Form != null && !Program.Form.Info.SelP.Equals(p))
+            {
+                Program.Form.Info.SelP = p;
+                Program.RefreshSelected();
             }
         }
         private List<Point> mousePath = null;
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public Tile MouseTile
         {
-            get { return _moused; }
-            set
-            {
-                //float range = -1;
-                //bool HasSel() => !scrollDown && !scrollLeft && !scrollUp && !scrollRight && (SelTile?.Piece?.IsPlayer).GetValueOrDefault();
-                //////check blocks
-                ////bool InRange() => HasSel() && _moused != null && _moused.GetDistance(SelTile) <= range;
-                //if (HasSel())
-                //{
-                //    if (SelTile.Piece.HasBehavior(out IBuilder b))
-                //        range = (float)Math.Max(range, b.Range);
-                //    if (SelTile.Piece.HasBehavior(out IMovable m) && m.CanMove)
-                //        range = (float)Math.Max(range, m.MoveCur);
-                //}
-
-                if (_moused != value)
-                {
-
-                    //bool invalidate = InRange();
-                    _moused = value;
-
-                    mousePath = null;
-                    if (!timer.Enabled && SelTile?.Piece != null && SelTile.Piece.HasBehavior(out IMovable movable)
-                        && MouseTile != null && SelTile.GetDistance(MouseTile) > movable.MoveCur && MouseTile.Piece is not ITerrain)
-                        if (!SelTile.Piece.HasBehavior(out IAttacker attacker)
-                               || !attacker.Attacks.Any(a => a.GetDefenders(MouseTile.Piece).Count > 0 && SelTile.GetPointsInRange(a).Contains(MouseTile.Location)))
-                            if (shift)
-                                mousePath = [SelTile.Location, MouseTile.Location];
-                            else
-                            {
-                                var s = SelTile;
-                                var m = MouseTile;
-                                var p = Program.Game.Map.PathFind(s, m, LimitedMove(movable, out bool limitMove), limitMove, movable.MoveMax, Application.DoEvents);
-                                if (s == SelTile && m == MouseTile)
-                                    mousePath = p;
-                            }
-
-                    //if (invalidate || InRange())
-                    if (!timer.Enabled)
-                        this.Invalidate();
-                }
-                ShowMouseInfo();
-            }
+            get => GetTile(_moused);
+            set => SetMouseP(GetPoint(value));
         }
+        private void SetMouseP(Point? p)
+        {
+            //float range = -1;
+            //bool HasSel() => !scrollDown && !scrollLeft && !scrollUp && !scrollRight && (SelTile?.Piece?.IsPlayer).GetValueOrDefault();
+            //////check blocks
+            ////bool InRange() => HasSel() && _moused != null && _moused.GetDistance(SelTile) <= range;
+            //if (HasSel())
+            //{
+            //    if (SelTile.Piece.HasBehavior(out IBuilder b))
+            //        range = (float)Math.Max(range, b.Range);
+            //    if (SelTile.Piece.HasBehavior(out IMovable m) && m.CanMove)
+            //        range = (float)Math.Max(range, m.MoveCur);
+            //}
+            if (!_moused.Equals(p))
+            {
+                //bool invalidate = InRange();
+                _moused = p;
+
+                mousePath = null;
+                if (!timer.Enabled && SelTile?.Piece != null && SelTile.Piece.HasBehavior(out IMovable movable))
+                {
+                    if (_moused.HasValue && (shift || MouseTile == null || MouseTile.Piece is Block))
+                        mousePath = [SelTile.Location, _moused.Value];
+                    else if ((MouseTile != null && SelTile.GetDistance(MouseTile) > movable.MoveCur && MouseTile.Piece is not ITerrain)
+                        && (!SelTile.Piece.HasBehavior(out IAttacker attacker) || !attacker.Attacks.Any(a =>
+                            a.GetDefenders(MouseTile.Piece).Count > 0 && SelTile.GetPointsInRange(a).Contains(MouseTile.Location))))
+                    {
+                        var s = SelTile;
+                        var m = MouseTile;
+                        var path = Program.Game.Map.PathFind(s, m, LimitedMove(movable, out bool limitMove), limitMove, movable.MoveMax, Application.DoEvents);
+                        if (s == SelTile && m == MouseTile)
+                            mousePath = path;
+                    }
+                }
+                //if (invalidate || InRange())
+                if (!timer.Enabled)
+                    this.Invalidate();
+            }
+            ShowMouseInfo();
+        }
+        private static Point? GetPoint(Tile value) => value?.Location;
+        private static Tile GetTile(Point? p) =>
+            p.HasValue ? Program.Game.Map.GetVisibleTile(p.Value) : null;
 
         private void ClampPath()
         {
@@ -218,7 +221,7 @@ namespace WinFormsApp1
 
         private void ShowMouseInfo()
         {
-            this.lblMissile.Hide();
+            this.lblMouseAtt.Hide();
 
             this.lblMouse.Text = "";
             if (lastMouse != null)//MouseTile
@@ -240,17 +243,29 @@ namespace WinFormsApp1
                     //if (distance <= movable.MoveCur)
                     this.lblMouse.Text = distance.ToString("0.0");
 
-                    if ((SelTile?.Piece?.HasBehavior(out IMissileSilo silo) ?? false) && silo.Online)
-                        if ((MouseTile?.Piece?.IsEnemy ?? false) && MouseTile.Piece.HasBehavior(out IKillable killable))
+                    if ((MouseTile?.Piece?.IsEnemy ?? false) && MouseTile.Piece.HasBehavior(out IKillable killable))
+                    {
+                        double attack = -1;
+                        if ((SelTile?.Piece?.HasBehavior(out IMissileSilo silo) ?? false) && silo.Online)
+                            attack = silo.GetAttack(killable);
+                        if ((SelTile?.Piece?.HasBehavior(out IAttacker attacker) ?? false) && attacker.Piece.Side.IsPlayer)
                         {
-                            this.lblMissile.Text = silo.GetAttack(killable).ToString("0.0");
-                            this.lblMissile.Location = new(lastMouse.X - lblMissile.Width / 2, lastMouse.Y - (lblMissile.Height * 4) / 3);
-                            this.lblMissile.Show();
+                            double dist = attacker.Piece.Tile.GetDistance(killable.Piece.Tile);
+                            int attMod = Attack.TerrainAttMod(SelTile, killable.Piece.Tile);
+                            attack = Consts.StatValueInverse(attacker.Attacks.Sum(a =>
+                                a.CanAttack() && dist <= a.Range ? Consts.StatValue(a.AttackCur + attMod) : 0));
+                        }
+                        if (attack > 0)
+                        {
+                            this.lblMouseAtt.Text = attack.ToString("0.0");
+                            this.lblMouseAtt.Location = new(lastMouse.X - lblMouseAtt.Width / 2, lastMouse.Y - (lblMouseAtt.Height * 4) / 3);
+                            this.lblMouseAtt.Show();
                             this.Focus();
 
                             if (!timer.Enabled)
-                                this.lblMissile.Invalidate();
+                                this.lblMouseAtt.Invalidate();
                         }
+                    }
 
                     if (!timer.Enabled)
                         this.lblMouse.Invalidate();
@@ -374,20 +389,25 @@ namespace WinFormsApp1
             using Pen playerPen = new(Color.Blue, penSize * 1.69f - 1f);
 
             Brush playerBrush = Brushes.Blue;
+            Brush playerLight = Brushes.LightGreen;
             Brush indicatorBase = Brushes.Black;
             Brush indicatorAtt = Brushes.Red;
             Brush indicatorAccent = Brushes.DarkGray;
             Brush healBrush = Brushes.HotPink;
             ellipses.Add(playerBrush, []);
+            ellipses.Add(playerLight, []);
             ellipses.Add(indicatorBase, []);
             ellipses.Add(indicatorAtt, []);
             ellipses.Add(indicatorAccent, []);
             ellipses.Add(healBrush, []);
             polygons.Add(playerBrush, []);
+            polygons.Add(playerLight, []);
             polygons.Add(indicatorBase, []);
             polygons.Add(indicatorAtt, []);
             polygons.Add(indicatorAccent, []);
             polygons.Add(healBrush, []);
+
+            HashSet<Brush> terrainBrushes = [];
 
             List<List<Point>> paths = [];
 
@@ -456,6 +476,7 @@ namespace WinFormsApp1
 
                     const float ellipseInflate = -.13f;
                     RectangleF ellipse = RectangleF.Inflate(rect, rect.Width * ellipseInflate, rect.Height * ellipseInflate);
+                    RectangleF small = RectangleF.Inflate(rect, rect.Width * -.26f, rect.Height * -.26f);
 
                     Resource resource = piece as Resource;
                     Extractor extractor = piece as Extractor;
@@ -466,7 +487,7 @@ namespace WinFormsApp1
                     {
                         if (piece is Alien alien)
                         {
-                            AddFill(Brushes.Red, rect);
+                            AddFill(indicatorAtt, rect);
                             letters.Add(rect, alien.PieceNum.ToString());
                         }
                         else
@@ -519,12 +540,12 @@ namespace WinFormsApp1
                     }
                     else if (piece is Core || piece is Factory)
                     {
-                        AddFill(Brushes.Blue, rect);
-                        if (piece is Core c)
-                            letters.Add(rect, GetTopIncome(c));
+                        AddFill(playerBrush, rect);
+                        //if (piece is Core c)
+                        //    letters.Add(rect, GetTopIncome(c));
                     }
                     else if (piece is Treasure)
-                        AddFill(Brushes.CornflowerBlue, RectangleF.Inflate(rect, rect.Width * -.26f, rect.Height * -.26f));
+                        AddFill(Brushes.CornflowerBlue, small);
                     else if (resource != null)
                     {
                         if (resource is Biomass)
@@ -535,7 +556,7 @@ namespace WinFormsApp1
                             AddFill(Brushes.Magenta, rect);
                         if (extractor != null)
                         {
-                            ellipses[playerBrush].Add(ellipse);
+                            ellipses[playerLight].Add(ellipse);
                             letters.Add(rect, GetTopIncome(extractor));
                         }
                         else
@@ -546,17 +567,20 @@ namespace WinFormsApp1
                         Generator g = piece as Generator;
                         if (g != null || piece is Foundation)
                         {
-                            AddFill(Brushes.Aqua, rect);
+                            AddFill(Brushes.DarkKhaki, rect);
+                            AddFill(indicatorBase, small);
                             if (g != null)
                                 letters.Add(rect, GetTopIncome(g));
                         }
-                        if (piece is Turret or Generator)
+                        if (piece is Turret)
                             ellipses[playerBrush].Add(ellipse);
+                        else if (piece is Generator)
+                            ellipses[playerLight].Add(ellipse);
                         else if (piece is Outpost)
                             openEllipses.Add(RectangleF.Inflate(ellipse, -penSize, -penSize));
                         else if (piece is PlayerPiece)
                         {
-                            AddFill(Brushes.LightGreen, rect);
+                            AddFill(playerLight, rect);
                             if (piece is Drone drone)
                                 letters.Add(rect, drone.Turns.ToString());
                         }
@@ -659,7 +683,7 @@ namespace WinFormsApp1
                             AddFill(brushes[b], new(curX, defBar.Y, cur, defBar.Height));
                             curX += cur;
                             if (cur < max)
-                                AddFill(Brushes.Black, new(curX, defBar.Y, max - cur, defBar.Height));
+                                AddFill(indicatorBase, new(curX, defBar.Y, max - cur, defBar.Height));
                             curX += max - cur;
                             if (b + 1 < curs.Length)
                                 lines[Pens.Yellow].Add(new(new(curX, defBar.Y), new(curX, defBar.Bottom)));
@@ -699,21 +723,20 @@ namespace WinFormsApp1
                             Color color = Color.Empty;
                             if (terrain is Block block)
                             {
-                                color = Color.FromArgb(130, Game.Rand.Round(260 * (.75 - block.Value) - 21), 26);
+                                double gradient = 1 - block.Value;
+                                int v = 210 - Game.Rand.Round(gradient * 169);
+                                color = Color.FromArgb(0, v, v);
                             }
                             else if (terrain is Island island)
                             {
-                                if (double.IsInfinity(island.Vision))
-                                    ;
-                                int v = 255 - Game.Rand.Round(island.Vision / Island.MAX_VISION * 255);
-                                if (double.IsInfinity(v))
-                                    ;
-                                color = Color.FromArgb(0, v, v);
+                                double gradient = 1 - island.Vision / Island.MAX_VISION;
+                                color = Color.FromArgb(Game.Rand.Round(65 + 65 * gradient),
+                                    Game.Rand.Round(21 + 104 * gradient * gradient), 26);
                                 tileRects.Add(rect);
                             }
-                            //Color.Brown
-                            //if ( )
-                            AddFill(new SolidBrush(color), rect);
+                            var brush = new SolidBrush(color);
+                            terrainBrushes.Add(brush);
+                            AddFill(brush, rect);
                         }
                         else if (tile != null)// && Scale > scaleCutoff)
                             tileRects.Add(rect);
@@ -725,7 +748,7 @@ namespace WinFormsApp1
 
             if (viewAttacks && !inEnemyTurn && Scale > scaleCutoff)
             {
-                using Font f = new(FontFamily.GenericMonospace, Scale / 3.9f);
+                //using Font f = new(FontFamily.GenericMonospace, Scale / 3.9f);
                 foreach (var p in numbers)
                 {
                     int x = p.Key.X, y = p.Key.Y;
@@ -767,7 +790,7 @@ namespace WinFormsApp1
             //}
 
             if (nullTiles.Count > 0)
-                e.Graphics.FillRectangles(Brushes.DarkKhaki, nullTiles.Select(p => new RectangleF(GetX(p.X), GetY(p.Y), Scale, Scale)).ToArray());
+                e.Graphics.FillRectangles(Brushes.Aqua, nullTiles.Select(p => new RectangleF(GetX(p.X), GetY(p.Y), Scale, Scale)).ToArray());
             //foreach (var n in nullTiles)
             //{
             //    double eval = Program.Game.Map.EvalNull(n);
@@ -785,12 +808,14 @@ namespace WinFormsApp1
             if (allrects.Length > 0)
                 e.Graphics.FillRectangles(Brushes.White, allrects);
 
-            HashSet<Brush> value1 = [ Brushes.White, Brushes.Black,
+            HashSet<Brush> afterBrushes = [ Brushes.White, Brushes.Black, Brushes.LightPink,
                 Brushes.DarkGray, Brushes.LightSlateGray, Brushes.SkyBlue, Brushes.DarkGray, Brushes.SandyBrown, Brushes.MediumPurple,
             ];
-            HashSet<Brush> afterBrushes = value1;
             foreach (var p in Game.Rand.Iterate(fill))
-                if (!afterBrushes.Contains(p.Key))
+                if (terrainBrushes.Contains(p.Key))
+                    e.Graphics.FillRectangles(p.Key, p.Value.ToArray());
+            foreach (var p in Game.Rand.Iterate(fill))
+                if (!terrainBrushes.Contains(p.Key) && !afterBrushes.Contains(p.Key))
                     e.Graphics.FillRectangles(p.Key, p.Value.ToArray());
             foreach (var ellipse in openEllipses)
                 e.Graphics.DrawEllipse(playerPen, ellipse);
@@ -798,7 +823,7 @@ namespace WinFormsApp1
                 foreach (var ellipse in Game.Rand.Iterate(p.Value))
                     e.Graphics.FillEllipse(p.Key, ellipse);
             foreach (var p in Game.Rand.Iterate(fill))
-                if (afterBrushes.Contains(p.Key))
+                if (!terrainBrushes.Contains(p.Key) && afterBrushes.Contains(p.Key))
                     e.Graphics.FillRectangles(p.Key, p.Value.ToArray());
             foreach (var p in polygons)
                 foreach (var polygon in Game.Rand.Iterate(p.Value))
@@ -812,10 +837,10 @@ namespace WinFormsApp1
                     e.Graphics.DrawLine(l.Key, t.Item1.X, t.Item1.Y, t.Item2.X, t.Item2.Y);
             if (rectsAlt.Count > 0)
                 e.Graphics.DrawRectangles(Pens.Yellow, rectsAlt.ToArray());
-            if (SelTile != null)
+            if (_selected.HasValue && Program.Game.Map.Visible(_selected.Value))
             {
                 using Pen sel = new(Color.Black, penSize + 2);
-                e.Graphics.DrawRectangle(sel, GetX(SelTile.X), GetY(SelTile.Y), Scale, Scale);
+                e.Graphics.DrawRectangle(sel, GetX(_selected.Value.X), GetY(_selected.Value.Y), Scale, Scale);
             }
 
             if ((viewAttacks || viewMoves) && !inEnemyTurn && Scale > 21f)
@@ -823,12 +848,13 @@ namespace WinFormsApp1
                 using Font f = new(FontFamily.GenericMonospace, Scale / 3.9f);
                 foreach (var p in numbers)
                     if (mapCoords.Contains(p.Key.X, p.Key.Y))
-                    {
-                        string value = p.Value.ToString("0");
-                        SizeF size = e.Graphics.MeasureString(value, f);
-                        e.Graphics.DrawString(value, f, viewAttacks && !extendedRange ? Brushes.Red : Brushes.Black,
-                            new PointF(GetX(p.Key.X) + Scale - size.Width, GetY(p.Key.Y) + Scale - size.Height));
-                    }
+                        if (Program.Game.Map.GetVisibleTile(p.Key.X, p.Key.Y)?.Piece is not ITerrain)
+                        {
+                            string value = p.Value.ToString("0");
+                            SizeF size = e.Graphics.MeasureString(value, f);
+                            e.Graphics.DrawString(value, f, viewAttacks && !extendedRange ? indicatorAtt : indicatorBase,
+                                new PointF(GetX(p.Key.X) + Scale - size.Width, GetY(p.Key.Y) + Scale - size.Height));
+                        }
             }
             if (Scale > scaleCutoff)
                 foreach (var p in letters)
@@ -838,7 +864,7 @@ namespace WinFormsApp1
                         float div = (float)Math.Pow(1.69, 1.0 / p.Value.Length);
                         using Font font = new(f.FontFamily, f.Size * Scale / div / size.Width, FontStyle.Bold);
                         size = e.Graphics.MeasureString(p.Value, font);
-                        e.Graphics.DrawString(p.Value, font, Brushes.Black, p.Key.X + Scale - size.Width, p.Key.Y);
+                        e.Graphics.DrawString(p.Value, font, indicatorBase, p.Key.X + Scale - size.Width, p.Key.Y);
                     }
 
             static string GetTopIncome(IIncome income)
@@ -917,7 +943,7 @@ namespace WinFormsApp1
                     //    ranges.Add(pen, new());
                     foreach (IMovable enemy in Program.Game.Enemy.VisiblePieces.Select(e => e.GetBehavior<IMovable>()).Where(m => m != null))
                     {
-                        HashSet<Point> moves = [.. enemy.Piece.Tile.GetAllPointsInRange(enemy.MoveCur)];
+                        HashSet<Point> moves = [.. enemy.Piece.Tile.GetAllPointsInRange(enemy.MoveCur)]; //
                         ranges[AltGreen].Add(moves);
                         if (!viewAttacks && !inEnemyTurn)
                             foreach (var t in moves)
@@ -944,31 +970,28 @@ namespace WinFormsApp1
             //watch.Start();
 
             Dictionary<Pen, List<HashSet<Point>>> ranges = this.ranges;
-            if (SelTile != null)
+            Piece piece = SelTile?.Piece;
+            if (piece != null)
             {
                 //clone
                 ranges = ranges.ToDictionary(p => p.Key, p => p.Value.ToList());
 
                 //Debug.WriteLine("1 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
-
                 HashSet<Point> moveTiles = [];
-                IMovable movable = SelTile.Piece?.GetBehavior<IMovable>();
-                if (SelTile.Piece != null && movable != null && movable.MoveCur >= 1 && movable.CanMove)
+                IMovable movable = piece.GetBehavior<IMovable>();
+                if (movable != null && movable.MoveCur >= 1 && movable.CanMove)
                 {
-
                     //Debug.WriteLine("2 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
-
-                    //if ( SelTile.Piece.IsEnemy)
                     moveTiles = GetMoveTiles(movable);
                     ranges[Green].Add(moveTiles);
 
                     //Debug.WriteLine("3 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
-
-                    if (SelTile.Piece.IsPlayer && movable.MoveCur + movable.MoveInc > movable.MoveMax)
+                    if (piece.IsPlayer && movable.MoveCur + movable.MoveInc > movable.MoveMax)
                         //check blocks
-                        ranges[Green].Add([.. moveTiles.Where(t => Math.Min(movable.MoveCur - 1, movable.MoveCur + movable.MoveInc - movable.MoveMax) > SelTile.GetDistance(t))]);
-                    //Debug.WriteLine("3 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
+                        ranges[Green].Add([.. moveTiles.Where(t => Math.Min(movable.MoveCur - 1,
+                            movable.MoveCur + movable.MoveInc - movable.MoveMax) > SelTile.GetDistance(t))]); //
 
+                    //Debug.WriteLine("3 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
                     //if (SelTile.Piece.IsPlayer && movable.MoveCur + movable.MoveInc > movable.MoveMax)
                     //    //check blocks
                     //    ranges[Green].Add(moveTiles.Where(t => Math.Min(movable.MoveCur - 1, movable.MoveCur + movable.MoveInc - movable.MoveMax) < SelTile.GetDistance(t)).ToHashSet());
@@ -977,41 +1000,43 @@ namespace WinFormsApp1
                 }
 
                 //Debug.WriteLine("4 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
-
-                if (SelTile.Piece != null && SelTile.Piece.HasBehavior(out IAttacker attacker))
+                if (piece.HasBehavior(out IAttacker attacker))
                     ranges[Red].AddRange(AddAttacks(attacker, true, null));
 
-
                 //Debug.WriteLine("5 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
+                if (piece is PlayerPiece pp && movable != null && MouseTile != null
+                    && (MouseTile.Piece == null || MouseTile.Piece.HasBehavior<IMovable>()))
+                {
+                    IEnumerable<Point> enumerable = moveTiles.Contains(MouseTile.Location) ? Tile.GetVision(pp, MouseTile.Location)
+                        : Tile.GetVision(Program.Game.Map, MouseTile.Location, pp.GetVision(MouseTile));
+                    ranges[White].Add([.. enumerable.Where(p => !Program.Game.Map.Visible(p))]);
 
-                if (SelTile.Piece != null && SelTile.Piece.HasBehavior(out IBuilder b) && b.Range >= 1
-                    && MouseTile != null && moveTiles.Contains(MouseTile.Location))
-                    ranges[Blue].Add([.. MouseTile.GetPointsInRange(b)]);
+                    if (piece.HasBehavior(out IBuilder b) && b.Range >= 1) //moveTiles.Contains(MouseTile.Location) &&
+                        ranges[Blue].Add([.. MouseTile.GetPointsInRange(b)]);
+                }
             }
 
             Rectangle mapCoords = GetMapCoords();
 
-            //mapCoords.Inflate(Game.Rand.Round(-Scale), Game.Rand.Round(-Scale));
-
             //Debug.WriteLine("6 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
-
             List<Pen> dipose = [];
             Dictionary<LineSegment, Tuple<Pen, int>> lines = [];
             Dictionary<LineSegment, Tuple<Brush, int>> fill = [];
             foreach (var pair in ranges)
             {
-                bool edge = (pair.Key.Color == Color.White);
+                //bool edge = (pair.Key.Color == Color.White);
                 foreach (var tiles in pair.Value)
                     foreach (Point t in tiles)
-                        if (edge || mapCoords.Contains(new DPoint(t.X, t.Y)))
+                        if (mapCoords.Contains(new DPoint(t.X, t.Y)))//edge ||
                         {
-                            bool Show(Point p) => !tiles.Contains(p) && (edge || mapCoords.Contains(new DPoint(p.X, p.Y)));
+                            bool Show(Point p) => !tiles.Contains(p) && (mapCoords.Contains(new DPoint(p.X, p.Y))); //edge ||
                             void AddLine(int x1, int y1, int x2, int y2)
                             {
                                 LineSegment l = new(x1, y1, x2, y2);
-                                if (edge)
-                                    ;// fill[l] = new(Brushes.DarkKhaki, 0);
-                                else if (lines.TryGetValue(l, out Tuple<Pen, int> oth))
+                                //if (edge)
+                                //    ;// fill[l] = new(Brushes.DarkKhaki, 0);
+                                //else 
+                                if (lines.TryGetValue(l, out Tuple<Pen, int> oth))
                                 {
                                     Pen combined;
                                     if (pair.Key != oth.Item1)
@@ -1085,10 +1110,10 @@ namespace WinFormsApp1
                     if (points.Length > 0)
                     {
                         //calls++;
-                        if (p.Key.Color == Color.White)
-                            ;// e.Graphics.FillPolygon(new SolidBrush(Color.DarkKhaki), points);
-                        else
-                            e.Graphics.DrawLines(p.Key, points);
+                        //if (p.Key.Color == Color.White)
+                        //    ;// e.Graphics.FillPolygon(new SolidBrush(Color.DarkKhaki), points);
+                        //else
+                        e.Graphics.DrawLines(p.Key, points);
                     }
                 } while (points.Length > 0);
             //Debug.WriteLine("draws: " + calls);
@@ -1184,7 +1209,7 @@ namespace WinFormsApp1
             {
                 foreach (var a in attacker.Attacks)
                     if (a.CanAttack() || showAll)
-                        if (MouseTile != null && moveTiles.Contains(MouseTile.Location))
+                        if (MouseTile != null && MouseTile.Piece == null && moveTiles.Contains(MouseTile.Location))
                             retVal.Add([.. MouseTile.GetPointsInRange(a)]);
                         else if (a.CanAttack())
                             retVal.Add([.. SelTile.GetPointsInRange(a)]);
@@ -1369,7 +1394,7 @@ namespace WinFormsApp1
             else
                 lastMouse = e;
             if (e != null)
-                this.MouseTile = Program.Game.Map.GetVisibleTile(GetMapX(e.X), GetMapY(e.Y));
+                SetMouseP(new(GetMapX(e.X), GetMapY(e.Y)));
             //if (!timer.Enabled)
             //ShowMouseInfo();
             //}
@@ -1510,17 +1535,18 @@ namespace WinFormsApp1
 
             Tile clicked = Program.Game.Map.GetVisibleTile(x, y);
             Tile orig = SelTile;
+            void Select() => SetSelP(new(x, y));
 
             if (e.Button == MouseButtons.Left)
             {
-                SelTile = clicked;
+                Select();
             }
             else if (e.Button == MouseButtons.Right && SelTile != null && SelTile.Piece != null && clicked != null)
             {
                 if (SelTile.Piece.HasBehavior(out IAttacker attacker) && clicked.Piece != null && clicked.Piece.HasBehavior(out IKillable killable)
                     && attacker.Fire(killable))
                 {
-                    SelTile = clicked;
+                    Select();
                     Program.Moved(attacker);
                 }
                 else if (SelTile.Piece.HasBehavior(out IMovable movable))
@@ -1569,7 +1595,7 @@ namespace WinFormsApp1
                     && clicked.Piece != null && clicked.Piece.HasBehavior(out IKillable k)
                     && silo.Fire(k))
                 {
-                    SelTile = clicked;
+                    Select();
                     Program.Moved(attacker);
                 }
             }
@@ -1589,9 +1615,9 @@ namespace WinFormsApp1
             return limitMove ? movable.MoveCur + movable.MoveInc - movable.MoveMax : movable.MoveCur;
         }
 
-        private void lblMissile_MouseClick(object sender, MouseEventArgs e)
+        private void LblMouseAtt_MouseClick(object sender, MouseEventArgs e)
         {
-            lblMissile.Hide();
+            lblMouseAtt.Hide();
 
             var label = (Control)sender;
             DPoint formPoint = this.PointToClient(label.PointToScreen(e.Location));

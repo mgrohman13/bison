@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using System.Runtime.Serialization;
 using Tile = ClassLibrary1.Map.Map.Tile;
+using Point = MattUtil.Point;
 
 namespace ClassLibrary1.Pieces.Behavior
 {
@@ -54,22 +55,13 @@ namespace ClassLibrary1.Pieces.Behavior
 
             if (CanMoveTo(to) && to.Visible && Piece is PlayerPiece piece)
             {
-                const double lineDist = .5;
-                bool isX = from.X == to.X;
-                double a = isX ? 0 : (to.Y - from.Y) / (double)(to.X - from.X);
-                double c = to.Y - a * to.X;
-                double b = -1;
-
-                IOrderedEnumerable<MattUtil.Point> ps =
-                    Game.Rand.Iterate(Math.Min(from.X, to.X), Math.Max(from.X, to.X), Math.Min(from.Y, to.Y), Math.Max(from.Y, to.Y))
-                    .Where(p => isX || Map.Map.PointLineDistanceAbs(a, b, c, p) < lineDist)
-                    .OrderBy(from.GetDistance);
+                IOrderedEnumerable<Point> ps = GetMovePoints(from, to);
 
                 bool stop = false;
                 foreach (var p in ps)
                 {
-                    stop |= from.Map.UpdateVision(p, piece.Vision);
                     Tile tile = from.Map.GetTile(p);
+                    stop |= from.Map.UpdateVision(p, piece.GetVision(tile));
                     if (stop && tile != null && tile.Piece == null)
                     {
                         to = tile;
@@ -83,6 +75,18 @@ namespace ClassLibrary1.Pieces.Behavior
             }
             return false;
         }
+        public static IOrderedEnumerable<Point> GetMovePoints(Tile from, Tile to)
+        {
+            const double lineDist = .5;
+            bool isX = from.X == to.X;
+            double a = isX ? 0 : (to.Y - from.Y) / (double)(to.X - from.X);
+            double c = to.Y - a * to.X;
+            double b = -1;
+            return Game.Rand.Iterate(Math.Min(from.X, to.X), Math.Max(from.X, to.X), Math.Min(from.Y, to.Y), Math.Max(from.Y, to.Y))
+                .Where(p => isX || Map.Map.PointLineDistanceAbs(a, b, c, p) < lineDist)
+                .OrderBy(from.GetDistance);
+        }
+
         bool IMovable.EnemyMove(Tile to) => Piece.IsEnemy && Move(to);
         private bool Move(Tile to)
         {
@@ -102,7 +106,7 @@ namespace ClassLibrary1.Pieces.Behavior
             {
                 //check blocks
                 double dist = Piece.Tile.GetDistance(to);
-                if (dist <= MoveCur)
+                if (dist <= MoveCur) //
                     return true;
             }
             return false;
@@ -159,7 +163,7 @@ namespace ClassLibrary1.Pieces.Behavior
         {
             double treasure = MoveCur * Consts.EnergyPerMove;
             this._moveCur = 0;
-            return treasure; 
+            return treasure;
         }
     }
 }

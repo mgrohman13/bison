@@ -136,12 +136,12 @@ namespace WinFormsApp1
             progressBar1.Visible = visible;
         }
 
-        private void lblResearching_Click(object sender, EventArgs e)
+        private void LblResearching_Click(object sender, EventArgs e)
         {
             if (ResearchForm.ShowForm())
                 Program.RefreshChanged();
         }
-        private void lblResources_Click(object sender, EventArgs e)
+        private void LblResources_Click(object sender, EventArgs e)
         {
             DataTable data = new()
             {

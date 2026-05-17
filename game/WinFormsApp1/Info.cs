@@ -13,6 +13,7 @@ using System.Threading;
 using System.Windows.Forms;
 using AttackType = ClassLibrary1.Pieces.Behavior.Combat.CombatTypes.AttackType;
 using DefenseType = ClassLibrary1.Pieces.Behavior.Combat.CombatTypes.DefenseType;
+using Point = MattUtil.Point;
 using Tile = ClassLibrary1.Map.Map.Tile;
 
 namespace WinFormsApp1
@@ -21,7 +22,11 @@ namespace WinFormsApp1
     {
         //private readonly Timer animateTimer;
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public Tile Selected { get; set; }
+        public Point? SelP { get; set; }
+        public Tile SelTile
+        {
+            get => SelP.HasValue ? Program.Game.Map.GetVisibleTile(SelP.Value) : null;
+        }
 
         public Info()
         {
@@ -79,10 +84,10 @@ namespace WinFormsApp1
             //}
             if (CanReplace(out _))
             {
-                btnBuild.Text = "Replace";
+                btnBuild.Text = "Upgrade";
                 btnBuild.Show();
             }
-            else if (BuildForm.CanBuild(Selected))
+            else if (BuildForm.CanBuild(SelTile))
             {
                 btnBuild.Text = "Build";
                 btnBuild.Show();
@@ -98,19 +103,25 @@ namespace WinFormsApp1
                 btnBuild.Hide();
             }
 
+            this.btnDisband.Visible = SelTile?.Piece is PlayerPiece p && p is not Core;
             this.btnTrade.Visible = Program.Game.Player.CanBurnMass() || Program.Game.Player.CanFabricateMass() || Program.Game.Player.CanScrapResearch();
 
-            if (Selected != null && (Selected.Piece != null || Selected.Terrain != null))
+            if (SelTile == null && SelP.HasValue && Program.Game.Map.Visible(SelP.Value))
             {
                 lblHeading.Show();
-                lblHeading.Text = ((object)Selected.Piece ?? Selected.Terrain)!.ToString();
+                lblHeading.Text = Block.FullString;
+            }
+            else if (SelTile != null && (SelTile.Piece != null || SelTile.Terrain != null))
+            {
+                lblHeading.Show();
+                lblHeading.Text = ((object)SelTile.Piece ?? SelTile.Terrain)!.ToString();
 
-                PlayerPiece playerPiece = Selected.Piece as PlayerPiece;
+                PlayerPiece playerPiece = SelTile.Piece as PlayerPiece;
 
                 IMissileSilo silo = null;
-                if (Selected.Piece != null)
+                if (SelTile.Piece != null)
                 {
-                    if (Selected.Piece.HasBehavior(out IKillable killable))
+                    if (SelTile.Piece.HasBehavior(out IKillable killable))
                     {
                         double repairInc = 0;
                         if (playerPiece != null)
@@ -162,7 +173,7 @@ namespace WinFormsApp1
                             killable.Hits.DefenseCur < killable.Hits.DefenseMax ? string.Format(" ({0})", FormatPct(killable.Resilience)) : "");
                     }
 
-                    if (Selected.Piece.HasBehavior(out silo))
+                    if (SelTile.Piece.HasBehavior(out silo))
                     {
                         lbl5.Show();
                         lblInf5.Show();
@@ -172,7 +183,7 @@ namespace WinFormsApp1
                         cbxMissile.Show();
                         cbxMissile.Checked = silo.Producing;
                     }
-                    else if (Selected.Piece.HasBehavior(out IMovable movable))
+                    else if (SelTile.Piece.HasBehavior(out IMovable movable))
                     {
                         lbl5.Show();
                         lblInf5.Show();
@@ -236,8 +247,8 @@ namespace WinFormsApp1
                     //    lblInf7.Text = FormatPct(alien.Morale);
                     //}
 
-                    var builder = Selected.Piece.GetBehavior<IBuilder>();
-                    var repair = Selected.Piece.GetBehavior<IRepair>();
+                    var builder = SelTile.Piece.GetBehavior<IBuilder>();
+                    var repair = SelTile.Piece.GetBehavior<IRepair>();
                     if (repair != null)
                     {
                         lbl10.Text = "Repair";
@@ -259,8 +270,8 @@ namespace WinFormsApp1
                             Format(builder.Range), CheckBase(builder.RangeBase, builder.Range), lblInf10.Text);
                     }
 
-                    Resource resource = Selected.Piece as Resource;
-                    Extractor extractor = Selected.Piece as Extractor;
+                    Resource resource = SelTile.Piece as Resource;
+                    Extractor extractor = SelTile.Piece as Extractor;
                     if (resource == null && extractor != null)
                         resource = extractor.Resource;
                     if (resource != null)
@@ -307,7 +318,7 @@ namespace WinFormsApp1
                     }
 
                     var attacks = Enumerable.Empty<Attack>();
-                    if (Selected.Piece.HasBehavior(out IAttacker attacker))
+                    if (SelTile.Piece.HasBehavior(out IAttacker attacker))
                         attacks = attacker.Attacks;
                     if (silo != null)
                         attacks = [silo.SampleAttack];
@@ -333,20 +344,20 @@ namespace WinFormsApp1
                         int labelsY = this.Controls.OfType<Label>().Where(lbl => lbl.Visible && lbl.Parent != this.panel1).Max(lbl => lbl.Location.Y + lbl.Height);
                         dgvAttacks.MaximumSize = new Size(this.Width, this.panel1.Location.Y - labelsY);
                         dgvAttacks.Size = dgvAttacks.PreferredSize;
-                        dgvAttacks.Location = new Point(0, this.panel1.Location.Y - dgvAttacks.Height);
+                        dgvAttacks.Location = new System.Drawing.Point(0, this.panel1.Location.Y - dgvAttacks.Height);
                     }
 
-                    if (Selected.Terrain is Island island)
+                    if (SelTile.Terrain is Island island)
                     {
-                        lblHeading.Text = $"{lblHeading.Text} ({island})";
+                        lblHeading.Text = $"{lblHeading.Text} ({island} {island.Vision:0.0})";
                     }
                 }
-                else if (Selected.Terrain is Island island)
+                else if (SelTile.Terrain is Island island)
                 {
-                    lbl1.Show();
-                    lblInf1.Show();
-                    lbl1.Text = "Defense";
-                    lblInf1.Text = "+" + Island.Defense.ToString();
+                    //lbl4.Show();
+                    //lblInf4.Show();
+                    //lbl4.Text = "Ranged Att";
+                    //lblInf4.Text = "+" + Island.RangedAtt.ToString();
 
                     lbl6.Show();
                     lblInf6.Show();
@@ -497,7 +508,10 @@ namespace WinFormsApp1
                     int limit = rtbLog.Height / 30 + 1;
                     int skip = limit * logPage;
                     limit += skip;
-                    foreach (var entry in Program.Game.Log.Data(Selected?.Piece))
+                    Piece piece = SelTile?.Piece;
+                    if (piece is Block)
+                        piece = null;
+                    foreach (var entry in Program.Game.Log.Data(piece))
                     {
                         count++;
                         if (count <= skip)
@@ -707,13 +721,13 @@ namespace WinFormsApp1
             static string DispCost(int c) => (c < 0 ? "+" : "") + -c;
             if (CanReplace(out Piece builder))
             {
-                Piece result = Program.BuildForm.ReplaceDialog(builder, Selected);
+                Piece result = Program.BuildForm.ReplaceDialog(builder, SelTile);
                 if (result != null)
                     Program.RefreshChanged();
             }
-            else if (BuildForm.CanBuild(Selected))
+            else if (BuildForm.CanBuild(SelTile))
             {
-                Piece result = Program.BuildForm.BuilderDialog(Selected);
+                Piece result = Program.BuildForm.BuilderDialog(SelTile);
                 if (result != null)
                     Program.RefreshChanged();
             }
@@ -722,9 +736,9 @@ namespace WinFormsApp1
                 MessageBox.Show("Constructor will be automatically upgraded on turn end, " +
                     "if in range of a piece that can build constructors.", "Upgrade", MessageBoxButtons.OK);
             }
-            else if (HasUpgrade(Selected, out MechBlueprint blueprint, out int energy, out int mass))
+            else if (HasUpgrade(SelTile, out MechBlueprint blueprint, out int energy, out int mass))
             {
-                Program.BuildForm.UpgradeDialog(((Mech)Selected.Piece).Blueprint);
+                Program.BuildForm.UpgradeDialog(((Mech)SelTile.Piece).Blueprint, energy, mass);
                 bool canUpgrade = CanUpgrade();
                 if (canUpgrade && MessageBox.Show(string.Format("{3}pgrade to {0} for {1} energy {2} mass{4}",
                         blueprint, DispCost(energy), DispCost(mass),
@@ -732,10 +746,20 @@ namespace WinFormsApp1
                         "Upgrade", canUpgrade ? MessageBoxButtons.OKCancel : MessageBoxButtons.OK)
                     == DialogResult.OK)
                 {
-                    ((Mech)Selected.Piece).Upgrade();
+                    ((Mech)SelTile.Piece).Upgrade();
                     Program.RefreshChanged();
                 }
             }
+        }
+        private void BtnDisband_Click(object sender, EventArgs e)
+        {
+            if (SelTile?.Piece is PlayerPiece p && p is not Core)
+                if (MessageBox.Show($"Disband for +{p.DisbandMass():0.0} mass?",
+                        "Disband", MessageBoxButtons.OKCancel) == DialogResult.OK)
+                {
+                    p.Disband();
+                    Program.RefreshChanged();
+                }
         }
         public static bool HasAnyUpgrade(Tile tile)
         {
@@ -743,7 +767,7 @@ namespace WinFormsApp1
         }
         public bool HasConstructorUpgrade()
         {
-            return HasConstructorUpgrade(Selected);
+            return HasConstructorUpgrade(SelTile);
         }
         public static bool HasConstructorUpgrade(Tile tile)
         {
@@ -751,7 +775,7 @@ namespace WinFormsApp1
         }
         public bool HasUpgrade()
         {
-            return HasUpgrade(Selected, out _, out _, out _);
+            return HasUpgrade(SelTile, out _, out _, out _);
         }
         private static bool HasUpgrade(Tile tile, out MechBlueprint blueprint, out int energy, out int mass)
         {
@@ -766,17 +790,17 @@ namespace WinFormsApp1
         }
         private bool CanUpgrade()
         {
-            if (Selected != null && Selected.Piece is Mech mech)
+            if (SelTile != null && SelTile.Piece is Mech mech)
                 return mech.CanUpgrade(out _, out _, out _);
             return false;
         }
         private bool CanReplace(out Piece piece)
         {
             IBuilder builder = null;
-            if (Selected != null && Selected.Piece is Outpost outpost)
+            if (SelTile != null && SelTile.Piece is Outpost)
             {
-                builder ??= BuildForm.GetBuilder<IBuilder.IBuildFactory>(Selected);
-                builder ??= BuildForm.GetBuilder<IBuilder.IBuildTurret>(Selected);
+                builder ??= BuildForm.GetBuilder<IBuilder.IBuildFactory>(SelTile);
+                builder ??= BuildForm.GetBuilder<IBuilder.IBuildTurret>(SelTile);
                 //else if (Selected.Piece is FoundationPiece)
                 //builder = BuildForm.GetBuilder<IBuilder.IReplacer<FoundationPiece>>(Selected);
             }
@@ -802,7 +826,8 @@ namespace WinFormsApp1
 
         private void BtnTrade_Click(object sender, EventArgs e)
         {
-            if (Trade.ShowTrade())
+            if (Trade.ShowTrade(SelTile, CanReplace(out Piece p), p, BuildForm.CanBuild(SelTile),
+                    HasUpgrade(SelTile, out _, out int energy, out int mass), energy, mass))
                 Program.RefreshChanged();
         }
 
@@ -813,7 +838,7 @@ namespace WinFormsApp1
 
         private void CbxMissile_CheckedChanged(object sender, EventArgs e)
         {
-            if (Selected.Piece.HasBehavior(out IMissileSilo silo))
+            if (SelTile.Piece.HasBehavior(out IMissileSilo silo))
             {
                 silo.Producing = ((CheckBox)sender).Checked;
                 Program.RefreshChanged();

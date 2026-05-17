@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ClassLibrary1.Pieces.Terrain;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -28,8 +29,9 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
             get => _attacked;
             internal set => _attacked = value;
         }
-        public int AttackCur => _attackCur;
-        public int AttackMax => _values.Attack;
+        public int AttackCur => _attackCur;// + TerrainAtt();
+        public int AttackMax => _values.Attack;// + TerrainAtt();
+        //private int TerrainAtt() => _attackCur > 0 && RangeBase > MELEE_RANGE && Piece.Tile.Terrain is Island ? Island.RangedAtt : 0;
         public double Range => RangeBase > MELEE_RANGE ? Consts.GetDamagedValue(Piece, RangeBase, 2) : MELEE_RANGE;
         public double RangeBase => _values.Range;
 
@@ -117,16 +119,18 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
         }
         private bool DoFire(IKillable target, Tile targetTile)
         {
-            bool DoAtt() => AttackCur > 0 && !target.Dead;
+            int mod = TerrainAttMod(Piece.Tile, target.Piece.Tile);
+            bool DoAtt() => Consts.ModAtt(AttackCur, mod) > 0 && !target.Dead;
             if (DoAtt())
             {
                 Piece.Game.Map.UpdateVision(new[] { Piece, target.Piece }.Select(p => p.Tile));
 
                 target.OnAttacked();
                 int startAttack = AttackCur;
+                int att = Consts.ModAtt(startAttack, mod);
                 Dictionary<Defense, int> startDefense = target.AllDefenses.ToDictionary(d => d, d => d.DefenseCur);
 
-                int rounds = AttackCur;
+                int rounds = att;
                 for (int a = 0; a < rounds && DoAtt(); a++)
                     if (a == 0 || Game.Rand.Bool())
                     {
@@ -134,7 +138,8 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
                         Defense defense = Game.Rand.SelectValue(target.AllDefenses, CombatTypes.GetDefenceChance);
                         bool activeDefense = target.HasBehavior<IAttacker>();
 
-                        if (Game.Rand.Next(AttackCur + defense.DefenseCur) < AttackCur)
+                        att = Consts.ModAtt(AttackCur, mod);
+                        if (Game.Rand.Next(att + defense.DefenseCur) < att)
                         {
                             defense.DoDamage(this);
                         }
@@ -152,10 +157,21 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
 
                 if (Piece.HasBehavior(out IAttacker attacker))
                     attacker.RaiseAttackEvent(this, target, targetTile);
-                Piece.Game.Log.LogAttack(this, startAttack, target, startDefense);
+                Piece.Game.Log.LogAttack(this, startAttack, mod, target, startDefense);
                 return true;
             }
             return false;
+        }
+        public static int TerrainAttMod(Tile from, Tile to)
+        {
+            static double V(Tile t) => t.Terrain is Island i ? i.Vision : 0;
+            double a = V(from);
+            double d = V(to);
+            if (a > d)
+                return 1;
+            if (a < d)
+                return -1;
+            return 0;
         }
 
         public void GetUpkeep(ref double energyUpk, ref double massUpk)

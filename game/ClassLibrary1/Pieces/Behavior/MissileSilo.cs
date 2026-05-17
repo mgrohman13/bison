@@ -47,7 +47,7 @@ namespace ClassLibrary1.Pieces.Behavior
             return Piece.Game.Player.GetUpgradeValues<Values>();
         }
 
-        public double GetAttack(IKillable killable) => Attack.Attack * GetAttackMult(killable);
+        public double GetAttack(IKillable killable) => Attack.Attack * GetAttackMult(killable) + TerrainAttMod(killable);
 
         public bool Fire(IKillable killable)
         {
@@ -64,7 +64,7 @@ namespace ClassLibrary1.Pieces.Behavior
                     Tile[] tiles = [this.Piece.Tile, enemy.Tile];
 
                     double attMult = GetAttackMult(killable);
-                    double a = Attack.Attack * attMult;
+                    double a = Attack.Attack * attMult + TerrainAttMod(killable);
                     int att = Game.Rand.GaussianCappedInt(a, 1 / a, 1);
                     Attack attack = new(Piece, new(Attack.Type, att, Attack.Range));
                     fired = attack.Missile(killable);
@@ -91,12 +91,7 @@ namespace ClassLibrary1.Pieces.Behavior
                             Piece.Game.Map.GetClosestSpawner(tile.Location).Spawner.Mult(Game.Rand.Range(1, spawnerMult));
 
                         mult *= mult;
-                        foreach (Alien alien in Game.Rand.Iterate(Piece.Game.Enemy.PiecesOfType<Alien>()))
-                            if (alien != enemy)
-                            {
-                                foreach (Tile tile in Game.Rand.Iterate(tiles))
-                                    alien.MissileFired(tile, Game.Rand.Range(1, mult));
-                            }
+                        Alien.IncMorale(enemy, mult, Consts.CaveSize, 1, tiles);
                     }
                     else
                         ;
@@ -122,7 +117,8 @@ namespace ClassLibrary1.Pieces.Behavior
 
             return mult;
         }
-        //private Attack TempAttack() => new(Piece, Attack);
+        private double TerrainAttMod(IKillable killable) =>
+            Combat.Attack.TerrainAttMod(Piece.Tile, killable.Piece.Tile);
 
         void IBehavior.StartTurn()
         {

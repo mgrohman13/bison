@@ -1,8 +1,64 @@
+pathfinding hangs sometimes
+
+hide disband behind research?
+
+rebalance turret/outpost
+	cost for already built? need to upg? 
+mech upgs op? same 80% as outpost upg? 
+	rethink cur stats
+	stop move/attacks rest of turn
+		
+swap low/hi water colors?
+
+move left under attack logic needs to use proper logic from map
+	corner cases to fix for both?
+		movable pieces
+
+outpost replace no longer economical?
+	but no longer heal - call it an upgrade 
+		similar to mech upgrade logic??
+			need to rethink mech upg logic......
+
+consolidate/streamline morale modifications?
+
+no longer use extended range (move+ranged att) for enemy state calcs?
+	remove overlay option
+
+outpost upg ignoring notify 
+inc outpost att
+
+hill
+	prevent vision, move onto?
+
+vision uses last bonus for entire movement 
+
+highlight foudnation visibility
+
+disband button
+
+use att mod
+	show in enemy att ranges
+	enemy movement
+
+mouseover att accounting for adjacent defenders??
+	shwo def too
+
+reinstate visible appearing foundation chances?
+	since hills no longer tied to
+	logic was changed previously....
+
 hills?
 	generate hill center points?
 	generate as anything touches farther away
 		keep same density at all radii?
 	use center points for consistent plateaus
+	buffs
+		attacks from lower -> higher always disadvantaged?
+		attacks from higher -> lower always advantaged?
+		show str of attack on mouseover
+		range +X for ranged?
+			show with on-move att circle
+	also block vision?? move???
 randomize hilliness each game
 	randomize many, many constants....
 div foundations into plateaus of chunks of same height
@@ -21,9 +77,7 @@ dont show vision increase until unit steps on?
 Island
 	Ranged att?
 	not def?
-	move/range blocker?
-	??/
-	<3.3 vision gives away foundation
+	move/range blocker
 
 Attack.Die needs to check type, reverse sign for kinetic/explosive
 
@@ -167,6 +221,9 @@ random research costs
 	rethink concept? go to more fixed structure somehow?
 	simple check to ensure *total* research required for same tech is never lower?
 research 
+	dont rand research inc? instead, use consistent rounding??
+		also have consistent offset? so its random over time but consistent that turn?
+		change consts if research inc changes over turn???
 	should repeating research increment int counter?
 	keep tech research costs more consistent in between appearances (esp when they stick around)
 		dont want everything being super expensive or cheap at once

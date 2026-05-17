@@ -62,6 +62,7 @@ namespace WinFormsApp1
             lblInf3 = new System.Windows.Forms.Label();
             lbl3 = new System.Windows.Forms.Label();
             cbxMissile = new System.Windows.Forms.CheckBox();
+            btnDisband = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)dgvAttacks).BeginInit();
             panel1.SuspendLayout();
             SuspendLayout();
@@ -248,6 +249,7 @@ namespace WinFormsApp1
             // 
             // panel1
             // 
+            panel1.Controls.Add(btnDisband);
             panel1.Controls.Add(btnInfo);
             panel1.Controls.Add(btnTrade);
             panel1.Controls.Add(btnResearch);
@@ -331,9 +333,9 @@ namespace WinFormsApp1
             // lblHeading
             // 
             lblHeading.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
-            lblHeading.Location = new System.Drawing.Point(0, 0);
+            lblHeading.Location = new System.Drawing.Point(12, 0);
             lblHeading.Name = "lblHeading";
-            lblHeading.Size = new System.Drawing.Size(250, 25);
+            lblHeading.Size = new System.Drawing.Size(385, 25);
             lblHeading.TabIndex = 22;
             lblHeading.Text = "lblHeading";
             lblHeading.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -398,6 +400,17 @@ namespace WinFormsApp1
             cbxMissile.TabIndex = 29;
             cbxMissile.UseVisualStyleBackColor = true;
             cbxMissile.CheckedChanged += CbxMissile_CheckedChanged;
+            // 
+            // btnDisband
+            // 
+            btnDisband.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
+            btnDisband.Location = new System.Drawing.Point(0, 3);
+            btnDisband.Name = "btnDisband";
+            btnDisband.Size = new System.Drawing.Size(111, 33);
+            btnDisband.TabIndex = 19;
+            btnDisband.Text = "Disband";
+            btnDisband.UseVisualStyleBackColor = true;
+            btnDisband.Click += BtnDisband_Click;
             // 
             // Info
             // 
@@ -472,5 +485,6 @@ namespace WinFormsApp1
         private System.Windows.Forms.Label lblInf3;
         private System.Windows.Forms.Label lbl3;
         private System.Windows.Forms.CheckBox cbxMissile;
+        private System.Windows.Forms.Button btnDisband;
     }
 }

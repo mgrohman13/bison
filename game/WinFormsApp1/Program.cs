@@ -337,7 +337,7 @@ namespace WinFormsApp1
                 Tile attackFrom = attacker.Tile;
                 if (attack.Range == Attack.MELEE_RANGE && attacker.HasBehavior(out IMovable movable))
                     attackFrom = friendly.Tile.GetVisibleAdjacentTiles().Where(t => t.Piece is null || t.Piece.HasBehavior<IMovable>())
-                        .FirstOrDefault(t => t.GetDistance(attackFrom) <= movable.MoveCur);
+                        .FirstOrDefault(t => t.GetDistance(attackFrom) <= movable.MoveCur); //
                 return attack.GetDefenders(friendly, attackFrom);
             }
 

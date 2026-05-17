@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 
 namespace ClassLibrary1
@@ -43,11 +44,9 @@ namespace ClassLibrary1
         public IReadOnlyCollection<Type> Available => _choices.Keys;
         public IReadOnlyCollection<Type> Done => _researchedTypes.Keys;
         public int ResearchCur => _researchLast + _progress.Values.Sum();
-        //public int TurnLastAvailable(Type type)
-        //{
-        //    _lastSeen.TryGetValue(type, out int result);
-        //    return result;
-        //}
+        private int? LastSeenTurn(Type type) => LastSeen(type, 0);
+        private int? LastSeenCost(Type type) => LastSeen(type, 1);
+        private int? LastSeen(Type type, int idx) => _lastSeen.TryGetValue(type, out var value) ? (int?)((ITuple)value)[idx] : null;
         public int GetLast(Type type)
         {
             _researchedTypes.TryGetValue(type, out int result);
@@ -100,7 +99,7 @@ namespace ClassLibrary1
         internal Type? AddResearch(double research, out int add)
         {
             foreach (Type type in _choices.Keys)
-                _lastSeen[type] = Tuple.Create(Game.Turn, _progress[type]);
+                _lastSeen[type] = Tuple.Create(Game.Turn, _choices[type]);
 
             if (_researching != Type.Mech)
                 research = Consts.Income(research);
@@ -230,7 +229,7 @@ namespace ClassLibrary1
                             continue;
 
                         this._progress.TryAdd(available, 0);
-                        this._choices.Add(available, CalcCost(available, nextAvg, nextDev, nextOE, nextMin));
+                        this._choices.Add(available, CalcCost(available, nextAvg, nextDev, nextOE, nextMin, excess));
                     }
                 }
 
@@ -256,9 +255,16 @@ namespace ClassLibrary1
         {
             return Enum.GetValues<Type>().ToDictionary(t => t, type =>
             {
-                int lastSeen = _lastSeen[type].Item1;
-                double mult = lastSeen > 0 ? 1 : 1.3;
-                mult *= 1.3 - lastSeen / ((double)Game.Turn + 16.9);
+                int lastTurn = LastSeenTurn(type) ?? 0;
+                double mult = lastTurn > 0 ? 1 : 1.3;
+                mult *= 1.3 - lastTurn / ((double)Game.Turn + 16.9);
+                int diff = Game.Turn - lastTurn + 1;
+                const int turns = 13;
+                if (diff < turns)
+                {
+                    double m = diff / turns;
+                    mult *= m * m;
+                }
 
                 int last = GetLast(type);
                 bool hasType = last > 0;
@@ -286,6 +292,7 @@ namespace ClassLibrary1
                 return Game.Rand.Round(byte.MaxValue * mult);
             }).Where(p => p.Value > 0).ToDictionary(p => p.Key, p => p.Value);
         }
+
         private void GetCostParams(int excess, int previous, out double nextAvg, out double nextDev, out double nextOE, out double nextMin)
         {
             double mult = (1 - Math.Pow(previous / (double)_researchLast, _researchLast / Consts.ResearchFactor));
@@ -313,7 +320,7 @@ namespace ClassLibrary1
         {
             return (previous > 0 && !IsMech(type)) || UpgradeOnly.Contains(type);
         }
-        private int CalcCost(Type type, double nextAvg, double nextDev, double nextOE, double nextMin)
+        private int CalcCost(Type type, double nextAvg, double nextDev, double nextOE, double nextMin, int excess)
         {
             int last = GetLast(type);
             double mult = (last + GetNext(last)) / (_researchLast + nextAvg);
@@ -330,10 +337,19 @@ namespace ClassLibrary1
             double progress = _progress[type];
             int min = Game.Rand.Round(nextMin + progress);
 
+            int amt;
             if (nextAvg > min)
-                return Game.Rand.GaussianOEInt(nextAvg, nextDev, nextOE, min);
+                amt = Game.Rand.GaussianOEInt(nextAvg, nextDev, nextOE, min);
             else
-                return min + Add();
+                amt = min + Add();
+
+            int lastCost = LastSeenCost(type) ?? -1;
+            if (lastCost < min)
+                lastCost = Game.Rand.RangeInt(Game.Rand.Round(lastCost + progress + excess), min);
+            if (lastCost > 0)
+                amt = Game.Rand.RangeInt(amt, lastCost);
+
+            return amt;
         }
         internal static double GetNext(double v) => Math.Pow(v * 0.91 + 390, .65);
 

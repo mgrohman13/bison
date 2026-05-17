@@ -10,10 +10,10 @@ namespace ClassLibrary1.Pieces.Terrain
 {
         public const double MAX_VISION = 16.9;
 
-        public const int Defense = 1;
+        //public const int RangedAtt = 1;
         public readonly double Vision = vision;
 
-        public override string ToString() => "Hill";
+        public override string ToString() => "Plateau";
     }
     [Serializable]
     [DataContract(IsReference = true)]
@@ -25,5 +25,6 @@ namespace ClassLibrary1.Pieces.Terrain
     public interface ITerrain
     {
         Tile Tile { get; }
+        //dou Tile { get; }
     }
 }

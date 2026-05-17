@@ -3,6 +3,7 @@ using ClassLibrary1.Pieces.Behavior.Combat;
 using MattUtil;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.Serialization;
 using IRepairable = ClassLibrary1.Pieces.Behavior.Combat.IKillable.IRepairable;
@@ -22,7 +23,7 @@ namespace ClassLibrary1.Pieces.Enemies
         private readonly double _energy, _research;
 
         private double _morale;
-        private bool targeted;
+        private bool _targeted;
         //private List<Point> _path;
 
         //var defs = killable.AllDefenses.Select(d => new Values(d.Type, d.DefenseMax));
@@ -32,6 +33,7 @@ namespace ClassLibrary1.Pieces.Enemies
         double IRepairable.RepairCost => Consts.GetRepairCost(this, Cost, 0);
         bool IRepairable.AutoRepair => !Tile.Visible;
 
+        private double Morale => _morale;
         private List<Point> PathToCore { get; set; }
         private List<Point> RetreatPath { get; set; }
 
@@ -45,7 +47,7 @@ namespace ClassLibrary1.Pieces.Enemies
             this._energy = energy;
             this._research = research;
             this._morale = Game.Rand.Weighted(.91);
-            this.targeted = false;
+            this._targeted = false;
             this.PathToCore = pathToCore;
             this.RetreatPath = [Tile.Location];
 
@@ -90,10 +92,10 @@ namespace ClassLibrary1.Pieces.Enemies
 
         private void Killable_DamagedEvent(object sender, Killable.DamagedEventArgs e)
         {
-            this.targeted = true;
+            this._targeted = true;
             this._morale *= DefPct();
         }
-        protected override void OnDeath(EnemyPiece enemyPiece)
+        protected override void OnDeath(EnemyPiece enemyPiece) //?
         {
             double offset = Game.Enemy.IncomeReference() * 3.9;
             double cost = enemyPiece.Cost;
@@ -101,27 +103,64 @@ namespace ClassLibrary1.Pieces.Enemies
             offset += this.Cost;
             double pct = offset / (cost + offset);
 
-            pct = Math.Pow(pct, Math.Sqrt(EventDistMult(enemyPiece.Tile, 1)));
+            pct = Math.Pow(pct, EventDistMult(enemyPiece.Tile, 1, .52));
 
-            this._morale *= Game.Rand.Weighted(pct);
+            this._morale *= Game.Rand.Weighted(pct); 
         }
-        internal void MissileFired(Tile tile, double mult)
+        internal static void IncMorale(EnemyPiece source, double moraleMult, double distOffset, double distPow, params Tile[] tiles)
+        {
+            foreach (Alien alien in Game.Rand.Iterate(source.Side.PiecesOfType<Alien>()))
+                if (alien != source)
+                    foreach (Tile tile in Game.Rand.Iterate(tiles))
+                    {
+                        double distMult = alien.EventDistMult(tile, distOffset, distPow);
+                        alien.IncMorale(Game.Rand.Range(1, moraleMult), distMult);
+                    }
+        }
+        private void IncMorale(double moraleMult, double distMult)
         {
             double pct = DefPct();
-            double dist = EventDistMult(tile, Consts.CaveSize);
 
-            mult--;
-            mult *= pct * pct * dist;
+            bool neg = moraleMult < 1;
+            if (neg)
+            {
+                pct = 1 / pct;
+                moraleMult = 1 / moraleMult;
+            }
+            moraleMult--;
+
+            moraleMult *= pct * pct * distMult;
             if (Game.Rand.Bool())
-                mult *= dist;
-            mult++;
+                moraleMult *= distMult;
 
-            this._morale = 1 - (1 - this._morale) / mult;
-            if (_state != AIState.Heal && Game.Rand.Bool(1 - 1 / mult) && MoraleCheck(.5 / mult, true))
-                _state = AIState.Rush;
+            moraleMult++;
+            if (neg)
+                moraleMult = 1 / moraleMult;
+
+            if (neg)
+                this._morale *= moraleMult;
+            else
+                this._morale = 1 - (1 - Morale) / moraleMult;
+
+            if (_state != AIState.Heal || Game.Rand.Bool())
+            {
+                moraleMult *= moraleMult;
+                if (moraleMult < 1 && Game.Rand.Bool(1 - moraleMult))
+                {
+                    if (MoraleCheck(.6 / moraleMult, false))
+                        _state = AIState.Retreat;
+                }
+                else if (moraleMult > 1 && Game.Rand.Bool(1 - 1 / moraleMult))
+                {
+                    if (MoraleCheck(.7 / moraleMult, true))
+                        _state = AIState.Rush;
+                    else if (MoraleCheck(.4 / moraleMult, true))
+                        _state = AIState.Fight;
+                }
+            }
         }
-        private double EventDistMult(Tile tile, double offset) =>
-            Consts.CaveSize / (Tile.GetDistance(tile) + offset);
+        private double EventDistMult(Tile tile, double offset, double pow) =>
+            Math.Pow(Consts.CaveSize / (Tile.GetDistance(tile) + offset), pow);
 
         internal override AIState TurnState(double difficulty, bool clearPaths, Dictionary<Tile, double> playerAttacks, HashSet<Tile> moveTiles, HashSet<IKillable> killables,
             out List<Point> path)
@@ -201,7 +240,7 @@ namespace ClassLibrary1.Pieces.Enemies
             this._state = state;
             return state;
 
-            bool PlayerThreat() => targeted || killables.Any(k => k.Piece.HasBehavior<IAttacker>()) || playerAttacks.ContainsKey(Tile);
+            bool PlayerThreat() => _targeted || killables.Any(k => k.Piece.HasBehavior<IAttacker>()) || playerAttacks.ContainsKey(Tile);
             bool PlayerPassive() => !PlayerThreat() && killables.Count > 0;
             bool SeePath(List<Point> path = null) => (path ?? PathToCore).Any(p => moveTiles.Contains(Game.Map.GetTile(p)));
             bool NeedsRetreatPath() => RetreatPath == null || RetreatPath.Count == 0 || !ValidRetreat(RetreatPath[^1]) || !SeePath(RetreatPath);
@@ -213,7 +252,7 @@ namespace ClassLibrary1.Pieces.Enemies
 
         private bool MoraleCheck(double check, bool sign)
         {
-            double morale = _morale;
+            double morale = Morale;
             if (sign)
                 morale = Game.Rand.OE(morale);
             else
@@ -225,12 +264,22 @@ namespace ClassLibrary1.Pieces.Enemies
         {
             base.StartTurn();
 
+            if (Morale < 0)
+            {
+                Debug.WriteLine($"!!! {this} morale: {Morale}");
+                this._morale = 0;
+            }
+
             double pct = DefPct();
             pct = 1 - .65 * pct * pct * pct;
-            this._morale = float.Epsilon + Math.Pow(_morale, Game.Rand.Range(pct, 1));
-            if (_morale > 1)
-                ; //not currenly a problem...
-            this.targeted = false;
+            this._morale = float.Epsilon + Math.Pow(Morale, Game.Rand.Range(pct, 1));
+            this._targeted = false;
+
+            if (Morale > 1)
+            {
+                Debug.WriteLine($"!!! {this} morale: {Morale}");
+                this._morale = 1;
+            }
         }
         private double DefPct()
         {
