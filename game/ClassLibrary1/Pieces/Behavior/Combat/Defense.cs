@@ -22,6 +22,7 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
         public int DefenseMax => _values.Defense;
 
         public bool Dead => _defenseCur < 1;
+        //|| (Type != DefenseType.Hits && Piece.GetBehavior<IKillable>().Dead == true);
 
         internal Defense(Piece piece, Values values)
         {
@@ -43,12 +44,35 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
         }
         internal void Upgrade(Values values)
         {
-            double defPct = Consts.StatValue(DefenseCur) / Consts.StatValue(DefenseMax);
-            _values = values;
-            //if (Type != DefenseType.Shield) //move to CombatTypes
-            _defenseCur = Game.Rand.Round(Consts.StatValueInverse(Consts.StatValue(DefenseMax) * defPct));
-            if (DefenseCur < 1 && Type == DefenseType.Hits)
-                _defenseCur = 1;
+            double costE = 0, costM = 0;
+            if (Type == DefenseType.Hits)
+            {
+                double defPct = Consts.StatValue(DefenseCur) / Consts.StatValue(DefenseMax);
+                _values = values;
+                _defenseCur = Game.Rand.Round(Consts.StatValueInverse(Consts.StatValue(DefenseMax) * defPct));
+                if (DefenseCur < 1)
+                {
+                    _defenseCur = 1;
+                    if (Piece is IKillable.IRepairable repairable)
+                        costM = repairable.RepairCost * Consts.StatValue(DefenseCur) / Consts.StatValue(DefenseMax);
+                    else
+                        costM = 2;
+                }
+            }
+            else
+            {
+                _values = values;
+                if (DefenseCur > DefenseMax)
+                {
+                    double cost = Consts.StatValueCost(DefenseCur, DefenseMax, GetRegenCost(out bool mass));
+                    if (mass)
+                        costM = cost;
+                    else
+                        costE = cost;
+                    _defenseCur = DefenseMax;
+                }
+            }
+            Piece.Side.AddResources(-costE, -costM);
         }
 
         internal void DoDamage(Attack attack)
@@ -84,16 +108,14 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
 
             Piece.GetBehavior<IKillable>().RaiseDamagedEvent(a, this, tile);
         }
-        private bool DoCollateralDamage(Piece piece, int defCur)
+        private bool DoCollateralDamage(Piece piece, double otherVal)
         {
-            double dmgVal = DefenseCur;
-            double otherVal = defCur;
             double dmgChance = 0;
             if (otherVal > 0)
-                if (otherVal > dmgVal)
-                    dmgChance = dmgVal / otherVal;
+                if (otherVal > DefenseCur)
+                    dmgChance = DefenseCur / otherVal;
                 else
-                    dmgChance = (otherVal - .5) / (double)(dmgVal + .5);
+                    dmgChance = (otherVal - .5) / (DefenseCur + .5);
 
             double baseChance = .75;
             if (piece != Piece)
@@ -200,25 +222,19 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
         internal double Die()
         {
             bool mass = false;
-            double treasure = 1;
-            switch (Type)
-            {
-                case DefenseType.Hits:
-                    treasure *= 0;
-                    break;
-                case DefenseType.Armor:
-                    treasure *= -1;
-                    goto case DefenseType.Shield;
-                case DefenseType.Shield:
-                    treasure *= CombatTypes.GetRegenCostMult(Type, Piece.HasBehavior<IAttacker>(), out mass);
-                    break;
-            }
+            double treasure = 0;
+            if (Type != DefenseType.Hits)
+                treasure = GetRegenCost(out mass); 
             if (mass)
                 treasure *= Consts.EnergyMassRatio;
 
             treasure = Consts.StatValueCost(0, DefenseCur, treasure);
             this._defenseCur = 0;
             return treasure;
+        }
+        private double GetRegenCost(out bool mass)
+        {
+            return CombatTypes.GetRegenCostMult(Type, Piece.HasBehavior<IAttacker>(), out mass);
         }
     }
 }

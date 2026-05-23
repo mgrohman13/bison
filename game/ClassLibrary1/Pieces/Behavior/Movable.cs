@@ -4,8 +4,8 @@ using ClassLibrary1.Pieces.Players;
 using System;
 using System.Linq;
 using System.Runtime.Serialization;
-using Tile = ClassLibrary1.Map.Map.Tile;
 using Point = MattUtil.Point;
+using Tile = ClassLibrary1.Map.Map.Tile;
 
 namespace ClassLibrary1.Pieces.Behavior
 {
@@ -40,12 +40,16 @@ namespace ClassLibrary1.Pieces.Behavior
 
         void IMovable.Upgrade(IMovable.Values values)
         {
-            double oldMove = MoveLimit;
-
             _values = values;
 
-            if (MoveLimit < oldMove)
-                _moveCur = _moveCur * MoveLimit / oldMove;
+            if (MoveCur > MoveLimit)
+            {
+                double costE = (MoveLimit - MoveCur) * Consts.EnergyPerMove;
+                Piece.Side.AddResources(-costE, 0);
+                _moveCur = MoveLimit;
+            }
+
+            _moved = true;
         }
 
         bool IMovable.Move(Tile to)

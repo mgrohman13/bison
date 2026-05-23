@@ -154,9 +154,12 @@ namespace ClassLibrary1.Map
                 foreach (var p in Game.Rand.Iterate(-v, v, -v, v))
                     CreateTreasure(GetTile(p));
             }
-
-            ClearTerrain(_explored.SelectMany(e => Tile.GetAllPointsInRange(this, e, Rand())));
-            static double Rand() => Game.Rand.GaussianCapped(Constructor.BASE_VISION / 2.0, 1);
+        }
+        internal void Clear(Point center, double range)
+        {
+            ClearTerrain(Tile.GetAllPointsInRange(this, center, range)
+                .SelectMany(e => Tile.GetAllPointsInRange(this, e, Rand())));
+            double Rand() => Game.Rand.GaussianCapped(range / 2.0, 1);
         }
         internal void CheckStart()
         {
@@ -637,8 +640,7 @@ namespace ClassLibrary1.Map
                     case ResourceType.Foundation:
 
                         int count = 0;
-                        const double avg = 1.13;// (Math.E + Math.PI) / 2.0; //~2.930
-                        int size = Game.Rand.GaussianOEInt(avg, .21, .26, 1);
+                        int size = Game.Rand.GaussianOEInt(Consts.FoundationAmt, 0, 1, 1);
                         while (true)
                         {
                             count++;
@@ -658,7 +660,7 @@ namespace ClassLibrary1.Map
                         }
 
                         //- 1 to account for the first one already removed from the pool
-                        _resourcePool[type] -= Game.Rand.Round(count / avg) - 1;
+                        _resourcePool[type] -= Game.Rand.Round(count / Consts.FoundationAmt) - 1;
                         break;
                 }
             }

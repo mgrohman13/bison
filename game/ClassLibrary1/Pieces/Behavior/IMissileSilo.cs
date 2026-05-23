@@ -20,6 +20,8 @@ namespace ClassLibrary1.Pieces.Behavior
 
         public bool Online => NumMissiles > 0;
 
+        public bool Attacked { get; }
+
         public double GetAttack(IKillable killable);
         public bool Fire(IKillable killable);
     }

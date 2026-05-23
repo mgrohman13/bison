@@ -127,6 +127,7 @@ namespace ClassLibrary1
             double maxMoveAttRange = (movePiece?.MoveCur ?? 0) + (attacks.Max(a => a?.Range) ?? 0);
             HashSet<IKillable> extendedTargets = [.. allTargets.Keys.Where(k => k.Piece.Tile.GetDistance(orig) < maxMoveAttRange).SelectMany(k => allTargets[k].Keys)];
 
+            AIState prev = piece.State;
             AIState state = piece.TurnState(difficulty, clearPaths, playerAttacks, moveTiles, extendedTargets, out List<Point> fullPath);
             usePortal &= (state == AIState.Fight || state == AIState.Patrol || state == AIState.Rush);
 
@@ -486,11 +487,11 @@ namespace ClassLibrary1
 
                 movePiece.EnemyMove(moveTo);
 
-                playerAttacks.TryGetValue(orig, out double prev);
-                playerAttacks.TryGetValue(piece.Tile, out double cur);
-                if (prev != cur)
+                playerAttacks.TryGetValue(orig, out double p);
+                playerAttacks.TryGetValue(piece.Tile, out double c);
+                if (p != c)
                 {
-                    double moraleMult = (cur - prev) / Math.Sqrt((cur + prev) / 2.0 * defValue);
+                    double moraleMult = (c - p) / Math.Sqrt((c + p) / 2.0 * defValue);
                     if (moraleMult < 0)
                         moraleMult = 1 / (-moraleMult + 1);
                     else
@@ -503,6 +504,7 @@ namespace ClassLibrary1
             Fire(true);
 
             moved.Add(piece);
+            Alien.ModState(piece, prev, piece.State, orig, piece.Tile);
 
             void Fire(bool useMelee)
             {
@@ -519,7 +521,7 @@ namespace ClassLibrary1
                                 target = Game.Rand.SelectValue(choices, GetWeight);
                         }
 
-                        if (target != null && allTargets.TryGetValue(target, out var trgGrp))
+                        if (target != null && allTargets.TryGetValue(target, out var trgGrp) && trgGrp.Any())
                         {
                             //if (state != AIState.Retreat)
                             //{
@@ -535,7 +537,7 @@ namespace ClassLibrary1
                             int defense = Game.Rand.Round(Consts.StatValueInverse(def / (double)trgGrp.Values.Sum()));
                             double defWeight = state == AIState.Retreat ? .169 : .5;
                             int mod = Game.Rand.Round(trgGrp.Sum(p => Attack.TerrainAttMod(attack.Piece.Tile, p.Key.Piece.Tile) * p.Value) / trgGrp.Values.Sum());
-                            if (!(IsFull(attack) || attack.AttackCur + mod > Game.Rand.WeightedInt(defense, defWeight)))
+                            if (!(IsFull(attack) || attack.AttackCur + mod > Game.Rand.WeightedInt(defense, defWeight))) //energy att more likely?
                                 continue;
                             //}
 
@@ -671,6 +673,7 @@ namespace ClassLibrary1
             double gc = (1 + attacks + repair + mass) / (1 + defCur);
             gc *= gc;
             double damagePct = 2 - defCur / defMax;
+            damagePct *= damagePct;
             double trg = killable == target ? 6.5 : 1;
             if (killable.Piece is Core)
                 if (state == AIState.Rush)

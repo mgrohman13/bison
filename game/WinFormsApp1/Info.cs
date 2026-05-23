@@ -103,7 +103,7 @@ namespace WinFormsApp1
                 btnBuild.Hide();
             }
 
-            this.btnDisband.Visible = SelTile?.Piece is PlayerPiece p && p is not Core;
+            this.btnDisband.Visible = SelTile?.Piece is PlayerPiece p && p is not Core && Program.Game.Player.CanDisband();
             this.btnTrade.Visible = Program.Game.Player.CanBurnMass() || Program.Game.Player.CanFabricateMass() || Program.Game.Player.CanScrapResearch();
 
             if (SelTile == null && SelP.HasValue && Program.Game.Map.Visible(SelP.Value))

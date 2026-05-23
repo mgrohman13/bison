@@ -72,18 +72,12 @@ namespace ClassLibrary1
                 piece.OnResearch(type);
         }
 
-        public bool CanBurnMass()
-        {
-            return Research.HasType(Research.Type.BurnMass);
-        }
-        public bool CanFabricateMass()
-        {
-            return Research.HasType(Research.Type.FabricateMass);
-        }
-        public bool CanScrapResearch()
-        {
-            return Research.HasType(Research.Type.ScrapResearch);
-        }
+
+        public bool CanDisband() => Research.HasType(Research.Type.Disband);
+
+        public bool CanBurnMass() => Research.HasType(Research.Type.BurnMass);
+        public bool CanFabricateMass() => Research.HasType(Research.Type.FabricateMass);
+        public bool CanScrapResearch() => Research.HasType(Research.Type.ScrapResearch);
         public void Trade(int burnMass, int fabricateMass, int scrapResearch)
         {
             if (burnMass <= 0 || !CanBurnMass())

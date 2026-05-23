@@ -33,9 +33,10 @@ namespace ClassLibrary1.Pieces.Behavior
             }
         }
         public int NumMissiles => _numMissiles;
+        public bool Attacked => _attacked;
 
         private readonly Piece _piece = piece;
-        private bool _producing = false;
+        private bool _producing = false, _attacked = true;
         private int _numMissiles = 0;
 
         public T GetBehavior<T>() where T : class, IBehavior
@@ -154,7 +155,8 @@ namespace ClassLibrary1.Pieces.Behavior
         private class Values : IUpgradeValues
         {
             private double _costMult, _range = START_RANGE, _rangeMult = 1;
-            private int _energy, _mass, _att;
+            private double _energy, _mass;
+            private int _att;
 
             public Values()
             {
@@ -164,8 +166,8 @@ namespace ClassLibrary1.Pieces.Behavior
             }
 
             public IAttacker.Values Attack => new(AttackType.Kinetic, _att, _range, 1);
-            public int Energy => _energy;
-            public int Mass => _mass;
+            public double Energy => _energy;
+            public double Mass => _mass;
 
             public void Upgrade(Research.Type type, double researchMult)
             {

@@ -51,9 +51,16 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
 
         internal void Upgrade(Values values)
         {
-            double attPct = Consts.StatValue(AttackCur) / Consts.StatValue(AttackMax);
             _values = values;
-            _attackCur = Game.Rand.Round(Consts.StatValueInverse(Consts.StatValue(AttackMax) * attPct));
+
+            if (AttackCur > AttackMax)
+            {
+                double costE = Consts.StatValueCost(AttackCur, AttackMax, Consts.EnergyPerAttack);
+                Piece.Side.AddResources(-costE, 0);
+                _attackCur = AttackMax;
+            }
+
+            _attacked = _restrictMove = true;
         }
 
         internal void Damage()//int damage)
@@ -127,10 +134,9 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
 
                 target.OnAttacked();
                 int startAttack = AttackCur;
-                int att = Consts.ModAtt(startAttack, mod);
                 Dictionary<Defense, int> startDefense = target.AllDefenses.ToDictionary(d => d, d => d.DefenseCur);
 
-                int rounds = att;
+                int rounds = Consts.ModAtt(startAttack, mod);
                 for (int a = 0; a < rounds && DoAtt(); a++)
                     if (a == 0 || Game.Rand.Bool())
                     {
@@ -138,7 +144,7 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
                         Defense defense = Game.Rand.SelectValue(target.AllDefenses, CombatTypes.GetDefenceChance);
                         bool activeDefense = target.HasBehavior<IAttacker>();
 
-                        att = Consts.ModAtt(AttackCur, mod);
+                        int att = Consts.ModAtt(AttackCur, mod);
                         if (Game.Rand.Next(att + defense.DefenseCur) < att)
                         {
                             defense.DoDamage(this);

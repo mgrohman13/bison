@@ -262,7 +262,7 @@ namespace ClassLibrary1
                 const int turns = 13;
                 if (diff < turns)
                 {
-                    double m = diff / turns;
+                    double m = diff / (double)turns;
                     mult *= m * m;
                 }
 
@@ -344,14 +344,16 @@ namespace ClassLibrary1
                 amt = min + Add();
 
             int lastCost = LastSeenCost(type) ?? -1;
-            if (lastCost < min)
-                lastCost = Game.Rand.RangeInt(Game.Rand.Round(lastCost + progress + excess), min);
             if (lastCost > 0)
+            {
+                if (lastCost < min)
+                    lastCost = Game.Rand.RangeInt(Game.Rand.Round(lastCost + progress + excess), min);
                 amt = Game.Rand.RangeInt(amt, lastCost);
+            }
 
             return amt;
         }
-        internal static double GetNext(double v) => Math.Pow(v * 0.91 + 390, .65);
+        internal static double GetNext(double v) => Math.Pow(v * .78 + 390, .65);
 
         public bool HasType(Type research)
         {
@@ -401,7 +403,8 @@ namespace ClassLibrary1
                 default: throw new Exception();
             }
 
-            double chance = .65 * Math.Pow(GetTotalLevel() / (GetTotalLevel() + Consts.ResearchFactor), totalPow);
+            double chance = .65;
+            chance *= Math.Pow(GetTotalLevel() / (GetTotalLevel() + Consts.ResearchFactor), totalPow);
             chance *= Math.Pow(GetLast(type) / (double)GetTotalLevel(), typePow);
 
             return HasType(type) && Game.Rand.Bool(chance);
@@ -428,11 +431,13 @@ namespace ClassLibrary1
                 research = GetResearch(research, (double)type);
                 int min = 0;
                 if (GetAllDependencies(type).Count > (IsMech(type) ? 2 : 3))
+                {
                     min = Game.Rand.GaussianCappedInt(research, dev / Math.Sqrt(research));
+                    if (KeyTechs.Contains(type))
+                        min = Game.Rand.Round(Math.Pow(min, .91));
+                }
                 else
                     Debug.WriteLine($"Early type: {type}");
-                if (KeyTechs.Contains(type))
-                    min = Game.Rand.Round(Math.Pow(min, .91));
                 retVal.Add(type, min);
             }
 
@@ -527,7 +532,7 @@ namespace ClassLibrary1
             { Type.TurretShields, new Type[]        { Type.Turret, } }, //quick
             { Type.TurretDefense, new Type[]        { Type.Turret, Type.MechDefense, } },
             { Type.OutpostArmor, new Type[]         { Type.Turret, Type.MechArmor, } },
-            { Type.TurretArmor, new Type[]          { Type.Turret, Type.TurretDefense, Type.OutpostArmor, } },
+            { Type.TurretArmor, new Type[]          { Type.Turret, Type.TurretDefense, Type.OutpostArmor, Type.CoreArmor } },
             { Type.TurretAutoRepair, new Type[]     { Type.Turret, Type.TurretArmor, Type.FactoryAutoRepair, } },
 
             { Type.ConstructorCost, new Type[]      { Type.Constructor, } }, //quick
@@ -545,8 +550,10 @@ namespace ClassLibrary1
             
             { Type.BuildingDefense, new Type[]      { Type.Constructor } }, //quick
             { Type.BuildingAutoRepair, new Type[]   { Type.BuildingDefense, } },
+            { Type.CoreArmor, new Type[]            { Type.CoreDefense, Type.OutpostArmor, Type.BuildingAutoRepair } },
             { Type.BuildingCost, new Type[]         { Type.BuildingDefense, Type.Turret, Type.Factory, Type.ConstructorCost, } },
-            { Type.AmbientGenerator, new Type[]     { Type.BuildingCost, Type.TurretAutoRepair, } }, //end
+            { Type.Disband, new Type[]              { Type.Turret, Type.Factory, } },
+            { Type.AmbientGenerator, new Type[]     { Type.BuildingCost, Type.TurretAutoRepair, Type.Disband } }, //end
             { Type.ScrapResearch, new Type[]        { Type.Turret, } },
             { Type.ResearchChoices, new Type[]      { Type.ScrapResearch, } },
             { Type.BurnMass, new Type[]             { Type.Factory, } },
@@ -608,11 +615,13 @@ namespace ClassLibrary1
             Missile = 390,
 
             BuildingDefense = 115, //quick
+            Disband = 125,
             FabricateMass = 135,
             ResearchChoices = 145,
             ScrapResearch = 165,
             BurnMass = 175,
             BuildingCost = 225, //delay
+            CoreArmor = 255,
             BuildingAutoRepair = 285, //key
             AmbientGenerator = 350, //end   
             ExtractorValue = 450, //end   

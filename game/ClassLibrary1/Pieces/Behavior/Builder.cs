@@ -1,7 +1,6 @@
 ﻿using ClassLibrary1.Pieces.Behavior.Combat;
 using ClassLibrary1.Pieces.Players;
 using ClassLibrary1.Pieces.Terrain;
-using MattUtil;
 using System;
 using System.Runtime.Serialization;
 using Tile = ClassLibrary1.Map.Map.Tile;
@@ -12,6 +11,8 @@ namespace ClassLibrary1.Pieces.Behavior
     [DataContract(IsReference = true)]
     public class Builder(Piece piece, IBuilder.Values values) : IBuilder
     {
+        private bool _built = true;
+
         bool IBehavior.AllowMultiple => true;
 
         private readonly Piece _piece = piece;
@@ -19,6 +20,7 @@ namespace ClassLibrary1.Pieces.Behavior
 
         private IBuilder.Values _values = values;
 
+        public bool Built => _built;
         public double Range => Consts.GetDamagedValue(Piece, RangeBase, Attack.MELEE_RANGE);
         public double RangeBase => _values.Range;
 
@@ -42,6 +44,7 @@ namespace ClassLibrary1.Pieces.Behavior
         }
         void IBehavior.StartTurn()
         {
+            _built = false;
         }
         void IBehavior.EndTurn(ref double energyUpk, ref double massUpk)
         {
@@ -141,7 +144,10 @@ namespace ClassLibrary1.Pieces.Behavior
                 {
                     Constructor.Cost(Piece.Game, out int energy, out int mass);
                     if (Piece.Game.Player.Spend(energy, mass))
+                    {
+                        _built = true;
                         return Constructor.NewConstructor(tile, false);
+                    }
                 }
                 return null;
             }
@@ -156,7 +162,10 @@ namespace ClassLibrary1.Pieces.Behavior
                 {
                     Extractor.Cost(out int energy, out int mass, resource);
                     if (Piece.Game.Player.Spend(energy, mass))
+                    {
+                        _built = true;
                         return Extractor.NewExtractor(resource);
+                    }
                 }
                 return null;
             }
@@ -178,7 +187,10 @@ namespace ClassLibrary1.Pieces.Behavior
                 if (Validate(tile, true))
                 {
                     if (Piece.Game.Player.Spend(blueprint.Energy, blueprint.Mass))
+                    {
+                        _built = true;
                         return Mech.NewMech(tile, blueprint);
+                    }
                 }
                 return null;
             }
@@ -193,7 +205,10 @@ namespace ClassLibrary1.Pieces.Behavior
                 {
                     Outpost.Cost(Piece.Game, out int energy, out int mass);
                     if (Piece.Game.Player.Spend(energy, mass))
+                    {
+                        _built = true;
                         return Outpost.NewOutpost(foundation);
+                    }
                 }
                 return null;
             }
@@ -217,7 +232,10 @@ namespace ClassLibrary1.Pieces.Behavior
                 {
                     Factory.Cost(Piece.Game, out int energy, out int mass);
                     if (Piece.Game.Player.Spend(energy, mass))
+                    {
+                        _built = true;
                         return Factory.NewFactory(foundation);
+                    }
                 }
                 return null;
             }
@@ -241,7 +259,10 @@ namespace ClassLibrary1.Pieces.Behavior
                 {
                     Turret.Cost(Piece.Game, out int energy, out int mass);
                     if (Piece.Game.Player.Spend(energy, mass))
+                    {
+                        _built = true;
                         return Turret.NewTurret(foundation);
+                    }
                 }
                 return null;
             }
@@ -265,7 +286,10 @@ namespace ClassLibrary1.Pieces.Behavior
                 {
                     Generator.Cost(Piece.Game, out int energy, out int mass);
                     if (Piece.Game.Player.Spend(energy, mass))
+                    {
+                        _built = true;
                         return Generator.NewGenerator(foundation);
+                    }
                 }
                 return null;
             }
@@ -289,7 +313,10 @@ namespace ClassLibrary1.Pieces.Behavior
                 {
                     Drone.Cost(Piece.Game, out int energy, out int mass);
                     if (Piece.Game.Player.Spend(energy, mass))
+                    {
+                        _built = true;
                         return Drone.NewDrone(tile);
+                    }
                 }
                 return null;
             }

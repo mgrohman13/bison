@@ -1,4 +1,5 @@
-﻿using ClassLibrary1.Pieces.Behavior.Combat;
+﻿using ClassLibrary1.Pieces.Behavior;
+using ClassLibrary1.Pieces.Behavior.Combat;
 using ClassLibrary1.Pieces.Terrain;
 using System;
 using System.Runtime.Serialization;
@@ -23,6 +24,7 @@ namespace ClassLibrary1.Pieces.Players
         public double GetVision(Tile tile) => VisionBase > 0 ? Consts.GetDamagedValue(this, VisionBase + TerrainVision(tile), 0) : 0;
         public static double TerrainVision(Tile tile) => tile?.Terrain is Island i ? i.Vision : 0;
 
+        protected override bool DropsTreasure => HasBehavior<IMovable>();
         public double VisionBase => _vision;
 
         internal PlayerPiece(Tile tile, double vision)
@@ -60,8 +62,11 @@ namespace ClassLibrary1.Pieces.Players
 
         public virtual void Disband()
         {
-            Side.AddResources(0, Consts.Income(DisbandMass()));
-            Die();
+            if (Game.Player.CanDisband())
+            {
+                Side.AddResources(0, Consts.Income(DisbandMass()));
+                Die();
+            }
         }
         public double DisbandMass()
         {

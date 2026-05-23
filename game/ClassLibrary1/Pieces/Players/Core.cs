@@ -13,7 +13,7 @@ namespace ClassLibrary1.Pieces.Players
 {
     [Serializable]
     [DataContract(IsReference = true)]
-    public class Core : PlayerPiece, IDeserializationCallback, IIncome
+    public class Core : PlayerPiece, IDeserializationCallback, IIncome, IKillable.IRepairable
     {
         private double _income = 1, _incomeTrg = 1, _hitsResearchMult = 1;
 
@@ -21,6 +21,9 @@ namespace ClassLibrary1.Pieces.Players
         public const int CORE_HITS = 10;
 
         private readonly Killable killable;
+
+        bool IKillable.IRepairable.AutoRepair => true;
+        double IKillable.IRepairable.RepairCost => short.MaxValue; //32,767 - should never be used?
 
         private Core(Tile tile, Values values)
             : base(tile, 0)
@@ -64,7 +67,8 @@ namespace ClassLibrary1.Pieces.Players
             //this.Vision = START_VISION;
             //must check research type because defense could drop below rounding threshold from being attacked
             if (type == Research.Type.CoreDefense)
-                GetBehavior<IKillable>().Upgrade(values.GetKillable(killable.Hits.DefenseCur, ref _hitsResearchMult), Values.Resilience);
+                GetBehavior<IKillable>().Upgrade(
+                    values.GetKillable(Game.Player.Research, killable.Hits.DefenseCur, ref _hitsResearchMult), Values.Resilience);
             GetBehavior<IRepair>().Upgrade(values.Repair);
             Builder.UpgradeAll(this, values.Repair.Builder);
 
@@ -126,10 +130,8 @@ namespace ClassLibrary1.Pieces.Players
         internal override void Cost(out int energy, out int mass) =>
             throw new Exception();
 
-        public override string ToString()
-        {
-            return "Core";
-        }
+        public override string ToString() => "Core";
+        public bool CanRepair() => Consts.CanRepair(this);
 
         [Serializable]
         [DataContract(IsReference = true)]
@@ -141,21 +143,16 @@ namespace ClassLibrary1.Pieces.Players
 
             //private double vision;
             //private IKillable.Values hits;
-            private IKillable.Values? shield;
+            private IKillable.Values shield, armor;
             private double hitsResearchMult = 1;
             private double rounding = Game.Rand.NextDouble();
 
             public Values()
             {
-                //this.energy = this.mass = 1300;
                 this.repair = new(new(8.5), 1);
 
-                //this.vision = -1;
-                //this.hits = new(CombatTypes.DefenseType.Hits, -1);
-                this.shield = null;//new(CombatTypes.DefenseType.Hits, -1);
-
-                //UpgradeBuildingHits(1);
-                //UpgradeCoreShields(1);
+                this.shield = new(CombatTypes.DefenseType.Shield, 1);
+                this.armor = new(CombatTypes.DefenseType.Armor, 1);
             }
 
             public double HitsResearchMult => hitsResearchMult;
@@ -164,10 +161,11 @@ namespace ClassLibrary1.Pieces.Players
             //public double Mass => mass;
             //public double Vision => START_VISION;
             //public IKillable.Values Hits => hits;
-            public IKillable.Values? Shield => shield;
+            //public IKillable.Values Shield => shield;
+            //public IKillable.Values Armor => armor;
             public IRepair.Values Repair => repair;
 
-            public IKillable.Values[] GetKillable(int curDef, ref double prevMult)
+            public IKillable.Values[] GetKillable(Research research, int curDef, ref double prevMult)
             {
                 int def = curDef;
                 double diff = hitsResearchMult - prevMult;
@@ -182,8 +180,10 @@ namespace ClassLibrary1.Pieces.Players
 
                 IKillable.Values hits = new(DefenseType.Hits, def);
                 List<IKillable.Values> defs = [hits];
-                if (Shield.HasValue)
-                    defs.Add(Shield.Value);
+                if (research.HasType(Research.Type.CoreDefense))
+                    defs.Add(shield);
+                if (research.HasType(Research.Type.CoreArmor))
+                    defs.Add(armor);
                 return [.. defs];
             }
 
@@ -193,7 +193,7 @@ namespace ClassLibrary1.Pieces.Players
                 //    UpgradeBuildingHits(researchMult);
                 //else
                 if (type == Research.Type.CoreDefense)
-                    UpgradeCoreShields(researchMult);
+                    UpgradeCoreDefense(researchMult);
             }
             //private void UpgradeBuildingHits(double researchMult)
             //{
@@ -202,13 +202,16 @@ namespace ClassLibrary1.Pieces.Players
             //    double defAvg = ResearchUpgValues.Calc(UpgType.CoreDefense, researchMult);
             //    this.hits = new(DefenseType.Hits, Game.Rand.Round(defAvg));
             //}
-            private void UpgradeCoreShields(double researchMult)
+            private void UpgradeCoreDefense(double researchMult)
             {
                 this.hitsResearchMult = researchMult;
                 this.rounding = Game.Rand.NextDouble();
 
                 double shieldAvg = ResearchUpgValues.Calc(UpgType.CoreShields, researchMult);
                 this.shield = new(DefenseType.Shield, Game.Rand.Round(shieldAvg));
+                double armorAvg = ResearchUpgValues.Calc(UpgType.CoreArmor, researchMult);
+                armorAvg *= Consts.StatValueInverse(Consts.StatValue(shieldAvg) / Consts.StatValue(shield.Defense));
+                this.armor = new(DefenseType.Armor, Game.Rand.Round(armorAvg));
             }
         }
     }

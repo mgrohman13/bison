@@ -1,5 +1,6 @@
 ﻿using ClassLibrary1.Pieces.Behavior;
 using ClassLibrary1.Pieces.Behavior.Combat;
+using MattUtil;
 using System;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -36,14 +37,23 @@ namespace ClassLibrary1.Pieces.Players
                 while (upgradeTo.UpgradeTo != null)
                     upgradeTo = upgradeTo.UpgradeTo;
 
-                energy = upgradeTo.Energy - (int)(Blueprint.Energy * Consts.UpgRefundValue);
-                mass = upgradeTo.Mass - (int)(Blueprint.Mass * Consts.UpgRefundValue);
+                //refund is based on research level difference, centered around UpgRefundValue when difference=ResearchFactor
+                double refund = Math.Sqrt((upgradeTo.ResearchLevel - Blueprint.ResearchLevel) / Consts.ResearchFactor);
+                if (refund > 1)
+                    refund = Consts.UpgRefundValue / refund;
+                else
+                    refund = 1 - (1 - Consts.UpgRefundValue) * Math.Sqrt(refund);
+
+                //use unrelated double-precision values for rounding entropy
+                MTRandom rounding = new(MTRandom.GenerateSeed([Blueprint.Resilience, upgradeTo.Resilience, Blueprint.Vision, upgradeTo.Vision,]));
+                energy = rounding.Round(upgradeTo.Energy - Blueprint.Energy * refund);
+                mass = rounding.Round(upgradeTo.Mass - Blueprint.Mass * refund);
 
                 Defense hits = GetBehavior<IKillable>().Hits;
                 double hp = hits.DefenseCur / (double)hits.DefenseMax * upgradeTo.Hits.Defense;
                 //check blocks
-                if (hp >= 1)
-                    return Game.Player.Has(energy, mass) && Side.PiecesOfType<IBuilder.IBuildMech>().Any(b => Tile.GetDistance(b.Piece.Tile) <= b.Range);
+                return hp >= 1 && Game.Player.Has(energy, mass)
+                    && Side.PiecesOfType<IBuilder.IBuildMech>().Any(b => Tile.GetDistance(b.Piece.Tile) <= b.Range);
             }
             return false;
         }

@@ -1,57 +1,61 @@
+constant int research for that turn??
+	but building new extractors, etc.
+			
 pathfinding hangs sometimes
 
-hide disband behind research?
-
-rebalance turret/outpost
-	cost for already built? need to upg? 
-mech upgs op? same 80% as outpost upg? 
-	rethink cur stats
-	stop move/attacks rest of turn
-		
+move left check for 1 att and -1
+always draw att/def bars on top
+hold/lift shift refresh 
+range/melee map indicator??
+select prev/next randomness
+rally move show vision for next move on right click 
+	instead of destination?
+		only if far enough away? or if adjacent explores nothing?
+see cur range even if already fired on mouse over selected piece
+	also show move-att range on mouseover friendly movable in move range
+make hills lighter color?
 swap low/hi water colors?
-
 move left under attack logic needs to use proper logic from map
 	corner cases to fix for both?
 		movable pieces
+outpost upg ignoring notify 
+mouseover att accounting for adjacent defenders??
+	show def too
 
-outpost replace no longer economical?
-	but no longer heal - call it an upgrade 
-		similar to mech upgrade logic??
-			need to rethink mech upg logic......
+make drone/extractor/wormhole def more consistent
+	statvalues?
 
-consolidate/streamline morale modifications?
+hill
+	prevent vision, move onto?
+	
+use att mod
+	show in enemy att ranges
+	enemy movement
+	
+more consistent upg logic
+	inject randomness?
+		w/ better balancing?
+rebalance turret/outpost
+	cost for already built? need to upg? 
+
+dead foundation piece can never drop treasure...
+	e.g. missile silo
+
+core imovable upg?
 
 no longer use extended range (move+ranged att) for enemy state calcs?
 	remove overlay option
 
-outpost upg ignoring notify 
-inc outpost att
-
-hill
-	prevent vision, move onto?
-
-vision uses last bonus for entire movement 
-
-highlight foudnation visibility
-
-disband button
-
-use att mod
-	show in enemy att ranges
-	enemy movement
-
-mouseover att accounting for adjacent defenders??
-	shwo def too
-
-reinstate visible appearing foundation chances?
-	since hills no longer tied to
-	logic was changed previously....
-
+Island
+	Ranged att?
+	not def?
+	move/range blocker
 hills?
 	generate hill center points?
 	generate as anything touches farther away
 		keep same density at all radii?
 	use center points for consistent plateaus
+		dont show vision increase until unit steps on?
 	buffs
 		attacks from lower -> higher always disadvantaged?
 		attacks from higher -> lower always advantaged?
@@ -65,36 +69,14 @@ div foundations into plateaus of chunks of same height
 	increase vision, att range w/ height value
 	blocks incoming ranged damage?
 	just adds def??
-AllFoundations jankiness
-	if object places before foundation, tile is never updated
-		refresh tiles under pieces on insert foundation
-		shouldnt serisalize tiles either 
-	redo correctly using only noise
-		but make plateau tiles much more likely to spawn fountations  
 
-dont show vision increase until unit steps on?
+shouldnt serialize tiles?
 
-Island
-	Ranged att?
-	not def?
-	move/range blocker
-
-Attack.Die needs to check type, reverse sign for kinetic/explosive
-
-DifficultySetting 
-	some sus references
-		DifficultyIncTurns?
-		BuildPortals,IncomeReference
-	income/treasure match if set >1
-
-replace old replace with instant repair func that costs ~90% of missing hp value
-	+disband?
-
-map
-	consolidate caves/paths/cavepaths
+consolidate caves/paths/cavepaths
 	
 clean up / streamline player piece randomness, rounding, upgrades, etc.
 	drone/missile costs should use similar rounding/random logic 
+	
 separate building replace from repairing?
 	replace keeps hp%
 		cost??
@@ -166,14 +148,13 @@ ai
 	needs to attack into turrets en masse
 	only defend when under threat?
 		or at least weight?
-if uninjured alien moves into turret range give uninjured nearby aliens morale boost
-	also apply on enemy turn start for any already in range?
-	apply logic to all ranged attacks, not just turrets?
-		use all playerattacks
-			compare before move to after move
-		but scale up for higher att/range
-		use similar logic in missile range????
-AI
+	if uninjured alien moves into turret range give uninjured nearby aliens morale boost
+		also apply on enemy turn start for any already in range?
+		apply logic to all ranged attacks, not just turrets?
+			use all playerattacks
+				compare before move to after move
+			but scale up for higher att/range
+			use similar logic in missile range????
 	weight paths taken last turn to tend to keep going same dir?	
 	better group behavior
 		e.g. all healthy aliens in area of a hive switch to rush at once?
@@ -220,7 +201,7 @@ random research costs
 	waiting around for same tech to appear cheaper isnt great
 	rethink concept? go to more fixed structure somehow?
 	simple check to ensure *total* research required for same tech is never lower?
-research 
+ 
 	dont rand research inc? instead, use consistent rounding??
 		also have consistent offset? so its random over time but consistent that turn?
 		change consts if research inc changes over turn???
@@ -264,16 +245,11 @@ fix map gen
 	noise drive feature presence/width?
 
 
-
 calc alien cost correctly?
 
 lategame combine mechs?
 
 clicking log doesnt select own mechs anymore
-log splash damage
-
-constructor def
-	bundle with something else better??
 	
 
 hive range upg when shelled???
@@ -284,8 +260,6 @@ hive range upg when shelled???
 aliens really should be numbered in order of scouting
 
 
-Consts.PathWidth	11.944130354249044	double
-
 use debt instead of negative energy for hive spawns
 	energy can still go negative?
 unused upkeep on death?
@@ -293,8 +267,6 @@ exploration spawn chance?
 biomass/metal ratio - but ambient generator??
 icon for sleep
 trying to sleep when cant moves next anyways
-finish research too fast?
-	add more...
 ambient gen power decreases over time??
 	decrease dependent on total amount used that turn?
 	generators still use shared value, the shared value is decreased
@@ -323,8 +295,6 @@ missile
 		soft limit - e.g. some kind of downside?
 	also make turret a missile silo?
 		rethink replace meta w/ generators and foundations
-	allow replace missile silo to refund missiles?
-	overkill affects alien energy inc?
 	missiles use explosive att type
 		account for it in enemy cost refund
 	UI for Missile
@@ -385,7 +355,6 @@ UI
 		may be solved well enough by log improvements (click ability)
 	hotkeys to jump to cardinal dir edges
 	enemy move+range take into account unmovable tiles 
-	minimap
 	addtl logs? (repair? upgrade? build? research?)
 	truncate range disp values
 		since e.g. 2.0 may actually be 1.96 and not include 2 spaces away, so always show 1.9 if < 2
@@ -427,7 +396,6 @@ FEATURES
 	power grid
 	research to automate mechs - big stat buff, less micromanagement
 
-map
 	use deterministic prng (or separate noise func?) to create curves, width changes
 		give terrain features a max range of effect and use that to generate
 		use same noise func, but interp points somehow?
@@ -451,10 +419,8 @@ portal
 clustering algorithms for move left order?
 	+portal entrance spawn
 
-research
 	require more to finish tree
 
-map
 	convert everything to lines (actually segments or rays)
 	paths have 2 parallel rays
 	evaluate calc based on distance from nearest 2 lines
@@ -463,7 +429,7 @@ map
 		all segment/ray endpoints have shaped area?
 	eval=.5 feature dist also use shape logic
 
-melee explosive attack...
+prevent melee explosive attack...
 
 treasure resource estimate account for massmult
 repair HP cost < armor (e.g. late game constructor)
@@ -479,10 +445,6 @@ treasure giving mech shows research form not mechs
 exploring n/e/s/w through vision block should still reveal 3 wide
 	
 use can attack alien indicator when in range of mouse over move to tile too
-	
-calc generator roi when going turret->gen->turret
-	different refund pcts for different buildings
-	ensure auto-repair before replace is always efficient	
 decrease hive str??
 combine factory/drone repair upgs?
 	+core?? (range only???)
@@ -532,9 +494,7 @@ targeting constructor over core/extractor when in fight?
 make sure enemy targeting group properly when can not hit best target, but adjacent 
 save research dialog checkbox settings?
 
-windows scaling increases unit label text size
-increase extractor defense??
-	lower scaling exponent??
+windows scaling increases unit label text size 
 mass fabricator for foundations, but needs to be disable-able
 
 portal entrance probabilities should be based on str/value
@@ -565,10 +525,10 @@ replace foundation with small multiple tile island
 		or special subset of tiles??
 	unlimited generators
 fix Visible code crappiness with TEST_MAP_GEN & GameOver
-map - occasional caves farther out infinitely??
+occasional caves farther out infinitely??  
 show area you will scout on mouseover when can move to target
 turret randomness??
-can turn off mechs to save energy
+upkeep - turn off units?
 	but take time to come back online
 	can also scrap for mass
 remove move limit, make const (at 2x?)
@@ -601,7 +561,6 @@ implement vision for aliens?
 more treasure types
 blockRadius needs to be Math.Sqrt(2) / 2 ??
 factory/turret upkeep?
-	turn off...
 shield regen in BP?
 damages reduces shield regen?
 
@@ -621,10 +580,7 @@ dont show exact move to tile?
 	ghost when attacked from range?
 research mostly finished too early
 	increase non-upgrade (first level) research costs? esp later ones?
-	make available choices less similar cost?
-entire tree too easily completed rn before game victory
-	add more late-game research
-	increase cost of late game techs
+	make available choices less similar cost? 
 constructor defense show only 1 upgrade
 alien more flexible on pathing heat map
 enemies overvalue attacking repair?
@@ -679,7 +635,6 @@ if hive not scouted and visible alien appears, do something?
 resources more likely to round when higher?
 visual indicator for enemy range vs. melee attacks?
 move letter on mechs up
-show alien numbers on map?
 better drawing when zoomed out
 	popups on mouse over?
 	range lines too thick?
@@ -690,7 +645,6 @@ better drawing when zoomed out
 show st dev of income in UI somewhere
 	along with upkeep breakdown?
 show alien extended range??
-enter target amount on trade screen
 show current upgardes on info button
 
 player pathfinding optimization 
@@ -717,7 +671,6 @@ should research progress be included in any calcs?
 	remove altogether?
 	maybe factor into research mults somehow?
 		included as overage bonus in blueprint research level?
-enemy energy value per spawn area?
 building resilience
 	make all upg? none??
 		tie to building def?
@@ -767,7 +720,6 @@ map contiguity / pathfinding / alien behavior
 	do enemy pathfinding in background during player turn?	
 	builds up too many paths over time - duplicate paths with diff speeds
 
-vision for aliens...
 auto repair mech add-on
 	aliens?? no?
 units that can move on Block terrain?
@@ -792,7 +744,9 @@ research aliens
 	radar to show dots where they are at decent distance
 		better when we get shroud...
 		new structure? addon to turrets with upgrade?
-		upg to show resources,anything else?
+		upg to show resources,anything else? 
+	kill, research corpse?
+	show info like state and morale 
 when move hovering for constructor, take original repair range out of ranges
 alien bravery stat?
 support a selectValue with doubles?
@@ -804,11 +758,7 @@ allow player to split attacks
 	checkbox on attack grid for use
 	at turn start, use gets set for all "full" attacks
 change DamagedEvent to targeted at all 
-research aliens
-	kill, research corpse?
-	show info like state and morale 
 random aliens alien auto repair for increased cost??
-	if we ever take out auto repair in vision range
 Tile should just be a struct...?
 	equality always there, stores no real data, piece looks up in collection 
 	no need for a million points?
@@ -826,8 +776,6 @@ explosives
 	does friendly damage?
 	melee??
 pay back stored energy on death
-make shield regen variable
-	reduce with dmg pct?
 hardcoded references to .5, .25 terrain cuttoffs			
 movement - long term
 	start with just inc, lose all at turn end
@@ -846,12 +794,10 @@ draw bars not use stat value for pct cur/max??
 	maybe related to zoom, e.g. when zoomed out
 	bigger bars when zoomed out
 	clearer colors? darker?
-log splash damage
 show total cost in info
 select tile square always draw on top
 save log to file on game end
 select terrain shouldnt hide log
-draw movement trail on map
 draw grid first as lines, then overlay with full blocks
 view all mechs on datagrid popup
 show mech # (alien #?) on map
@@ -873,10 +819,8 @@ combined power grid, but if separate pieces impose power penalty?
 	batteries - building/mechs
 		excess power convert to research
 	moving slower takes less energy?
-research
-	exponential tiers - first excess power, then mining, etc.
+research exponential tiers - first excess power, then mining, etc.
 speed game up somehow?
-randomize tech tree
 metal types? 
 right click piece info?
 	attack though?? left click?
@@ -900,14 +844,12 @@ metagame system pts
 Evaluate use MemoryCache instead of Dictionary?
 fix mirror image painting? may confuse in future?
 building costs get more expensive with upgrade - countered by cost research
-disband mech
-	turn off power?
-	put on patrol/scout/etc mode for reduced power?
-		careful not to make too good
-		or dont allow rapid enable/disable 
-			they take turn first
-			cost one extra turn to flip on / off
-	recycle?
+put on patrol/scout/etc mode for reduced power?
+	careful not to make too good
+	or dont allow rapid enable/disable 
+		they take turn first
+		cost one extra turn to flip on / off
+recycle?
 building upkeep?
 	disband/disable option
 log colors for weapon/def types?
@@ -923,8 +865,7 @@ fix build/repair/upgrade weirdness?
 	remove some research?
 	or clear up with colors?
 minimap
-shroud
-	show last spotted aliens
+show last spotted aliens (shroud?)
 variable scroll speed doesnt quite work
 game stats
 refactor Consts.MechMassDiv - only apply in one spot?
@@ -950,11 +891,13 @@ caves
 COMBAT
 have to not move to charge attacks?
 replace range with melee/ranged flag and accuracy(?), LOS rules, etc.
-
-map
-	smaller?
-	water/islands
-
+ 
 needs name, solidified setting, tutorial/info
 	heisenberg uncertainty principle + quantum computing (rand income)
 	name for blocking terrain??
+
+
+map
+research
+no tabs
+shroud

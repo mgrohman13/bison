@@ -69,6 +69,7 @@ namespace ClassLibrary1
                 new( 2,  1),
             });
 
+            Map.Clear(constructor, Constructor.BASE_VISION);
             Player.NewGame(constructor);
             Constructor.NewConstructor(Map.GetTile(Player.Core.Tile.X + constructor.X, Player.Core.Tile.Y + constructor.Y), true);
             Player.Research.NewGame();

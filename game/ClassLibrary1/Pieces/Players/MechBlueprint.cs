@@ -831,16 +831,18 @@ namespace ClassLibrary1.Pieces.Players
 
         private static IMovable.Values GenMovable(IResearch research)
         {
-            double avg = 7.8, dev = .169, oe = .13;
+            double avg = 6.00, dev = .169, oe = .13;
 
             double researchMult = research.GetMult(Type.MechMove, 1);
-            const double lowPenalty = .21;
+            const double lowPenalty = 1.40;
             if (researchMult < lowPenalty)
                 avg *= researchMult / lowPenalty;
 
             ModValues(research.GetType() == Type.MechMove, 1.3, ref avg, ref dev, ref oe);
 
             avg *= research.GetMult(Type.MechMove, Blueprint_Move_Pow);
+            avg += 0.91;
+
             oe /= Math.Sqrt(avg);
             double cap = Game.Rand.Range(Game.Rand.Range(1, Math.Sqrt(2) + 1), Math.Sqrt(2) * 2 + Game.Rand.DoubleHalf());
             if (avg < cap)

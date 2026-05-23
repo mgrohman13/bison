@@ -105,7 +105,7 @@ namespace ClassLibrary1.Pieces.Enemies
 
             pct = Math.Pow(pct, EventDistMult(enemyPiece.Tile, 1, .52));
 
-            this._morale *= Game.Rand.Weighted(pct); 
+            this._morale *= Game.Rand.Weighted(pct);
         }
         internal static void IncMorale(EnemyPiece source, double moraleMult, double distOffset, double distPow, params Tile[] tiles)
         {
@@ -162,6 +162,37 @@ namespace ClassLibrary1.Pieces.Enemies
         private double EventDistMult(Tile tile, double offset, double pow) =>
             Math.Pow(Consts.CaveSize / (Tile.GetDistance(tile) + offset), pow);
 
+        internal static void ModState(EnemyPiece source, AIState prev, AIState state, Tile orig, Tile cur)
+        {
+            if (orig == cur)
+                orig = null;
+            if (prev != state)
+                foreach (Alien alien in Game.Rand.Iterate(source.Side.PiecesOfType<Alien>()))
+                    if (alien != source && alien.State != state && (alien.State != AIState.Heal || Game.Rand.Bool()))
+                        foreach (Tile tile in Game.Rand.Iterate([orig, cur,]))
+                            if (tile != null)
+                            {
+                                double check = Game.Rand.OE();
+                                if (alien.State == prev)
+                                    check = Game.Rand.DoubleHalf(check);
+                                if (check < alien.EventDistMult(tile, 1, 2))
+                                {
+                                    static double Morale(AIState s) => Game.Rand.GaussianCapped(((int)s + 1) * .13, .169);
+                                    double sm = Morale(prev);
+                                    double am = Morale(alien.State);
+                                    double nm = Morale(state);
+                                    double boost = (nm - sm) * 2;
+                                    if (boost < 0)
+                                        boost = -1 / --boost;
+                                    else
+                                        boost++;
+                                    double needed = nm - am;
+                                    if (needed >= 0 ? alien.MoraleCheck(needed / boost, true) : alien.MoraleCheck(1 - needed * boost, false))
+                                        alien._state = state == AIState.Heal ? AIState.Retreat : state;
+                                }
+                            }
+        }
+
         internal override AIState TurnState(double difficulty, bool clearPaths, Dictionary<Tile, double> playerAttacks, HashSet<Tile> moveTiles, HashSet<IKillable> killables,
             out List<Point> path)
         {
@@ -198,12 +229,14 @@ namespace ClassLibrary1.Pieces.Enemies
                     state = AIState.Patrol;
                     if (MoraleCheck(1 + (3.9 / difficulty / difficulty), true))
                         goto case AIState.Rush;
-                    if (PlayerThreat())
-                        goto case AIState.Fight;
                     if (killable.IsRepairing())
                         goto case AIState.Heal;
+                    if (PlayerThreat())
+                        goto case AIState.Fight;
                     if (PlayerPassive())
                         goto case AIState.Harass;
+                    if (Game.Rand.Bool(1 - Consts.StatValue(killable.CurDefenseValue) / Consts.StatValue(killable.MaxDefenseValue)))
+                        goto case AIState.Retreat;
                     if (MoraleCheck(.5 / difficulty, true) && SeePath())
                         goto case AIState.Rush;
                     break;
@@ -240,7 +273,7 @@ namespace ClassLibrary1.Pieces.Enemies
             this._state = state;
             return state;
 
-            bool PlayerThreat() => _targeted || killables.Any(k => k.Piece.HasBehavior<IAttacker>()) || playerAttacks.ContainsKey(Tile);
+            bool PlayerThreat() => _targeted || playerAttacks.ContainsKey(Tile) || killables.Any(k => k.Piece.HasBehavior<IAttacker>());
             bool PlayerPassive() => !PlayerThreat() && killables.Count > 0;
             bool SeePath(List<Point> path = null) => (path ?? PathToCore).Any(p => moveTiles.Contains(Game.Map.GetTile(p)));
             bool NeedsRetreatPath() => RetreatPath == null || RetreatPath.Count == 0 || !ValidRetreat(RetreatPath[^1]) || !SeePath(RetreatPath);

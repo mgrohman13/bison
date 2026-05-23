@@ -31,15 +31,8 @@ namespace ClassLibrary1.Pieces.Terrain
                 obj = null;
             }
 
-            if (!tile.Visible)
-            {
-                if (!value.HasValue)
-                {
-                    throw new Exception();
-                }
-                else
-                    ;
-            }
+            if (!tile.Visible && !value.HasValue)
+                throw new Exception();
 
             return obj;
         }

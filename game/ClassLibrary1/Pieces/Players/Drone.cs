@@ -112,7 +112,7 @@ namespace ClassLibrary1.Pieces.Players
                 double mult = Consts.StatValue(def) / Consts.StatValue(def + 1);
                 this._turns = Math.Max(Math.Min(2, Turns), Game.Rand.Round(Turns * mult));
 
-                killable.SetHits(def, killable.Hits.DefenseMax);
+                //killable.SetHits(def, killable.Hits.DefenseMax);
             }
         }
 

@@ -89,6 +89,7 @@ namespace ClassLibrary1.Pieces.Enemies
         {
         }
 
+        //order is used
         internal protected enum AIState
         {
             Heal,

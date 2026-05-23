@@ -30,20 +30,20 @@ namespace ClassLibrary1
         public const double IslandVisionMult = 6.5;
 
         //public const double TreasureSpacingChance = .5;
-        public const double ResearchFactor = 2600;
+        public const double ResearchFactor = 780 * Math.PI;
         public const int ExploreForResearch = 39;
 
         public const double DifficultySetting = 2.6 / Math.PI;
         public const double EnemyStartEnergy = 1690;
         public const double ExploreEnergy = 5200;
         public const double EnemyIncomeMatchFactor = 6500;
-        public const double EnemyEnergy = 390;
-        public const double EnemyEnergyRampTurns = 169;
+        public const double EnemyEnergy = 260;
+        public const double EnemyEnergyRampTurns = 130;
         public const double EnemyUnlockTurns = 210;
 
         public const double DifficultyEnergyPow = 1.3;
         public const double DifficultyResearchPow = 3.9 / Math.E;
-        public const double DifficultyAIPow = .52;
+        public const double DifficultyAIPow = .65;
 
         public const double PortalSpawnTime = 39;
         public const double PortalSpawnStrMult = 1.3;
@@ -82,6 +82,7 @@ namespace ClassLibrary1
         public const double ExtractorHitsPow = .39;//.26??
         public const double ResourceDev = .21;
         public const double ResourceOE = .26;
+        public const double FoundationAmt = 1.3;// (Math.E + Math.PI) / 2.0; //~2.930
 
         public const double BiomassEnergyInc = 117;
         public const double BiomassSustain = .78;
@@ -135,14 +136,14 @@ namespace ClassLibrary1
         public const double PassiveRepairCost = .91 * RepairCost;
         public const double EnergyRepairDiv = 1.3 * EnergyMassRatio;
         public const int AutoRepair = 1;
-        public const double UpgRefundValue = .8;
+        public const double UpgRefundValue = .78;
 
         public static readonly double NoiseDistance = CaveDistance / Math.Sqrt(Scale);
         public static readonly double ResourceAvgDist = Math.Sqrt(Scale) * 21;
         public static readonly double PortalMinDist = Math.Sqrt(Scale) * 78;
         public static readonly double MissileAttImmobileMult = 1 / Math.Sqrt(5);
         public static readonly double EnemyTreasureMatch = .5 * Math.Sqrt(DifficultySetting);
-        public static readonly double DifficultyIncTurns = 78 / Math.Sqrt(DifficultySetting);
+        public static readonly double DifficultyIncTurns = 91 / Math.Sqrt(DifficultySetting);
 
         public static readonly double MassPerResearchConversion = MassForScrapResearch
             * Math.Sqrt(EnergyPerFabricateMass * BurnMassPerEnergy);
@@ -202,7 +203,11 @@ namespace ClassLibrary1
 
         internal static bool CanRepair(Piece piece)
         {
-            bool canRepair = !(piece.GetBehavior<IMovable>()?.Moved ?? false) && !(piece.GetBehavior<IKillable>()?.Defended ?? false) && !(piece.GetBehavior<IAttacker>()?.Attacked ?? false);
+            bool canRepair = (piece.GetBehavior<IKillable>()?.Defended != true)
+                && (piece.GetBehavior<IMovable>()?.Moved != true)
+                && (piece.GetBehavior<IAttacker>()?.Attacked != true)
+                && (piece.GetBehavior<IMissileSilo>()?.Attacked != true)
+                && (piece.GetBehavior<IBuilder>()?.Built != true);
             if (canRepair && piece.Side.Mass < 0)
                 canRepair = false;
             return canRepair;

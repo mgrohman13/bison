@@ -29,7 +29,7 @@ namespace ClassLibrary1.Pieces
         public bool IsPlayer => Side?.IsPlayer ?? false;
         public bool IsEnemy => Side?.IsEnemy ?? false;
 
-        private bool DropsTreasure { get; }
+        protected virtual bool DropsTreasure => false;
 
         internal Piece(Side side, Tile tile)
         {

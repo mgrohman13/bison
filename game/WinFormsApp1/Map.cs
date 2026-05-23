@@ -138,7 +138,8 @@ namespace WinFormsApp1
                 mousePath = null;
                 if (!timer.Enabled && SelTile?.Piece != null && SelTile.Piece.HasBehavior(out IMovable movable))
                 {
-                    if (_moused.HasValue && (shift || MouseTile == null || MouseTile.Piece is Block))
+                    if (_moused.HasValue && (shift))// || MouseTile == null || MouseTile.Piece is Block))
+                                                    //|| (SelTile.GetDistance(MouseTile) > movable.MoveCur && (MouseTile.Piece?.HasBehavior<IMovable>() ?? false))))
                         mousePath = [SelTile.Location, _moused.Value];
                     else if ((MouseTile != null && SelTile.GetDistance(MouseTile) > movable.MoveCur && MouseTile.Piece is not ITerrain)
                         && (!SelTile.Piece.HasBehavior(out IAttacker attacker) || !attacker.Attacks.Any(a =>
@@ -1208,7 +1209,9 @@ namespace WinFormsApp1
             else
             {
                 foreach (var a in attacker.Attacks)
-                    if (a.CanAttack() || showAll)
+                    if (MouseTile == SelTile)
+                        retVal.Add([.. MouseTile.GetPointsInRange(a)]);
+                    else if (a.CanAttack() || showAll)
                         if (MouseTile != null && MouseTile.Piece == null && moveTiles.Contains(MouseTile.Location))
                             retVal.Add([.. MouseTile.GetPointsInRange(a)]);
                         else if (a.CanAttack())

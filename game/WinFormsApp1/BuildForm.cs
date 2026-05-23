@@ -1,4 +1,5 @@
-﻿using ClassLibrary1.Pieces;
+﻿using ClassLibrary1;
+using ClassLibrary1.Pieces;
 using ClassLibrary1.Pieces.Behavior;
 using ClassLibrary1.Pieces.Behavior.Combat;
 using ClassLibrary1.Pieces.Players;
@@ -251,16 +252,24 @@ namespace WinFormsApp1
         {
             energy = 0;
             mass = 0;
+            int idx = -1;
             if (rows.Count == 1)
             {
-                energy = (int)rows[0].Energy;
-                mass = (int)rows[0].Mass;
+                idx = 0;
             }
-            //if (rows.Count > 0)
-            //{
-            //    energy = (int)rows[rows.Count - 1].Energy;
-            //    mass = (int)rows[rows.Count - 1].Mass;
-            //}
+            else
+            {
+                rows = [.. rows.Where(r => r.Notify)];
+                if (rows.Count == 1)
+                    idx = 0;
+            }
+            if (idx == -1)
+                idx = rows.Count - 1;
+            if (idx >= 0)
+            {
+                energy = (int)rows[idx].Energy;
+                mass = (int)rows[idx].Mass;
+            }
         }
 
         internal bool UpgradeDialog(MechBlueprint blueprint, int energy, int mass)
@@ -335,7 +344,8 @@ namespace WinFormsApp1
         public static T GetBuilder<T>(Tile selected) where T : class, IBuilder
         {
             //check blocks
-            return Program.Game.Player.PiecesOfType<T>().FirstOrDefault(b => selected.GetDistance(b.Piece.Tile) <= b.Range);
+            return Game.Rand.Iterate(Program.Game.Player.PiecesOfType<T>())
+                .FirstOrDefault(b => selected.GetDistance(b.Piece.Tile) <= b.Range);
         }
         public void GetBlueprints(IBuilder.IBuildMech buildMech)
         {
@@ -413,7 +423,7 @@ namespace WinFormsApp1
             public string Name { get; } = name;
             public double Energy { get; } = energy;
             public double Mass { get; } = mass;
-            public double Ratio => Energy / (double)Mass;
+            public double Ratio => Mass == 0 ? Energy : Energy / (double)Mass;
             public bool Notify
             {
                 get

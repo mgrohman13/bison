@@ -11,6 +11,8 @@ namespace ClassLibrary1.Pieces.Behavior
         public double Range { get; }
         public double RangeBase { get; }
 
+        public bool Built { get; }
+
         internal void Upgrade(Values values);
 
         public interface IBuildConstructor : IBuilder
