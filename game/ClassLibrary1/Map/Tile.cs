@@ -69,19 +69,19 @@ namespace ClassLibrary1.Map
                 .Where(Map.Visible).Select(Map.GetTile).Where(t => t != null);
 
             internal IEnumerable<Tile> GetAdjacentTiles() => GetTilesInRange(Attack.MELEE_RANGE, false, null);
-            internal IEnumerable<Tile> GetTilesInRange(IMovable movable, double? cur = null) => GetTilesInRange(cur ?? movable.MoveCur, false, movable.Piece);
+            internal IEnumerable<Tile> GetTilesInRange(IMovable movable, double? cur = null) => GetTilesInRange(cur ?? movable.MoveCur, false, movable.Piece); //
             internal IEnumerable<Tile> GetTilesInRange(IAttacker attacker, double? cur = null) => GetTilesInRange(cur ?? attacker.Attacks.Max(a => a.Range), true, attacker.Piece);
             internal IEnumerable<Tile> GetTilesInRange(Attack attack) => GetTilesInRange(attack.Range, true, attack.Piece);
             private IEnumerable<Tile> GetTilesInRange(double range, bool blockMap, Piece blockFor) => GetPointsInRange(range, blockMap, blockFor)
                 .Select(Map.GetTile).Where(t => t != null);
 
-            internal IEnumerable<Point> GetPointsInRangeUnblocked(double vision) => GetPointsInRange(vision, false, null);
-            internal static IEnumerable<Point> GetPointsInRangeUnblocked(Map map, Point point, double range) => GetPointsInRange(map, point, range, false, null);
+            internal IEnumerable<Point> GetPointsInRangeUnblocked(double vision) => GetPointsInRange(vision, false, null); //
+            internal static IEnumerable<Point> GetPointsInRangeUnblocked(Map map, Point point, double range) => GetPointsInRange(map, point, range, false, null); //
 
-            public static IEnumerable<Point> GetAllPointsInRange(Map map, Point point, double range) => GetPointsInRange(map, point, range, false, null);
-            public IEnumerable<Point> GetAllPointsInRange(double range) => GetPointsInRange(range, false, null);
-            public IEnumerable<Point> GetPointsInRange(IMovable movable) => GetPointsInRange(movable, movable.MoveCur);
-            public IEnumerable<Point> GetPointsInRange(IMovable movable, double move) => GetPointsInRange(move, false, movable.Piece);
+            public static IEnumerable<Point> GetAllPointsInRange(Map map, Point point, double range) => GetPointsInRange(map, point, range, false, null); //
+            public IEnumerable<Point> GetAllPointsInRange(double range) => GetPointsInRange(range, false, null); //
+            public IEnumerable<Point> GetPointsInRange(IMovable movable) => GetPointsInRange(movable, movable.MoveCur); //
+            public IEnumerable<Point> GetPointsInRange(IMovable movable, double move) => GetPointsInRange(move, false, movable.Piece); //
             public IEnumerable<Point> GetPointsInRange(IBuilder builder) => GetPointsInRange(builder.Range, true, null);
             public IEnumerable<Point> GetPointsInRange(Attack attack) => GetPointsInRange(attack.Range, true, attack.Piece);
             private IEnumerable<Point> GetPointsInRange(double range, bool blockMap, Piece blockFor) => GetPointsInRange(Map, Location, range, blockMap, blockFor);
@@ -97,66 +97,65 @@ namespace ClassLibrary1.Map
                         yield return new(x, y);
                 }
             }
-            public static IEnumerable<Point> GetVision(Map map, Point point, double vision)
-            {
-                return GetPointsInRangeBlocked(map, point, vision, true);
-            }
             public static IEnumerable<Point> GetVision(PlayerPiece piece, Point moveTo)
             {
                 Map map = piece?.Tile.Map;
                 Tile to = map?.GetVisibleTile(moveTo);
                 if (map != null && to != null && piece.HasBehavior<IMovable>())
                 {
-                    IEnumerable<Point> enumerable = (piece.Tile == to ? [moveTo] : (IEnumerable<Point>)Movable.GetMovePoints(piece.Tile, to));
-                    return enumerable.SelectMany(p => GetVision(map, p, piece.GetVision(map.GetVisibleTile(p))));
+                    IEnumerable<Point> enumerable = (piece.Tile == to ? [moveTo] : Movable.GetMovePoints(piece.Tile, to));
+                    return enumerable.SelectMany(p => GetVision(map, p, piece.Vision));
                 }
-
                 return [];
             }
-            internal static IEnumerable<Point> GetPointsInRangeBlocked(Map map, Point point, double range, bool visibleOnly = false)
-            //, bool blockMap, Piece blockFor)
+            public static IEnumerable<Point> GetVision(Map map, Point point, double vision) =>
+                GetPointsInRangeBlocked(map, point, vision, true).Distinct();
+            internal static IEnumerable<Point> GetAllVisionPoints(Map map, Point point, double vision) =>
+                GetPointsInRangeBlocked(map, point, vision, false).Distinct();
+            private static IEnumerable<Point> GetPointsInRangeBlocked(Map map, Point point, double range, bool visibleOnly)
             {
-                ////SortedDictionary<Point, double> block = new(Comparer<Point>.Create(
-                ////    (p1, p2) => GetDistance(point, p1).CompareTo(GetDistance(point, p2))));
-                //double sqrtTwo = Math.Sqrt(2);
-                //double baseBlock = .5 + (sqrtTwo / 2.0 - .5) / 2.0;
-                ////double enemyBlock = 1 + (sqrtTwo - 1) / 2.0;
-                //void AddBlock(Point b, double blockRange)
-                //{
-                //    block.TryGetValue(b, out double range);
-                //    range = Math.Max(range, blockRange);
-                //    block[b] = range;
-                //}
-                ////if (blockMap)
-                //foreach (var p in GetPointsInRangeUnblocked(map, point, range).Where(p => map.GetTile(p) == null))
-                //    AddBlock(p, baseBlock);
-                ////if (blockFor != null)
-                //////more efficient implementation?
-                ////    foreach (var pair in map._pieces.Where(p => p.Value != blockFor
-                ////            && (p.Value.Side != blockFor.Side || !p.Value.HasBehavior<IMovable>())
-                ////            && GetDistance(point, p.Key) <= range))
-                ////        AddBlock(pair.Key, pair.Value.Side != null && pair.Value.Side != blockFor.Side ? enemyBlock : baseBlock);
-
-                List<Point> block = [.. GetPointsInRangeUnblocked(map, point, range).Where(Blocks).OrderBy(b => GetDistance(point, b))];
-                bool Blocks(Point p) => map.GetTile(p) == null && (!visibleOnly || map.Visible(p));
-                double blockRadius = (1 + Math.Sqrt(2)) / 4.0;// Math.Sqrt(2) / 2
-
-                int max = (int)Math.Ceiling(range);
-                foreach (Point add in Game.Rand.Iterate(-max, max, -max, max))
+                yield return point;
+                if (range >= 1)
                 {
-                    int x = point.X + add.X;
-                    int y = point.Y + add.Y;
-                    double distance = GetDistance(point.X, point.Y, x, y);
-                    if (distance <= range)
+                    double height = 0;
+                    bool Visible(Point p) => !visibleOnly || map.Visible(p);
+                    bool Blocks(Point p) => Visible(p) && map.GetTile(p) == null;
+                    double GetHeight(Point p) => (Visible(p) && map.GetTile(p)?.Terrain is Island i ? i.Height : 0);
+
+                    height = GetHeight(point);
+                    range += height;
+
+                    IEnumerable<Point> enumerable = GetPointsInRangeUnblocked(map, point, range).Where(p => p != point);
+                    List<Point> blocks = [.. enumerable.Where(Blocks).OrderBy(b => GetDistance(point, b))];
+                    List<Point> heights = [.. enumerable.Where(Visible).Where(p => GetHeight(p) >= height)
+                    .OrderByDescending(GetHeight).OrderBy(b => GetDistance(point, b))];
+
+                    double blockRadius = (1 + Math.Sqrt(2)) / 4.0;
+                    foreach (Point add in Game.Rand.Iterate(enumerable))
                     {
-                        var blocking = block.Where(b => GetDistance(point, b) < distance
-                            && Dist(point, new(x, y), b) < blockRadius
-                            && (GetAngleDiff(GetAngle(b.X - point.X, b.Y - point.Y), GetAngle(x - point.X, y - point.Y)) < HALF_PI))
-                            .Select(b => (Point?)b).FirstOrDefault();
-                        if (blocking.HasValue)
-                            yield return blocking.Value;
-                        else
-                            yield return new(x, y);
+                        double distance = GetDistance(point.X, point.Y, add.X, add.Y);
+                        if (distance <= range)
+                        {
+                            bool Filter(Point b) => GetDistance(point, b) < distance
+                                && Dist(point, new(add.X, add.Y), b) < blockRadius
+                                && (GetAngleDiff(GetAngle(b.X - point.X, b.Y - point.Y), GetAngle(add.X - point.X, add.Y - point.Y)) < HALF_PI);
+                            Point? Select(IEnumerable<Point> points) => points.Select(p => (Point?)p).FirstOrDefault();
+
+                            var plateau = Select(heights.Where(Filter).Where(h => distance + GetHeight(h) > range));
+                            //&& GetHeight(add) >= GetHeight(h)));// doesn't work, still gives away tile info even if you dont see it
+                            if (plateau.HasValue && distance + GetHeight(plateau.Value) > range)
+                            {
+                                yield return plateau.Value;
+                            }
+                            else
+                            {
+                                var block = Select(blocks.Where(Filter));
+                                if (block.HasValue)
+                                    yield return block.Value;
+                                else
+                                    yield return add;
+                            }
+                        }
                     }
                 }
 
@@ -171,6 +170,28 @@ namespace ClassLibrary1.Map
                     return PointLineDistanceAbs(a, b, c, point);
                 }
             }
+            //, bool blockMap, Piece blockFor)
+            //double blockRadius = Math.Sqrt(2) / 2;//may use for different types of blocking
+            ////SortedDictionary<Point, double> block = new(Comparer<Point>.Create(
+            ////    (p1, p2) => GetDistance(point, p1).CompareTo(GetDistance(point, p2))));
+            //double sqrtTwo = Math.Sqrt(2);
+            //double baseBlock = .5 + (sqrtTwo / 2.0 - .5) / 2.0;
+            ////double enemyBlock = 1 + (sqrtTwo - 1) / 2.0;
+            //void AddBlock(Point b, double blockRange)
+            //{
+            //    block.TryGetValue(b, out double range);
+            //    range = Math.Max(range, blockRange);
+            //    block[b] = range;
+            //}
+            ////if (blockMap)
+            //foreach (var p in GetPointsInRangeUnblocked(map, point, range).Where(p => map.GetTile(p) == null))
+            //    AddBlock(p, baseBlock);
+            ////if (blockFor != null)
+            //////more efficient implementation?
+            ////    foreach (var pair in map._pieces.Where(p => p.Value != blockFor
+            ////            && (p.Value.Side != blockFor.Side || !p.Value.HasBehavior<IMovable>())
+            ////            && GetDistance(point, p.Key) <= range))
+            ////        AddBlock(pair.Key, pair.Value.Side != null && pair.Value.Side != blockFor.Side ? enemyBlock : baseBlock);
 
             public static bool operator !=(Tile a, Tile b)
             {

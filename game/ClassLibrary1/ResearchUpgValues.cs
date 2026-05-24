@@ -46,51 +46,51 @@ namespace ClassLibrary1
         //internal const double Turret_Vision_Pow = ;
 
         private static readonly ReadOnlyDictionary<UpgType, UpgParam> UpgParams = new Dictionary<UpgType, UpgParam>() {
-            { UpgType.AmbientGenerator, new(Consts.GeneratorEnergyInc, 0.35) },
-            { UpgType.AmbientGeneratorCost, new(0.25, true) },
-            { UpgType.ConstructorCost, new(0.55, true) },
-            { UpgType.ConstructorDefense, new(6.50, 0.50, add: 4.00) },
-            { UpgType.ConstructorMove, new(Constructor.BASE_MOVE_INC * Constructor.MOVE_RAMP, 0.30, Constructor.MOVE_RAMP) },
-            { UpgType.ConstructorRange, new(5.2, 0.35,  add: .3) },
-            { UpgType.ConstructorVision, new(Constructor.BASE_VISION, 0.25) },
+            { UpgType.AmbientGenerator, new(Type.AmbientGenerator, Consts.GeneratorEnergyInc, 0.35) },
+            { UpgType.AmbientGeneratorCost, new(Type.AmbientGenerator,0.25, true) },
+            { UpgType.ConstructorCost, new(Type.Constructor, 0.55, true) },
+            { UpgType.ConstructorDefense, new(Type.Constructor, 6.50, 0.50, add: 4.00) },
+            { UpgType.ConstructorMove, new(Type.Constructor, Constructor.BASE_MOVE_INC * Constructor.MOVE_RAMP, 0.30, Constructor.MOVE_RAMP) },
+            { UpgType.ConstructorRange, new(Type.Constructor, 5.2, 0.35,  add: .3) },
+            { UpgType.ConstructorVision, new(Type.Constructor, Constructor.BASE_VISION, 0.25) },
             //{ UpgType.ConstructorRepair, new(1, 0.45) },
             //{ UpgType.CoreDefense, new(11, 0.65, 11 / 10.0) },
-            { UpgType.CoreArmor, new(7.8, 0.85, 1.50) },
-            { UpgType.CoreShields, new(7.8, 0.85, 1.50) },
-            { UpgType.DroneCost, new(0.20, true) },
-            { UpgType.DroneDefense, new(21.00, 0.40, 1.10) },
-            { UpgType.DroneMove, new(2.6, 0.40) },
-            { UpgType.DroneRepair, new(1.3, 0.75, add: -0.3) },
-            { UpgType.DroneTurns, new(7.8, 0.45) },
+            { UpgType.CoreArmor, new(Type.CoreArmor,4.50, 0.85, 2.50) },
+            { UpgType.CoreShields, new(Type.CoreDefense, 5.50, 0.45) },
+            { UpgType.DroneCost, new(Type.RepairDrone, 0.20, true) },
+            { UpgType.DroneDefense, new(Type.RepairDrone, 21.00, 0.40, 1.10) },
+            { UpgType.DroneMove, new(Type.RepairDrone, 2.6, 0.40) },
+            { UpgType.DroneRepair, new(Type.RepairDrone, 1.3, 0.75, add: -0.3) },
+            { UpgType.DroneTurns, new(Type.RepairDrone, 7.8, 0.45) },
             /*UpgType.ExtractorResilience*/
-            { UpgType.ExtractorCost, new(0.10, true) },
-            { UpgType.ExtractorDefense, new(16.90, 0.20, 3.90, 1.30) },
-            { UpgType.ExtractorSustain, new(1, 0.10) },
-            { UpgType.ExtractorValue, new(1, 0.25) },
-            { UpgType.ExtractorVision, new(5, 0.80) },
-            { UpgType.FactoryCost, new(0.60, true) },
-            { UpgType.FactoryDefense, new(10.00, 0.60, 10.00 / 5.0) },
-            { UpgType.FactoryRepair, new(1, 0.50, Math.E, .65) },
-            { UpgType.FactoryVision, new(6.75, 0.90, 1.70 ) },
-            { UpgType.MissileAttack, new(9.50, 0.80, add: 5.2) },
-            { UpgType.MissileCost, new(0.50, true) },
-            { UpgType.MissileRange, new(MissileSilo.START_RANGE, 0.55) },
-            { UpgType.OutpostAttack, new(3.00, 0.55, 1.95, 2.00) },
-            { UpgType.OutpostCost, new(0.35, true) },
-            { UpgType.OutpostDefense, new(9.10, 0.70, add: 2.40) },
-            { UpgType.OutpostRepair, new(3.50, 0.25, 1.80) },
-            { UpgType.OutpostVision, new(9.10, 0.40 ) },
-            { UpgType.TurretArmorDefense, new(11, 0.55, 5.2, 1.69) },
-            { UpgType.TurretAttack, new(8, 0.70, 1.69, .39) },
-            { UpgType.TurretCost, new(0.30, true) },
-            { UpgType.TurretDefense, new(5, 0.25, add: 10) },
-            { UpgType.TurretExplosivesAttack, new(6, 0.65) },
-            { UpgType.TurretExplosivesRange, new(9, 0.40, 1.55, Attack.MIN_RANGED - 1) },
-            { UpgType.TurretLaserAttack, new(4, 0.75) },
-            { UpgType.TurretLaserRange, new(15, 0.60, 1.65, Attack.MIN_RANGED + 1) },
-            { UpgType.TurretRange, new(13, 0.50, 1.75, Attack.MIN_RANGED) },
-            { UpgType.TurretShieldDefense, new(7, 0.35, 1.85) },
-            { UpgType.TurretVision, new(10, 0.45, 1.90) },
+            { UpgType.ExtractorCost, new(Type.Mech, 0.10, true) },
+            { UpgType.ExtractorDefense, new(Type.Mech, 16.90, 0.20, 3.90, 1.30) },
+            { UpgType.ExtractorSustain, new(Type.Mech, 1, 0.10) },
+            { UpgType.ExtractorValue, new(Type.Mech, 1, 0.25) },
+            { UpgType.ExtractorVision, new(Type.Mech, 5, 0.80) },
+            { UpgType.FactoryCost, new(Type.Factory, 0.60, true) },
+            { UpgType.FactoryDefense, new(Type.Factory, 10.00, 0.60, 10.00 / 5.0) },
+            { UpgType.FactoryRepair, new(Type.Factory, 1, 0.50, Math.E, .65) },
+            { UpgType.FactoryVision, new(Type.Factory, 6.75, 0.90, 1.70 ) },
+            { UpgType.MissileAttack, new(Type.Missile, 9.50, 0.80, add: 5.2) },
+            { UpgType.MissileCost, new(Type.Missile, 0.50, true) },
+            { UpgType.MissileRange, new(Type.Missile, MissileSilo.START_RANGE, 0.55) },
+            { UpgType.OutpostAttack, new(Type.Outpost, 3.00, 0.55, 1.95, 2.00) },
+            { UpgType.OutpostCost, new(Type.Outpost, 0.35, true) },
+            { UpgType.OutpostDefense, new(Type.Outpost, 9.10, 0.70, add: 2.40) },
+            { UpgType.OutpostRepair, new(Type.Outpost, 3.50, 0.25, 1.80) },
+            { UpgType.OutpostVision, new(Type.Outpost, 9.10, 0.40 ) },
+            { UpgType.TurretArmorDefense, new(Type.TurretArmor, 11, 0.55, 5.2, 1.69) },
+            { UpgType.TurretAttack, new(Type.Turret, 8, 0.70, 1.69, .39) },
+            { UpgType.TurretCost, new(Type.Turret, 0.30, true) },
+            { UpgType.TurretDefense, new(Type.Turret, 5, 0.25, add: 10) },
+            { UpgType.TurretExplosivesAttack, new(Type.TurretExplosives, 6, 0.65) },
+            { UpgType.TurretExplosivesRange, new(Type.TurretExplosives, 9, 0.40, 1.55, Attack.MIN_RANGED - 1) },
+            { UpgType.TurretLaserAttack, new(Type.TurretLasers, 4, 0.75) },
+            { UpgType.TurretLaserRange, new(Type.TurretLasers, 15, 0.60, 1.65, Attack.MIN_RANGED + 1) },
+            { UpgType.TurretRange, new(Type.Turret, 13, 0.50, 1.75, Attack.MIN_RANGED) },
+            { UpgType.TurretShieldDefense, new(Type.TurretShields, 7, 0.35, 1.85) },
+            { UpgType.TurretVision, new(Type.Turret, 10, 0.45, 1.90) },
         }.AsReadOnly();
 
         internal static double Calc(UpgType upgType, double researchMult) =>
@@ -98,12 +98,14 @@ namespace ClassLibrary1
 
         internal static string GetUpgInfo(Game game, Type type, double prevMult, double nextMult)
         {
-            return UpgTypes[type].Where(u => !u.ToString().Contains("Vision")).Select(upgType =>
-            {
-                var param = UpgParams[upgType];
-                double prev = CheckZero(upgType, prevMult, param.CalcAvg(game, prevMult));
-                return GetUpgInfo(upgType, prev, param.CalcAvg(game, nextMult), param.Pct);
-            }).Aggregate("", (a, b) => a + (a.Length > 0 ? Environment.NewLine : string.Empty) + b);
+            return UpgTypes[type].Where(upgType => !upgType.ToString().Contains("Vision"))
+                .Where(upgType => game.Player.Research.HasType(UpgParams[upgType].Preq))
+                .Select(upgType =>
+                {
+                    var param = UpgParams[upgType];
+                    double prev = CheckZero(upgType, prevMult, param.CalcAvg(game, prevMult));
+                    return GetUpgInfo(upgType, prev, param.CalcAvg(game, nextMult), param.Pct);
+                }).Aggregate("", (a, b) => a + (a.Length > 0 ? Environment.NewLine : string.Empty) + b);
         }
         private static double CheckZero(UpgType upgType, double prevMult, double prev)
         {
@@ -120,21 +122,24 @@ namespace ClassLibrary1
         private class UpgParam
         {
             //private Func<Game, double> GetRounding;
+            public readonly Type Preq;
             private readonly double avg, add, ramp, pow;
             private readonly bool cost;
             public bool Pct => cost || avg == 1;
-            public UpgParam(double pow, bool cost)
+            public UpgParam(Type preq, double pow, bool cost)
             {
+                this.Preq = preq;
                 this.avg = 0;
                 this.add = 0;
                 this.pow = pow;
                 this.ramp = 0;
                 this.cost = cost;
             }
-            public UpgParam(double avg, double pow, double ramp = 1, double add = 0, bool cost = false)
+            public UpgParam(Type preq, double avg, double pow, double ramp = 1, double add = 0, bool cost = false)
             //, Func<Game, double> GetRounding = null)
             {
                 //this.GetRounding = GetRounding;
+                this.Preq = preq;
                 this.avg = avg;
                 this.add = add;
                 this.pow = pow;

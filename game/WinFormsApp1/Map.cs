@@ -730,9 +730,9 @@ namespace WinFormsApp1
                             }
                             else if (terrain is Island island)
                             {
-                                double gradient = 1 - island.Vision / Island.MAX_VISION;
-                                color = Color.FromArgb(Game.Rand.Round(65 + 65 * gradient),
-                                    Game.Rand.Round(21 + 104 * gradient * gradient), 26);
+                                double gradient = 1 - island.Height / Island.MAX_VISION;
+                                color = Color.FromArgb(Game.Rand.Round(52 + 91 * gradient),
+                                    Game.Rand.Round(130 * gradient * gradient), 39);
                                 tileRects.Add(rect);
                             }
                             var brush = new SolidBrush(color);
@@ -774,7 +774,8 @@ namespace WinFormsApp1
                         else
                         {
                             AddFill(Brushes.LightPink, attBar);
-                            lines[Pens.Black].Add(new(new(attBar.Right, attBar.Y), new(attBar.Right, attBar.Bottom)));
+                            lines[Pens.Black].Add(new(new(attBar.Left, attBar.Top), new(attBar.Right, attBar.Top)));
+                            lines[Pens.Black].Add(new(new(attBar.Right, attBar.Top), new(attBar.Right, attBar.Bottom)));
                         }
                         //SizeF size = e.Graphics.MeasureString(p.Value, f);
                         //e.Graphics.DrawString(p.Value, f, Brushes.Red, new PointF(GetX(p.Key.X) + scale - size.Width, GetY(p.Key.Y) + scale - size.Height));
@@ -846,26 +847,33 @@ namespace WinFormsApp1
 
             if ((viewAttacks || viewMoves) && !inEnemyTurn && Scale > 21f)
             {
-                using Font f = new(FontFamily.GenericMonospace, Scale / 3.9f);
+                using Font f = new(FontFamily.GenericMonospace, Scale / 3.9f, FontStyle.Bold);
+                using Brush b1 = new SolidBrush(Color.FromArgb(169, 0, 0));
+                Brush b2 = Brushes.White;// new SolidBrush(Color.FromArgb(210, 39, 39));
                 foreach (var p in numbers)
                     if (mapCoords.Contains(p.Key.X, p.Key.Y))
-                        if (Program.Game.Map.GetVisibleTile(p.Key.X, p.Key.Y)?.Piece is not ITerrain)
+                    {
+                        Tile tile = Program.Game.Map.GetVisibleTile(p.Key.X, p.Key.Y);
+                        if (tile?.Piece is not ITerrain)
                         {
                             string value = p.Value.ToString("0");
                             SizeF size = e.Graphics.MeasureString(value, f);
-                            e.Graphics.DrawString(value, f, viewAttacks && !extendedRange ? indicatorAtt : indicatorBase,
+                            e.Graphics.DrawString(value, f, tile?.Terrain != null ? b2 : viewAttacks && !extendedRange ? b1 : indicatorBase,
                                 new PointF(GetX(p.Key.X) + Scale - size.Width, GetY(p.Key.Y) + Scale - size.Height));
                         }
+                    }
             }
             if (Scale > scaleCutoff)
                 foreach (var p in letters)
                     using (Font f = new(FontFamily.GenericMonospace, Scale))
                     {
-                        SizeF size = e.Graphics.MeasureString(p.Value, f);
-                        float div = (float)Math.Pow(1.69, 1.0 / p.Value.Length);
+                        string str = p.Value;
+                        SizeF size = e.Graphics.MeasureString(str, f);
+                        float div = (float)Math.Pow(1.69, 1.0 / str.Length);
                         using Font font = new(f.FontFamily, f.Size * Scale / div / size.Width, FontStyle.Bold);
-                        size = e.Graphics.MeasureString(p.Value, font);
-                        e.Graphics.DrawString(p.Value, font, indicatorBase, p.Key.X + Scale - size.Width, p.Key.Y);
+                        size = e.Graphics.MeasureString(str, font);
+                        e.Graphics.DrawString(str, font, indicatorBase,
+                            p.Key.X + Scale - size.Width, p.Key.Y - (str.Length == 1 ? Scale / 13f : 0));
                     }
 
             static string GetTopIncome(IIncome income)
@@ -1005,15 +1013,25 @@ namespace WinFormsApp1
                     ranges[Red].AddRange(AddAttacks(attacker, true, null));
 
                 //Debug.WriteLine("5 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
-                if (piece is PlayerPiece pp && movable != null && MouseTile != null
-                    && (MouseTile.Piece == null || MouseTile.Piece.HasBehavior<IMovable>()))
+                if (piece is PlayerPiece pp && movable != null && MouseTile != null)
                 {
-                    IEnumerable<Point> enumerable = moveTiles.Contains(MouseTile.Location) ? Tile.GetVision(pp, MouseTile.Location)
-                        : Tile.GetVision(Program.Game.Map, MouseTile.Location, pp.GetVision(MouseTile));
-                    ranges[White].Add([.. enumerable.Where(p => !Program.Game.Map.Visible(p))]);
+                    Tile tile = MouseTile;
+                    if (mousePath != null && mousePath.Count > 1)
+                        tile = Program.Game.Map.GetVisibleTile(mousePath[1]);
 
-                    if (piece.HasBehavior(out IBuilder b) && b.Range >= 1) //moveTiles.Contains(MouseTile.Location) &&
-                        ranges[Blue].Add([.. MouseTile.GetPointsInRange(b)]);
+                    if (tile.Piece == null || tile.Piece.HasBehavior<IMovable>())
+                    {
+                        IEnumerable<Point> enumerable = [];
+                        if (moveTiles.Contains(tile.Location))
+                            enumerable = Tile.GetVision(pp, tile.Location);
+                        if (enumerable.All(Program.Game.Map.Visible))
+                            enumerable = Tile.GetVision(Program.Game.Map, MouseTile.Location, pp.Vision);
+
+                        ranges[White].Add([.. enumerable.Where(p => !Program.Game.Map.Visible(p))]);
+
+                        if (piece.HasBehavior(out IBuilder b) && b.Range >= 1) //moveTiles.Contains(MouseTile.Location) &&
+                            ranges[Blue].Add([.. tile.GetPointsInRange(b)]);
+                    }
                 }
             }
 

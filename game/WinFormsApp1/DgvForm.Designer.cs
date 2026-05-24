@@ -38,10 +38,9 @@ namespace WinFormsApp1
             // 
             // button1
             // 
-            button1.Location = new System.Drawing.Point(8, 7);
-            button1.Margin = new System.Windows.Forms.Padding(2);
+            button1.Location = new System.Drawing.Point(11, 12);
             button1.Name = "button1";
-            button1.Size = new System.Drawing.Size(78, 20);
+            button1.Size = new System.Drawing.Size(111, 33);
             button1.TabIndex = 11;
             button1.Text = "button1";
             button1.UseVisualStyleBackColor = true;
@@ -59,33 +58,32 @@ namespace WinFormsApp1
             dataGridView1.Dock = System.Windows.Forms.DockStyle.Fill;
             dataGridView1.EditMode = System.Windows.Forms.DataGridViewEditMode.EditOnF2;
             dataGridView1.Location = new System.Drawing.Point(0, 0);
-            dataGridView1.Margin = new System.Windows.Forms.Padding(2);
             dataGridView1.Name = "dataGridView1";
             dataGridView1.RowHeadersVisible = false;
             dataGridView1.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.AutoSizeToAllHeaders;
             dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.ActiveBorder;
             dataGridView1.RowsDefaultCellStyle = dataGridViewCellStyle2;
-            dataGridView1.RowTemplate.Height = 33;
             dataGridView1.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            dataGridView1.Size = new System.Drawing.Size(784, 261);
+            dataGridView1.Size = new System.Drawing.Size(1120, 435);
             dataGridView1.TabIndex = 10;
+            dataGridView1.RowHeadersWidthChanged += DgvForm_AdjustWidth;
             // 
             // DgvForm
             // 
             AcceptButton = button1;
-            AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
+            AutoScaleDimensions = new System.Drawing.SizeF(10F, 25F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             CancelButton = button1;
-            ClientSize = new System.Drawing.Size(784, 261);
+            ClientSize = new System.Drawing.Size(1120, 435);
             Controls.Add(dataGridView1);
             Controls.Add(button1);
             FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;
             KeyPreview = true;
-            Margin = new System.Windows.Forms.Padding(2);
             Name = "DgvForm";
             ShowIcon = false;
             Text = "dgvForm";
+            Shown += DgvForm_AdjustWidth;
             ((System.ComponentModel.ISupportInitialize)dataGridView1).EndInit();
             ResumeLayout(false);
         }

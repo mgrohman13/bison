@@ -349,7 +349,7 @@ namespace WinFormsApp1
 
                     if (SelTile.Terrain is Island island)
                     {
-                        lblHeading.Text = $"{lblHeading.Text} ({island} {island.Vision:0.0})";
+                        lblHeading.Text = $"{lblHeading.Text} ({island} {island.Height:0.0})";
                     }
                 }
                 else if (SelTile.Terrain is Island island)
@@ -359,10 +359,10 @@ namespace WinFormsApp1
                     //lbl4.Text = "Ranged Att";
                     //lblInf4.Text = "+" + Island.RangedAtt.ToString();
 
-                    lbl6.Show();
-                    lblInf6.Show();
-                    lbl6.Text = "Vision";
-                    lblInf6.Text = "+" + island.Vision.ToString("0.0");
+                    lbl1.Show();
+                    lblInf1.Show();
+                    lbl1.Text = "Height";
+                    lblInf1.Text = island.Height.ToString("0.0");
                 }
             }
 

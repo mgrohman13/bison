@@ -25,10 +25,11 @@ namespace ClassLibrary1.Pieces.Behavior
 
         void IBehavior.StartTurn()
         {
+            base.StartTurn(); 
             _resetRepaired = true;
         }
         void IBehavior.EndTurn(ref double energyUpk, ref double massUpk)
-        {
+        { 
             if (_resetRepaired)
                 _repaired = false;
         }

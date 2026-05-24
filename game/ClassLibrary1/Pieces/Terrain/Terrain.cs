@@ -6,12 +6,12 @@ namespace ClassLibrary1.Pieces.Terrain
 {
     [Serializable]
     [DataContract(IsReference = true)]
-    public class Island(Tile tile, double vision) : Terain(tile)
+    public class Island(Tile tile, double height) : Terain(tile)
 {
         public const double MAX_VISION = 16.9;
 
         //public const int RangedAtt = 1;
-        public readonly double Vision = vision;
+        public readonly double Height = height;
 
         public override string ToString() => "Plateau";
     }

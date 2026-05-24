@@ -83,6 +83,8 @@ namespace ClassLibrary1.Pieces.Players
 
         internal override void StartTurn()
         {
+            base.StartTurn();
+
             if (repair.Repaired)
                 MultTreasure(1, _baseTurns);
 

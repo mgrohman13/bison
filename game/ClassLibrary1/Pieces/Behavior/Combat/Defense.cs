@@ -188,6 +188,7 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
         internal void StartTurn()
         {
             ToString();
+            //base.StartTurn(); 
         }
         internal void EndTurn(ref double energyUpk, ref double massUpk)
         {

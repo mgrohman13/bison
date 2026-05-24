@@ -11,7 +11,7 @@ namespace WinFormsApp1
         public DgvForm()
         {
             InitializeComponent();
-            dataGridView1.PreviewKeyDown += DataGridView1_PreviewKeyDown;
+            dataGridView1.PreviewKeyDown += DgvForm_AdjustWidth;
             button1.Click += Button1_Click;
             FormClosing += DgvForm_FormClosing;
         }
@@ -40,6 +40,12 @@ namespace WinFormsApp1
             for (int a = 1; a < Singleton.dataGridView1.Columns.Count; a++)
                 Singleton.dataGridView1.Columns[a].DefaultCellStyle.Alignment = DataGridViewContentAlignment.TopRight;
             Singleton.ShowDialog();
+        }
+
+        private void DgvForm_AdjustWidth(object sender, EventArgs e)
+        {
+            this.Width = dataGridView1.PreferredSize.Width + 13;
+            this.Height = dataGridView1.PreferredSize.Height + 26;
         }
     }
 }

@@ -44,6 +44,11 @@ namespace ClassLibrary1.Pieces.Behavior
         }
         void IBehavior.StartTurn()
         {
+            StartTurn();
+        }
+        protected void StartTurn()
+        {
+            //base.StartTurn();
             _built = false;
         }
         void IBehavior.EndTurn(ref double energyUpk, ref double massUpk)

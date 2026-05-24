@@ -465,7 +465,7 @@ namespace ClassLibrary1.Map
             LogEvalTime();
 
             bool found = false;
-            foreach (Point p in Tile.GetPointsInRangeBlocked(this, point, range))
+            foreach (Point p in Tile.GetAllVisionPoints(this, point, range))
                 if (_explored.Add(p))
                 {
                     //GeneratePlateaus(Tile.GetDistance(p, new Point(0, 0)));
@@ -480,7 +480,7 @@ namespace ClassLibrary1.Map
 
             Explore(point, range);
 
-            int vision = (int)range + 1;
+            int vision = (int)(1 + range + (GetTile(point)?.Terrain is Island i ? i.Height : 0));
             int x = Math.Min(_gameBounds.X, point.X - vision);
             int y = Math.Min(_gameBounds.Y, point.Y - vision);
             int right = Math.Max(_gameBounds.Right, point.X + vision + 1);
@@ -666,7 +666,7 @@ namespace ClassLibrary1.Map
             }
             static int CountAdjacent(Tile tile)
             {
-                static double Weight(Tile t) => t.Piece is Foundation ? 1 : t.Terrain is Island i ? .5 + .5 * i.Vision / Island.MAX_VISION : 0;
+                static double Weight(Tile t) => t.Piece is Foundation ? 1 : t.Terrain is Island i ? .5 + .5 * i.Height / Island.MAX_VISION : 0;
                 double count = tile.GetAdjacentTiles().Sum(Weight) + Weight(tile) * 2;
                 return Game.Rand.Round(1 + (1 + count) * count);
             }

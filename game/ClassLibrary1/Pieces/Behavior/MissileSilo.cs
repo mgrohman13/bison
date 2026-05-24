@@ -13,7 +13,7 @@ namespace ClassLibrary1.Pieces.Behavior
     [DataContract(IsReference = true)]
     internal class MissileSilo(Piece piece) : IMissileSilo
     {
-        public static double START_RANGE = 26;
+        public const double START_RANGE = 26;
 
         public Piece Piece => _piece;
 
@@ -123,7 +123,8 @@ namespace ClassLibrary1.Pieces.Behavior
 
         void IBehavior.StartTurn()
         {
-            //this._attacked = false; 
+            //base.StartTurn();
+            this._attacked = false;
         }
 
         void IBehavior.GetUpkeep(ref double energyUpk, ref double massUpk) =>

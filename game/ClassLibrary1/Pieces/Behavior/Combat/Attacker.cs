@@ -102,6 +102,7 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
         }
         void IBehavior.StartTurn()
         {
+            //base.StartTurn();
             foreach (Attack attack in Game.Rand.Iterate(Attacks))
                 attack.StartTurn();
         }

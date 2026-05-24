@@ -65,7 +65,7 @@ namespace ClassLibrary1.Pieces.Behavior
                 foreach (var p in ps)
                 {
                     Tile tile = from.Map.GetTile(p);
-                    stop |= from.Map.UpdateVision(p, piece.GetVision(tile));
+                    stop |= from.Map.UpdateVision(p, piece.Vision);
                     if (stop && tile != null && tile.Piece == null)
                     {
                         to = tile;
@@ -153,6 +153,7 @@ namespace ClassLibrary1.Pieces.Behavior
         }
         void IBehavior.StartTurn()
         {
+            //base.StartTurn();
             _moved = false;
         }
         void IBehavior.EndTurn(ref double energyUpk, ref double massUpk)

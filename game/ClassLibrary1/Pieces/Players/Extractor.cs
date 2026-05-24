@@ -97,6 +97,7 @@ namespace ClassLibrary1.Pieces.Players
         internal override void StartTurn()
         {
             base.StartTurn();
+
             if (VanishStr() <= Math.Min(Game.Rand.OEInt(), Game.Rand.OE()))
             {
                 Die(false, out _, out _);

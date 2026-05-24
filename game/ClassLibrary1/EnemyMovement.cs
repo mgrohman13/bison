@@ -360,7 +360,7 @@ namespace ClassLibrary1
                     double terrainWeight = 1;
                     if (moveTile.Terrain is Island i)
                     {
-                        terrainWeight = 1 + 6.5 * i.Vision / Island.MAX_VISION;
+                        terrainWeight = 1 + 6.5 * i.Height / Island.MAX_VISION;
                         terrainWeight = Math.Pow(terrainWeight, difficulty);
                     }
 

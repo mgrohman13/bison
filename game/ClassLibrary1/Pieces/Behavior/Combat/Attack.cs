@@ -170,7 +170,7 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
         }
         public static int TerrainAttMod(Tile from, Tile to)
         {
-            static double V(Tile t) => t.Terrain is Island i ? i.Vision : 0;
+            static double V(Tile t) => t.Terrain is Island i ? i.Height : 0;
             double a = V(from);
             double d = V(to);
             if (a > d)
@@ -186,6 +186,7 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
         }
         internal void StartTurn()
         {
+            //base.StartTurn();
             _attacked = false;
             _restrictMove = false;
         }

@@ -14,15 +14,13 @@ namespace ClassLibrary1.Pieces.Players
         private double _vision;
         public double Vision
         {
-            get => GetVision(Tile);
+            get => _vision;
             protected set
             {
-                this._vision = value;
+                this._vision = VisionBase >= 1 ? Consts.GetDamagedValue(this, VisionBase, 1) : 0;
                 Game.Map.UpdateVision(this);
             }
         }
-        public double GetVision(Tile tile) => VisionBase > 0 ? Consts.GetDamagedValue(this, VisionBase + TerrainVision(tile), 0) : 0;
-        public static double TerrainVision(Tile tile) => tile?.Terrain is Island i ? i.Vision : 0;
 
         protected override bool DropsTreasure => HasBehavior<IMovable>();
         public double VisionBase => _vision;

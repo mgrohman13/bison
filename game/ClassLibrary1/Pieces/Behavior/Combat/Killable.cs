@@ -125,6 +125,8 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
         }
         void IBehavior.StartTurn()
         {
+            //base.StartTurn();
+
             foreach (Defense defense in IterateDefenses())
                 defense.StartTurn();
 

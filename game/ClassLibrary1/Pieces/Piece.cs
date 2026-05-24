@@ -144,11 +144,12 @@ namespace ClassLibrary1.Pieces
         }
 
         void IBehavior.StartTurn()
-        {
+        { 
             StartTurn();
         }
         internal virtual void StartTurn()
         {
+            //base.StartTurn();
             foreach (IBehavior behavior in Game.Rand.Iterate(behavior))
                 behavior.StartTurn();
         }

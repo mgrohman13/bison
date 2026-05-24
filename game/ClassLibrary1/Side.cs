@@ -42,6 +42,7 @@ namespace ClassLibrary1
 
         protected void StartTurn()
         {
+            //base.StartTurn();
             foreach (Piece piece in Game.Rand.Iterate(_pieces))
                 piece.StartTurn();
         }
