@@ -1,7 +1,9 @@
 using MattUtil;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Point = MattUtil.Point;
@@ -30,14 +32,14 @@ namespace randTest
         {
             rand.StartTick();
 
-            void WriteNormSDist(float c) => Console.WriteLine($"{c.ToString("0.00").PadLeft(5)}: {1 / ((NormSDist(-c)) * 2.0):E2}");
-            for (int a = 1; a < 14; a++)
-                WriteNormSDist(a);
-            foreach (float b in new[] { .13f, .169f, .21f, .26f, .3f, 1 / 3f, .39f, .52f, .65f, .78f, .91f, 1f, 1.3f, 3.9f, 13f })
-                WriteNormSDist(1 / b);
+            //void WriteNormSDist(float c) => Console.WriteLine($"{c.ToString("0.00").PadLeft(5)}: {1 / ((NormSDist(-c)) * 2.0):E2}");
+            //for (int a = 1; a < 14; a++)
+            //    WriteNormSDist(a);
+            //foreach (float b in new[] { .13f, .169f, .21f, .26f, .3f, 1 / 3f, .39f, .52f, .65f, .78f, .91f, 1f, 1.3f, 3.9f, 13f })
+            //    WriteNormSDist(1 / b);
 
-            //Temp();
-            Console.ReadKey();
+            ////Temp();
+            //Console.ReadKey();
 
             //while (true)
             //{
@@ -533,12 +535,12 @@ namespace randTest
             //for (int a = 0 ; a < 13 ; ++a)
             //    new MTRandom().StartTick(0);
 
-            //do
-            //{
-            Console.WriteLine();
-            float sqrt3 = (float)Math.Sqrt(3);
-            FactRand(new float[] { 1 / 2f, 2f / sqrt3, 1f / sqrt3 });//, 1f / 3f, 1f / 2f);
-            //} while (Console.ReadKey(true).KeyChar != 'q');
+            ////do
+            ////{
+            //Console.WriteLine();
+            //float sqrt3 = (float)Math.Sqrt(3);
+            //FactRand(new float[] { 1 / 2f, 2f / sqrt3, 1f / sqrt3 });//, 1f / 3f, 1f / 2f);
+            ////} while (Console.ReadKey(true).KeyChar != 'q');
 
 
             //lotr();
@@ -547,9 +549,75 @@ namespace randTest
             //newgame();
             //newgame2();
 
+            //Categories();
+            Categories("todo.txt");
+            CheckDuplicates("todo.txt");
+            //Check("todo.txt", "t1.txt");
+            //CheckDuplicates("todo.txt");
 
-            Console.ReadKey(true);
+
+            //Console.ReadKey(true);
             rand.StopTick();
+        }
+
+        private static List<string> Categories(string v)
+        {
+            List<string> cats = [];
+            var l = ReadLines(v);
+            foreach (var line in l)
+                if (Regex.IsMatch(line, "^(    )?\\S.*$"))
+                {
+                    cats.Add(line);
+                    Console.WriteLine(line);
+                }
+            Console.WriteLine();
+            return cats;
+        }
+        private static void Check(string orig, string format)
+        {
+            CheckDuplicates(orig);
+            CheckDuplicates(format);
+
+            var o = Get(ReadLines(orig));
+            var f = Get(ReadLines(format));
+
+            //var c = Get(Categories(format));
+            //f.ExceptWith(c);
+
+            Console.WriteLine($"In {format} but not {orig}:");
+            Console.WriteLine(List(f, o));
+            Console.WriteLine($"In {orig} but not {format}:");
+            Console.WriteLine(List(o, f));
+            Console.WriteLine();
+
+            static string List(HashSet<string> o, HashSet<string> f) =>
+                o.Except(f).Aggregate("", (current, s) => current + $"{s}{Environment.NewLine}");
+
+            static HashSet<string> Get(IEnumerable<string> data) =>
+                data.Select(s => s.Trim().ToLower()).ToHashSet();
+        }
+        private static void CheckDuplicates(string file)
+        {
+            //HashSet<string> unique = [];
+            Dictionary<string, int> counts = [];
+            foreach (var line in ReadLines(file))
+            {
+                string l = line.Trim().ToLower();
+                counts.TryGetValue(l, out int c);
+                counts[l] = c + 1;
+            }
+
+            Console.WriteLine(file);
+            Console.WriteLine(counts.OrderByDescending(kvp => kvp.Value).Where(kvp => kvp.Value > 1)
+                .Aggregate("", (current, kvp) => current + $"{kvp.Key}: {kvp.Value}{Environment.NewLine}"));
+            Console.WriteLine();
+        }
+        private static IEnumerable<string> ReadLines(string file)
+        {
+            using var reader = new StreamReader(file);
+            return reader.ReadToEnd().Split([Environment.NewLine], StringSplitOptions.RemoveEmptyEntries)
+                //.Select(s => s.Trim()) //.toLower()?
+                .Where(s => !string.IsNullOrWhiteSpace(s));
         }
 
         private static void Temp()
