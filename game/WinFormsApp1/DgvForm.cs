@@ -6,12 +6,12 @@ namespace WinFormsApp1
 {
     public partial class DgvForm : Form
     {
-        private static DgvForm Singleton = new DgvForm();
+        private readonly static DgvForm Singleton = new();
 
         public DgvForm()
         {
             InitializeComponent();
-            dataGridView1.PreviewKeyDown += DgvForm_AdjustWidth;
+            dataGridView1.PreviewKeyDown += DataGridView1_PreviewKeyDown;
             button1.Click += Button1_Click;
             FormClosing += DgvForm_FormClosing;
         }
@@ -33,6 +33,12 @@ namespace WinFormsApp1
             dataGridView1.EndEdit();
         }
 
+        private void DgvForm_AdjustWidth(object sender, EventArgs e)
+        {
+            this.Width = dataGridView1.PreferredSize.Width + 13;
+            this.Height = dataGridView1.PreferredSize.Height + 26;
+        }
+
         public static void ShowData(string name, DataTable data)
         {
             Singleton.Text = name;
@@ -40,12 +46,6 @@ namespace WinFormsApp1
             for (int a = 1; a < Singleton.dataGridView1.Columns.Count; a++)
                 Singleton.dataGridView1.Columns[a].DefaultCellStyle.Alignment = DataGridViewContentAlignment.TopRight;
             Singleton.ShowDialog();
-        }
-
-        private void DgvForm_AdjustWidth(object sender, EventArgs e)
-        {
-            this.Width = dataGridView1.PreferredSize.Width + 13;
-            this.Height = dataGridView1.PreferredSize.Height + 26;
         }
     }
 }

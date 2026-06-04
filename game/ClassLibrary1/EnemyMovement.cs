@@ -37,9 +37,7 @@ namespace ClassLibrary1
             foreach (var piece in Game.Rand.Iterate(game.Enemy.Pieces.Cast<EnemyPiece>()).OrderBy(p => p is Hive ? 1 : 2))
             {
                 progress += Time(piece) / totalTime;
-
                 allTargets = PlayTurn(piece, difficulty, clearPaths, moved, playerAttacks, allTargets, avgHp, avgWeight);
-
                 UpdateProgress(piece.Tile.Visible ? piece.Tile : null, Math.Min(progress, 1));
             }
             double Time(Piece enemy) => offset + (enemy.HasBehavior(out IMovable movable) ? movable.MoveCur * movable.MoveCur : 0);
@@ -95,7 +93,11 @@ namespace ClassLibrary1
             HashSet<Tile> moveTiles = [];
             Tile orig = piece.Tile;
             if (movePiece != null)
-                moveTiles = [.. orig.GetTilesInRange(movePiece, movePiece.MoveCur + (melee.Any() ? Attack.MELEE_RANGE : 0))];
+            {
+                moveTiles = [.. orig.GetTilesInRange(movePiece)];
+                if (melee.Any())
+                    moveTiles = [.. moveTiles.SelectMany(t => t.GetAdjacentTiles())];
+            }
 
             bool usePortal = true;
             bool HasPortal(Tile t) => usePortal && t.Piece is Portal portal && portal.CanPort(movePiece, out _, out _);
@@ -111,12 +113,12 @@ namespace ClassLibrary1
             HashSet<IKillable> targets = [];
             if (attacks.Any())
             {
-                HashSet<Tile> attTiles = [.. orig.GetTilesInRange(attPiece, attacks.Max(a => a.Range))];
+                HashSet<Tile> attTiles = [.. orig.GetTilesInRange(attPiece)];
                 if (movePiece != null && melee.Any())
                 {
                     var meleeTiles = moveTiles.ToList();
                     FilterMoves();
-                    moveTiles.RemoveWhere(t => t.GetDistance(orig) > movePiece.MoveCur);
+                    moveTiles = [.. orig.GetTilesInRange(movePiece)];
                     attTiles.UnionWith(meleeTiles.Where(t => t.GetTilesInRange(melee.First()).Any(moveTiles.Contains)));
                 }
                 targets = [.. attTiles.Select(t => t.Piece?.GetBehavior<IKillable>()).Where(k => k != null && k.Piece.IsPlayer && !k.Dead)];
@@ -125,7 +127,7 @@ namespace ClassLibrary1
 
             double attValue = SumAttacks(attacks);
             double maxMoveAttRange = (movePiece?.MoveCur ?? 0) + (attacks.Max(a => a?.Range) ?? 0);
-            HashSet<IKillable> extendedTargets = [.. allTargets.Keys.Where(k => k.Piece.Tile.GetDistance(orig) < maxMoveAttRange).SelectMany(k => allTargets[k].Keys)];
+            HashSet<IKillable> extendedTargets = [.. allTargets.Keys.Where(k => orig.MoveDistTo(k.Piece.Tile) < maxMoveAttRange).SelectMany(k => allTargets[k].Keys)];
 
             AIState prev = piece.State;
             AIState state = piece.TurnState(difficulty, clearPaths, playerAttacks, moveTiles, extendedTargets, out List<Point> fullPath);
@@ -138,7 +140,7 @@ namespace ClassLibrary1
                 else if (state == AIState.Fight)
                     target = Game.Rand.Iterate((IEnumerable<IKillable>)(extendedTargets.Count > 0 ? extendedTargets : allTargets.Keys)).OrderBy(k =>
                     {
-                        double dist = orig.GetDistance(k.Piece.Tile);
+                        double dist = orig.MoveDistTo(k.Piece.Tile);
                         double weight = GetWeight(k);
                         return 1 + (avgWeight + Game.Rand.OE(weight)) / dist / dist;
                     }).FirstOrDefault();
@@ -237,7 +239,7 @@ namespace ClassLibrary1
 
                         if (state == AIState.Fight && attPct == 0 && trgVal == 0)
                         {
-                            double dist = moveTile.GetDistance(target.Piece.Tile);
+                            double dist = moveTile.MoveDistTo(target.Piece.Tile);
                             attWeight = moveValue / (moveValue + dist * dist);
                         }
                         else
@@ -253,7 +255,7 @@ namespace ClassLibrary1
                     {
                         // consolidate
                         Tile final = moveTile;
-                        double curDist = orig.GetDistance(final) + 1;
+                        double curDist = orig.MoveDistTo(final) + 1;
                         double mult = curDist + padding;
                         double pct = 1;
                         double dist = -.5;
@@ -266,8 +268,8 @@ namespace ClassLibrary1
                     {
                         // consolidate
                         Tile final = pathTiles[^1];
-                        double curDist = orig.GetDistance(final) + 1;
-                        double moveTileDist = moveTile.GetDistance(final) + 1;
+                        double curDist = orig.MoveDistTo(final) + 1;
+                        double moveTileDist = moveTile.MoveDistTo(final) + 1;
                         bool moveCloser = moveTileDist <= curDist;
                         double mult = curDist + padding;
                         for (int b = 0; b < pathTiles.Count; b++)
@@ -275,7 +277,7 @@ namespace ClassLibrary1
                             var tile = pathTiles[b];
                             double pct = pathTiles.Count == 1 ? 1 : b / (double)(pathTiles.Count - 1);
                             pct *= pct;
-                            double dist = tile.GetDistance(moveTile);
+                            double dist = tile.MoveDistTo(moveTile);
                             dist = (dist + 1) * (dist + padding);
 
                             double weight = 1 + (1 + pct * mult) / dist;
@@ -360,8 +362,8 @@ namespace ClassLibrary1
                     double terrainWeight = 1;
                     if (moveTile.Terrain is Island i)
                     {
-                        terrainWeight = 1 + 6.5 * i.Height / Island.MAX_VISION;
-                        terrainWeight = Math.Pow(terrainWeight, difficulty);
+                        terrainWeight = 1 + 6.5 * i.Height / Island.HEIGHT;
+                        terrainWeight = Math.Pow(terrainWeight, 2 * (1 + difficulty));
                     }
 
                     //if (piece.ToString() == "Alien 36")
@@ -521,7 +523,7 @@ namespace ClassLibrary1
                                 target = Game.Rand.SelectValue(choices, GetWeight);
                         }
 
-                        if (target != null && allTargets.TryGetValue(target, out var trgGrp) && trgGrp.Any())
+                        if (target != null && allTargets.TryGetValue(target, out var trgGrp) && trgGrp.Count > 0)
                         {
                             //if (state != AIState.Retreat)
                             //{

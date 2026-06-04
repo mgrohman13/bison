@@ -21,6 +21,9 @@ namespace ClassLibrary1.Pieces.Behavior
         internal bool Port(Portal portal);
         public double GetInc();
 
+        public bool CanMoveTo(Tile other);
+        public double DistTo(Tile other) => Piece.Tile.MoveDistTo(other);
+
         [Serializable]
         [DataContract(IsReference = true)]
         public readonly struct Values

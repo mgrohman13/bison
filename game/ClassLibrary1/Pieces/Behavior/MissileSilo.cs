@@ -107,7 +107,7 @@ namespace ClassLibrary1.Pieces.Behavior
         {
             double mult;
 
-            double distance = Piece.Tile.GetDistance(killable.Piece.Tile) / GetValues().Attack.Range;
+            double distance = Piece.Tile.MoveDistTo(killable.Piece.Tile) / GetValues().Attack.Range;
             if (distance < 1)
                 mult = 1 + (1 - distance) * (Math.Sqrt(2) - 1);
             else

@@ -1,3 +1,64 @@
+NEW	
+		visbility of penalty when moving over higher tile
+		core defense is supposed to upgrade core armor, core armos has no upgs
+		alien height attraction too high in some states?
+		we can remove some techs now?
+			factory repair, factory constructor? mech lasers?
+		show hills under units on map...?
+		re-enable hypothetical melee attacks from non-visible tiles for attack indicator / move left
+			also consolidate logic...?
+		outpost attack doesnt show reasearch upg value?
+		LastAttacks not storing both when alien splits attacks
+		mouseover info tied to path dist if friendly movable selected
+		merge evaluateCache and heightCache
+			clear on new plateau point add 
+		thicker lines around continguous plateaus
+			then can remove >.95 check for att bonus?
+		mouseover on out of range tile show ranged att range
+		special handling for selected piece move to show path around corners 
+		better move tile indicators - green dots? two types for inner, outer?
+			also for where right click will move 
+		check GetDistSqr for movement
+		moving to tile you cant see full path between??
+		end turn app.doevents ???
+		increase reload cost contribution
+		don't need to generate full 360 degrees of Elevation points at large scale
+			just neeeds to follow path
+			will help performance
+			use this trick for infinite caves??
+		how to make GetLinePoints wider but performant?
+			ideally use BlockRadius
+		remove extended att range display functionality
+		scrolling is laggy when there is a mouse path or in range mouse tile
+		remove move limit, make const (at 2x?)
+			make random gaussian thats different every turn? could be fun?
+		clean up MattUtil pathfinding c/p 
+        shrink core and factory repair ranges? outpost?  
+        hide unused columns for build extractor/turret/etc only
+		aliens need better plateau handling
+		new logic for aliens to switch to retreat randomly when injured is too transient, they just move back and forth
+		round off starting extractor value sometimes?
+		mouseover att text show avg dmg?
+		letters on turret over plateau should not be white
+			any piece really?
+		un-sleep doesnt work?
+		rethink complete research redo every step??		
+		show earned research on explore move?
+		constructor upg shouldnt have to charge armor...
+			defeats 50% chance alleged equality
+		MoveLeft GetDefenders
+
+UP NEXT
+	consistent upgrade values handling, randomness, balancing
+		prepare for separating turrets
+	randomize consts
+		also will allow flexible difficulty setting
+
+MUST FIX
+	actions during enemy turn - fixed??
+
+	
+
 PATHFINDING & MOVEMENT
 
     Movement Logic & Pathfinding
@@ -455,9 +516,6 @@ RESEARCH, TECH TREE & BLUEPRINTS
                 new structure? addon to turrets with upgrade?  
                 upg to show resources,anything else?    
 
-
-UI, INPUT, DISPLAY & VISUALIZATION
-
     Research UI & Feedback
         bold research button when will pop up at turn end  
             other buttons? build/upg?  
@@ -465,6 +523,9 @@ UI, INPUT, DISPLAY & VISUALIZATION
         show effects of research  
         show constructor upgrade values  
         constructor defense show only 1 upgrade
+		
+
+UI, INPUT, DISPLAY & VISUALIZATION
 		
     Rendering & Visualization
 		minimap?
@@ -900,12 +961,3 @@ MISCELLANEOUS, CLEANUP & UI
             remove some research?  
             or clear up with colors?  
         Consts.GetPct
-
-    Unsorted / Future Categorization  
-		remove move limit, make const (at 2x?)
-		make random gaussian thats different every turn? could be fun?
-		clean up MattUtil pathfinding c/p 
-        shrink core and factory repair ranges? outpost?  
-        replace dialog should pop up build form   
-	    upgrading shields/energy attacks need to charge?
-        hide unused columns for build extractor/turret/etc only

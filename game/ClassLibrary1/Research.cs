@@ -483,7 +483,7 @@ namespace ClassLibrary1
             return allDependencies;
         }
 
-        public static readonly Type[] NoUpgrades = [ Type.Mech, Type.Constructor, Type.Turret, Type.Factory,
+        public static readonly Type[] NoUpgrades = [ Type.Mech, Type.Constructor, Type.Turret, Type.Factory, Type.Disband, Type.CoreArmor,
             Type.Outpost, Type.OutpostAttack, Type.OutpostRepair, Type.OutpostArmor, Type.FactoryShields,
             Type.TurretLasers, Type.TurretExplosives, Type.TurretShields, Type.TurretArmor, Type.TurretAutoRepair,
             Type.FactoryConstructor, Type.FactoryAutoRepair, Type.BuildingAutoRepair, Type.BurnMass, Type.ScrapResearch, Type.FabricateMass, ];

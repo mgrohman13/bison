@@ -91,7 +91,7 @@ namespace ClassLibrary1.Pieces
                     treasure += Game.Rand.Weighted(value, 1 / 5.2);
                 }
 
-                if (Side.IsPlayer)
+                if (IsPlayer)
                     CollectTreasure();// true);
                 else
                     Side.AddResources(treasure);

@@ -7,8 +7,8 @@ namespace ClassLibrary1.Pieces.Terrain
     [Serializable]
     [DataContract(IsReference = true)]
     public class Island(Tile tile, double height) : Terain(tile)
-{
-        public const double MAX_VISION = 16.9;
+    {
+        public const double HEIGHT = 16.9; 
 
         //public const int RangedAtt = 1;
         public readonly double Height = height;

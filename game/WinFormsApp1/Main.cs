@@ -132,8 +132,23 @@ namespace WinFormsApp1
                     lastLog = curLog;
                     Info.RefreshLog();
                 }
+
+                DisableButtons(this, true);
+            }
+            else
+            {
+                DisableButtons(this, false);
             }
             progressBar1.Visible = visible;
+        }
+        private static void DisableButtons(Control control, bool disabled)
+        {
+            foreach (Control c in control.Controls)
+            {
+                if (c is Button)
+                    c.Enabled = !disabled;
+                DisableButtons(c, disabled);
+            }
         }
 
         private void LblResearching_Click(object sender, EventArgs e)

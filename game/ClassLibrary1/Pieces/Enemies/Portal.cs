@@ -147,8 +147,9 @@ namespace ClassLibrary1.Pieces.Enemies
         public bool CanPort(IMovable movable, out Portal exit, out double dist)
         {
             Piece piece = movable.Piece;
-            exit = null;
-            dist = this.Tile.GetDistance(piece.Tile);
+            exit = null; 
+
+            dist = movable.DistTo(this.Tile);
             if (this.Side == piece.Side && !this.Exit && movable.CanMove && dist <= movable.MoveCur)
             {
                 var exits = this.Side.PiecesOfType<Portal>().Where(p => p.Exit);

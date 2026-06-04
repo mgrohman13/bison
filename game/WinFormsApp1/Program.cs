@@ -10,6 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Windows.Forms;
+using Point = MattUtil.Point;
 using Tile = ClassLibrary1.Map.Map.Tile;
 using Type = ClassLibrary1.Research.Type;
 
@@ -92,19 +93,21 @@ namespace WinFormsApp1
 
         public static void CopyAutoSave(string suffix)
         {
-            if (File.Exists(Game.SavePath))
-            {
-                string path = Game.SavePath.Replace("\\", "/");
-                path = path[..path.LastIndexOf('/')] + "/" + "auto_" + Game.Turn + "_" + suffix + ".sav";
-                if (File.Exists(path))
-                    File.Delete(path);
-                File.Copy(Game.SavePath, path);
-            }
+            lock (Game)
+                if (File.Exists(Game.SavePath))
+                {
+                    string path = Game.SavePath.Replace("\\", "/");
+                    path = path[..path.LastIndexOf('/')] + "/" + "auto_" + Game.Turn + "_" + suffix + ".sav";
+                    if (File.Exists(path))
+                        File.Delete(path);
+                    File.Copy(Game.SavePath, path);
+                }
         }
 
         public static void SaveGame()
         {
-            Game.SaveGame(data);
+            lock (Game)
+                Game.SaveGame(data);
         }
 
         public static void LoadGame()
@@ -145,49 +148,52 @@ namespace WinFormsApp1
 
         public static void EndTurn()
         {
-            bool end = true;
-            if (Game.Player.Pieces.Any(MoveLeft))
-                end = MessageBox.Show("Move remaining.  End Turn?", "", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning) == DialogResult.OK;
-            if (end)
+            lock (Game)
             {
-                if (!ViewedResearch && (data.AlertResearch || LikelyResearch()))
-                    if (ResearchForm.ShowForm())
-                        RefreshChanged();
+                bool end = true;
+                if (Game.Player.Pieces.Any(MoveLeft))
+                    end = MessageBox.Show("Move remaining.  End Turn?", "", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning) == DialogResult.OK;
+                if (end)
+                {
+                    if (!ViewedResearch && (data.AlertResearch || LikelyResearch()))
+                        if (ResearchForm.ShowForm())
+                            RefreshChanged();
+                        else
+                            return;
+
+                    SaveGame();
+                    CopyAutoSave("e");
+
+                    static IEnumerable<PlayerPiece> GetRepairs() => data.sleep.Where(p => p.Tile is not null && p.IsRepairing());
+                    var repairs = GetRepairs().ToHashSet();
+
+                    Form.UpdateProgress(null, 0);
+                    Type? researched = Game.EndTurn(Form.UpdateProgress);
+                    Form.UpdateProgress(null, 2);
+
+                    if (Game.GameOver)
+                    {
+                        MessageBox.Show((Game.Win ? "VICTORY!!!  :)" : "DEFEAT!  :(") + $"{Environment.NewLine}Hives Destroyed: {Game.Victory}/{Game.POINTS_TO_WIN}{Environment.NewLine}Game over...  {Game.Turn} turns.");
+                        CopyAutoSave(Game.Win ? "win" : "loss");
+                    }
                     else
-                        return;
+                    {
+                        CopyAutoSave("s");
+                    }
+                    data.moved.Clear();
+                    data.sleep.RemoveWhere(p => !p.IsPlayer || p.Tile == null || (p.HasBehavior(out IKillable k) && k.Dead));
+                    data.sleep.ExceptWith(repairs.Except(GetRepairs()));
 
-                SaveGame();
-                CopyAutoSave("e");
+                    data.AlertResearch = researched.HasValue;
+                    if (researched.HasValue && (researched.Value == Type.Mech || Research.IsMech(researched.Value)))
+                    {
+                        RefreshChanged();
+                        BuildForm.BuilderDialogMech();
+                    }
+                    ViewedResearch = false;
 
-                static IEnumerable<PlayerPiece> GetRepairs() => data.sleep.Where(p => p.Tile is not null && p.IsRepairing());
-                var repairs = GetRepairs().ToHashSet();
-
-                Form.UpdateProgress(null, 0);
-                Type? researched = Game.EndTurn(Form.UpdateProgress);
-                Form.UpdateProgress(null, 2);
-
-                if (Game.GameOver)
-                {
-                    MessageBox.Show((Game.Win ? "VICTORY!!!  :)" : "DEFEAT!  :(") + $"{Environment.NewLine}Hives Destroyed: {Game.Victory}/{Game.POINTS_TO_WIN}{Environment.NewLine}Game over...  {Game.Turn} turns.");
-                    CopyAutoSave(Game.Win ? "win" : "loss");
-                }
-                else
-                {
-                    CopyAutoSave("s");
-                }
-                data.moved.Clear();
-                data.sleep.RemoveWhere(p => !p.IsPlayer || p.Tile == null || (p.HasBehavior(out IKillable k) && k.Dead));
-                data.sleep.ExceptWith(repairs.Except(GetRepairs()));
-
-                data.AlertResearch = researched.HasValue;
-                if (researched.HasValue && (researched.Value == Type.Mech || Research.IsMech(researched.Value)))
-                {
                     RefreshChanged();
-                    BuildForm.BuilderDialogMech();
                 }
-                ViewedResearch = false;
-
-                RefreshChanged();
             }
         }
         private static bool LikelyResearch()
@@ -249,9 +255,9 @@ namespace WinFormsApp1
             if (tiles.Any() && Form.MapMain.SelTile != null)
                 tiles = tiles.Concat([Form.MapMain.SelTile]);
 
-            var moveLeft = Game.Rand.Iterate(tiles.Distinct())
+            var moveLeft = tiles.Distinct()
                 .OrderByDescending(t => t.GetDistance(Game.Player.Core.Tile))
-                .ToList();
+                .ThenBy(t => t.Y).ThenBy(t => t.X).ToList();
             //{
             //Point p = new(t.X - Game.Player.Core.Tile.X, t.Y - Game.Player.Core.Tile.Y);
             //int main, secondary;
@@ -314,8 +320,16 @@ namespace WinFormsApp1
                 Attack max = Game.Rand.SelectValue(attacker.Attacks.Where(a => GetRange(a) == maxRange));
                 canAttack = maxRange > 0 && piece.Tile.GetVisibleTilesInRange(max).Any(t => t.Piece != null && t.Piece.HasBehavior<IKillable>() && t.Piece.IsEnemy);
                 if (!canAttack && piece.HasBehavior(out IMovable movable) && attacker.Attacks.Any(a => a.CanAttack() && a.Range == Attack.MELEE_RANGE))
-                    canAttack |= piece.Tile.GetPointsInRange(movable).Select(Game.Map.GetVisibleTile).Where(t => t is not null).SelectMany(t => t.GetVisibleAdjacentTiles())
-                        .Any(t => t.Piece is not null && t.Piece.IsEnemy && t.Piece.HasBehavior<IKillable>());
+                {
+                    double meleeRange = movable.MoveCur + Attack.MELEE_RANGE;
+                    var meleeTiles = Game.Enemy.VisiblePieces
+                        .Where(e => e.HasBehavior<IKillable>() && piece.Tile.GetDistance(e.Tile) <= meleeRange)
+                        .SelectMany(e => e.Tile.GetVisibleAdjacentTiles())
+                        .Where(t => t.Piece is null || (t.Piece.IsPlayer && t.Piece.HasBehavior<IMovable>())).ToHashSet();
+                    canAttack = meleeTiles.Any(t => piece.Tile.MoveDistTo(t) <= movable.MoveCur);
+                    //if (!canAttack)
+                    //    canAttack = meleeTiles.Any(t => TurnPath(movable, t.Location));
+                }
                 move |= canAttack;
             }
 
@@ -335,9 +349,10 @@ namespace WinFormsApp1
             {
                 Piece attacker = attack.Piece;
                 Tile attackFrom = attacker.Tile;
+                //not quite right
                 if (attack.Range == Attack.MELEE_RANGE && attacker.HasBehavior(out IMovable movable))
                     attackFrom = friendly.Tile.GetVisibleAdjacentTiles().Where(t => t.Piece is null || t.Piece.HasBehavior<IMovable>())
-                        .FirstOrDefault(t => t.GetDistance(attackFrom) <= movable.MoveCur); //
+                        .FirstOrDefault(t => attackFrom.MoveDistTo(t) <= movable.MoveCur);
                 return attack.GetDefenders(friendly, attackFrom);
             }
 
@@ -434,6 +449,34 @@ namespace WinFormsApp1
 
             return move;
         }
+        //public static bool TurnPath(IMovable movable, Point point)
+        //{
+        //    //Tile from = movable.Piece.Tile, to = Game.Map.GetVisibleTile(point), t = null;
+        //    //return from.GetPointsInRange(movable).Any(p =>
+        //    //       from.MoveDistTo(t = Game.Map.GetVisibleTile(p)) + t.MoveDistTo(to) <= movable.MoveCur);
+
+        //    return false;
+
+        //    //TODO: performance? - need to walk outward 
+
+        //    //Tile from = movable.Piece.Tile;
+        //    //Tile to = Game.Map.GetVisibleTile(point);
+        //    //double moveCur = movable.MoveCur;
+        //    //var path = Game.Map.PathFind(from, to, moveCur, moveCur, p => from.GetDistance(p) > moveCur);
+
+        //    //if (path == null)
+        //    //    return false;
+        //    //double dist = 0;
+        //    //foreach (var p in path.Skip(1))
+        //    //{
+        //    //    Tile tile = Game.Map.GetVisibleTile(p);
+        //    //    dist += from.MoveDistTo(tile);
+        //    //    if (dist > moveCur)
+        //    //        return false;
+        //    //    from = tile;
+        //    //}
+        //    //return true;
+        //}
 
         internal static void SetNotify(MechBlueprint blueprint, bool value)
         {

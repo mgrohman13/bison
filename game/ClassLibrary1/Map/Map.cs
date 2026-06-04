@@ -18,8 +18,8 @@ namespace ClassLibrary1.Map
     [DataContract(IsReference = true)]
     public partial class Map // : IDeserializationCallback
     {
-        internal static readonly Stopwatch watch = new();
-        private static int evalCount = 0;
+        internal static readonly Stopwatch _watch = new();
+        private static int _evalCount = 0;
 
         private static Func<Map, Point, Func<Tile, ITerrain>, Tile> NewTile;
 
@@ -31,14 +31,15 @@ namespace ClassLibrary1.Map
         private readonly double _featureDist;
         private readonly Noise _noise;
         private readonly Path[] _paths;
-        private readonly List<Cave> _caves;
-        private readonly HashSet<Point> clearTerrain;
+        private readonly Cave[] _caves;
+        private readonly List<Elevation> _elevation;
+        private readonly HashSet<Point> _clearTerrain;
+
+        //private double _maxExplore;
+        private double _nextElevation;
 
         private readonly Dictionary<Point, Piece> _pieces;
         private readonly HashSet<Point> _explored;
-        //private readonly HashSet<PointD> _plateaus;
-        //private readonly double _plateauDist;
-        private readonly double _hillStart, _hillInc, _hillRounding;
         private Rectangle _gameBounds;
 
         private readonly Dictionary<ResourceType, int> _resourcePool;
@@ -58,20 +59,36 @@ namespace ClassLibrary1.Map
             LogEvalTime();
 
             Game = game;
-            clearTerrain = [];
 
             const double dev = .21, oe = .13;
-            _featureDist = Game.Rand.GaussianOE(Consts.FeatureDist, dev, oe, Consts.FeatureMin);
             double max = Game.Rand.GaussianOE(Consts.NoiseDistance, dev, oe, Consts.FeatureMin);
             double min = Game.Rand.GaussianOE(13, dev, oe, Game.Rand.Range(2, 4));
             int steps = Game.Rand.GaussianOEInt(5.2, dev, oe, Game.Rand.RangeInt(2, 5));
             double weightScale = Game.Rand.Weighted(.78) + Game.Rand.OE(.13);
+            _featureDist = Game.Rand.GaussianOE(Consts.FeatureDist, dev, oe, Consts.FeatureMin);
             _noise = new Noise(Game.Rand, min, max, steps, .065, weightScale);
+
+            _clearTerrain = [];
+            _pieces = [];
+            _explored = [];
+
+            _resourcePool = new() { { ResourceType.Foundation, 1 },
+                { ResourceType.Biomass, 3 }, { ResourceType.Artifact, 3 }, { ResourceType.Metal, 6 }, };
 
             int numPaths = Game.Rand.GaussianOEInt(Math.PI, .091, .039, 2);
             double separation = Consts.PathMinSeparation;
             separation = Game.Rand.GaussianCapped(separation, .104, Math.Max(0, 2 * separation - TWO_PI)) / numPaths;
-            double[] angles;
+            _paths = GeneratePaths(numPaths, separation, out double[] pathAngles);
+            _caves = GenerateCaves(numPaths, separation, pathAngles);
+
+            _elevation = [];
+            GeneratePlateaus(0);
+
+            LogEvalTime();
+        }
+
+        private Path[] GeneratePaths(int numPaths, double separation, out double[] angles)
+        {
             bool valid;
             do
             {
@@ -86,14 +103,17 @@ namespace ClassLibrary1.Map
                     }
             } while (!valid);
 
-            _paths = new Path[numPaths];
+            Path[] paths = new Path[numPaths];
             for (int d = 0; d < numPaths; d++)
-                _paths[d] = new Path(angles[d]);
-
+                paths[d] = new Path(angles[d]);
+            return paths;
+        }
+        private Cave[] GenerateCaves(int numPaths, double separation, double[] pathAngles)
+        {
             separation /= 2.6;
             double caveMult = Math.PI / numPaths;
             int numCaves = Game.Rand.GaussianOEInt(2 + (Math.PI - 2) * caveMult * caveMult, .091, .039, 2);
-            _caves = [];
+            List<Cave> caves = [];
             for (int e = 0; e < numCaves; e++)
             {
                 int t = 0, tries = numCaves * numCaves * 13 + 169;
@@ -109,32 +129,16 @@ namespace ClassLibrary1.Map
                         break;
                     }
                 }
-                while (_caves.Select(c => GetAngle(c.Center)).Concat(angles).Any(a => GetAngleDiff(caveDir, a) < separation));
+                while (caves.Select(c => GetAngle(c.Center)).Concat(pathAngles).Any(a => GetAngleDiff(caveDir, a) < separation));
 
                 PointD cave = GetPoint(caveDir, Game.Rand.GaussianOE(Consts.CaveDistance * distMult, Consts.CaveDistanceDev / distMult, Consts.CaveDistanceOE, Consts.CaveMinDist));
-                PointD connect = Game.Rand.SelectValue(_caves.Select(c => c.Center).Concat(_paths.Select(p => p.GetClosestPoint(cave.X, cave.Y)))
+                PointD connect = Game.Rand.SelectValue(caves.Select(c => c.Center).Concat(_paths.Select(p => p.GetClosestPoint(cave.X, cave.Y)))
                      .OrderBy(p => GetDistSqr(cave, p)).Take(2));
-                _caves.Add(new(cave, connect));//, connectCave));
+                caves.Add(new(cave, connect));//, connectCave));
             }
-            if (_caves.Count < 2) throw new Exception();
-
-            _pieces = [];
-            _explored = [];
-
-            _resourcePool = new() { { ResourceType.Foundation, 1 },
-                { ResourceType.Biomass, 3 }, { ResourceType.Artifact, 3 }, { ResourceType.Metal, 6 }, };
-
-            //GeneratePlateaus(0);
-
-            // Game.Rand.GaussianOEInt(1.0 / Island.MAX_VISION, 1, .13);
-
-            const double maxHill = Island.MAX_VISION / 2.0;
-            _hillStart = Game.Rand.GaussianCapped(1, .169) + Game.Rand.Weighted(maxHill - 1, .13 / (maxHill - 1));
-            _hillInc = Game.Rand.Weighted(.91) + Game.Rand.DoubleFull()
-                + Game.Rand.OE(_hillStart / 13) + Game.Rand.Weighted(maxHill, 1 / maxHill);
-            _hillRounding = Game.Rand.NextDouble();
-
-            LogEvalTime();
+            if (caves.Count < 2)
+                throw new Exception();
+            return [.. caves];
         }
 
         internal double ClosestCaveDistSqr(Tile tile) => _caves.Min(c => GetDistSqr(tile.X, tile.Y, c.Center));
@@ -157,14 +161,13 @@ namespace ClassLibrary1.Map
         }
         internal void Clear(Point center, double range)
         {
-            ClearTerrain(Tile.GetAllPointsInRange(this, center, range)
-                .SelectMany(e => Tile.GetAllPointsInRange(this, e, Rand())));
+            ClearTerrain(Tile.GetPointsInRange(center, range).SelectMany(e => Tile.GetPointsInRange(e, Rand())));
             double Rand() => Game.Rand.GaussianCapped(range / 2.0, 1);
         }
         internal void CheckStart()
         {
             Core core = Game.Player.Core;
-            foreach (Point p in Game.Rand.Iterate(_explored.Concat(core.Tile.GetAllPointsInRange(core.GetBehavior<IBuilder>().Range))))
+            foreach (Point p in Game.Rand.Iterate(_explored.Concat(core.Tile.GetPointsInRange(core.GetBehavior<IBuilder>().Range))))
             {
                 Piece piece = GetTile(p).Piece;
                 if (piece is ITerrain)
@@ -179,6 +182,11 @@ namespace ClassLibrary1.Map
             }
         }
 
+        private void GeneratePlateaus(double dist)
+        {
+            _elevation.AddRange(Elevation.GeneratePlateaus(dist, ref _nextElevation));
+        }
+
         private void GenerateStartResources()
         {
             const int startResources = 8;
@@ -191,7 +199,7 @@ namespace ClassLibrary1.Map
         }
         private void SpawnHives()
         {
-            double spawnHives = Math.PI - 1 + _caves.Count;
+            double spawnHives = Math.PI - 1 + _caves.Length;
             int hives = Game.Rand.GaussianOEInt(spawnHives, .091, .039, Game.Rand.Round(3.9));
             spawnHives = (spawnHives + hives) / 2.0 + 1;
 
@@ -212,7 +220,7 @@ namespace ClassLibrary1.Map
                 counts[cave] = count + 1;
             }
 
-            int cavesLeft = _caves.Count, resources = Game.Rand.GaussianCappedInt(cavesLeft + 3, .13);
+            int cavesLeft = _caves.Length, resources = Game.Rand.GaussianCappedInt(cavesLeft + 3, .13);
             double avgHives = hives / (double)cavesLeft + 1;
             foreach (var cave in Game.Rand.Iterate(_caves))
             {
@@ -268,8 +276,8 @@ namespace ClassLibrary1.Map
             if (evaluateCache.TryGetValue(point, out var t))
                 return t;
 
-            watch.Start();
-            evalCount++;
+            _watch.Start();
+            _evalCount++;
 
             double mult = 0;
             mult += _paths.Sum(p => p.Evaluate(point));
@@ -288,7 +296,7 @@ namespace ClassLibrary1.Map
             Tuple<float, float> retVal = Tuple.Create(value1, value2);
             evaluateCache.Add(point, retVal);
 
-            watch.Stop();
+            _watch.Stop();
             return retVal;
         }
 
@@ -300,30 +308,19 @@ namespace ClassLibrary1.Map
             return distX * distX + distY * distY;
         }
 
-        public Tile GetVisibleTile(int x, int y)
-        {
-            return GetVisibleTile(new(x, y));
-        }
-        public Tile GetVisibleTile(Point p)
-        {
-            return Visible(p) ? GetTile(p) : null;
-        }
-        public IEnumerable<Piece> GetVisiblePieces()
-        {
-            return _pieces.Values.Where(p => p.Tile.Visible);
-        }
+        public IEnumerable<Piece> GetVisiblePieces() => _pieces.Values.Where(p => p.Tile.Visible);
 
-        internal Tile GetTile(int x, int y)
-        {
-            return GetTile(new(x, y));
-        }
+        public Tile GetVisibleTile(int x, int y) => GetVisibleTile(new(x, y));
+        public Tile GetVisibleTile(Point p) => Visible(p) ? GetTile(p) : null;
+        internal Tile GetTile(Point p, bool visibleOnly) => visibleOnly ? GetVisibleTile(p) : this.GetTile(p);
+        internal Tile GetTile(int x, int y) => GetTile(new(x, y));
         internal Tile GetTile(Point p)
         {
             Func<Tile, ITerrain> GetTerrain = t => null;
-            if (!clearTerrain.Contains(p))
+            if (!_clearTerrain.Contains(p))
             {
-                bool block = false, island = false;
-                double vision = 0;
+                bool block = false;
+                double height = 0;
 
                 Tuple<float, float> evaluate = Evaluate(p);
                 double terrain = evaluate.Item2;
@@ -336,50 +333,10 @@ namespace ClassLibrary1.Map
                     return null;
                 block |= terrain < 1 / 2.0;//!clear &&  
 
-                if (!block)//&& AllFoundations.Any())
-                {
-                    double m = evaluate.Item2 / .5;
-                    m = Math.Sqrt(m);
-                    if (m > 1)
-                        m = .013 + Math.Pow(m, .13);
-                    vision = Math.Pow(evaluate.Item1, 2.1) * m;
-                    const double cutoff = .39;
-                    island = vision > cutoff;
-                    vision -= cutoff;
-                    vision /= 1 - cutoff;
-                    double max = Island.MAX_VISION - _hillStart;
-                    vision = max * vision;
-                    max /= 2;
-                    if (vision > max)
-                        vision = max + max * Math.Sqrt((vision - max) / vision);
+                if (!block)
+                    height = GetHeight(p, evaluate);
 
-                    //use some kind of offset into a lookup table???
-                    vision = _hillStart + MTRandom.Round(vision / _hillInc, _hillRounding) * _hillInc;
-
-                    //vision *= Island.MAX_VISION;
-                    ////double mult = AllFoundations.Select(f => GetDistSqr(p.X, p.Y, f)).Min();
-                    ////if (mult > 0)
-                    ////{
-                    ////    mult = Consts.PathWidth * Consts.PathWidth / mult;  //const double l1 = .21;
-                    ////const double l1 = .39; 
-                    ////if (mult < l1) //go back to Math.Min so only affects close by
-                    ////    mult = Math.Pow(mult / l1, 1.0 / 65) * l1;
-                    //////mult = Math.Max(mult, .39);
-                    ////const double l2 = 1.3;
-                    ////if (mult > l2)
-                    ////    mult = l2 + Math.Pow(1 + mult - l2, 1.0 / 13) - 1;
-                    //double m2 = evaluate.Item1 / .5;
-                    ////m2 *= m2 * m2;
-                    //island = m2 > 1;//* mult
-                    //                //vision = Math.Max(0, m2 * Math.Sqrt(mult) - 1);
-                    //                //    vision *= Consts.IslandVisionMult;
-                    //                //    vision++;
-                    //                //}
-
-                }
-                if (double.IsInfinity(vision))
-                    ;
-                GetTerrain = t => block ? new Block(t, terrain) : island ? new Island(t, vision) : null;
+                GetTerrain = t => block ? new Block(t, terrain) : height > 0 ? new Island(t, height) : null;
             }
 
             Piece piece = GetPiece(p);
@@ -388,6 +345,48 @@ namespace ClassLibrary1.Map
             //ITerrain GetTerrain(Tile t) =>
             //    block ? new Block(t, terrain) : island ? new Island(t, vision) : null;
         }
+
+        [NonSerialized]
+        private Dictionary<Point, float> heightCache;
+        private float GetHeight(Point p, Tuple<float, float> evaluate)
+        {
+            heightCache ??= [];
+            if (heightCache.TryGetValue(p, out float value))
+                return value;
+
+            List<Tuple<Elevation, double>> hills = [.. _elevation.Select(e => Tuple.Create(e, e.Dist(p)))];
+            double minDist = hills.Min(h => h.Item2);
+            double m1 = Elevation.Evaluate(minDist);
+
+            double m2 = evaluate.Item1 / .5;
+            m2 *= m2;
+
+            double m3 = evaluate.Item2 / .75;
+            if (m3 > 1)
+                m3 = Math.Pow(m3, .05);
+            else
+                m3 *= m3;
+
+            double height = Math.Sqrt(m1 * m2 * m3);
+
+            const double cutoff = 1;
+            bool island = height > cutoff;
+            if (island)
+            {
+                height -= cutoff;
+                height *= Island.HEIGHT;
+
+                Elevation elevation = hills.Where(e => e.Item2 == minDist).Select(e => e.Item1).First();
+                height = elevation.Round(height, _elevation);
+                island = height > .05;
+            }
+            if (!island)
+                height = 0;
+
+            heightCache.Add(p, (float)height);
+            return (float)height;
+        }
+
         private Piece GetPiece(Point p)
         {
             _pieces.TryGetValue(p, out Piece piece);
@@ -460,16 +459,14 @@ namespace ClassLibrary1.Map
                 if (t != null)
                     UpdateVision(t.Location, 0);
         }
-        internal bool UpdateVision(Point point, double range)
+        internal bool UpdateVision(Point point, double vision)
         {
             LogEvalTime();
 
             bool found = false;
-            foreach (Point p in Tile.GetAllVisionPoints(this, point, range))
+            foreach (Point p in Tile.GetAllVision(this, point, vision))
                 if (_explored.Add(p))
                 {
-                    //GeneratePlateaus(Tile.GetDistance(p, new Point(0, 0)));
-
                     if (Game.Rand.Next(Consts.ExploreForResearch) == 0)
                         Game.Player.Research.AddBackground();
 
@@ -478,27 +475,20 @@ namespace ClassLibrary1.Map
                     found |= explored != null && explored.Piece != null && explored.Piece is not ITerrain;
                 }
 
-            Explore(point, range);
+            vision += Tile.Height(GetTile(point));
+            Explore(point, vision);
 
-            int vision = (int)(1 + range + (GetTile(point)?.Terrain is Island i ? i.Height : 0));
-            int x = Math.Min(_gameBounds.X, point.X - vision);
-            int y = Math.Min(_gameBounds.Y, point.Y - vision);
-            int right = Math.Max(_gameBounds.Right, point.X + vision + 1);
-            int bottom = Math.Max(_gameBounds.Bottom, point.Y + vision + 1);
+            int bounds = (int)(2 + vision);
+            int x = Math.Min(_gameBounds.X, point.X - bounds);
+            int y = Math.Min(_gameBounds.Y, point.Y - bounds);
+            int right = Math.Max(_gameBounds.Right, point.X + bounds + 1);
+            int bottom = Math.Max(_gameBounds.Bottom, point.Y + bounds + 1);
             _gameBounds = new Rectangle(x, y, right - x, bottom - y);
 
             LogEvalTime();
 
             return found;
         }
-
-        //private void GeneratePlateaus(double v)
-        //{
-        //    //generate constant density
-        //    //set generation buffer accordingly
-        //    //use for constant heights
-        //    //_plateausl
-        //}
 
         private HashSet<PointD> _treasures = [];
         private void CreateTreasure(Tile tile)
@@ -539,12 +529,12 @@ namespace ClassLibrary1.Map
 
         public static void LogEvalTime()
         {
-            if (evalCount > 0)
+            if (_evalCount > 0)
             {
                 //float evalTime = 1000f * watch.ElapsedTicks / Stopwatch.Frequency;
                 //Debug.WriteLine($"Evaluate ({evalCount}): {evalTime}");
-                watch.Reset();
-                evalCount = 0;
+                _watch.Reset();
+                _evalCount = 0;
             }
         }
 
@@ -586,6 +576,7 @@ namespace ClassLibrary1.Map
                 p.Explore(this, point, vision);
             foreach (Cave c in Game.Rand.Iterate(_caves))
                 c.Explore(point, vision);
+            GeneratePlateaus(Tile.GetDistance(point, new Point(0, 0)) + vision);
         }
         internal void GenResources(Func<Tile> GetTile, double foundationMult, int numResources = 1)
         {
@@ -596,7 +587,7 @@ namespace ClassLibrary1.Map
                     foundationMult = 0;
 
                 double fMult2 = _caves.Select(c => c.Center).Concat(AllFoundations)
-                    .Concat(clearTerrain.Concat(Game.Player.Core.Tile.GetAllPointsInRange(Constructor.BASE_VISION))
+                    .Concat(_clearTerrain.Concat(Game.Player.Core.Tile.GetPointsInRange(Constructor.BASE_VISION))
                         .Select(p => new PointD(p.X, p.Y)))
                     .Min(p => Tile.GetDistanceD(tile.X, tile.Y, p.X, p.Y));
                 fMult2 /= (fMult2 + (Consts.CaveSize + Consts.PathWidth) / 6.5);
@@ -650,7 +641,7 @@ namespace ClassLibrary1.Map
 
                             Dictionary<Tile, int> neighbors = [];
                             while (neighbors.Count == 0 && Game.Rand.Next(169) > 0)
-                                neighbors = tile.GetPointsInRangeUnblocked(1 + Game.Rand.OE())
+                                neighbors = tile.GetPointsInRange(1 + Game.Rand.OE())
                                     .Select(this.GetTile)
                                     .Where(t => t != null && t.Piece == null && (Game.TEST_MAP_GEN.HasValue || !t.Visible))
                                     .ToDictionary(t => t, CountAdjacent);
@@ -666,7 +657,7 @@ namespace ClassLibrary1.Map
             }
             static int CountAdjacent(Tile tile)
             {
-                static double Weight(Tile t) => t.Piece is Foundation ? 1 : t.Terrain is Island i ? .5 + .5 * i.Height / Island.MAX_VISION : 0;
+                static double Weight(Tile t) => t.Piece is Foundation ? 1 : t.Terrain is Island i ? .5 + .5 * i.Height / Island.HEIGHT : 0;
                 double count = tile.GetAdjacentTiles().Sum(Weight) + Weight(tile) * 2;
                 return Game.Rand.Round(1 + (1 + count) * count);
             }
@@ -739,29 +730,29 @@ namespace ClassLibrary1.Map
 
         private readonly Dictionary<Point, FoundPath> corePaths = [];
         public Dictionary<Point, FoundPath> EnemyPaths => Game.TEST_MAP_GEN.HasValue ? corePaths : null; //|| Game.GameOver 
-        internal List<Point> PathFindCore(Tile from, double movement, Func<HashSet<Point>, bool> Accept)
+        internal List<Point> PathFindCore(Tile from, double move, Func<HashSet<Point>, bool> Accept)
         {
-            if (corePaths.TryGetValue(from.Location, out FoundPath found) && found.Movement <= movement)
+            if (corePaths.TryGetValue(from.Location, out FoundPath found) && found.Movement <= move)
                 return [.. found.CompletePath(from.Location)];
 
-            HashSet<Point> known = [.. corePaths.Keys.Where(k => corePaths[k].Movement <= movement)];
+            HashSet<Point> known = [.. corePaths.Keys.Where(k => corePaths[k].Movement <= move)];
 
             Tile to = Game.Enemy.PiecesOfType<Portal>().Where(p => !p.Exit).Select(p => p.Tile)
-                .Append(Game.Player.Core.Tile).OrderBy(t => from.GetDistance(t)).First();
-            var path = PathFind(from, to, movement, false, movement, true, false, p2 =>
+                .Append(Game.Player.Core.Tile).OrderBy(t => from.MoveDistTo(t)).First();
+            var path = PathFind(from, to, move, move, true, false, p2 =>
                 {
                     //the map is infinite, so to avoid pathfinding forever we impose a penalty on blocked terrain instead of blocking tiles entirely
                     double penalty = 0;
                     Tile tile = GetTile(p2);
                     if (tile == null)
                     {
-                        penalty = Game.Rand.GaussianCapped((Consts.PathWidth + movement) * 2.25 * Consts.PathWidth, .065);
+                        penalty = Game.Rand.GaussianCapped((Consts.PathWidth + move) * 2.25 * Consts.PathWidth, .065);
                     }
                     else if (tile.Piece is Block block)
                     {
                         double mult = .5 + block.Value; //ranges from 0.5 - 1.5
                         mult *= mult; //ranges from 0.25 - 2.25
-                        penalty = Game.Rand.GaussianCapped((Consts.PathWidth + movement) * mult, .065);
+                        penalty = Game.Rand.GaussianCapped((Consts.PathWidth + move) * mult, .065);
                     }
                     if (penalty > 0 && !Game.GameOver && !Game.TEST_MAP_GEN.HasValue && Visible(p2))
                         penalty *= Consts.PathWidth;
@@ -791,7 +782,7 @@ namespace ClassLibrary1.Map
                 Point final = path[^1];
                 if (final != Game.Player.Core.Tile.Location && Game.Map.GetTile(final).Piece is not Portal)
                     target = corePaths[final];
-                FoundPath foundPath = new(path, target, movement);
+                FoundPath foundPath = new(path, target, move);
                 for (int a = 0; a < path.Count - 1; a++)
                 {
                     corePaths.TryGetValue(path[a], out FoundPath old);
@@ -812,7 +803,7 @@ namespace ClassLibrary1.Map
         private void ClearTerrain(IEnumerable<Point> clear)
         {
             foreach (var point in clear)
-                if (clearTerrain.Add(point))
+                if (_clearTerrain.Add(point))
                 {
                     Piece piece = GetPiece(point);
                     if (piece != null)
@@ -843,7 +834,7 @@ namespace ClassLibrary1.Map
                     return dists[p];
                 }).Select(point => SpawnTile(point, Consts.PathWidth + Consts.CaveSize, false, ValidRetreat));
         }
-        internal List<Point> PathFindRetreat(Tile from, IEnumerable<Tile> targets, double movement, double defense, Dictionary<Tile, double> playerAttacks, Func<Tile, bool> ValidRetreat)
+        internal List<Point> PathFindRetreat(Tile from, IEnumerable<Tile> targets, double move, double defense, Dictionary<Tile, double> playerAttacks, Func<Tile, bool> ValidRetreat)
         {
             var options = FindRetreatTiles(from, ValidRetreat);
             if (targets != null)
@@ -852,7 +843,7 @@ namespace ClassLibrary1.Map
             foreach (Tile tile in options)
             {
                 // Game.Rand.Bool();
-                var path = PathFind(from, tile, movement, false, movement, false, false, p =>
+                var path = PathFind(from, tile, move, move, false, false, p =>
                 {
                     double att = 0;
                     Tile key = GetTile(p);
@@ -871,7 +862,7 @@ namespace ClassLibrary1.Map
         }
 
         //double? minFirstMove
-        private List<Point> PathFind(Tile fromTile, Tile toTile, double firstMove, bool limitMove, double movement, bool includeBlocked, bool visibleOnly,
+        private List<Point> PathFind(Tile fromTile, Tile toTile, double firstMove, double move, bool includeBlocked, bool visibleOnly,
             Func<Point, double> Penalty, Func<Point, bool> Stop, out HashSet<Point> blocked)
         {
             blocked = [];
@@ -884,41 +875,55 @@ namespace ClassLibrary1.Map
             //cache tile penalties at each point so they are consistent 
             Dictionary<Point, double> cache = [];
 
-            double moveMin = firstMove;
-            if (limitMove)
-                firstMove += Math.Sqrt(2);
+            //double moveMin = firstMove;
+            //if (limitMove)
+            //    firstMove += Math.Sqrt(2);
             //else
             //    moveMin = 0;
-            if (movement < 1)
-                movement = 1;
+            if (move < 1)
+                move = 1;
 
-            bool first = firstMove >= 1;// && minFirstMove + 1 < movement;
+            bool first = firstMove >= 1 && firstMove != move;// && minFirstMove + 1 < movement;
             var path = TBSUtil.PathFind(Game.Rand, from, to, Stop, p1 =>
                 {
-                    IEnumerable<Point> points = Tile.GetAllPointsInRange(this, p1, first ? firstMove : movement);
+                    IEnumerable<Point> points = Tile.GetAllMovement(this, p1, first ? firstMove : move, visibleOnly);
                     if (first && !points.Any())
-                        points = Tile.GetAllPointsInRange(this, p1, movement);
+                    {
+                        points = Tile.GetAllMovement(this, p1, move, visibleOnly);
+                        first = false;
+                    }
                     var result = points.Where(p =>
+                    {
+                        if (first)
                         {
-                            if (first && limitMove && GetDistSqr(p1.X, p1.Y, p.X, p.Y) < moveMin * moveMin)
+                            Tile t1 = GetTile(p1, visibleOnly);
+                            Tile t2 = GetTile(p, visibleOnly);
+                            if (t1 != null && t2 != null && t1.MoveDistTo(t2) > firstMove)
                                 return false;
-                            var tile = GetTile(p);
-                            if (visibleOnly && !Visible(p))
-                                return false;
-                            var piece = tile?.Piece;
-                            if (tile == null || piece is ITerrain)
-                                return includeBlocked;
-                            return p == from || p == to || piece is null || piece.HasBehavior<IMovable>();
-                        }).Select(p2 =>
+                        }
+                        var tile = GetTile(p, visibleOnly);
+                        if (visibleOnly && !Visible(p))
+                            return false;
+                        var piece = tile?.Piece;
+                        if (tile == null || piece is ITerrain)
+                            return includeBlocked;
+                        return p == from || p == to || piece is null || piece.HasBehavior<IMovable>();
+                    }).Select(p2 =>
+                    {
+                        if (!cache.TryGetValue(p2, out double penalty))
                         {
-                            if (!cache.TryGetValue(p2, out double penalty))
-                            {
-                                penalty = Penalty(p2);
-                                cache.Add(p2, penalty);
-                            }
-                            double dist = Tile.GetDistance(p1, p2);
-                            return Tuple.Create(p2, dist + penalty);
-                        }).ToList();
+                            penalty = Penalty(p2);
+                            cache.Add(p2, penalty);
+                        }
+                        Tile t1 = GetTile(p1, visibleOnly);
+                        Tile t2 = GetTile(p2, visibleOnly);
+                        double dist;
+                        if (t1 != null && t2 != null)
+                            dist = t1.MoveDistTo(t2);
+                        else
+                            dist = Tile.GetDistance(p1, p2);
+                        return Tuple.Create(p2, dist + penalty);
+                    }).ToList();
                     first = false;
                     return result;
                 }, Tile.GetDistance);
@@ -926,7 +931,7 @@ namespace ClassLibrary1.Map
             if (path != null)
                 foreach (var p in path)
                 {
-                    Tile tile = GetTile(p);
+                    Tile tile = GetTile(p, visibleOnly);
                     if (tile == null || tile.Piece is ITerrain)
                         blocked.Add(p);
                 }
@@ -938,7 +943,7 @@ namespace ClassLibrary1.Map
             return path;
         }
 
-        public List<Point> PathFind(Tile from, Tile to, double firstMove, bool limitMove, double movement, Action DoEvents)
+        public List<Point> PathFind(Tile from, Tile to, double firstMove, double move, Func<Point, bool> Stop)
         {
             //double[] moves = new[] {
             //    Math.Min(movable.MoveCur - 1, movable.MoveCur + movable.MoveInc - movable.MoveMax) + 1,
@@ -949,9 +954,10 @@ namespace ClassLibrary1.Map
             //    (movable.MoveMax + movable.MoveLimit) / 2.0,
             //    movable.MoveLimit, };
 
-            return PathFind(from, to, firstMove, limitMove, movement, false, true,
-                _ => { DoEvents(); return 0; },
-                p => !_gameBounds.Contains(p.X, p.Y), out _);
+            return PathFind(from, to, firstMove, move, false, true,
+                _ => 0,
+                p => !_gameBounds.Contains(p.X, p.Y) || Stop(p),
+                out _);
         }
     }
 }

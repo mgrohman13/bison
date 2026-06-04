@@ -14,10 +14,10 @@ namespace ClassLibrary1.Pieces.Players
         private double _vision;
         public double Vision
         {
-            get => _vision;
+            get => VisionBase >= 1 ? Consts.GetDamagedValue(this, VisionBase, 1) : 0;
             protected set
             {
-                this._vision = VisionBase >= 1 ? Consts.GetDamagedValue(this, VisionBase, 1) : 0;
+                this._vision = value;
                 Game.Map.UpdateVision(this);
             }
         }

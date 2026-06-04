@@ -106,12 +106,20 @@ namespace WinFormsApp1
             this.btnDisband.Visible = SelTile?.Piece is PlayerPiece p && p is not Core && Program.Game.Player.CanDisband();
             this.btnTrade.Visible = Program.Game.Player.CanBurnMass() || Program.Game.Player.CanFabricateMass() || Program.Game.Player.CanScrapResearch();
 
-            if (SelTile == null && SelP.HasValue && Program.Game.Map.Visible(SelP.Value))
+            if (SelTile == null)
+            {
+                if (SelP.HasValue && Program.Game.Map.Visible(SelP.Value))
+                {
+                    lblHeading.Show();
+                    lblHeading.Text = Block.FullString;
+                }
+            }
+            else if (SelTile.Piece == null && SelTile.Terrain == null)
             {
                 lblHeading.Show();
-                lblHeading.Text = Block.FullString;
+                lblHeading.Text = "Regolith";
             }
-            else if (SelTile != null && (SelTile.Piece != null || SelTile.Terrain != null))
+            else if (SelTile.Piece != null || SelTile.Terrain != null)
             {
                 lblHeading.Show();
                 lblHeading.Text = ((object)SelTile.Piece ?? SelTile.Terrain)!.ToString();
@@ -348,9 +356,7 @@ namespace WinFormsApp1
                     }
 
                     if (SelTile.Terrain is Island island)
-                    {
                         lblHeading.Text = $"{lblHeading.Text} ({island} {island.Height:0.0})";
-                    }
                 }
                 else if (SelTile.Terrain is Island island)
                 {

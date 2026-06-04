@@ -1,5 +1,4 @@
-﻿using ClassLibrary1.Pieces.Terrain;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -170,12 +169,11 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
         }
         public static int TerrainAttMod(Tile from, Tile to)
         {
-            static double V(Tile t) => t.Terrain is Island i ? i.Height : 0;
-            double a = V(from);
-            double d = V(to);
-            if (a > d)
+            double a = from.Height();
+            double d = to.Height();
+            if (a >= d + .95)
                 return 1;
-            if (a < d)
+            if (d >= a + .95)
                 return -1;
             return 0;
         }

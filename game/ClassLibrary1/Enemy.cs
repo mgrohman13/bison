@@ -172,11 +172,11 @@ namespace ClassLibrary1
                 double portalDef = Portal.GetDefAvg(difficulty, exit);
                 var avoid = EnemyMovement.GetPlayerAttacks(Game)
                         .Where(p => Game.Rand.DoubleHalf(portalDef) < Game.Rand.DoubleFull(p.Value)).Select(p => p.Key)
-                    .Concat(coreTile.GetAllPointsInRange(deviation)
+                    .Concat(coreTile.GetPointsInRange(deviation)
                         .Concat(player.PiecesOfType<FoundationPiece>().Select(t => t.Tile)
                             .Concat(pieces.OfType<Foundation>().Select(f => f.Tile))
-                            .SelectMany(t => t.GetAllPointsInRange(turretRange)))
-                        .Concat(PiecesOfType<Hive>().SelectMany(h => h.Tile.GetAllPointsInRange(
+                            .SelectMany(t => t.GetPointsInRange(turretRange)))
+                        .Concat(PiecesOfType<Hive>().SelectMany(h => h.Tile.GetPointsInRange(
                             h.GetBehavior<IAttacker>().Attacks.Max(a => a.Range * Game.Rand.Range(1, 2)))))
                         .Select(map.GetTile))
                     .Where(t => t is not null).ToHashSet();

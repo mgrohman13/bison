@@ -2,7 +2,7 @@
 using ClassLibrary1.Pieces.Enemies;
 using ClassLibrary1.Pieces.Players;
 using System;
-using System.Linq;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 using Point = MattUtil.Point;
 using Tile = ClassLibrary1.Map.Map.Tile;
@@ -59,7 +59,7 @@ namespace ClassLibrary1.Pieces.Behavior
 
             if (CanMoveTo(to) && to.Visible && Piece is PlayerPiece piece)
             {
-                IOrderedEnumerable<Point> ps = GetMovePoints(from, to);
+                IEnumerable<Point> ps = Tile.GetLinePoints(from.Location, to.Location);
 
                 bool stop = false;
                 foreach (var p in ps)
@@ -79,24 +79,13 @@ namespace ClassLibrary1.Pieces.Behavior
             }
             return false;
         }
-        public static IOrderedEnumerable<Point> GetMovePoints(Tile from, Tile to)
-        {
-            const double lineDist = .5;
-            bool isX = from.X == to.X;
-            double a = isX ? 0 : (to.Y - from.Y) / (double)(to.X - from.X);
-            double c = to.Y - a * to.X;
-            double b = -1;
-            return Game.Rand.Iterate(Math.Min(from.X, to.X), Math.Max(from.X, to.X), Math.Min(from.Y, to.Y), Math.Max(from.Y, to.Y))
-                .Where(p => isX || Map.Map.PointLineDistanceAbs(a, b, c, p) < lineDist)
-                .OrderBy(from.GetDistance);
-        }
 
         bool IMovable.EnemyMove(Tile to) => Piece.IsEnemy && Move(to);
         private bool Move(Tile to)
         {
             if (CanMoveTo(to))
             {
-                double dist = Piece.Tile.GetDistance(to);
+                double dist = Piece.Tile.MoveDistTo(to);
                 _moved = true;
                 _moveCur -= dist;
                 Piece.SetTile(to);
@@ -104,17 +93,8 @@ namespace ClassLibrary1.Pieces.Behavior
             }
             return false;
         }
-        public bool CanMoveTo(Tile to)
-        {
-            if (Piece.Tile != to && CanMove && to != null && to.Piece == null)
-            {
-                //check blocks
-                double dist = Piece.Tile.GetDistance(to);
-                if (dist <= MoveCur) //
-                    return true;
-            }
-            return false;
-        }
+        public bool CanMoveTo(Tile to) =>
+            Piece.Tile != to && CanMove && to != null && to.Piece == null && ((IMovable)this).DistTo(to) <= MoveCur;
         public bool CanMove => !(_moved && Piece.HasBehavior(out IAttacker attacker) && attacker.RestrictMove);
 
         bool IMovable.Port(Portal portal)
