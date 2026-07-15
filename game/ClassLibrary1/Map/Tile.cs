@@ -78,7 +78,8 @@ namespace ClassLibrary1.Map
             private IEnumerable<Tile> GetTilesInRange(double range) => GetPointsInRange(range)
                 .Select(Map.GetTile).Where(t => t != null);
 
-            public IEnumerable<Point> GetAdjacentPoints() => GetPointsInRange(Attack.MELEE_RANGE);
+            public static IEnumerable<Point> GetAdjacentPoints(Point point) => GetPointsInRange(point, Attack.MELEE_RANGE);
+            public IEnumerable<Point> GetAdjacentPoints() => GetAdjacentPoints(Location);
             public IEnumerable<Point> GetPointsInRange(IBuilder builder) => GetPointsInRange(builder.Range);
             public IEnumerable<Point> GetPointsInRange(IAttacker attacker) => GetPointsInRange(attacker.Attacks.Max(a => a.Range));
             public IEnumerable<Point> GetPointsInRange(Attack attack) => GetPointsInRange(attack.Range);
@@ -135,7 +136,7 @@ namespace ClassLibrary1.Map
             {
                 double dist = GetDistance(other);
                 double from = Height();
-                double height = GetLinePoints(this.Location, other.Location).Max(p => Height(other.Map.GetTile(p, visibleOnly))); 
+                double height = GetLinePoints(this.Location, other.Location).Max(p => Height(other.Map.GetTile(p, visibleOnly)));
                 if (height > from)
                     dist += height - from;
                 return dist;
@@ -153,9 +154,9 @@ namespace ClassLibrary1.Map
                 return [];
             }
             public static IEnumerable<Point> GetVision(Map map, Point point, double vision) =>
-                GetAllVision(map, point, vision, true).Distinct();
+                GetAllVision(map, point, vision, true);//.Distinct();
             internal static IEnumerable<Point> GetAllVision(Map map, Point point, double vision) =>
-                GetAllVision(map, point, vision, false).Distinct();
+                GetAllVision(map, point, vision, false);//.Distinct();
             private static IEnumerable<Point> GetAllVision(Map map, Point from, double vision, bool visibleOnly)
             {
                 yield return from;
@@ -175,28 +176,29 @@ namespace ClassLibrary1.Map
                         .OrderByDescending(GetHeight).OrderBy(b => GetDistance(from, b))];
 
                     foreach (Point to in Game.Rand.Iterate(enumerable))
-                    {
-                        double distance = GetDistance(from.X, from.Y, to.X, to.Y);
-                        //if (distance <= vision)
-                        //{
-                        Point? Select(IEnumerable<Point> points) => points.Select(p => (Point?)p).FirstOrDefault();
+                        if (!map.Visible(to))
+                        {
+                            double distance = GetDistance(from.X, from.Y, to.X, to.Y);
+                            //if (distance <= vision)
+                            //{
+                            Point? Select(IEnumerable<Point> points) => points.Select(p => (Point?)p).FirstOrDefault();
 
-                        var plateau = Select(heights.Where(p => Blocks(from, to, p)).Where(h => distance + GetHeight(h) > vision));
-                        //&& GetHeight(add) >= GetHeight(h)));// doesn't work, still gives away tile info even if you dont see it
-                        if (plateau.HasValue && distance + GetHeight(plateau.Value) > vision)
-                        {
-                            yield return plateau.Value;
-                        }
-                        else
-                        {
-                            var block = Select(blocks.Where(p => Blocks(from, to, p)));
-                            if (block.HasValue)
-                                yield return block.Value;
+                            var plateau = Select(heights.Where(p => Blocks(from, to, p)).Where(h => distance + GetHeight(h) > vision));
+                            //&& GetHeight(add) >= GetHeight(h)));// doesn't work, still gives away tile info even if you dont see it
+                            if (plateau.HasValue && distance + GetHeight(plateau.Value) > vision)
+                            {
+                                //yield return plateau.Value;
+                            }
                             else
-                                yield return to;
+                            {
+                                var block = Select(blocks.Where(p => Blocks(from, to, p)));
+                                if (!block.HasValue)
+                                    yield return to;
+                                //yield return block.Value;
+                                //else
+                            }
+                            //}
                         }
-                        //}
-                    }
                 }
 
             }
@@ -253,24 +255,77 @@ namespace ClassLibrary1.Map
             public static IEnumerable<Point> GetLinePoints(Point from, Point to)
             {
                 yield return from;
+
+                double dist = Math.Ceiling(GetDistance(from, to) + .5);
+                double dx = (to.X - from.X) / dist;
+                double dy = (to.Y - from.Y) / dist;
+
+                double curX = from.X;
+                double curY = from.Y;
                 Point prev = from;
-
-                double dx = (to.X - from.X);
-                double dy = (to.Y - from.Y);
-                double dist = GetDistance(from, to);
-                double steps = (int)(Math.Ceiling(dist));
-                double inc = dist / steps;
-
-                PointD cur = new(from.X, from.Y);
-                for (int a = 0; a < steps; a++)
+                while (prev != to)
                 {
-                    cur = new(cur.X + inc * dx / dist, cur.Y + inc * dy / dist);
-                    Point next = new((int)Math.Round(cur.X), (int)Math.Round(cur.Y));
-                    if (next != prev)
+                    curX += dx;
+                    curY += dy;
+                    Point next = new((int)Math.Round(curX), (int)Math.Round(curY));
+                    if (prev != next)
                     {
                         yield return next;
                         prev = next;
                     }
+                }
+            }
+
+            public static IEnumerable<Tuple<Point, double>> GetAttacks(IAttacker attacker) => GetAttacks(attacker, true);
+            internal static IEnumerable<Tuple<Point, double>> GetAttacks(IAttacker attacker, bool visibleOnly)
+            {
+                Piece piece = attacker?.Piece;
+                if (piece != null && !(piece.GetBehavior<IKillable>()?.Dead ?? false))
+                {
+                    Tile start = piece.Tile;
+                    var attacks = attacker.Attacks.Where(a => a.AttackCur > 0);
+                    IMovable movable = piece.GetBehavior<IMovable>();
+                    bool melee = movable != null && attacks.Any(a => a.Range == Attack.MELEE_RANGE);
+
+                    Dictionary<Point, double> meleeHeights = [];
+                    if (melee)
+                        foreach (Point moveP in start.GetPointsInRange(movable).Where(CanMove))
+                            foreach (Point attP in GetAdjacentPoints(moveP).Where(CanMove))
+                                if (moveP != attP)
+                                {
+                                    meleeHeights.TryGetValue(attP, out double height);
+                                    height = Math.Max(height, Height(GetTile(moveP)));
+                                    meleeHeights[attP] = height;
+                                }
+
+                    foreach (var attack in attacks)
+                    {
+                        Dictionary<Point, int> tileMods = [];
+                        if (melee && attack.Range == Attack.MELEE_RANGE)
+                            foreach (var p in meleeHeights)
+                                Add(p.Key, Attack.TerrainAttMod(p.Value, Height(GetTile(p.Key))));
+                        else
+                            foreach (var p in start.GetPointsInRange(attack).Where(CanMove))
+                                Add(p, Attack.TerrainAttMod(start, GetTile(p)));
+                        void Add(Point p, int mod) => tileMods[p] = Math.Max(mod, tileMods.GetValueOrDefault(p, int.MinValue));
+                        foreach (var pair in tileMods)
+                            yield return Tuple.Create(pair.Key, Consts.StatValue(Consts.ModAtt(attack.AttackCur, pair.Value)));
+                    }
+
+                    bool CanMove(Point p)
+                    {
+                        Tile tile = GetTile(p);
+                        if (tile == null)
+                            return visibleOnly && !start.Map.Visible(p);
+                        if (tile.Piece == null)
+                            return true;
+                        if (visibleOnly)
+                            return tile.Piece.HasBehavior<IMovable>() || (tile.Piece.HasBehavior<IKillable>() && tile.Piece.Side.IsPlayer)
+                                || tile.Piece is Resource || tile.Piece is Foundation;
+                        else
+                            return tile.Piece.HasBehavior<IKillable>() && tile.Piece is not FoundationPiece;
+                    }
+                    Tile GetTile(Point p) => start.Map.GetTile(p, visibleOnly);
                 }
             }
 

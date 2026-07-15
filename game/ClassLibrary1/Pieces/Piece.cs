@@ -66,10 +66,10 @@ namespace ClassLibrary1.Pieces
                 throw new Exception();
             this.behavior = this.behavior.Concat(behavior).ToList().AsReadOnly();
 
-            if (HasBehavior(out IKillable killable) && killable.Hits == null)
-                throw new Exception();
-            if (HasBehavior(out IAttacker attacker) && !attacker.Attacks.Any())
-                throw new Exception();
+            //if (HasBehavior(out IKillable killable) && killable.Hits == null)
+            //    throw new Exception();
+            //if (HasBehavior(out IAttacker attacker) && !attacker.Attacks.Any())
+            //    throw new Exception();
         }
 
         internal void Die() => ((IBehavior)this).Die();
@@ -77,7 +77,7 @@ namespace ClassLibrary1.Pieces
         {
             this.Die(out Tile tile, out double treasure);
 
-            if (Side is null)
+            if (Side == null)
             {
                 CollectTreasure();// false);
             }
@@ -104,7 +104,7 @@ namespace ClassLibrary1.Pieces
                 bool Test(double value) => value > Game.Rand.GaussianCapped(39 + offset, .52, min);
 
                 double matchMult = 1 / (1 - Consts.EnemyTreasureMatch);
-                if (tile.Piece is null && Test(treasure * matchMult))
+                if (tile.Piece == null && Test(treasure * matchMult))
                     Treasure.NewTreasure(tile, treasure * matchMult);
                 else if (Test(treasure))//canCollect &&
                     Game.CollectResources(tile, Treasure.Rand(treasure, min), out _, out _);

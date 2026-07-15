@@ -1,6 +1,7 @@
 ﻿using ClassLibrary1.Pieces;
 using ClassLibrary1.Pieces.Behavior;
 using ClassLibrary1.Pieces.Behavior.Combat;
+using MattUtil;
 using System;
 using DefenseType = ClassLibrary1.Pieces.Behavior.Combat.CombatTypes.DefenseType;
 
@@ -8,6 +9,8 @@ namespace ClassLibrary1
 {
     public static class Consts
     {
+        public const double MAX_ROUND = MTRandom.DOUBLE_DIV / MTRandom.DOUBLE_DIV_1;
+
         public const double Scale = Math.E * .21;
 
         public const double ShapesDistance = CaveDistance * Math.PI;
@@ -15,7 +18,7 @@ namespace ClassLibrary1
         public const double PathWidth = Scale * 16.9;
         public const double PathWidthDev = .21;
         public const double PathWidthMin = Math.E;
-        public const double FeatureDist = Scale * 210;
+        public const double FeatureDist = Scale * 210;//260
         public const double FeatureMin = FeatureDist / Math.PI;
 
         public const double CaveDistance = Scale * 210;
@@ -30,20 +33,21 @@ namespace ClassLibrary1
         public const double IslandVisionMult = 6.5;
 
         //public const double TreasureSpacingChance = .5;
-        public const double ResearchFactor = 780 * Math.PI;
+        public const double ResearchFactor = 780 * Math.E;
         public const int ExploreForResearch = 39;
 
         public const double DifficultySetting = 2.6 / Math.PI;
-        public const double EnemyStartEnergy = 1690;
+        public const double EnemyStartEnergy = 3900;
         public const double ExploreEnergy = 5200;
         public const double EnemyIncomeMatchFactor = 6500;
-        public const double EnemyEnergy = 260;
-        public const double EnemyEnergyRampTurns = 130;
+        public const double EnemyEnergy = 169;
+        public const double EnemyEnergyRampTurns = 91;
         public const double EnemyUnlockTurns = 210;
 
         public const double DifficultyEnergyPow = 1.3;
         public const double DifficultyResearchPow = 3.9 / Math.E;
-        public const double DifficultyAIPow = .65;
+        public const double DifficultyAIPow = .91;
+        public const double AgressionTurns = 26;
 
         public const double PortalSpawnTime = 39;
         public const double PortalSpawnStrMult = 1.3;
@@ -126,12 +130,12 @@ namespace ClassLibrary1
         public const double MechCostMult = .13;
         public const double EnergyMassRatio = 1.69;
 
-        public const double MissileCostMult = .1;
+        public const double MissileCostMult = (1 - MissileHitRefundPct) / 2.6;
         public const double MissileEnergyCostRatio = 2.0 / (3 * EnergyMassRatio + 2);
         public const double MissileHitRefundPct = .78;
-        public const double MissileScrapRefund = .26;
+        public const double MissileScrapRefund = .21;
 
-        public const double DisbandValue = .21;
+        public const double DisbandValue = .26;
         public const double RepairCost = .169;
         public const double PassiveRepairCost = .91 * RepairCost;
         public const double EnergyRepairDiv = 1.3 * EnergyMassRatio;
@@ -149,6 +153,7 @@ namespace ClassLibrary1
             * Math.Sqrt(EnergyPerFabricateMass * BurnMassPerEnergy);
         public static readonly double GeneratorConstValue = GeneratorResearchUpk
             * Math.Sqrt((MassPerResearchConversion * EnergyMassRatio) * (MassForScrapResearch / (double)BurnMassPerEnergy));
+
         //public static readonly double EnergyPerResearchConversion = MassPerResearchConversion * EnergyMassRatio;
 
         public static double StatValue(double stat)
@@ -174,13 +179,12 @@ namespace ClassLibrary1
         public static double MoveValue(double moveInc, double moveMax, double moveLimit)
         {
             const double mi = 25, mm = 10, ml = 4;
-            double move = mi * moveInc / 1.0 + mm * moveMax / 2.1 + ml * moveLimit / 3.9;
+            double move = mi * moveInc / 1.0 + mm * moveMax / 2.1 + ml * moveLimit / 5.2;
             move /= mi + mm + ml;
             return move;
         }
 
-        internal static int Income(int cur, double income) =>
-            IncomeRounding(cur + Income(income));
+        internal static int Income(int cur, double income) => IncomeRounding(cur + Income(income));
         internal static int IncomeRounding(double avg)
         {
             const int divMult = 5;

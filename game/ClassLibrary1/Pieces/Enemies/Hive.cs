@@ -88,8 +88,8 @@ namespace ClassLibrary1.Pieces.Enemies
         }
         private void Killable_DamagedEvent(object sender, Killable.DamagedEventArgs e)
         {
-            double cur = ((IKillable)killable).AllDefenses.Sum(d => Consts.StatValue(d.DefenseCur));
-            double max = ((IKillable)killable).AllDefenses.Sum(d => Consts.StatValue(d.DefenseMax));
+            double cur = ((IKillable)killable).CurDefenseValue;
+            double max = ((IKillable)killable).MaxDefenseValue;
             Game.Enemy.HiveDamaged(this, e.DefTile, spawner, ref _energy,
                 killable.Hits.DefenseCur, cur / max, MaxRange / 2.1 + Attack.MELEE_RANGE);
         }

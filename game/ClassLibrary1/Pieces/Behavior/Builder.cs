@@ -116,7 +116,7 @@ namespace ClassLibrary1.Pieces.Behavior
 
         //        mult *= Consts.ReplaceRefundPct * Consts.StatValue(killable.Hits.DefenseCur) / Consts.StatValue(killable.Hits.DefenseMax);
         //        double rounding = GetRounding();
-        //        energy = MTRandom.Round(newEnergy - energy * mult - addEnergy, 1 - rounding);
+        //        energy = MTRandom.Round(newEnergy - energy * mult - addEnergy, Consts.MAX_ROUND - rounding);
         //        mass = MTRandom.Round(newMass - mass * mult, rounding);
 
         //        if (Piece.Game.Player.Has(energy, mass))
@@ -129,7 +129,7 @@ namespace ClassLibrary1.Pieces.Behavior
         //                //todo: replace??
         //                //Piece.Game.Player.AddResources(treasure);
 
-        //                if (tile.Piece is not null && tile.Piece is not Treasure && Piece.Game.Player.Spend(energy, mass))
+        //                if (tile.Piece != null && tile.Piece is not Treasure && Piece.Game.Player.Spend(energy, mass))
         //                    newPiece = NewPiece();
         //            }
         //            canReplace = true;
@@ -165,7 +165,7 @@ namespace ClassLibrary1.Pieces.Behavior
             {
                 if (resource != null && Validate(resource.Tile, false))
                 {
-                    Extractor.Cost(out int energy, out int mass, resource);
+                    Extractor.Cost(resource, out int energy, out int mass);
                     if (Piece.Game.Player.Spend(energy, mass))
                     {
                         _built = true;

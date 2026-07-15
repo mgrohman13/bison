@@ -258,7 +258,7 @@ namespace ClassLibrary1.Map
         //        if (eval < .25)
         //        {
         //            eval *= 4;
-        //            if (Tile.GetAllPointsInRange(this, p, Attack.MELEE_RANGE).Any(n => GetTile(n) is not null))
+        //            if (Tile.GetAllPointsInRange(this, p, Attack.MELEE_RANGE).Any(n => GetTile(n) != null))
         //                eval = 1;
         //        }
         //        else
@@ -284,7 +284,7 @@ namespace ClassLibrary1.Map
             mult += _caves.Sum(c => c.Evaluate(x, y));
 
             double eval = _noise.Evaluate(x, y);
-            double dist = Tile.GetDistance(point, new(0, 0)) + 1;
+            double dist = Tile.GetDistance(point, new(0, 0)) + 1;// + Math.Sqrt(Consts.FeatureDist);
 
             double offset = Math.Pow(float.Epsilon, 1.0 / 3);
             mult += (_featureDist / dist / dist / (offset + Math.Abs(eval - .5)));
@@ -354,7 +354,7 @@ namespace ClassLibrary1.Map
             if (heightCache.TryGetValue(p, out float value))
                 return value;
 
-            List<Tuple<Elevation, double>> hills = [.. _elevation.Select(e => Tuple.Create(e, e.Dist(p)))];
+            List<Tuple<Elevation, double>> hills = [.. _elevation.Select(e => Tuple.Create(e, e.Dist(p, evaluate)))];
             double minDist = hills.Min(h => h.Item2);
             double m1 = Elevation.Evaluate(minDist);
 
@@ -499,7 +499,7 @@ namespace ClassLibrary1.Map
                 int x = tile.X, y = tile.Y;
 
                 Tile core = Game.Player.Core?.Tile;
-                if (core is not null)
+                if (core != null)
                 {
                     var dist = _treasures.Concat([core.LocationD])
                         .Concat(_caves.Select(c => c.Center))
@@ -694,7 +694,7 @@ namespace ClassLibrary1.Map
             _paths.Select(p => new Tuple<IEnemySpawn, PointD>(p, p.ExploredPoint()))
                 .Concat(_caves.Select(c => new Tuple<IEnemySpawn, PointD>(c, c.Center)))
                 .Concat(Game.Enemy.PiecesOfType<EnemyPiece>().Select(p =>
-                    new Tuple<IEnemySpawn, PointD>(p.Spawn, p.Tile.LocationD)).Where(t => t.Item1 is not null));
+                    new Tuple<IEnemySpawn, PointD>(p.Spawn, p.Tile.LocationD)).Where(t => t.Item1 != null));
 
 
         private static double GetAngle(PointD point) => GetAngle(point.X, point.Y);
@@ -907,7 +907,7 @@ namespace ClassLibrary1.Map
                         var piece = tile?.Piece;
                         if (tile == null || piece is ITerrain)
                             return includeBlocked;
-                        return p == from || p == to || piece is null || piece.HasBehavior<IMovable>();
+                        return p == from || p == to || piece == null || piece.HasBehavior<IMovable>();
                     }).Select(p2 =>
                     {
                         if (!cache.TryGetValue(p2, out double penalty))

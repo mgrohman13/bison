@@ -24,22 +24,28 @@ namespace WinFormsApp1
         public readonly static BuildForm BuildForm;
 
         private static UIData data = new();
-
+        private readonly static byte order = (byte)Game.Rand.Next(8);
         public static bool ViewedResearch
         {
             get { return data.ViewedResearch; }
             set { data.ViewedResearch = value; }
         }
-        public static bool NotifyConstructor
-        {
-            get { return data.NotifyConstructor; }
-            set { data.NotifyConstructor = value; }
-        }
-        public static bool NotifyDrone
-        {
-            get { return data.NotifyDrone; }
-            set { data.NotifyDrone = value; }
-        }
+
+        private static Dictionary<System.Type, bool> notfiy = new();
+        public static bool Notify(IBuilder builder) =>
+            notfiy.GetValueOrDefault(builder.GetType(), true);
+        public static void Notify(IBuilder builder, bool value) =>
+            notfiy[builder.GetType()] = value;
+        //public static bool NotifyConstructor
+        //{
+        //    get { return data.NotifyConstructor; }
+        //    set { data.NotifyConstructor = value; }
+        //}
+        //public static bool NotifyDrone
+        //{
+        //    get { return data.NotifyDrone; }
+        //    set { data.NotifyDrone = value; }
+        //}
 
         public static string savePath;
 
@@ -164,7 +170,7 @@ namespace WinFormsApp1
                     SaveGame();
                     CopyAutoSave("e");
 
-                    static IEnumerable<PlayerPiece> GetRepairs() => data.sleep.Where(p => p.Tile is not null && p.IsRepairing());
+                    static IEnumerable<PlayerPiece> GetRepairs() => data.sleep.Where(p => p.Tile != null && p.IsRepairing());
                     var repairs = GetRepairs().ToHashSet();
 
                     Form.UpdateProgress(null, 0);
@@ -201,12 +207,12 @@ namespace WinFormsApp1
             Player player = Game.Player;
             Research research = player.Research;
             Type researching = research.Researching;
-            player.GetIncome(out _, out _, out double researchInc);
-            double deviation = Consts.IncomeDev(researchInc);
-            int add = (int)Math.Ceiling(researchInc + deviation * Math.PI);
+            player.GetIncome(out _, out _, out int researchInc);
+            //double deviation = Consts.IncomeDev(researchInc);
+            //int add = (int)Math.Ceiling(researchInc + deviation * Math.PI);
             int progress = research.GetProgress(researching);
             int cost = research.GetCost(researching);
-            return progress + add >= cost;
+            return progress + researchInc >= cost;
         }
 
         public static void Moved(IBehavior behavior)
@@ -235,7 +241,7 @@ namespace WinFormsApp1
         private static PlayerPiece Toggle(HashSet<PlayerPiece> set)
         {
             PlayerPiece playerPiece = Form.MapMain.SelTile?.Piece as PlayerPiece;
-            if (playerPiece is not null)
+            if (playerPiece != null)
                 if (set.Remove(playerPiece))
                 {
                     RefreshSelected();
@@ -255,9 +261,21 @@ namespace WinFormsApp1
             if (tiles.Any() && Form.MapMain.SelTile != null)
                 tiles = tiles.Concat([Form.MapMain.SelTile]);
 
-            var moveLeft = tiles.Distinct()
-                .OrderByDescending(t => t.GetDistance(Game.Player.Core.Tile))
-                .ThenBy(t => t.Y).ThenBy(t => t.X).ToList();
+            var ordered = tiles.Distinct().OrderByDescending(t => t.GetDistance(Game.Player.Core.Tile));
+
+            void f1() => ordered = ordered.ThenBy(t => t.X * ((order & 1) == 0 ? 1 : -1));
+            void f2() => ordered = ordered.ThenBy(t => t.Y * ((order & 2) == 0 ? 1 : -1));
+            if ((order & 4) == 0)
+            {
+                f1();
+                f2();
+            }
+            else
+            {
+                f2();
+                f1();
+            }
+
             //{
             //Point p = new(t.X - Game.Player.Core.Tile.X, t.Y - Game.Player.Core.Tile.Y);
             //int main, secondary;
@@ -290,6 +308,7 @@ namespace WinFormsApp1
             //return main + secondary;
             //}
 
+            var moveLeft = ordered.ToList();
             if (moveLeft.Count > 0)
             {
                 int cur = Form.MapMain.SelTile == null ? -1 : moveLeft.IndexOf(Form.MapMain.SelTile);
@@ -313,35 +332,15 @@ namespace WinFormsApp1
             bool move = false;
             canAttack = false;
 
-            if (piece.HasBehavior(out IAttacker attacker))
-            {
-                static double GetRange(Attack a) => a.CanAttack() ? a.Range : 0;
-                double maxRange = attacker.Attacks.Max(GetRange);
-                Attack max = Game.Rand.SelectValue(attacker.Attacks.Where(a => GetRange(a) == maxRange));
-                canAttack = maxRange > 0 && piece.Tile.GetVisibleTilesInRange(max).Any(t => t.Piece != null && t.Piece.HasBehavior<IKillable>() && t.Piece.IsEnemy);
-                if (!canAttack && piece.HasBehavior(out IMovable movable) && attacker.Attacks.Any(a => a.CanAttack() && a.Range == Attack.MELEE_RANGE))
-                {
-                    double meleeRange = movable.MoveCur + Attack.MELEE_RANGE;
-                    var meleeTiles = Game.Enemy.VisiblePieces
-                        .Where(e => e.HasBehavior<IKillable>() && piece.Tile.GetDistance(e.Tile) <= meleeRange)
-                        .SelectMany(e => e.Tile.GetVisibleAdjacentTiles())
-                        .Where(t => t.Piece is null || (t.Piece.IsPlayer && t.Piece.HasBehavior<IMovable>())).ToHashSet();
-                    canAttack = meleeTiles.Any(t => piece.Tile.MoveDistTo(t) <= movable.MoveCur);
-                    //if (!canAttack)
-                    //    canAttack = meleeTiles.Any(t => TurnPath(movable, t.Location));
-                }
-                move |= canAttack;
-            }
-
             if (data.moved.Contains(piece))
                 return false;
 
             piece.HasBehavior(out IKillable killable);
             // optimize?
-            var friendly = piece.Tile.GetVisibleAdjacentTiles().Select(t => t.Piece).Where(p => p is not null && p.IsPlayer);
+            var friendly = piece.Tile.GetVisibleAdjacentTiles().Select(t => t.Piece).Where(p => p != null && p.IsPlayer);
             var attacks = Game.Enemy.VisiblePieces
                 .Select(p => p.GetBehavior<IAttacker>())
-                .Where(a => a is not null)
+                .Where(a => a != null)
                 .SelectMany(a => a.Attacks)
                 .SelectMany(a => friendly.Select(f => Tuple.Create(a, GetDefenders(a, f))))
                 .Where(t => t.Item2.ContainsKey(killable));
@@ -351,7 +350,7 @@ namespace WinFormsApp1
                 Tile attackFrom = attacker.Tile;
                 //not quite right
                 if (attack.Range == Attack.MELEE_RANGE && attacker.HasBehavior(out IMovable movable))
-                    attackFrom = friendly.Tile.GetVisibleAdjacentTiles().Where(t => t.Piece is null || t.Piece.HasBehavior<IMovable>())
+                    attackFrom = friendly.Tile.GetVisibleAdjacentTiles().Where(t => t.Piece == null || t.Piece.HasBehavior<IMovable>())
                         .FirstOrDefault(t => attackFrom.MoveDistTo(t) <= movable.MoveCur);
                 return attack.GetDefenders(friendly, attackFrom);
             }
@@ -365,44 +364,44 @@ namespace WinFormsApp1
                 IBuilder builder = piece.GetBehavior<IBuilder>();
                 if (!move && piece.HasBehavior<IBuilder.IBuildMech>())
                     move |= Game.Player.Research.Blueprints.Any(b => Game.Player.Has(b.Energy, b.Mass) && GetNotify(b));
-                if (!move && piece.HasBehavior<IBuilder.IBuildConstructor>())
+                if (!move && piece.HasBehavior(out IBuilder.IBuildConstructor constructorB))
                 {
                     Constructor.Cost(Game, out int e, out int m);
-                    move |= Game.Player.Has(e, m) && NotifyConstructor;
+                    move |= Game.Player.Has(e, m) && Notify(constructorB);
                 }
-                if (!move && piece.HasBehavior<IBuilder.IBuildDrone>())
+                if (!move && piece.HasBehavior(out IBuilder.IBuildDrone droneB))
                 {
                     Drone.Cost(Game, out int e, out int m);
-                    move |= Game.Player.Has(e, m) && NotifyDrone;
+                    move |= Game.Player.Has(e, m) && Notify(droneB);
                 }
                 if (!move && piece.HasBehavior<IBuilder.IBuildExtractor>())
                     move |= piece.Tile.GetVisibleTilesInRange(builder).Select(t => t.Piece as Resource).Where(r => r != null).Any(r =>
                     {
-                        Extractor.Cost(out int e, out int m, r);
+                        Extractor.Cost(r, out int e, out int m);
                         return Game.Player.Has(e, m);
                     });
                 if (!move)
                     if (builder != null && piece.Tile.GetVisibleTilesInRange(builder).Select(t => t.Piece as Foundation).Any(f => f != null))
                     {
-                        if (piece.HasBehavior<IBuilder.IBuildOutpost>())
+                        if (piece.HasBehavior(out IBuilder.IBuildOutpost outpostB))
                         {
                             Outpost.Cost(Game, out int e, out int m);
-                            move |= Game.Player.Has(e, m);
+                            move |= Game.Player.Has(e, m) && Notify(outpostB);
                         }
-                        if (!move && piece.HasBehavior<IBuilder.IBuildFactory>())
+                        if (!move && piece.HasBehavior(out IBuilder.IBuildFactory factoryB))
                         {
                             Factory.Cost(Game, out int e, out int m);
-                            move |= Game.Player.Has(e, m);
+                            move |= Game.Player.Has(e, m) && Notify(factoryB);
                         }
-                        if (!move && piece.HasBehavior<IBuilder.IBuildTurret>())
+                        if (!move && piece.HasBehavior(out IBuilder.IBuildTurret turretB))
                         {
                             Turret.Cost(Game, out int e, out int m);
-                            move |= Game.Player.Has(e, m);
+                            move |= Game.Player.Has(e, m) && Notify(turretB);
                         }
-                        if (!move && piece.HasBehavior<IBuilder.IBuildGenerator>())
+                        if (!move && piece.HasBehavior(out IBuilder.IBuildGenerator generatorB))
                         {
                             Generator.Cost(Game, out int e, out int m);
-                            move |= Game.Player.Has(e, m);
+                            move |= Game.Player.Has(e, m) && Notify(generatorB);
                         }
                     }
 
@@ -424,7 +423,7 @@ namespace WinFormsApp1
                     if (!move && killable != null)
                     {
                         var flattenedDef = attacks.Select(t => t.Item2.Keys
-                                .Select(k => Tuple.Create(t.Item1, k, k.AllDefenses.Sum(d => Consts.StatValue(d.DefenseCur))))
+                                .Select(k => Tuple.Create(t.Item1, k, k.CurDefenseValue))
                                 .OrderByDescending(t => t.Item3).ThenBy(t => t.Item2.Piece.PieceNum).ThenBy(t => t.Item2.Piece.GetType().ToString()).First());
                         var attDefPairs = flattenedDef.GroupBy(t => t.Item2)
                             .Select(g => Tuple.Create(g.Select(t => t.Item1).Distinct().Sum(a => Consts.StatValue(a.AttackCur)), g.Max(t => t.Item3)));
@@ -444,26 +443,122 @@ namespace WinFormsApp1
                     move |= mech.CanUpgrade(out _, out _, out _);
             }
 
+            if (piece.HasBehavior(out IAttacker attacker))
+            {
+                static double GetRange(Attack a) => a.CanAttack() ? a.Range : 0;
+                double maxRange = attacker.Attacks.Max(GetRange);
+                Attack max = Game.Rand.SelectValue(attacker.Attacks.Where(a => GetRange(a) == maxRange));
+                canAttack = maxRange > 0 && piece.Tile.GetVisibleTilesInRange(max).Any(t => t.Piece != null && t.Piece.HasBehavior<IKillable>() && t.Piece.IsEnemy);
+                if (!canAttack && piece.HasBehavior(out IMovable movable) && attacker.Attacks.Any(a => a.CanAttack() && a.Range == Attack.MELEE_RANGE))
+                {
+                    double meleeRange = movable.MoveCur + Attack.MELEE_RANGE;
+                    var meleeTiles = Game.Enemy.VisiblePieces
+                        .Where(e => e.HasBehavior<IKillable>() && piece.Tile.GetDistance(e.Tile) <= meleeRange)
+                        .SelectMany(e => e.Tile.GetVisibleAdjacentTiles())
+                        .Where(t => t.Piece == null || (t.Piece.IsPlayer && t.Piece.HasBehavior<IMovable>())).ToHashSet();
+                    canAttack = meleeTiles.Any(t => piece.Tile.MoveDistTo(t) <= movable.MoveCur);
+                    //if (!canAttack)
+                    //    canAttack = TurnPath(movable).Select(Game.Map.GetVisibleTile).Any(meleeTiles.Contains);
+                }
+                move |= canAttack;
+            }
+
             if (move)
                 Wake(piece);
 
             return move;
         }
+        public static IEnumerable<Point> TurnPath(IMovable movable, HashSet<Point> initial = null)
+        {
+            return initial;
+            //Piece piece = movable.Piece;
+            //Side side = piece.Side;
+            //Tile start = piece.Tile;
+            //double moveCur = movable.MoveCur;
+
+            //Tile GetTile(Point point)
+            //{
+            //    Tile t = Game.Map.GetVisibleTile(point);
+            //    Piece p = t?.Piece;
+            //    if (p != null && (p.Side != side || !p.HasBehavior<IMovable>()))
+            //        t = null;
+            //    return t;
+            //}
+
+            //initial ??= [.. start.GetPointsInRange(movable)];
+            //Dictionary<Tile, double> moves = initial.Select(GetTile).Where(t => t != null)
+            //    .Where(t => start.GetDistance(t) == start.MoveDistTo(t))
+            //    .ToDictionary(t => t, t => start.GetDistance(t));
+
+            //var extended = start.GetPointsInRange(moveCur).Select(GetTile).Where(t => t != null).Except(moves.Keys).ToHashSet();
+
+            //foreach (var pair in moves.ToArray())
+            //    foreach (Tile to in extended.ToArray())
+            //    {
+            //        double dist = pair.Key.GetDistance(to);
+            //        if (dist == pair.Key.MoveDistTo(to))
+            //        {
+            //            dist += pair.Value;
+            //            if (dist <= moveCur)
+            //            {
+            //                moves[to] = Math.Min(moves.GetValueOrDefault(to, moveCur), dist);
+            //                //extended.Remove(to);
+            //                //found = true;
+            //            }
+            //        }
+            //    }
+
+            ////bool found = false;
+            ////while (extended.Count > 0 && !found)
+            ////{
+            ////    found = false;
+            ////    foreach (Tile to in extended.ToArray())
+            ////    {
+            ////        double min = moveCur + 1;
+            ////        foreach (var pair in moves.ToArray())
+            ////            if (pair.Key.GetDistance(to) == pair.Key.MoveDistTo(to))
+            ////                min = Math.Min(min, pair.Value + pair.Key.GetDistance(to));
+            ////        if (min <= moveCur)
+            ////        {
+            ////            moves.Add(to, min);
+            ////            extended.Remove(to);
+            ////            found = true;
+            ////        }
+            ////    }
+            ////}
+
+            //return moves.Keys.Select(t => t.Location);
+            ////foreach (Point p1 in initial)
+            ////    foreach (Point p2 in TurnPath(side, start, p1, extended, moveCur))
+            ////        yield return p2;
+        }
+        //private static IEnumerable<Point> TurnPath(Side side, Tile start, Point point, HashSet<Point> extended, double moveCur)
+        //{
+        //    Tile tile = Game.Map.GetVisibleTile(point);
+        //    //need to ensure min path....
+        //    double remaining = moveCur - start.MoveDistTo(tile);
+        //    if (remaining >= 0)
+        //    {
+        //        yield return point;
+        //        extended.Remove(point);
+
+        //        if (remaining >= 1)
+        //            foreach (Point p1 in extended.ToHashSet())
+        //                foreach (Point p2 in TurnPath(side, tile, p1, extended, remaining))
+        //                    yield return p2;
+        //    }
+        //}
         //public static bool TurnPath(IMovable movable, Point point)
         //{
         //    //Tile from = movable.Piece.Tile, to = Game.Map.GetVisibleTile(point), t = null;
         //    //return from.GetPointsInRange(movable).Any(p =>
         //    //       from.MoveDistTo(t = Game.Map.GetVisibleTile(p)) + t.MoveDistTo(to) <= movable.MoveCur);
-
         //    return false;
-
         //    //TODO: performance? - need to walk outward 
-
         //    //Tile from = movable.Piece.Tile;
         //    //Tile to = Game.Map.GetVisibleTile(point);
         //    //double moveCur = movable.MoveCur;
         //    //var path = Game.Map.PathFind(from, to, moveCur, moveCur, p => from.GetDistance(p) > moveCur);
-
         //    //if (path == null)
         //    //    return false;
         //    //double dist = 0;

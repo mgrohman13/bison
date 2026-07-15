@@ -167,13 +167,17 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
             }
             return false;
         }
-        public static int TerrainAttMod(Tile from, Tile to)
+        public static int TerrainAttMod(Tile? from, Tile? to)
         {
-            double a = from.Height();
-            double d = to.Height();
-            if (a >= d + .95)
+            double a = from?.Height() ?? 0;
+            double d = to?.Height() ?? 0;
+            return TerrainAttMod(a, d);
+        }
+        public static int TerrainAttMod(double a, double d)
+        {
+            if (a > d)
                 return 1;
-            if (d >= a + .95)
+            if (d > a)
                 return -1;
             return 0;
         }

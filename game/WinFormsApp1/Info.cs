@@ -2,6 +2,7 @@
 using ClassLibrary1.Pieces;
 using ClassLibrary1.Pieces.Behavior;
 using ClassLibrary1.Pieces.Behavior.Combat;
+using ClassLibrary1.Pieces.Enemies;
 using ClassLibrary1.Pieces.Players;
 using ClassLibrary1.Pieces.Terrain;
 using System;
@@ -242,7 +243,7 @@ namespace WinFormsApp1
                             }
                         }
                     }
-                    //if (Selected.Piece is Alien alien)
+                    //if (SelTile.Piece is Alien alien)
                     //{
                     //    lbl6.Show();
                     //    lblInf6.Show();
@@ -286,7 +287,7 @@ namespace WinFormsApp1
                     {
                         if (extractor == null)
                         {
-                            Extractor.Cost(out int energy, out int mass, resource);
+                            Extractor.Cost(resource, out int energy, out int mass);
                             lbl2.Show();
                             lblInf2.Show();
                             lbl2.Text = "Build Cost";
@@ -347,7 +348,7 @@ namespace WinFormsApp1
                         dgvAttacks.Columns["Online"].Visible = attacks.Any(a => !a.CanAttack());
                         dgvAttacks.Columns["Type"].Visible = attacks.Any(a => a.Type != AttackType.Kinetic);
                         dgvAttacks.Columns["Range"].Visible = attacks.Any(a => a.Range > Attack.MELEE_RANGE);
-                        dgvAttacks.Columns["Reload"].Visible = silo is null;
+                        dgvAttacks.Columns["Reload"].Visible = silo == null;
 
                         int labelsY = this.Controls.OfType<Label>().Where(lbl => lbl.Visible && lbl.Parent != this.panel1).Max(lbl => lbl.Location.Y + lbl.Height);
                         dgvAttacks.MaximumSize = new Size(this.Width, this.panel1.Location.Y - labelsY);

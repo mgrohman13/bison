@@ -71,8 +71,10 @@ namespace ClassLibrary1
 
             Player.NewGame(constructor);
 
-            Tile tile = Map.GetTile(Player.Core.Tile.X + constructor.X, Player.Core.Tile.Y + constructor.Y);
+            constructor = new(Player.Core.Tile.X + constructor.X, Player.Core.Tile.Y + constructor.Y);
+            Tile tile = Map.GetTile(constructor);
             Map.Clear(tile.Location, Constructor.BASE_VISION);
+            tile = Map.GetTile(constructor);
             Constructor.NewConstructor(tile, true);
 
             Player.Research.NewGame();
@@ -170,7 +172,7 @@ namespace ClassLibrary1
             Debug.WriteLine("SaveGame");
             TBSUtil.SaveGame(this, SavePath);
         }
-        public static Game LoadGame<T>(string filePath, out T data) //where T : ISerializable
+        public static Game LoadGame<T>(string filePath, out T data) // where T : ISerializable
         {
             Game game = TBSUtil.LoadGame<Game>(filePath);
             game.OnDeserialization();

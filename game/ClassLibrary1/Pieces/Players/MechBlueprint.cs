@@ -73,10 +73,10 @@ namespace ClassLibrary1.Pieces.Players
                     rangeMult = (a.Range + Attack.MELEE_RANGE) / (Math.PI * Attack.MIN_RANGED);
                 rangeMult = Math.Pow(rangeMult, 1.17);
                 return BaseAttCost(a)
-                    * Math.Sqrt(a.Reload / CombatTypes.ReloadAvg(a.Attack))
+                    * Math.Pow((a.Reload + .5) / (CombatTypes.ReloadAvg(a.Attack) + .5), .91)
                     * rangeMult;
             }
-            ;
+
             double DefCost(IKillable.Values d) => Consts.StatValue(d.Defense) * CombatTypes.Cost(d.Type)
                 * (d.Type == DefenseType.Hits ? Math.Pow(r, 1.56) * .78 : 1.04);
 
@@ -156,7 +156,7 @@ namespace ClassLibrary1.Pieces.Players
                 if (b is MechBlueprint blueprint)
                 {
                     chance = researchLevel - blueprint.ResearchLevel;
-                    if (chance < 0 || blueprint.UpgradeTo is not null)
+                    if (chance < 0 || blueprint.UpgradeTo != null)
                         chance = 0;
                 }
                 else
@@ -227,7 +227,7 @@ namespace ClassLibrary1.Pieces.Players
             double resilience = GenResilience(research);
             IReadOnlyList<IKillable.Values> killable = GenKillable(research);
             IReadOnlyList<IAttacker.Values> attacker = GenAttacker(research);
-            IMovable.Values movable = GenMovable(research);
+            IMovable.Values movable = GenMovable(research, killable, attacker);
             return new(blueprintNum, null, researchLevel, vision, killable, resilience, attacker, movable);
         }
 
@@ -322,7 +322,7 @@ namespace ClassLibrary1.Pieces.Players
                         UpgDefenseType(DefenseType.Shield);
                         break;
                     case Type.MechMove:
-                        IMovable.Values newMovable = GenMovable(research);
+                        IMovable.Values newMovable = GenMovable(research, killable, attacker);
                         double inc = newMovable.MoveInc;
                         int max = movable.MoveMax;
                         if (max <= inc || (newMovable.MoveMax > inc && Game.Rand.Bool()))
@@ -338,7 +338,7 @@ namespace ClassLibrary1.Pieces.Players
                         vision = GenVision(research);
                         if (Game.Rand.Bool())
                         {
-                            newMovable = GenMovable(research);
+                            newMovable = GenMovable(research, killable, attacker);
                             movable = new IMovable.Values(newMovable);
                         }
                         break;
@@ -720,7 +720,7 @@ namespace ClassLibrary1.Pieces.Players
                 HashSet<Type> apply = GetResearchTypes(type, ranged);
 
                 //modify for current research type
-                double attAvg = 3.9, dev = .21, oe = .091;
+                double attAvg = 3.9, dev = .21, oe = .052;
                 foreach (var item in apply)//Game.Rand.Iterate(apply))
                     ModValues(researchType == item, 1.3, ref attAvg, ref dev, ref oe);
 
@@ -756,6 +756,17 @@ namespace ClassLibrary1.Pieces.Players
                 int attack = cap;
                 if (attAvg > cap)
                     attack = Game.Rand.GaussianOEInt(attAvg, dev, oe, cap);
+
+                if (range > Attack.MELEE_RANGE)
+                {
+                    double mult = Game.Rand.GaussianOEInt(1.69, .078, .021, 1);
+                    while (attack > Game.Rand.GaussianCappedInt(mult + range / mult, .26, 1))
+                    {
+                        attack--;
+                        range += Game.Rand.DoubleFull(mult);
+                    }
+                }
+
                 attacks.Add(new(type, attack, range));
             }
             return attacks.AsReadOnly();
@@ -829,7 +840,7 @@ namespace ClassLibrary1.Pieces.Players
             }
         }
 
-        private static IMovable.Values GenMovable(IResearch research)
+        private static IMovable.Values GenMovable(IResearch research, IEnumerable<IKillable.Values> killable, IEnumerable<IAttacker.Values> attacker)
         {
             double avg = 6.00, dev = .169, oe = .13;
 
@@ -848,10 +859,34 @@ namespace ClassLibrary1.Pieces.Players
             if (avg < cap)
                 ;
             double move = Game.Rand.GaussianOE(1 + avg, dev, oe, cap);
-            int max = Game.Rand.GaussianOEInt(1 + move * 2, dev * 2.6, oe * 1.3, (int)Math.Ceiling(move) + 1);
+            int MinMax() => (int)Math.Ceiling(move) + 1;
+            int max = Game.Rand.GaussianOEInt(1 + move * 2, dev * 2.6, oe * 1.3, MinMax());
             int limit = Game.Rand.GaussianOEInt(1 + move + max, dev * 2.6, oe * 2.6, max + (int)move);
 
-            return new(move, max, limit);
+            IMovable.Values movable = new(move, max, limit);
+
+            double att = attacker.Sum(a => Consts.StatValue(a.Attack));
+            double def = killable.Sum(k => Consts.StatValue(k.Defense));
+            while (Game.Rand.DoubleFull(Consts.MoveValue(movable)) > Game.Rand.DoubleHalf(att) + Game.Rand.DoubleHalf(def))
+            {
+                move -= Game.Rand.DoubleHalf();
+                if (move < cap)
+                {
+                    move = cap;
+                }
+                else
+                {
+                    max -= Game.Rand.RangeInt(0, 1);
+                    int m = MinMax();
+                    if (max < m)
+                        max = m;
+                    else if (limit > max + (int)move)
+                        limit -= Game.Rand.RangeInt(0, 1);
+                }
+                movable = new(move, max, limit);
+            }
+
+            return movable;
         }
 
         private static void ModValues(bool match, double mult, ref double avg, ref double dev, ref double oe)

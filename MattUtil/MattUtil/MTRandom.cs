@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
 
@@ -91,13 +92,13 @@ namespace MattUtil
 
         //constants for float generation and conversion
         public const byte FLOAT_BITS = 24;
-        private const float FLOAT_DIV = 0x0FFFFFF;
-        private const float FLOAT_DIV_1 = 0x1000000;
+        public const float FLOAT_DIV = 0x0FFFFFF;
+        public const float FLOAT_DIV_1 = 0x1000000;
 
         //constants for double generation and conversion
         public const byte DOUBLE_BITS = 53;
-        private const double DOUBLE_DIV = 0x1FFFFFFFFFFFFF;
-        private const double DOUBLE_DIV_1 = 0x20000000000000;
+        public const double DOUBLE_DIV = 0x1FFFFFFFFFFFFF;
+        public const double DOUBLE_DIV_1 = 0x20000000000000;
 
         private static readonly int OE_INT_LIMIT;           //  58,455,924 ( 36.7368005696771 )
         private static readonly int OE_INT_FLOAT_LIMIT;     // 129,090,164 ( 16.6355324       )
@@ -345,8 +346,9 @@ namespace MattUtil
         public static uint[] GenerateSeed(IEnumerable<object> seedData)
         {
             byte[] bytes = seedData
-                .SelectMany(obj => obj is System.Collections.IEnumerable arr ? arr.OfType<object>() : new object[] { obj })
-                .SelectMany(obj => obj is string str ? str.ToCharArray().Cast<object>() : new object[] { obj })
+                .SelectMany(obj => obj is System.Collections.IEnumerable arr ? arr.OfType<object>() : [obj])
+                .SelectMany(obj => obj is ITuple t ? Expand(t) : [obj])
+                .SelectMany(obj => obj is string str ? str.ToCharArray().Cast<object>() : [obj])
                 .SelectMany(GetBytes)
                 .ToArray();
             uint[] seed = new uint[(bytes.Length + 3) / 4];
@@ -365,10 +367,17 @@ namespace MattUtil
             }
             return seed;
 
+            static object[] Expand(ITuple t)
+            {
+                object[] elements = new object[t.Length];
+                for (int a = 0; a < t.Length; a++)
+                    elements[a] = t[a];
+                return elements;
+            }
             static byte[] GetBytes(object obj)
             {
                 if (obj is null)
-                    return new byte[] { 188, 74, 110 };
+                    return [188, 74, 110];
 
                 Type type = obj.GetType();
                 if (type.IsEnum)

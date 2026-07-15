@@ -156,7 +156,7 @@ namespace ClassLibrary1.Pieces.Enemies
                 if (exits.Any())
                     exit = Game.Rand.SelectValue(exits);
             }
-            return exit is not null;
+            return exit != null;
         }
         internal Tile GetOutTile()
         {
@@ -169,7 +169,7 @@ namespace ClassLibrary1.Pieces.Enemies
                     tile = Game.Map.GetTile(Tile.X + Game.Rand.GaussianInt(range), Tile.Y + Game.Rand.GaussianInt(range));
                     range += Game.Rand.DoubleFull();
                 }
-                while (tile is null || tile.Piece is not null);
+                while (tile == null || tile.Piece != null);
                 return tile;
             }
             return null;

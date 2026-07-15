@@ -1,7 +1,6 @@
 ﻿using ClassLibrary1.Pieces.Behavior;
 using ClassLibrary1.Pieces.Behavior.Combat;
 using ClassLibrary1.Pieces.Terrain;
-using MattUtil;
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
@@ -15,34 +14,34 @@ namespace ClassLibrary1.Pieces.Players
     [DataContract(IsReference = true)]
     public class Core : PlayerPiece, IDeserializationCallback, IIncome, IKillable.IRepairable
     {
+        public const int CORE_HITS = 10;
+        public const double CORE_RANGE = 8.5;
+
         private double _income = 1, _incomeTrg = 1, _hitsResearchMult = 1;
 
-        //public const double START_VISION = 0;
-        public const int CORE_HITS = 10;
-
-        private readonly Killable killable;
-
         bool IKillable.IRepairable.AutoRepair => true;
-        double IKillable.IRepairable.RepairCost => short.MaxValue; //32,767 - should never be used?
+        double IKillable.IRepairable.RepairCost => short.MaxValue; //32,767 - should never be used
 
-        private Core(Tile tile, Values values)
+        private Core(Tile tile)
             : base(tile, 0)
         {
-            killable = new Killable(this, new IKillable.Values(DefenseType.Hits, CORE_HITS), Values.Resilience);
-            SetBehavior(killable, new Repair(this, values.Repair));
-            Unlock(tile.Map.Game.Player.Research);
+            SetBehavior(
+                new Killable(this, new IKillable.Values(DefenseType.Hits, CORE_HITS), 1),
+                new Repair(this, new(new(CORE_RANGE), 1)));
+            Unlock();
 
             OnDeserialization(this);
         }
         internal static Core NewCore(Tile tile)
         {
-            Core obj = new(tile, GetValues(tile.Map.Game));
+            Core obj = new(tile);
             tile.Map.Game.AddPiece(obj);
             return obj;
         }
         public void OnDeserialization(object sender)
         {
             //base.OnDeserialization(sender);
+            IKillable killable = GetBehavior<IKillable>();
             if (killable != null)
             {
                 ((Killable)killable).OnDeserialization(this);
@@ -52,6 +51,7 @@ namespace ClassLibrary1.Pieces.Players
 
         private void Killable_DamagedEvent(object sender, Killable.DamagedEventArgs e)
         {
+            IKillable killable = GetBehavior<IKillable>();
             if (!killable.Dead)
             {
                 int defenseCur = killable.Hits.DefenseCur;
@@ -61,33 +61,24 @@ namespace ClassLibrary1.Pieces.Players
 
         internal override void OnResearch(Research.Type type)
         {
-            Unlock(Game.Player.Research);
-            Values values = GetValues(Game);
-
-            //this.Vision = START_VISION;
-            //must check research type because defense could drop below rounding threshold from being attacked
-            if (type == Research.Type.CoreDefense)
-                GetBehavior<IKillable>().Upgrade(
-                    values.GetKillable(Game.Player.Research, killable.Hits.DefenseCur, ref _hitsResearchMult), Values.Resilience);
-            GetBehavior<IRepair>().Upgrade(values.Repair);
-            Builder.UpgradeAll(this, values.Repair.Builder);
-
-            //this._hitsResearchMult = values.HitsResearchMult;
+            Unlock();
+            Upgrade(type);
         }
-
-        private void Unlock(Research research)
+        private void Upgrade(Research.Type type)
+        { 
+            Values values = Game.Player.GetUpgradeValues<Values>();
+            IKillable killable = GetBehavior<IKillable>();
+            killable.Upgrade(values.GetKillable(type, Game.Player.Research, killable.Hits.DefenseCur, ref _hitsResearchMult), 1);
+        }
+        private void Unlock()
         {
-            Values values = GetValues(Game);
+            Research research = Game.Player.Research;
+
             if (!HasBehavior<IBuilder.IBuildMech>() && research.HasType(Research.Type.Mech))
-                SetBehavior(new Builder.BuildMech(this, values.Repair.Builder));
+                SetBehavior(new Builder.BuildMech(this, new()));
             if (!HasBehavior<IBuilder.IBuildConstructor>() && research.HasType(Research.Type.Constructor))
-                SetBehavior(new Builder.BuildConstructor(this, values.Repair.Builder));
-            //if (!HasBehavior<IMissileSilo>() && research.HasType(Research.Type.Missile))
-            //    SetBehavior(new MissileSilo(this));
-        }
-        private static Values GetValues(Game game)
-        {
-            return game.Player.GetUpgradeValues<Values>();
+                SetBehavior(new Builder.BuildConstructor(this, new()));
+            Builder.UpgradeAll(this, new(GetBehavior<IRepair>().RangeBase));
         }
 
         internal override void Die(out Tile tile, out double treasure)
@@ -96,16 +87,6 @@ namespace ClassLibrary1.Pieces.Players
             treasure = 0;
             Game.End();
         }
-
-        //double IKillable.IRepairable.RepairCost
-        //{
-        //    get
-        //    {
-        //        return Consts.GetRepairCost(this, GetValues(Game).Energy, GetValues(Game).Mass);
-        //    }
-        //}
-        //bool IKillable.IRepairable.AutoRepair => false;
-        //public bool CanRepair() => Consts.CanRepair(this);
 
         internal override void GenerateResources(ref double energyInc, ref double massInc, ref double researchInc)
         {
@@ -137,81 +118,51 @@ namespace ClassLibrary1.Pieces.Players
         [DataContract(IsReference = true)]
         private class Values : IUpgradeValues
         {
-            public const double Resilience = 1;
-            //private readonly double energy, mass;
-            private readonly IRepair.Values repair;
-
-            //private double vision;
-            //private IKillable.Values hits;
-            private IKillable.Values shield, armor;
             private double hitsResearchMult = 1;
-            private double rounding = Game.Rand.NextDouble();
+            private int shields, armor;
 
-            public Values()
+            public IKillable.Values[] GetKillable(Research.Type type, Research research, int curDef, ref double prevMult)
             {
-                this.repair = new(new(8.5), 1);
-
-                this.shield = new(CombatTypes.DefenseType.Shield, 1);
-                this.armor = new(CombatTypes.DefenseType.Armor, 1);
-            }
-
-            public double HitsResearchMult => hitsResearchMult;
-
-            //public double Energy => energy;
-            //public double Mass => mass;
-            //public double Vision => START_VISION;
-            //public IKillable.Values Hits => hits;
-            //public IKillable.Values Shield => shield;
-            //public IKillable.Values Armor => armor;
-            public IRepair.Values Repair => repair;
-
-            public IKillable.Values[] GetKillable(Research research, int curDef, ref double prevMult)
-            {
-                int def = curDef;
-                double diff = hitsResearchMult - prevMult;
-                if (diff > 0)
+                if (type == Research.Type.CoreDefense)
                 {
-                    double inc = Consts.StatValue(CORE_HITS);
-                    def = MTRandom.Round(Consts.StatValueInverse(Consts.StatValue(curDef) + diff * inc), rounding);
-                    if (def < curDef)
-                        def = curDef;
-                    prevMult += (Consts.StatValue(def) - Consts.StatValue(curDef)) / inc;
+                    double diff = this.hitsResearchMult - prevMult;
+                    if (diff > 0)
+                    {
+                        double inc = Consts.StatValue(CORE_HITS);
+                        int def = Game.Rand.Round(Consts.StatValueInverse(Consts.StatValue(curDef) + diff * inc));
+                        if (def < curDef)
+                            def = curDef;
+
+                        prevMult += (Consts.StatValue(def) - Consts.StatValue(curDef)) / inc;
+                        curDef = def;
+                    }
                 }
 
-                IKillable.Values hits = new(DefenseType.Hits, def);
+                IKillable.Values hits = new(DefenseType.Hits, curDef);
                 List<IKillable.Values> defs = [hits];
                 if (research.HasType(Research.Type.CoreDefense))
-                    defs.Add(shield);
+                    defs.Add(new(DefenseType.Shield, this.shields));
                 if (research.HasType(Research.Type.CoreArmor))
-                    defs.Add(armor);
+                    defs.Add(new(DefenseType.Armor, this.armor));
                 return [.. defs];
             }
 
             public void Upgrade(Research.Type type, double researchMult)
             {
-                //if (type == Research.Type.BuildingDefense)
-                //    UpgradeBuildingHits(researchMult);
-                //else
                 if (type == Research.Type.CoreDefense)
                     UpgradeCoreDefense(researchMult);
             }
-            //private void UpgradeBuildingHits(double researchMult)
-            //{
-            //    //this.vision = START_VISION * Math.Pow(researchMult, Core_Vision);
-
-            //    double defAvg = ResearchUpgValues.Calc(UpgType.CoreDefense, researchMult);
-            //    this.hits = new(DefenseType.Hits, Game.Rand.Round(defAvg));
-            //}
             private void UpgradeCoreDefense(double researchMult)
             {
                 this.hitsResearchMult = researchMult;
-                this.rounding = Game.Rand.NextDouble();
 
                 double shieldAvg = ResearchUpgValues.Calc(UpgType.CoreShields, researchMult);
-                this.shield = new(DefenseType.Shield, Game.Rand.Round(shieldAvg));
+                this.shields = Game.Rand.Round(shieldAvg);
+
                 double armorAvg = ResearchUpgValues.Calc(UpgType.CoreArmor, researchMult);
-                armorAvg *= Consts.StatValueInverse(Consts.StatValue(shieldAvg) / Consts.StatValue(shield.Defense));
-                this.armor = new(DefenseType.Armor, Game.Rand.Round(armorAvg));
+                armorAvg = Consts.StatValueInverse(Consts.StatValue(armorAvg) + Consts.StatValue(shieldAvg) - Consts.StatValue(shields));
+                armorAvg = Math.Max(armorAvg, 1);
+                this.armor = Game.Rand.Round(armorAvg);
             }
         }
     }

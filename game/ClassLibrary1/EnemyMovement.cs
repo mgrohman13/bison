@@ -16,7 +16,7 @@ namespace ClassLibrary1
 {
     internal static class EnemyMovement
     {
-        internal static void PlayTurn(Game game, double difficulty, bool clearPaths, Action<Tile, double> UpdateProgress)
+        internal static void PlayTurn(Game game, double difficulty, double aggression, bool clearPaths, Action<Tile, double> UpdateProgress)
         {
             double offset = 0;
             offset = game.Enemy.Pieces.Average(Time);
@@ -28,7 +28,7 @@ namespace ClassLibrary1
             double avgHp = 1, avgWeight = 1;
             if (allTargets.Count > 0)
             {
-                avgHp = allTargets.Keys.Average(k => k.AllDefenses.Sum((Func<Defense, double>)(d => Consts.StatValue(d.DefenseCur))));
+                avgHp = allTargets.Keys.Average(DefWeight);
                 avgWeight = allTargets.Keys.Average(k => GetKillWeight(k, avgHp, null, null));
             }
 
@@ -37,7 +37,7 @@ namespace ClassLibrary1
             foreach (var piece in Game.Rand.Iterate(game.Enemy.Pieces.Cast<EnemyPiece>()).OrderBy(p => p is Hive ? 1 : 2))
             {
                 progress += Time(piece) / totalTime;
-                allTargets = PlayTurn(piece, difficulty, clearPaths, moved, playerAttacks, allTargets, avgHp, avgWeight);
+                allTargets = PlayTurn(piece, difficulty, aggression, clearPaths, moved, playerAttacks, allTargets, avgHp, avgWeight);
                 UpdateProgress(piece.Tile.Visible ? piece.Tile : null, Math.Min(progress, 1));
             }
             double Time(Piece enemy) => offset + (enemy.HasBehavior(out IMovable movable) ? movable.MoveCur * movable.MoveCur : 0);
@@ -54,26 +54,19 @@ namespace ClassLibrary1
                 }
             return result;
         }
-        private static IEnumerable<Tuple<Tile, double>> PlayerAttacks(IAttacker attacker)
-        {
-            if (attacker != null && !attacker.Piece.GetBehavior<IKillable>().Dead)
-                foreach (var attack in attacker.Attacks)
-                {
-                    Tile tile = attacker.Piece.Tile;
-                    var tiles = tile.GetTilesInRange(attack);
-                    if (attacker.HasBehavior(out IMovable movable) && attack.Range == Attack.MELEE_RANGE)
-                        tiles = tiles.Concat(tile.GetTilesInRange(movable).SelectMany(m => m.GetAdjacentTiles())).Distinct();
-                    foreach (var t in tiles)
-                        yield return Tuple.Create(t, Consts.StatValue(attack.AttackCur));
-                }
-        }
+        private static IEnumerable<Tuple<Tile, double>> PlayerAttacks(IAttacker attacker) =>
+            Tile.GetAttacks(attacker, false).Select(tuple =>
+                new Tuple<Tile, double>(attacker.Piece.Tile.Map.GetTile(tuple.Item1), tuple.Item2));
 
         private static Dictionary<IKillable, Dictionary<IKillable, int>> GetAllTargets(Game game) =>
             game.Player.PiecesOfType<IKillable>().ToDictionary(k => k, k => Attack.GetDefenders(game.Enemy, k.Piece));
 
-        private static Dictionary<IKillable, Dictionary<IKillable, int>> PlayTurn(EnemyPiece piece, double difficulty, bool clearPaths, HashSet<EnemyPiece> moved,
+        private static Dictionary<IKillable, Dictionary<IKillable, int>> PlayTurn(EnemyPiece piece, double difficulty, double aggression, bool clearPaths, HashSet<EnemyPiece> moved,
             Dictionary<Tile, double> playerAttacks, Dictionary<IKillable, Dictionary<IKillable, int>> allTargets, double avgHp, double avgWeight)
         {
+            if (piece.ToString() == "Alien 56")
+                ;
+
             IKillable killPiece = piece.GetBehavior<IKillable>();
             IAttacker attPiece = piece.GetBehavior<IAttacker>();
             IMovable movePiece = piece.GetBehavior<IMovable>();
@@ -90,11 +83,13 @@ namespace ClassLibrary1
                 ranged = [.. attacks.Where(a => a.Range > Attack.MELEE_RANGE)];
             }
 
-            HashSet<Tile> moveTiles = [];
             Tile orig = piece.Tile;
+            HashSet<Tile> moveTiles = [];
+            List<Tile> rawMoves = [];
             if (movePiece != null)
             {
-                moveTiles = [.. orig.GetTilesInRange(movePiece)];
+                rawMoves = [.. orig.GetTilesInRange(movePiece)];
+                moveTiles = [.. rawMoves];
                 if (melee.Any())
                     moveTiles = [.. moveTiles.SelectMany(t => t.GetAdjacentTiles())];
             }
@@ -117,20 +112,20 @@ namespace ClassLibrary1
                 if (movePiece != null && melee.Any())
                 {
                     var meleeTiles = moveTiles.ToList();
+                    moveTiles = [.. rawMoves];
                     FilterMoves();
-                    moveTiles = [.. orig.GetTilesInRange(movePiece)];
                     attTiles.UnionWith(meleeTiles.Where(t => t.GetTilesInRange(melee.First()).Any(moveTiles.Contains)));
                 }
                 targets = [.. attTiles.Select(t => t.Piece?.GetBehavior<IKillable>()).Where(k => k != null && k.Piece.IsPlayer && !k.Dead)];
             }
             FilterMoves();
 
-            double attValue = SumAttacks(attacks);
+            double attValue = SumAttacks(attacks, orig, null);
             double maxMoveAttRange = (movePiece?.MoveCur ?? 0) + (attacks.Max(a => a?.Range) ?? 0);
             HashSet<IKillable> extendedTargets = [.. allTargets.Keys.Where(k => orig.MoveDistTo(k.Piece.Tile) < maxMoveAttRange).SelectMany(k => allTargets[k].Keys)];
 
             AIState prev = piece.State;
-            AIState state = piece.TurnState(difficulty, clearPaths, playerAttacks, moveTiles, extendedTargets, out List<Point> fullPath);
+            AIState state = piece.TurnState(difficulty, aggression, clearPaths, playerAttacks, moveTiles, extendedTargets, out List<Point> fullPath);
             usePortal &= (state == AIState.Fight || state == AIState.Patrol || state == AIState.Rush);
 
             IKillable target = null;
@@ -148,7 +143,7 @@ namespace ClassLibrary1
             {
                 Tile tile = killable.Piece.Tile;
                 bool meleeRange = melee.Any() && tile.GetAdjacentTiles().Any(moveTiles.Contains);
-                double inRange = 1 + SumAttacks(attacks, a => a.Range == Attack.MELEE_RANGE ? meleeRange : tile.GetDistance(orig) <= a.Range);
+                double inRange = 1 + SumAttacks(attacks, orig, tile, a => a.Range == Attack.MELEE_RANGE ? meleeRange : orig.GetDistance(tile) <= a.Range);
                 return Game.Rand.Round(1 + inRange / (attValue < 1 ? 1 : attValue) * GetGroupWeight(killable));
             }
             double GetGroupWeight(IKillable killable)
@@ -165,24 +160,50 @@ namespace ClassLibrary1
             if (movePiece != null && state != AIState.Heal)
             {
                 bool seeCore = targets.Any(k => k.Piece is Core);
+
                 List<Tile> pathTiles = [];
-                if (fullPath != null && (fullPath.Count > 2 || piece.Game.Map.GetTile(fullPath[^1]).Piece is Portal))
+                if (fullPath != null)//&& (fullPath.Count > 2 || HasPortal(piece.Game.Map.GetTile(fullPath[^1]))))
                 {
-                    int keepDiv = 0;
-                    //Point final = fullPath[^1];
-                    for (int a = fullPath.Count; --a >= 0;)
+                    List<Tile> movePath = [];
+                    bool? prevContains = null;
+                    for (int a = 0; a < fullPath.Count; a++)
                     {
                         Tile pathTile = orig.Map.GetTile(fullPath[a]);
-                        //diminishing chance of adding each successive tile - we don't want very many since we loop through them for each possible moveTile
-                        if (moveTiles.Contains(pathTile) && Game.Rand.Next(++keepDiv) == 0)
-                            pathTiles.Add(pathTile);
+                        bool contains = moveTiles.Contains(pathTile);
+                        if (contains || prevContains == true)
+                        {
+                            if (contains && prevContains == false)
+                                movePath.Add(orig.Map.GetTile(fullPath[a - 1]));
+                            movePath.Add(pathTile);
+                        }
+                        prevContains = contains;
                     }
-                    pathTiles.Reverse();
+
+                    if (movePath.Count > 1)
+                        for (int b = 1; b < movePath.Count; b++)
+                            pathTiles.AddRange(Tile.GetLinePoints(movePath[b - 1].Location, movePath[b].Location)
+                                .Skip(b > 1 ? 1 : 0).Select(orig.Map.GetTile).Where(moveTiles.Contains));
+                    else
+                        pathTiles = movePath;
+
+                    if (pathTiles.Count > 0)
+                    {
+                        double pathHeight = pathTiles.Max(Tile.Height);
+                        pathTiles.Remove(orig);
+                        pathTiles.RemoveAll(t => !HasPortal(t) && Tile.Height(t) + Game.Rand.DoubleFull(Math.PI) < Game.Rand.DoubleHalf(pathHeight));
+                        //increasing chance of removing each tile further back in the path
+                        //we don't want too many since we loop through them for each possible moveTile
+                        int c = pathTiles.Count;
+                        if (c > 1)
+                            for (int d = c - 2; d >= 0; d--)
+                                if (Game.Rand.Next(c - d) > 0)
+                                    pathTiles.RemoveAt(d);
+                    }
                 }
 
-                static IEnumerable<IKillable> MeleeTargets(Tile tile) => tile.GetAdjacentTiles().Select(t => t.Piece?.GetBehavior<IKillable>()).Where(k => k != null && k.Piece.IsPlayer && !k.Dead);//reuse
+                static IEnumerable<IKillable> MeleeTargets(Tile tile) => tile.GetAdjacentTiles()
+                    .Select(t => t.Piece?.GetBehavior<IKillable>()).Where(k => k != null && k.Piece.IsPlayer && !k.Dead);//reuse
                 bool hasMeleeTrg = !melee.Any() || MeleeTargets(orig).Any();
-                //double meleeValue = SumAttacks(melee, _ => true);
                 double moveValue = (1 * movePiece.MoveCur + 2 * movePiece.MoveInc) / 3.0;
 
                 killPiece.GetHitsRepair(out double repair, out _);
@@ -190,10 +211,10 @@ namespace ClassLibrary1
                 if (armor != null)
                     repair += armor.GetRegen() / 2.0;
 
+                double morale = piece is Alien alien ? alien.Morale : 1;
+
                 Debug.WriteLine(piece);
 
-                //double multiplier = 1;
-                //eventually convert to ulong?
                 Dictionary<Tile, double> dictDbl = [];
 #pragma warning disable IDE0018 // Inline variable declaration
                 foreach (var moveTile in Game.Rand.Iterate(moveTiles))
@@ -241,6 +262,7 @@ namespace ClassLibrary1
                         {
                             double dist = moveTile.MoveDistTo(target.Piece.Tile);
                             attWeight = moveValue / (moveValue + dist * dist);
+                            attWeight *= attWeight;
                         }
                         else
                         {
@@ -263,6 +285,8 @@ namespace ClassLibrary1
                         double weight = 1 + (1 + pct * mult) / dist;
                         weight *= weight;
                         pathWeight = weight;
+                        if (state == AIState.Rush)
+                            pathWeight *= aggression;
                     }
                     else if (pathTiles.Count > 0)
                     {
@@ -286,11 +310,11 @@ namespace ClassLibrary1
                             else
                                 weight = Math.Sqrt(weight);
 
-                            pathWeight = Math.Max(pathWeight, (weight));
+                            pathWeight = Math.Max(pathWeight, weight);
                         }
                     }
 
-                    double coreWeight = Consts.CaveDistance / (Consts.CaveDistance + Consts.PathWidth + moveTile.GetDistance(piece.Game.Player.Core.Tile));
+                    double coreWeight = Consts.CaveDistance / (Consts.CaveDistance + Consts.PathWidth + moveTile.MoveDistTo(piece.Game.Player.Core.Tile));
                     //if (entrance)
                     //{
                     //    double[] all = new double[] { attWeight, pathWeight, coreWeight, playerAttWeight, moveWeight, // repairWeight,
@@ -310,7 +334,7 @@ namespace ClassLibrary1
                     playerAttWeight = defValue / (defValue + playerAttWeight);
                     playerAttWeight *= playerAttWeight;
 
-                    double moveWeight = (moveValue / (moveValue + orig.GetDistance(moveTile)));//Math.Sqrt
+                    double moveWeight = (moveValue / (moveValue + orig.MoveDistTo(moveTile)));//Math.Sqrt
 
                     double repairWeight = 1;
                     if (moveTile == orig || !moveTile.Visible)
@@ -327,12 +351,13 @@ namespace ClassLibrary1
                         }
                     }
 
+                    //height?
                     double defWeight = 1;
                     if (killPiece != null)
                     {
                         var friendly = moveTile.GetAdjacentTiles().Select(t => (t.Piece?.GetBehavior<IKillable>()))
                             .Where(k => k != null && k.Piece.Side == piece.Side && k.Piece != piece && moved.Contains(k.Piece)
-                                && !(piece is Hive && state == AIState.Rush)).ToList();
+                                && !(piece is Hive && state == AIState.Rush && extendedTargets.Count == 0)).ToList();
                         if (friendly.Count > 0)
                         {
                             int count = 0;
@@ -359,69 +384,75 @@ namespace ClassLibrary1
                         }
                     }
 
-                    double terrainWeight = 1;
-                    if (moveTile.Terrain is Island i)
+                    double moveHeight = Tile.Height(moveTile);
+                    double terrainWeight = Math.Pow(1 + 3.9 * Math.Sqrt(moveHeight / Island.HEIGHT), 1 + 1 / difficulty);
+                    double origHeight = Tile.Height(orig);
+                    if (moveHeight < origHeight)
                     {
-                        terrainWeight = 1 + 6.5 * i.Height / Island.HEIGHT;
-                        terrainWeight = Math.Pow(terrainWeight, 2 * (1 + difficulty));
+                        const double offset = Island.HEIGHT / 5;
+                        terrainWeight *= Math.Pow((moveHeight + offset) / (origHeight + offset), 1 + difficulty);
                     }
 
-                    //if (piece.ToString() == "Alien 36")
-                    //{
-                    //    string logWeights = string.Format("attWeight:{1}{0}pathWeight:{2}{0}coreWeight:{3}{0}playerAttWeight:{4}{0}moveWeight:{5}{0}repairWeight:{6}{0}defWeight:{7}",
-                    //          Environment.NewLine, attWeight, pathWeight, coreWeight, playerAttWeight, moveWeight, repairWeight, defWeight);
-                    //    Debug.WriteLine(logWeights);
-                    //}
-
-                    void Inc(ref double weight, double pow)
+                    //debug
+                    if (piece.ToString() == "Alien 56")
                     {
+                        string logWeights = string.Format("attWeight:{1}{0}pathWeight:{2}{0}coreWeight:{3}{0}playerAttWeight:{4}{0}moveWeight:{5}{0}repairWeight:{6}{0}defWeight:{7}",
+                            Environment.NewLine, attWeight, pathWeight, coreWeight, playerAttWeight, moveWeight, repairWeight, defWeight);
+                        Debug.WriteLine(logWeights);
+                    }
+
+                    void Inc(ref double weight, double pow, bool moraleDir = true)
+                    {
+                        double moraleMult = moraleDir ? morale : 1 - morale;
+                        pow = Math.Sqrt(pow) * (1 + moraleMult) / 1.5;
                         double prev = weight;
-                        weight = Math.Pow(weight, Math.Sqrt(pow));
+                        weight = Math.Pow(weight, pow);
                         if (double.IsInfinity(weight))
                         {
                             Debug.WriteLine("!!! weight overflow");
                             weight = double.MaxValue;
                         }
                     }
+                    Inc(ref attWeight, Math.Sqrt(aggression));
+                    Inc(ref pathWeight, Math.Sqrt(aggression));
+                    Inc(ref coreWeight, Math.Sqrt(aggression));
                     switch (state)
                     {
                         case AIState.Retreat:
                             Inc(ref attWeight, 1 / 4.5);
-                            Inc(ref pathWeight, 5);
-                            Inc(ref playerAttWeight, 4);
+                            Inc(ref pathWeight, 3, false);
+                            Inc(ref playerAttWeight, 4, false);
                             Inc(ref repairWeight, 5);
                             Inc(ref defWeight, 4);
+                            Inc(ref terrainWeight, 1 / 1.5);
                             break;
                         case AIState.Patrol:
-                            Inc(ref moveWeight, 2);
-                            Inc(ref terrainWeight, 3);
+                            Inc(ref moveWeight, 3, false);
+                            Inc(ref terrainWeight, 2, false);
                             goto case AIState.Fight;
                         case AIState.Fight:
-                            Inc(ref terrainWeight, 2);
-                            goto case AIState.Harass;
                         case AIState.Harass:
                             Inc(ref attWeight, 4);
-                            Inc(ref playerAttWeight, 2);
+                            Inc(ref playerAttWeight, 2, false);
                             Inc(ref defWeight, 3);
                             break;
                         case AIState.Rush:
                             if (seeCore)
                             {
                                 Inc(ref attWeight, 3);
-                                Inc(ref playerAttWeight, 1 / 2.5);
+                                Inc(ref playerAttWeight, 1 / 2.5, false);
                                 Inc(ref defWeight, 2);
                             }
                             else
                             {
                                 Inc(ref pathWeight, 4);
                                 Inc(ref coreWeight, 2);
-                                Inc(ref terrainWeight, 1 / 3.5);
+                                Inc(ref terrainWeight, 1 / 3.5, false);
                             }
                             Inc(ref coreWeight, 2);
                             goto case AIState.Fight;
                         default: throw new Exception();
                     }
-
 
                     double[] weights = [attWeight, pathWeight, coreWeight, playerAttWeight, moveWeight, repairWeight, defWeight, terrainWeight,];
                     double result = 1, div = 1;
@@ -487,19 +518,16 @@ namespace ClassLibrary1
                     Fire((meleeTrg?.Piece.Tile.GetDistance(moveTo) ?? 0) > Attack.MELEE_RANGE);
                 }
 
-                movePiece.EnemyMove(moveTo);
+                if (!movePiece.EnemyMove(moveTo))
+                    ;
 
                 playerAttacks.TryGetValue(orig, out double p);
                 playerAttacks.TryGetValue(piece.Tile, out double c);
                 if (p != c)
                 {
-                    double moraleMult = (c - p) / Math.Sqrt((c + p) / 2.0 * defValue);
-                    if (moraleMult < 0)
-                        moraleMult = 1 / (-moraleMult + 1);
-                    else
-                        moraleMult++;
+                    double moraleMult = MoraleMult(p, c);
                     moraleMult *= moraleMult;
-                    Alien.IncMorale(piece, moraleMult, 1, 2.1, orig, piece.Tile);
+                    Alien.IncMorale(piece, moraleMult, false, 2.6, orig, piece.Tile);
                 }
             }
 
@@ -525,48 +553,46 @@ namespace ClassLibrary1
 
                         if (target != null && allTargets.TryGetValue(target, out var trgGrp) && trgGrp.Count > 0)
                         {
-                            //if (state != AIState.Retreat)
-                            //{
                             double def = 0;
                             foreach (var pair in trgGrp)
                             {
                                 var defenses = pair.Key.AllDefenses.ToDictionary(d => d, CombatTypes.GetDefenceChance);
                                 double tDef = defenses.Sum(p => Consts.StatValue(p.Key.DefenseCur) * p.Value) / (double)defenses.Values.Sum();
-                                if (!pair.Key.Piece.HasBehavior<IAttacker>()) //?
+                                if (!pair.Key.Piece.HasBehavior<IAttacker>())
                                     tDef *= Game.Rand.DoubleHalf();
                                 def += tDef * pair.Value;
                             }
                             int defense = Game.Rand.Round(Consts.StatValueInverse(def / (double)trgGrp.Values.Sum()));
-                            double defWeight = state == AIState.Retreat ? .169 : .5;
+                            bool retreat = state == AIState.Retreat;
                             int mod = Game.Rand.Round(trgGrp.Sum(p => Attack.TerrainAttMod(attack.Piece.Tile, p.Key.Piece.Tile) * p.Value) / trgGrp.Values.Sum());
-                            if (!(IsFull(attack) || attack.AttackCur + mod > Game.Rand.WeightedInt(defense, defWeight))) //energy att more likely?
+                            if (!(IsFull(attack) || attack.AttackCur + mod > Game.Rand.RangeInt(0, defense)
+                                    || (playerAttacks.TryGetValue(piece.Tile, out double att)
+                                    && att > Game.Rand.Gaussian(retreat ? Game.Rand.DoubleHalf(defValue) : defValue, .169))))
                                 continue;
-                            //}
 
+                            double prevDef = trgGrp.Keys.Sum(k => k.CurDefenseValue);
+                            List<Tuple<Tile, double>> trgAttacks = [.. trgGrp.Keys.SelectMany(k => PlayerAttacks(k.GetBehavior<IAttacker>()))];
+                            foreach (var pair in trgAttacks)
+                                playerAttacks[pair.Item1] -= pair.Item2;
                             if (attPiece.EnemyFire(target, attack))
                             {
-                                //inc morale?
+                                double curDef = trgGrp.Keys.Sum(k => k.CurDefenseValue);
+                                bool kill = trgGrp.Keys.Any(k => k.Dead);
+                                double moraleMult = MoraleMult(curDef, prevDef);
+                                if (kill)
+                                    moraleMult *= moraleMult;
+                                Alien.IncMorale(piece, moraleMult, false, 1.69, [.. trgGrp.Keys.Select(k => killPiece.Piece.Tile), orig, piece.Tile]);
 
-                                //splash damage??
-                                List<Tuple<Tile, double>> trgAttacks = [.. trgGrp.Keys.SelectMany(k => PlayerAttacks(k.GetBehavior<IAttacker>()))];
-                                foreach (var pair in trgAttacks)
-                                    playerAttacks[pair.Item1] -= pair.Item2;
-                                foreach (var killable in trgGrp.Keys)
-                                    if (!killable.Dead)
-                                        foreach (var t in PlayerAttacks(killable.GetBehavior<IAttacker>()))
-                                            playerAttacks[t.Item1] += t.Item2;
-
-                                if (allTargets.Keys.Any(k => k.Dead))
-                                    //fully re-load all targets since this kill could affect target grouping
+                                //fully re-load all targets since this kill could affect target grouping
+                                if (kill)
                                     allTargets = GetAllTargets(piece.Game);
-
-                                //unecessary - we never loop through all playerAttacks
-                                //foreach (var pair in trgAttacks)
-                                //    if (playerAttacks[pair.Item1] <= 0)
-                                //        playerAttacks.Remove(pair.Item1);
                             }
                             else if (CanTarget(target))
                             { }
+                            foreach (var killable in trgGrp.Keys)
+                                if (!killable.Dead)
+                                    foreach (var t in PlayerAttacks(killable.GetBehavior<IAttacker>()))
+                                        playerAttacks[t.Item1] += t.Item2;
                         }
                         else if (piece is Alien && target != null && !target.Dead)
                         { }
@@ -575,24 +601,33 @@ namespace ClassLibrary1
             }
 
             return allTargets;
+
+            double MoraleMult(double prev, double cur)
+            {
+                double moraleMult = (cur - prev) / Math.Sqrt((cur + prev) / 2.0 * defValue);
+                if (moraleMult < 0)
+                    moraleMult = 1 / (-moraleMult + 1);
+                else
+                    moraleMult++;
+                return moraleMult;
+            }
         }
 
         private static IEnumerable<Attack> GetAttacks(IAttacker attacker) =>
             attacker?.Attacks.Where(a => a.CanAttack()) ?? [];
-        private static double SumAttacks(IEnumerable<Attack> attacks) => SumAttacks(attacks, _ => true); //null, null,
-        private static double SumAttacks(IEnumerable<Attack> attacks, Func<Attack, bool> Predicate) => //Tile from, Tile to,
-            attacks?.Where(Predicate).Sum(a => AttWeight(a) ?? 0) ?? 0; //, from, to
-        private static double? AttWeight(Attack a) => AttWeight(a, null, null);
+        private static double SumAttacks(IEnumerable<Attack> attacks, Tile from, Tile to) => SumAttacks(attacks, from, to, _ => true);
+        private static double SumAttacks(IEnumerable<Attack> attacks, Tile from, Tile to, Func<Attack, bool> Predicate) =>
+            attacks?.Where(Predicate).Sum(a => AttWeight(a, from, to) ?? 0) ?? 0;
         private static double? AttWeight(Attack a, Tile from, Tile to)
         {
-            int mod = from != null && to != null ? Attack.TerrainAttMod(from, to) : 0;
+            int mod = Attack.TerrainAttMod(from, to);
             int att = Consts.ModAtt(a.AttackCur, mod);
             double attPct = a.AttackCur / (double)a.AttackMax;
             return Consts.StatValue(att) * Math.Sqrt(attPct) * (IsFull(a) ? 2 : 1);
         }
-        private static bool IsFull(Attack a) => a.AttackCur == a.AttackMax || (a.Reload < 1 && Game.Rand.Bool()) //??
-            || a.AttackCur + Game.Rand.RangeInt(1, Game.Rand.Round(a.Reload)) > a.AttackMax;
-        private static double DefWeight(IKillable k) => k?.AllDefenses.Sum(d => Consts.StatValue(d.DefenseCur)) ?? 0;
+        private static bool IsFull(Attack a) => a.AttackCur == a.AttackMax || (a.Reload < 1 && Game.Rand.Bool(1 - a.Reload))
+            || a.AttackCur + Game.Rand.RangeInt(0, Game.Rand.Round(a.Reload * (a.Type == CombatTypes.AttackType.Energy ? 2 : 1))) > a.AttackMax;
+        private static double DefWeight(IKillable k) => k?.CurDefenseValue ?? 0;
 
         private static double GetKillWeight(IKillable killable, double avgHp, AIState? state, IKillable target)
         {
@@ -664,8 +699,8 @@ namespace ClassLibrary1
             }
             shieldFactor = Math.Pow(shieldFactor, 1.0 / killable.AllDefenses.Count);
 
-            double defCur = killable.AllDefenses.Sum(d => Consts.StatValue(d.DefenseCur));
-            double defMax = killable.AllDefenses.Sum(d => Consts.StatValue(d.DefenseMax));
+            double defCur = killable.CurDefenseValue;
+            double defMax = killable.MaxDefenseValue;
             if (!inFight && !killable.HasBehavior<IAttacker>())
             {
                 defCur /= 3.9;

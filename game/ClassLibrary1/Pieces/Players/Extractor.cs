@@ -24,13 +24,14 @@ namespace ClassLibrary1.Pieces.Players
         public double Sustain => Resource.Sustain * GetValues(Game).SustainMult;
         private double _rounding;
 
-        private Extractor(Tile tile, Resource Resource, Values values)
-            : base(tile, values.Vision)
+        private Extractor(Tile tile, Resource Resource)
+            : base(tile, 0)
         {
             this.Resource = Resource;
             this._rounding = Game.Rand.NextDouble();
 
-            SetBehavior(new Killable(this, values.GetKillable(HitsMult(), _rounding), Values.Resilience));
+            SetBehavior(new Killable(this, new IKillable.Values(), Values.Resilience));
+            Upgrade(Research.Type.Mech);
         }
 
         internal static Extractor NewExtractor(Resource resource)
@@ -38,32 +39,33 @@ namespace ClassLibrary1.Pieces.Players
             Tile tile = resource.Tile;
             resource.Die();
 
-            Extractor obj = new(tile, resource, GetValues(resource.Game));
+            Extractor obj = new(tile, resource);
             resource.Game.AddPiece(obj);
             return obj;
         }
-        public static void Cost(out int energy, out int mass, Resource resource)
-        {
-            resource.GetCost(GetValues(resource.Game).CostMult, out energy, out mass);
-        }
         internal override void Cost(out int energy, out int mass) =>
-            Cost(out energy, out mass, Resource);
+            Cost(Resource, out energy, out mass);
+        private void BaseCost(out int energy, out int mass) =>
+            Cost(Resource, 1, out energy, out mass);
+        public static void Cost(Resource resource, out int energy, out int mass) =>
+            Cost(resource, GetValues(resource.Game).CostMult, out energy, out mass);
+        private static void Cost(Resource resource, double costMult, out int energy, out int mass) =>
+            resource.GetCost(costMult, out energy, out mass);
 
         internal override void OnResearch(Research.Type type)
         {
-            if (type == Research.Type.BuildingDefense || type == Research.Type.ExtractorValue)
-                // || type == Research.Type.BuildingCost
+            Upgrade(type);
+        }
+        private void Upgrade(Research.Type type)
+        {
+            if (Values.AffectedBy(type))
                 this._rounding = Game.Rand.NextDouble();
 
             Values values = GetValues(Game);
-
-            this.Vision = values.Vision;
             GetBehavior<IKillable>().Upgrade([values.GetKillable(HitsMult(), _rounding)], Values.Resilience);
+            this.Vision = values.Vision;
         }
-        private static Values GetValues(Game game)
-        {
-            return game.Player.GetUpgradeValues<Values>();
-        }
+        private static Values GetValues(Game game) => game.Player.GetUpgradeValues<Values>();
 
         double IKillable.IRepairable.RepairCost
         {
@@ -89,7 +91,7 @@ namespace ClassLibrary1.Pieces.Players
             }
             else
             {
-                Resource.GetCost(1, out int energy, out int mass);
+                BaseCost(out int energy, out int mass);
                 treasure += energy + mass * Consts.EnergyMassRatio;
             }
         }
@@ -121,7 +123,7 @@ namespace ClassLibrary1.Pieces.Players
 
         private double HitsMult()
         {
-            Resource.GetCost(1, out int energy, out int mass);
+            BaseCost(out int energy, out int mass);
             return HitsMult(energy + mass * Consts.EnergyMassRatio);
         }
         internal static double HitsMult(double cost) => Math.Pow(cost / AvgCost, Consts.ExtractorHitsPow);
@@ -165,16 +167,17 @@ namespace ClassLibrary1.Pieces.Players
         [DataContract(IsReference = true)]
         private class Values : IUpgradeValues
         {
-            public const double Resilience = .3;//resilienceBase
+            public const double Resilience = .3;
 
-            private double costMult, vision, valueMult, sustainMult, hits;//, resilience;
-            //private IKillable.Values killable;
+            private double costMult, vision, hits, valueMult, sustainMult;
+
             public Values()
             {
-                //this.killable = new(DefenseType.Hits, -1);
                 UpgradeBuildingCost(1);
-                UpgradeBuildingHits(1);
+                UpgradeBuildingDefense(1);
                 UpgradeExtractorValue(1);
+                this.valueMult = 1;
+                this.sustainMult = 1;
             }
 
             public double CostMult => costMult;
@@ -182,19 +185,29 @@ namespace ClassLibrary1.Pieces.Players
             public double ValueMult => valueMult;
             public double SustainMult => sustainMult;
             public double Hits => hits;
-            //public IKillable.Values Killable => killable;
 
             public IKillable.Values GetKillable(double hitsMult, double rounding)
-                => new(DefenseType.Hits, GetHits(hitsMult, rounding));
+            {
+                return new(DefenseType.Hits, GetHits(hitsMult, rounding));
+            }
             public int GetHits(double hitsMult, double rounding)
-                => MTRandom.Round(hits * hitsMult, rounding);
+            {
+                return MTRandom.Round(hits * hitsMult, rounding);
+            }
 
+            public static bool AffectedBy(Research.Type type) => type switch
+            {
+                Research.Type.BuildingCost => true,
+                Research.Type.BuildingDefense => true,
+                Research.Type.ExtractorValue => true,
+                _ => false
+            };
             public void Upgrade(Research.Type type, double researchMult)
             {
                 if (type == Research.Type.BuildingCost)
                     UpgradeBuildingCost(researchMult);
                 else if (type == Research.Type.BuildingDefense)
-                    UpgradeBuildingHits(researchMult);
+                    UpgradeBuildingDefense(researchMult);
                 else if (type == Research.Type.ExtractorValue)
                     UpgradeExtractorValue(researchMult);
             }
@@ -202,19 +215,15 @@ namespace ClassLibrary1.Pieces.Players
             {
                 this.costMult = ResearchUpgValues.Calc(UpgType.ExtractorCost, researchMult);
             }
-            private void UpgradeBuildingHits(double researchMult)
+            private void UpgradeBuildingDefense(double researchMult)
             {
-                double defAvg = ResearchUpgValues.Calc(UpgType.ExtractorDefense, researchMult);
-                //int defense = Game.Rand.Round(defAvg);
                 this.vision = ResearchUpgValues.Calc(UpgType.ExtractorVision, researchMult);
-                this.hits = defAvg;// new(DefenseType.Hits, defense);
+                this.hits = ResearchUpgValues.Calc(UpgType.ExtractorDefense, researchMult);
             }
             private void UpgradeExtractorValue(double researchMult)
             {
-                //this.resilience = Consts.GetPct(resilienceBase, Math.Pow(researchMult, Extractor_Resilience));
-
                 this.valueMult = ResearchUpgValues.Calc(UpgType.ExtractorValue, researchMult);
-                this.sustainMult = ResearchUpgValues.Calc(UpgType.ExtractorSustain, researchMult);
+                this.sustainMult = ResearchUpgValues.Calc(UpgType.ExtractorSustain, researchMult); 
             }
         }
     }

@@ -2,7 +2,7 @@
 using ClassLibrary1.Pieces.Enemies;
 using ClassLibrary1.Pieces.Players;
 using System;
-using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
 using Point = MattUtil.Point;
 using Tile = ClassLibrary1.Map.Map.Tile;
@@ -59,20 +59,22 @@ namespace ClassLibrary1.Pieces.Behavior
 
             if (CanMoveTo(to) && to.Visible && Piece is PlayerPiece piece)
             {
-                IEnumerable<Point> ps = Tile.GetLinePoints(from.Location, to.Location);
+                Point[] ps = [.. Tile.GetLinePoints(from.Location, to.Location)];
 
                 bool stop = false;
-                foreach (var p in ps)
+                for (int a = 0; a < ps.Length; a++)
                 {
-                    Tile tile = from.Map.GetTile(p);
-                    stop |= from.Map.UpdateVision(p, piece.Vision);
-                    if (stop && tile != null && tile.Piece == null)
+                    Point point = ps[a];
+                    Tile tile = from.Map.GetTile(point);
+                    stop |= from.Map.UpdateVision(point, piece.Vision);
+                    if (stop && tile != null && tile.Piece == null
+                        && Tile.Height(tile) >= Math.Min(Height(0, a), Height(a + 1, ps.Length)))
                     {
                         to = tile;
                         break;
                     }
+                    double Height(int b, int c) => ps[b..c].Max(p => (double?)Tile.Height(to.Map.GetTile(p))) ?? 0;
                 }
-
                 if (!Move(to))
                     throw new Exception();
                 return true;

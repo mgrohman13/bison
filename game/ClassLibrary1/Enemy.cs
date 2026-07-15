@@ -22,7 +22,7 @@ namespace ClassLibrary1
         private readonly EnemyResearch _research;
         private MechBlueprint _nextAlien;
         private MechBlueprint NextAlien => _nextAlien;
-        private double _portalSpawn, _debt, _payment;
+        private double _portalSpawn, _aggression, _debt, _payment;
 
         internal IResearch Research => _research;
 
@@ -37,6 +37,7 @@ namespace ClassLibrary1
             this._research = new EnemyResearch(game);
             this._nextAlien = MechBlueprint.Alien(_research);
             this._portalSpawn = 0;
+            this._aggression = 1;
             this._debt = 0;
             this._payment = 0;
         }
@@ -54,7 +55,8 @@ namespace ClassLibrary1
                 portal = BuildPortals();
 
             double difficulty = GetDifficulty();
-            EnemyMovement.PlayTurn(Game, Math.Pow(difficulty, Consts.DifficultyAIPow), portal, UpdateProgress);
+            EnemyMovement.PlayTurn(Game, Math.Pow(difficulty, Consts.DifficultyAIPow), _aggression, portal, UpdateProgress);
+            DecAggression();
 
             base.EndTurn(out double energyUpk, out double massUpk);
 
@@ -67,7 +69,7 @@ namespace ClassLibrary1
 
             RandIncome();
 
-            int spawns = Game.Rand.OEInt(Math.Sqrt(Math.Sqrt(Math.Max(0, Energy / 13.0)) + Game.Turn) / 6.5);
+            int spawns = Game.Rand.OEInt((Energy / Consts.EnemyStartEnergy + Math.Sqrt(Game.Turn + 16.9) / 2.1 - 2.6) / 13);
             for (int a = 0; a < spawns && NextAlien.EnergyEquivalent() + 13 < this.Energy; a++)
                 SpawnAlien();
 
@@ -85,7 +87,7 @@ namespace ClassLibrary1
 
             int researchLevel = Game.Rand.Round((_research.GetBlueprintLevel() + Game.Player.Research.GetBlueprintLevel()) / 2.0);
 
-            Game.Player.GetIncome(out double energyInc, out double massInc, out double researchInc);
+            Game.Player.GetIncome(out double energyInc, out double massInc, out int researchInc);
             double pInc = EnergyEquivalent(energyInc, massInc, researchInc);
             double pRes = Game.Player.Energy + Game.Player.Mass * Consts.EnergyMassRatio;
             double pStr = Game.Player.Pieces.Sum(p => p.Strength(researchLevel, false));
@@ -179,21 +181,21 @@ namespace ClassLibrary1
                         .Concat(PiecesOfType<Hive>().SelectMany(h => h.Tile.GetPointsInRange(
                             h.GetBehavior<IAttacker>().Attacks.Max(a => a.Range * Game.Rand.Range(1, 2)))))
                         .Select(map.GetTile))
-                    .Where(t => t is not null).ToHashSet();
+                    .Where(t => t != null).ToHashSet();
 
                 do
                 {
                     deviation += Game.Rand.DoubleHalf(Math.Sqrt(Consts.PathWidth));
                     tile = map.GetTile(coreTile.X + Game.Rand.GaussianInt(deviation), coreTile.Y + Game.Rand.GaussianInt(deviation));
                 }
-                while (tile is null || tile.Piece is not null || avoid.Remove(tile));
+                while (tile == null || tile.Piece != null || avoid.Remove(tile));
             }
             else
             {
                 //pieces.Select(p => p.Strength());
 
                 //entrances chosen based on prioximity to aliens and distance from player pieces or resources
-                static bool CanPlace(Tile t) => t.Piece is null;
+                static bool CanPlace(Tile t) => t.Piece == null;
                 Dictionary<Piece, int> select = [];
                 foreach (EnemyPiece piece in Game.Rand.Iterate(PiecesOfType<EnemyPiece>()))
                     if (piece is not Portal && piece.HasBehavior<IMovable>())
@@ -245,23 +247,16 @@ namespace ClassLibrary1
             double energy = portals.Any(p => p.Exit) ? IncomeReference() : 0;
             Loan(Math.Sqrt(portals.Count() / 2.0) * energy);
         }
-        private void IncPortals(Hive hive)
+        private void IncPortals(double inc)
         {
-            const double amt = 1 / 3.0;
-            double inc = 0;
-            if (hive == null)
-                inc = amt;
-            else if (!hive.Dead)
-                inc = amt / PiecesOfType<Hive>().Average(h =>
-                    h.GetBehavior<IKillable>().AllDefenses.Sum((Func<Defense, int>)(d => d.DefenseMax)));
-
             if (inc > 0)
             {
                 this._portalSpawn += Game.Rand.Gaussian(inc, .039 / Math.Sqrt(inc));
                 Loan(26 * inc * IncomeReference());
             }
         }
-        internal void VictoryPoint() => IncPortals(null);
+
+        internal void VictoryPoint() => IncPortals(1.0 / Game.POINTS_TO_WIN);
 
         private double GetDifficulty() =>
             (Game.Turn + Consts.DifficultyIncTurns) / Consts.DifficultyIncTurns;
@@ -313,7 +308,22 @@ namespace ClassLibrary1
         internal void HiveDamaged(Hive hive, Tile defTile, Map.Map.SpawnChance spawn, ref double energy,
             int hits, double hitsPct, double dev)
         {
-            IncPortals(hive);
+            if (!Game.GameOver)
+            {
+                double inc = Game.Victory + PiecesOfType<Hive>().Select(h => h.GetBehavior<IKillable>())
+                    .Sum(k => (k.MaxDefenseValue - k.CurDefenseValue) / k.MaxDefenseValue);
+                double ramp = Game.POINTS_TO_WIN / 2.1;
+                if (inc > ramp)
+                {
+                    ramp = 1 + (inc - ramp) * 1.69 / (Game.POINTS_TO_WIN - ramp);
+                    inc *= ramp *= ramp;
+                }
+                double div = hive.Dead ? 1 : hive.GetBehavior<IKillable>().AllDefenses.Sum(d => d.DefenseMax);
+                inc /= Game.POINTS_TO_WIN * div;
+
+                IncAggression(inc);
+                IncPortals(inc);
+            }
 
             hitsPct = 1 - hitsPct;
             int xfer;
@@ -355,6 +365,20 @@ namespace ClassLibrary1
             {
                 spawn.Mult(1 + hitsPct);
             }
+        }
+        private void IncAggression(double inc)
+        {
+            _aggression += Game.Rand.GaussianCapped(inc * Math.Sqrt(Consts.AgressionTurns), .13);
+        }
+        private void DecAggression()
+        {
+            double dec = 1 - (Consts.AgressionTurns - 1) / Consts.AgressionTurns;
+            dec = Game.Rand.GaussianCapped(dec, .13);
+            dec = 1 - dec;
+
+            _aggression--;
+            _aggression *= dec;
+            _aggression++;
         }
 
         internal void Income(double energy) => AddResources(energy * Consts.DifficultySetting);

@@ -71,7 +71,7 @@ namespace ClassLibrary1.Pieces.Enemies
                 Tile.Map.UpdateVision([lastMove, curMove]);
         }
 
-        internal virtual AIState TurnState(double difficulty, bool clearPaths, Dictionary<Tile, double> playerAttacks, HashSet<Tile> moveTiles, HashSet<IKillable> killables,
+        internal virtual AIState TurnState(double difficulty, double aggression, bool clearPaths, Dictionary<Tile, double> playerAttacks, HashSet<Tile> moveTiles, HashSet<IKillable> killables,
             out List<Point> path)
         {
             path = null;

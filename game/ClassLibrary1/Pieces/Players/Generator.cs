@@ -16,15 +16,15 @@ namespace ClassLibrary1.Pieces.Players
     {
         public static double Resilience => Values.Resilience;
 
-        private readonly double _rounding;//_mult
+        private double _rounding;
 
-        private Generator(Tile tile, Values values)
+        private Generator(Tile tile)
             : base(tile, Values.Vision)
         {
-            //this._mult = Game.Rand.GaussianCapped(1, .13);
             this._rounding = Game.Rand.NextDouble();
 
-            SetBehavior(new Killable(this, values.GetKillable(HitsMult(), _rounding), Values.Resilience));
+            SetBehavior(new Killable(this, new IKillable.Values(), Values.Resilience));
+            Upgrade(Research.Type.Mech);
         }
 
         double IKillable.IRepairable.RepairCost
@@ -43,33 +43,33 @@ namespace ClassLibrary1.Pieces.Players
             Tile tile = foundation.Tile;
             foundation.Die();
 
-            Generator obj = new(tile, GetValues(foundation.Game));
+            Generator obj = new(tile);
             foundation.Game.AddPiece(obj);
             return obj;
         }
         public static void Cost(Game game, out int energy, out int mass)
         {
-            GetValues(game).GetCost(out energy, out mass);
+            Values values = GetValues(game);
+            energy = values.Energy;
+            mass = values.Mass;
         }
         internal override void Cost(out int energy, out int mass) =>
             Cost(Game, out energy, out mass);
 
         internal override void OnResearch(Research.Type type)
         {
+            Upgrade(type);
+        }
+        private void Upgrade(Research.Type type)
+        {
+            if (Values.AffectedBy(type))
+                this._rounding = Game.Rand.NextDouble();
+
             Values values = GetValues(Game);
-
-            this.Vision = Values.Vision;
             GetBehavior<IKillable>().Upgrade([values.GetKillable(HitsMult(), _rounding)], Values.Resilience);
+            this.Vision = Values.Vision;
         }
-
-        private static Values GetValues(Game game)
-        {
-            return game.Player.GetUpgradeValues<Values>();
-        }
-        internal static double GetRounding(Game game)
-        {
-            return GetValues(game).CostRounding;
-        }
+        private static Values GetValues(Game game) => game.Player.GetUpgradeValues<Values>();
 
         internal override void GenerateResources(ref double energyInc, ref double massInc, ref double researchInc)
         {
@@ -110,50 +110,56 @@ namespace ClassLibrary1.Pieces.Players
         private class Values : IUpgradeValues
         {
             public const double Resilience = .2;
-            private double _costMult, _hits, _inc, _rounding;
+
+            private int energy, mass;
+            private double hits, inc;
 
             public Values()
             {
                 UpgradeBuildingCost(1);
-                UpgradeBuildingHits(1);
+                UpgradeBuildingDefense(1);
                 UpgradeAmbientGenerator(1);
             }
 
+            public int Energy => energy;
+            public int Mass => mass;
             public static double Vision => Attack.MELEE_RANGE;
-            public double CostRounding => _rounding;
-            public double EnergyInc => _inc;
-
-            internal void GetCost(out int energy, out int mass)
-            {
-                energy = MTRandom.Round(_costMult * Consts.GeneratorEnergyCost, 1 - CostRounding);
-                mass = MTRandom.Round(_costMult * Consts.GeneratorMassCost, CostRounding);
-            }
+            public double EnergyInc => inc;
 
             public IKillable.Values GetKillable(double hitsMult, double rounding)
-                => new(DefenseType.Hits, MTRandom.Round(_hits * hitsMult, rounding));
+            {
+                return new(DefenseType.Hits, MTRandom.Round(hits * hitsMult, rounding));
+            }
 
+            public static bool AffectedBy(Research.Type type) => type switch
+            {
+                Research.Type.BuildingCost => false,
+                Research.Type.BuildingDefense => true,
+                Research.Type.AmbientGenerator => false,
+                _ => false
+            };
             public void Upgrade(Research.Type type, double researchMult)
             {
                 if (type == Research.Type.BuildingCost)
                     UpgradeBuildingCost(researchMult);
                 else if (type == Research.Type.BuildingDefense)
-                    UpgradeBuildingHits(researchMult);
+                    UpgradeBuildingDefense(researchMult);
                 else if (type == Research.Type.AmbientGenerator)
                     UpgradeAmbientGenerator(researchMult);
             }
             private void UpgradeBuildingCost(double researchMult)
             {
-                this._costMult = ResearchUpgValues.Calc(UpgType.AmbientGeneratorCost, researchMult);
-                this._rounding = Game.Rand.NextDouble();
+                double costMult = ResearchUpgValues.Calc(UpgType.TurretCost, researchMult);
+                this.energy = Game.Rand.Round(Consts.GeneratorEnergyCost * costMult);
+                this.mass = Game.Rand.Round(Consts.GeneratorMassCost * costMult);
             }
-            private void UpgradeBuildingHits(double researchMult)
+            private void UpgradeBuildingDefense(double researchMult)
             {
-                double defAvg = ResearchUpgValues.Calc(UpgType.ExtractorDefense, researchMult);
-                this._hits = defAvg;
+                this.hits = ResearchUpgValues.Calc(UpgType.ExtractorDefense, researchMult);
             }
             private void UpgradeAmbientGenerator(double researchMult)
             {
-                this._inc = ResearchUpgValues.Calc(UpgType.AmbientGenerator, researchMult);
+                this.inc = ResearchUpgValues.Calc(UpgType.AmbientGenerator, researchMult);
             }
         }
     }

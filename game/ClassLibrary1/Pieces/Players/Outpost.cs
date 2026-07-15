@@ -18,14 +18,15 @@ namespace ClassLibrary1.Pieces.Players
     {
         public static double Resilience => Values.Resilience;
 
-        private readonly double _rounding;
+        private readonly double _rangeMult, _rounding;
 
         private Outpost(Tile tile, Values values)
-            : base(tile, 0)
+            : base(tile, values.Vision)
         {
             this._rounding = Game.Rand.NextDouble();
+            this._rangeMult = Game.Rand.GaussianCapped(values.Range, .13, Attack.MELEE_RANGE) / values.Range;
 
-            SetBehavior(new Killable(this, values.GetKillable(Game, _rounding), Values.Resilience));
+            SetBehavior(new Killable(this, new IKillable.Values(), Values.Resilience));
             Unlock();
         }
 
@@ -71,9 +72,7 @@ namespace ClassLibrary1.Pieces.Players
             Mult(ref e);
             Mult(ref m);
 
-            double rounding = 1 - GetValues(Game).CostRounding;
-            energy = MTRandom.Round(energyCost - e, rounding);
-            mass = MTRandom.Round(massCost - m, 1 - rounding);
+            GetValues(Game).Round(energyCost - e, massCost - m, out energy, out mass);
 
             canReplace &= Game.Player.Has(energy, mass);
             if (doReplace && canReplace)
@@ -88,42 +87,46 @@ namespace ClassLibrary1.Pieces.Players
             return newPiece;
         }
 
-        internal override void OnResearch(Research.Type type) => Unlock();
-        private void Unlock()
+        internal override void OnResearch(Research.Type type)
         {
-            Research research = Game.Player.Research;
-            Values values = GetValues(Game);
-
-            if (!HasBehavior<IAttacker>() && research.HasType(Research.Type.OutpostAttack))
-                SetBehavior(new Attacker(this, [values.GetAttack(_rounding)]));
-
-            IRepair.Values repair = values.GetRepair(GetBehavior<IKillable>(), GetBehavior<IAttacker>());
-            double range = repair.Builder.Range;
-            if (!HasBehavior<IRepair>() && research.HasType(Research.Type.OutpostRepair))
-                SetBehavior(new Repair(this, repair));
-
-            if (!HasBehavior<IBuilder.IBuildFactory>() && research.HasType(Research.Type.Factory))
-                SetBehavior(new Builder.BuildFactory(this, new(range)));
-            if (!HasBehavior<IBuilder.IBuildTurret>() && research.HasType(Research.Type.Turret))
-                SetBehavior(new Builder.BuildTurret(this, new(range)));
-
-            Upgrade();
+            Unlock();
         }
         private void Upgrade()
         {
             Values values = GetValues(Game);
+
             IKillable killable = GetBehavior<IKillable>();
             killable.Upgrade(values.GetKillable(Game, _rounding), Values.Resilience);
+
             if (HasBehavior(out IAttacker attacker))
-                attacker.Upgrade([values.GetAttack(_rounding)]);
+                attacker.Upgrade([values.GetAttack(_rangeMult, _rounding)]);
             if (HasBehavior(out IRepair repair))
-                repair.Upgrade(values.GetRepair(killable, attacker));
-            this.Vision = values.GetVision(killable, attacker, repair);
+                repair.Upgrade(values.GetRepair(_rangeMult));
+
+            Builder.UpgradeAll(this, new(values.Range));
+
+            this.Vision = values.Vision;
         }
-        private static Values GetValues(Game game) =>
-            game.Player.GetUpgradeValues<Values>();
-        internal static double GetRounding(Game game) =>
-            GetValues(game).CostRounding;
+        private void Unlock()
+        {
+            Research research = Game.Player.Research;
+
+            if (!HasBehavior<IBuilder.IBuildFactory>() && research.HasType(Research.Type.Factory))
+                SetBehavior(new Builder.BuildFactory(this, new()));
+            if (!HasBehavior<IBuilder.IBuildTurret>() && research.HasType(Research.Type.Turret))
+                SetBehavior(new Builder.BuildTurret(this, new()));
+
+            if (!HasBehavior<IRepair>() && research.HasType(Research.Type.OutpostRepair))
+                SetBehavior(new Repair(this, new()));
+
+            if (!HasBehavior<IAttacker>() && research.HasType(Research.Type.OutpostAttack))
+                SetBehavior(new Attacker(this, []));
+
+            Upgrade();
+        }
+        private static Values GetValues(Game game) => game.Player.GetUpgradeValues<Values>();
+
+        internal static IRepair.Values GetRepair(Game game, double mult) => GetValues(game).GetRepair(mult);
 
         double IKillable.IRepairable.RepairCost
         {
@@ -145,8 +148,9 @@ namespace ClassLibrary1.Pieces.Players
         {
             public const double Resilience = .55;
 
-            private int _energy, _mass;
-            private double _rounding, _att, _def, _vision, _repair;
+            private int energy, mass;
+            private double rounding, att, def, vision, repair;
+
             public Values()
             {
                 UpgradeTurretAttack(1);
@@ -155,69 +159,67 @@ namespace ClassLibrary1.Pieces.Players
                 UpgradeFactoryRepair(1);
             }
 
-            public int Energy => _energy;
-            public int Mass => _mass;
-            public double CostRounding => _rounding;
+            public int Energy => energy;
+            public int Mass => mass;
+            public double Vision => vision;
+            public double Range => repair;
+
+            public void Round(double e, double m, out int energy, out int mass)
+            {
+                energy = MTRandom.Round(e, rounding);
+                mass = MTRandom.Round(m, Consts.MAX_ROUND - rounding);
+            }
 
             public IKillable.Values[] GetKillable(Game game, double rounding)
             {
-                List<IKillable.Values> defenses = [new(DefenseType.Hits, MTRandom.Round(_def, rounding))];
+                List<IKillable.Values> defenses = [new(DefenseType.Hits, MTRandom.Round(this.def, rounding))];
                 if (game.Player.Research.HasType(Research.Type.OutpostArmor))
-                    defenses.Add(new IKillable.Values(DefenseType.Armor, MTRandom.Round(_def / 1.69, 1 - rounding)));
+                    defenses.Add(new IKillable.Values(DefenseType.Armor, MTRandom.Round(this.def / 1.69, Consts.MAX_ROUND - rounding)));
                 return [.. defenses];
             }
-            public IAttacker.Values GetAttack(double rounding) =>
-                new(AttackType.Kinetic, MTRandom.Round(_att, 1 - rounding), Attack.MELEE_RANGE, 1);
-            public IRepair.Values GetRepair(IKillable killable, IAttacker attacker) =>
-                new(new(Math.Max(Attack.MELEE_RANGE, GetRepairBase(killable, attacker))), 1);
-            private double GetRepairBase(IKillable killable, IAttacker attacker) =>
-                _repair * GetMult(killable, attacker);
-            public double GetVision(IKillable killable, IAttacker attacker, IRepair repair)
+            public IAttacker.Values GetAttack(double rangeMult, double rounding)
             {
-                double mult = repair == null ? GetMult(killable, attacker) : 1;
-                if (repair != null)
-                    mult *= GetRepairBase(killable, attacker) / repair.RangeBase;
-                return _vision * mult * mult;
+                double att = this.att / Math.Sqrt(rangeMult);
+                att = Math.Max(att, 1);
+                return new(AttackType.Kinetic, MTRandom.Round(att, rounding), Attack.MELEE_RANGE, 1);
             }
-            private double GetMult(IKillable killable, IAttacker attacker)
+            public IRepair.Values GetRepair(double rangeMult)
             {
-                double numerator = Consts.StatValue(_def);
-                double denominator = Consts.StatValue(killable.Hits.DefenseMax);
-                if (attacker != null)
-                {
-                    numerator += Consts.StatValue(_att);
-                    denominator += Consts.StatValue(attacker.Attacks[0].AttackMax);
-                }
-                return numerator / denominator;
+                double range = this.repair * rangeMult;
+                range = Math.Max(range, Attack.MELEE_RANGE);
+                return new(new(range), 1);
             }
 
             public void Upgrade(Research.Type type, double researchMult)
             {
-                if (type == Research.Type.TurretAttack)
-                    UpgradeTurretAttack(researchMult);
-                else if (type == Research.Type.BuildingCost)
+                if (type == Research.Type.BuildingCost)
                     UpgradeBuildingCost(researchMult);
+                else if (type == Research.Type.TurretAttack)
+                    UpgradeTurretAttack(researchMult);
                 else if (type == Research.Type.BuildingDefense)
                     UpgradeBuildingDefense(researchMult);
                 else if (type == Research.Type.FactoryRepair)
                     UpgradeFactoryRepair(researchMult);
             }
-            private void UpgradeTurretAttack(double researchMult) =>
-                this._att = ResearchUpgValues.Calc(UpgType.OutpostAttack, researchMult);
             private void UpgradeBuildingCost(double researchMult)
             {
+                this.rounding = Game.Rand.NextDouble();
                 double costMult = ResearchUpgValues.Calc(UpgType.OutpostCost, researchMult);
-                _rounding = Game.Rand.NextDouble();
-                this._energy = MTRandom.Round(700 * costMult, 1 - _rounding);
-                this._mass = MTRandom.Round(450 * costMult, _rounding);
+                Round(800 * costMult, 350 * costMult, out this.energy, out this.mass);
+            }
+            private void UpgradeTurretAttack(double researchMult)
+            {
+                this.att = ResearchUpgValues.Calc(UpgType.OutpostAttack, researchMult);
             }
             private void UpgradeBuildingDefense(double researchMult)
             {
-                this._def = ResearchUpgValues.Calc(UpgType.OutpostDefense, researchMult);
-                this._vision = ResearchUpgValues.Calc(UpgType.OutpostVision, researchMult);
+                this.def = ResearchUpgValues.Calc(UpgType.OutpostDefense, researchMult);
+                this.vision = ResearchUpgValues.Calc(UpgType.OutpostVision, researchMult);
             }
-            private void UpgradeFactoryRepair(double researchMult) =>
-                this._repair = ResearchUpgValues.Calc(UpgType.OutpostRepair, researchMult);
+            private void UpgradeFactoryRepair(double researchMult)
+            {
+                this.repair = ResearchUpgValues.Calc(UpgType.OutpostRepair, researchMult);
+            }
         }
     }
 }

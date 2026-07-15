@@ -23,10 +23,12 @@ namespace ClassLibrary1.Pieces.Players
         private Factory(Tile tile, Values values)
             : base(tile, values.Vision)
         {
-            this._rangeMult = Game.Rand.GaussianOE(values.BuilderRange, .169, .13, 1) / values.BuilderRange;
+            this._rangeMult = Game.Rand.GaussianOE(values.Range, .169, .13, Attack.MIN_RANGED) / values.Range;
             this._rounding = Game.Rand.NextDouble();
 
-            SetBehavior(new Killable(this, values.GetKillable(Game, _rounding), Values.Resilience));
+            SetBehavior(
+                new Killable(this, new IKillable.Values(), Values.Resilience),
+                new Repair(this, new()));
             Unlock();
         }
 
@@ -51,39 +53,38 @@ namespace ClassLibrary1.Pieces.Players
         internal override void OnResearch(Research.Type type)
         {
             Unlock();
+        }
+        private void Upgrade()
+        {
             Values values = GetValues(Game);
 
-            this.Vision = values.Vision;
             GetBehavior<IKillable>().Upgrade(values.GetKillable(Game, _rounding), Values.Resilience);
-            if (HasBehavior(out IRepair repair))
-                repair.Upgrade(values.GetRepair(Game, _rangeMult, _rounding));
-            Builder.UpgradeAll(this, values.GetRepair(Game, _rangeMult, _rounding).Builder);
+
+            IRepair.Values repair = values.GetRepair(Game, _rangeMult, _rounding);
+            GetBehavior<IRepair>().Upgrade(repair);
+            Builder.UpgradeAll(this, repair.Builder);
+
+            this.Vision = values.Vision;
         }
         private void Unlock()
         {
             Research research = Game.Player.Research;
-            Values values = GetValues(Game);
 
-            if (!HasBehavior<IRepair>() && research.HasType(Research.Type.FactoryRepair))
-                SetBehavior(new Repair(this, values.GetRepair(Game, _rangeMult, _rounding)));
+            if (!HasBehavior<IBuilder.IBuildMech>() && research.HasType(Research.Type.Mech))
+                SetBehavior(new Builder.BuildMech(this, new()));
+            if (!HasBehavior<IBuilder.IBuildConstructor>() && research.HasType(Research.Type.Constructor))
+                SetBehavior(new Builder.BuildConstructor(this, new()));
+            if (!HasBehavior<IBuilder.IBuildFactory>() && research.HasType(Research.Type.Factory))
+                SetBehavior(new Builder.BuildFactory(this, new()));
+            if (!HasBehavior<IBuilder.IBuildTurret>() && research.HasType(Research.Type.Turret))
+                SetBehavior(new Builder.BuildTurret(this, new()));
+
             if (!HasBehavior<IMissileSilo>() && research.HasType(Research.Type.Missile))
                 SetBehavior(new MissileSilo(this));
 
-            if (!HasBehavior<IBuilder.IBuildMech>() && research.HasType(Research.Type.Mech))
-                SetBehavior(new Builder.BuildMech(this, values.GetRepair(Game, _rangeMult, _rounding).Builder));
-            if (!HasBehavior<IBuilder.IBuildConstructor>() && research.HasType(Research.Type.FactoryConstructor))
-                SetBehavior(new Builder.BuildConstructor(this, values.GetRepair(Game, _rangeMult, _rounding).Builder));
-            if (!HasBehavior<IBuilder.IBuildOutpost>() && research.HasType(Research.Type.Outpost))
-                SetBehavior(new Builder.BuildOutpost(this, new(.5)));
+            Upgrade();
         }
-        private static Values GetValues(Game game)
-        {
-            return game.Player.GetUpgradeValues<Values>();
-        }
-        internal static double GetRounding(Game game)
-        {
-            return GetValues(game).CostRounding;
-        }
+        private static Values GetValues(Game game) => game.Player.GetUpgradeValues<Values>();
 
         double IKillable.IRepairable.RepairCost
         {
@@ -107,10 +108,8 @@ namespace ClassLibrary1.Pieces.Players
         {
             public const double Resilience = .5;
 
-            private int _energy, _mass, _def;
-            private double _vision, _rounding, _repairRate;
-
-            //private IKillable.Values killable;
+            private int energy, mass;
+            private double def, vision, repairRate;
             private IRepair.Values repair;
 
             public Values()
@@ -120,28 +119,32 @@ namespace ClassLibrary1.Pieces.Players
                 UpgradeFactoryRepair(1);
             }
 
-            public int Energy => _energy;
-            public int Mass => _mass;
-            public double Vision => _vision;
-            //public IKillable.Values Killable => killable;
-            public double BuilderRange => repair.Builder.Range;
-            public double CostRounding => _rounding;
+            public int Energy => energy;
+            public int Mass => mass;
+            public double Vision => vision;
+            public double Range => repair.Builder.Range;
 
-            public IKillable.Values[] GetKillable(Game game, double rounding)
+            public List<IKillable.Values> GetKillable(Game game, double rounding)
             {
-                List<IKillable.Values> defenses = [new(DefenseType.Hits, _def)];
+                List<IKillable.Values> defenses = [new(DefenseType.Hits, MTRandom.Round(this.def, Consts.MAX_ROUND - rounding))];
                 if (game.Player.Research.HasType(Research.Type.FactoryShields))
-                    defenses.Add(new IKillable.Values(DefenseType.Armor, MTRandom.Round(_def / Math.PI, 1 - rounding)));
-                return [.. defenses];
+                    defenses.Add(new IKillable.Values(DefenseType.Shield, MTRandom.Round(this.def / Math.PI, rounding)));
+                return defenses;
             }
             public IRepair.Values GetRepair(Game game, double rangeMult, double rounding)
             {
-                IRepair.Values repair = this.repair;
-                int rate = Math.Max(1, MTRandom.Round(_repairRate / rangeMult, rounding));
-                if (!game.Player.Research.HasType(Research.Type.FactoryRepair))
-                    rate = 1;
-                double range = repair.Builder.Range * _repairRate / rate;
-                return new(new(range), rate);
+                if (game.Player.Research.HasType(Research.Type.FactoryRepair))
+                {
+                    int rate = MTRandom.Round(this.repairRate / rangeMult, rounding);
+                    rate = Math.Max(rate, 1);
+                    double range = this.repair.Builder.Range * this.repairRate / rate;
+                    range = Math.Max(range, Attack.MELEE_RANGE);
+                    return new(new(range), rate);
+                }
+                else
+                {
+                    return Outpost.GetRepair(game, Math.Sqrt(2));
+                }
             }
 
             public void Upgrade(Research.Type type, double researchMult)
@@ -156,23 +159,18 @@ namespace ClassLibrary1.Pieces.Players
             private void UpgradeBuildingCost(double researchMult)
             {
                 double costMult = ResearchUpgValues.Calc(UpgType.FactoryCost, researchMult);
-                _rounding = Game.Rand.NextDouble();
-                this._energy = MTRandom.Round(1700 * costMult, 1 - _rounding);
-                this._mass = MTRandom.Round(550 * costMult, _rounding);
+                this.energy = Game.Rand.Round(1700 * costMult);
+                this.mass = Game.Rand.Round(550 * costMult);
             }
             private void UpgradeBuildingDefense(double researchMult)
             {
-                double defAvg = ResearchUpgValues.Calc(UpgType.FactoryDefense, researchMult);
-                this._def = Game.Rand.Round(defAvg);
-                this._vision = ResearchUpgValues.Calc(UpgType.FactoryVision, researchMult);
-                //this.killable = new(DefenseType.Hits, defense);
+                this.def = ResearchUpgValues.Calc(UpgType.FactoryDefense, researchMult);
+                this.vision = ResearchUpgValues.Calc(UpgType.FactoryVision, researchMult);
             }
             private void UpgradeFactoryRepair(double researchMult)
             {
-                double repairMult = ResearchUpgValues.Calc(UpgType.FactoryRepair, researchMult);
-                double repairRange = 7.50 * Math.Sqrt(repairMult);
-                this._repairRate = repairMult;
-                this.repair = new(new(repairRange), 1);
+                this.repairRate = ResearchUpgValues.Calc(UpgType.FactoryRepair, researchMult);
+                this.repair = new(new(7.50 * Math.Sqrt(repairRate)), 1);
             }
         }
     }

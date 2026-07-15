@@ -1,52 +1,109 @@
+
 NEW	
+		if first move leaves you farther away, propose staying put
+			required 2x pathfinding when move < max
+		limit move even when moving within max range, unless holding shift?
+		GetAllVision - optimize if trg tile not visible
+			also 
+			dont return blockers? remove distinct?
+		combine move not working?
+		aliens also combine like mechs?
+		use shift to always move direclty to target?
+		shwo vision range async after the fact so it doesnt slow down game when vision is high
+		treasure reasearch goes to random one?
+			or give option to pick first?
+			explore reasearch ignores?
+		attack indicator still shows when cant move after attacking with 1st attack and cant reach target with 2nd
+		show avg research
+			add randomness bar to income breakdown
+		next moves during limitmove after turning corner need to be queued up appropriately
+		"step-back" pathing is still possible due to limited first move
+			need to fix for situation where not moving at all is best
+		should enemy attack indicator know about single-tile melee safe zones?
+			also needs to look at heights - see EnemyMovement.GetPlayerAttacks
+		mousover always calc best path with pathfinding even when in initial move range
 		visbility of penalty when moving over higher tile
-		core defense is supposed to upgrade core armor, core armos has no upgs
-		alien height attraction too high in some states?
-		we can remove some techs now?
-			factory repair, factory constructor? mech lasers?
 		show hills under units on map...?
 		re-enable hypothetical melee attacks from non-visible tiles for attack indicator / move left
 			also consolidate logic...?
-		outpost attack doesnt show reasearch upg value?
-		LastAttacks not storing both when alien splits attacks
 		mouseover info tied to path dist if friendly movable selected
-		merge evaluateCache and heightCache
-			clear on new plateau point add 
 		thicker lines around continguous plateaus
 			then can remove >.95 check for att bonus?
 		mouseover on out of range tile show ranged att range
 		special handling for selected piece move to show path around corners 
 		better move tile indicators - green dots? two types for inner, outer?
 			also for where right click will move 
-		check GetDistSqr for movement
-		moving to tile you cant see full path between??
-		end turn app.doevents ???
-		increase reload cost contribution
-		don't need to generate full 360 degrees of Elevation points at large scale
-			just neeeds to follow path
-			will help performance
-			use this trick for infinite caves??
-		how to make GetLinePoints wider but performant?
-			ideally use BlockRadius
-		remove extended att range display functionality
-		scrolling is laggy when there is a mouse path or in range mouse tile
-		remove move limit, make const (at 2x?)
-			make random gaussian thats different every turn? could be fun?
-		clean up MattUtil pathfinding c/p 
-        shrink core and factory repair ranges? outpost?  
-        hide unused columns for build extractor/turret/etc only
-		aliens need better plateau handling
-		new logic for aliens to switch to retreat randomly when injured is too transient, they just move back and forth
-		round off starting extractor value sometimes?
+		MoveLeft GetDefenders
+		show earned research on explore move?
 		mouseover att text show avg dmg?
 		letters on turret over plateau should not be white
 			any piece really?
 		un-sleep doesnt work?
-		rethink complete research redo every step??		
-		show earned research on explore move?
-		constructor upg shouldnt have to charge armor...
-			defeats 50% chance alleged equality
-		MoveLeft GetDefenders
+		hide unused columns for build extractor/turret/etc only
+		scrolling is laggy when there is a mouse path or in range mouse tile
+		remove extended att range display functionality
+
+		center from core somewhat override height foundation mult?
+		Evaluate item2 extreme spikes for elevation
+		we can remove some techs now?
+			mech lasers?
+				need more mech upgrades in general though
+		
+		remove energy contribution to spawn from sqrt?
+		increase distance for foundation chance reduction?
+		foundations
+			inc ratio??
+			bigger clumps?
+				need seaparate turrets
+		patrol also has chance to move closer to a target, but reduced chance?
+		rush now too likely early??
+		rush path
+			always uses full move
+			hardly deviates at all
+		taking damage can decrease cur move?
+		pause move when see lake only if not already any in vision?
+		reduce alien early spawn cap again?
+		laser turret
+			higher range
+			lower att
+			armor instead of shield
+				keeps weak shield?
+				but lower def?
+			overall stronger
+			costs mostly more energy?
+		building upgs
+			outpost -> factory/turret/laser/generator
+			turret -> laser/generator
+			laser -> generator
+			factory -> generator 
+		factory build all other buildings?
+		mech upgs use only partial prev cost?
+		speed up game start pathfinding clear terrain somehow
+		playerAttacks doesnt check for move around corners
+		constructor defense show armor/shields too
+		missile range cost sqrt?
+		sometimes aliens not using full attack?
+		GetDefenceChance account for terrain??
+		outpost attack doesnt show reasearch upg value?
+		factory repair 1st step research upg value
+		LastAttacks not storing both when alien splits attacks
+		merge evaluateCache and heightCache
+			clear on new plateau point add 
+		check GetDistSqr for movement
+		moving to tile you cant see full path between??
+			always act like you can move over non-visible tiles
+			but if move is attempted, just move as far as you can?
+				or stop at another point? (e.g. limited move? or on scout plateau? stop ON plateau??)
+		don't need to generate full 360 degrees of Elevation points at large scale
+			just neeeds to follow path
+			will help performance
+			use this trick for infinite caves??
+		remove move limit, make const (at 2x?)
+			make random gaussian thats different every turn? could be fun?
+		clean up MattUtil pathfinding c/p 
+		shrink core and factory repair ranges? outpost?  
+		aliens need better plateau handling
+		rethink complete research redo every step??
 
 UP NEXT
 	consistent upgrade values handling, randomness, balancing

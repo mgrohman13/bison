@@ -45,13 +45,16 @@ namespace ClassLibrary1
         //internal const double Turret_Range_Pow = ;
         //internal const double Turret_Vision_Pow = ;
 
+        public static readonly int ConstructorStartDef = (int)Math.Floor(6.50 + 4.00);
+        public const double ConstructorStartRange = 5.2 + 0.30;
+
         private static readonly ReadOnlyDictionary<UpgType, UpgParam> UpgParams = new Dictionary<UpgType, UpgParam>() {
             { UpgType.AmbientGenerator, new(Type.AmbientGenerator, Consts.GeneratorEnergyInc, 0.35) },
             { UpgType.AmbientGeneratorCost, new(Type.AmbientGenerator,0.25, true) },
             { UpgType.ConstructorCost, new(Type.Constructor, 0.55, true) },
-            { UpgType.ConstructorDefense, new(Type.Constructor, 6.50, 0.50, add: 4.00) },
+            { UpgType.ConstructorDefense, new(Type.Constructor, 6.50, 0.50, add: 4.00) }, //see const
             { UpgType.ConstructorMove, new(Type.Constructor, Constructor.BASE_MOVE_INC * Constructor.MOVE_RAMP, 0.30, Constructor.MOVE_RAMP) },
-            { UpgType.ConstructorRange, new(Type.Constructor, 5.2, 0.35,  add: .3) },
+            { UpgType.ConstructorRange, new(Type.Constructor, 5.2, 0.35,  add: 0.30) }, //see const
             { UpgType.ConstructorVision, new(Type.Constructor, Constructor.BASE_VISION, 0.25) },
             //{ UpgType.ConstructorRepair, new(1, 0.45) },
             //{ UpgType.CoreDefense, new(11, 0.65, 11 / 10.0) },
@@ -65,8 +68,8 @@ namespace ClassLibrary1
             /*UpgType.ExtractorResilience*/
             { UpgType.ExtractorCost, new(Type.Mech, 0.10, true) },
             { UpgType.ExtractorDefense, new(Type.Mech, 16.90, 0.20, 3.90, 1.30) },
-            { UpgType.ExtractorSustain, new(Type.Mech, 1, 0.10) },
-            { UpgType.ExtractorValue, new(Type.Mech, 1, 0.25) },
+            { UpgType.ExtractorSustain, new(Type.Mech, 1, 0.10, min: 1) },
+            { UpgType.ExtractorValue, new(Type.Mech, 1, 0.25, min: 1) },
             { UpgType.ExtractorVision, new(Type.Mech, 5, 0.80) },
             { UpgType.FactoryCost, new(Type.Factory, 0.60, true) },
             { UpgType.FactoryDefense, new(Type.Factory, 10.00, 0.60, 10.00 / 5.0) },
@@ -123,29 +126,40 @@ namespace ClassLibrary1
         {
             //private Func<Game, double> GetRounding;
             public readonly Type Preq;
-            private readonly double avg, add, ramp, pow;
-            private readonly bool cost;
-            public bool Pct => cost || avg == 1;
+
+            private readonly double avg, pow, rmp, add, min;
+            private readonly bool cost, pct;
+
+            public bool Pct => pct;
+
             public UpgParam(Type preq, double pow, bool cost)
-            {
-                this.Preq = preq;
-                this.avg = 0;
-                this.add = 0;
-                this.pow = pow;
-                this.ramp = 0;
-                this.cost = cost;
-            }
-            public UpgParam(Type preq, double avg, double pow, double ramp = 1, double add = 0, bool cost = false)
+                : this(preq, 0, pow, 0, 0, cost)
+            { }
+            public UpgParam(Type preq, double avg, double pow, double rmp = 1, double add = 0, bool cost = false, double min = 0)
             //, Func<Game, double> GetRounding = null)
             {
                 //this.GetRounding = GetRounding;
                 this.Preq = preq;
-                this.avg = avg;
-                this.add = add;
-                this.pow = pow;
-                this.ramp = ramp;
+                this.min = min;
                 this.cost = cost;
+                this.pct = cost || avg == 1;
+
+                bool neg = add < 0;
+                if (neg)
+                    add *= -1;
+                double Dev() => Game.Rand.GaussianOE(.13, .13, .13);
+                double Min(double value, double mult) => Game.Rand.GaussianCapped(value * mult, Dev(), value * Math.Max(mult * 2 - 1, 0));
+
+                this.avg = Game.Rand.GaussianCapped(avg, Dev() / 2.5, Min(avg, .78));
+                this.pow = Game.Rand.GaussianCapped(pow, Dev() / 3.0, Min(pow, .91));
+                this.rmp = Game.Rand.GaussianCapped(rmp, Dev() / 2.0, Min(rmp, .65));
+                this.add = Game.Rand.GaussianCapped(add, Dev() / 1.5, Min(add, .52));
+
+                if (neg)
+                    this.add *= -1;
+                //if ( preq == Type.ExtractorValue || preq == Type.sus)
             }
+
             public double CalcAvg(Game game, double mult)
             {
                 double avg = cost ? CalcCost(mult) : Calc(mult);
@@ -153,8 +167,14 @@ namespace ClassLibrary1
                 //    avg = MTRandom.Round(avg, GetRounding(game));
                 return avg;
             }
-            private double Calc(double mult) => add + avg * (mult < ramp ? mult / ramp : 1) * Math.Pow(mult, pow);
-            private double CalcCost(double mult) => 1 / Math.Pow(mult, pow);
+            private double Calc(double mult)
+            {
+                double result = add + avg * (mult < rmp ? mult / rmp : 1) * Math.Pow(mult, pow);
+                result = Math.Max(result, min);
+                return result;
+            }
+            private double CalcCost(double mult) =>
+                1 / Math.Pow(mult, pow);
         }
 
         private static readonly UpgType[] BaseZero = [ UpgType.CoreShields, UpgType.FactoryRepair, // UpgType.RepairDrone,

@@ -31,7 +31,15 @@ namespace ClassLibrary1.Pieces.Terrain
 
             double oeDiv = limit ? Math.Sqrt(baseValue) : 1;
             baseValue *= distMult;
-            double value = Game.Rand.GaussianOE(baseValue, Consts.ResourceDev, Consts.ResourceOE / oeDiv, 1.3);
+            double value = Game.Rand.GaussianOE(baseValue, Consts.ResourceDev, Consts.ResourceOE / oeDiv, 1.69);
+            if (Game.Rand.GaussianCapped(value, .26) > Game.Rand.GaussianCapped(52, .26))
+                value = Consts.IncomeRounding(value);
+            else if (Game.Rand.Bool())
+                value = Game.Rand.Round(value);
+            if (Game.Rand.Next(13) == 0)
+                value += Game.Rand.Gaussian();
+            if (value < 1)
+                value = 1;
 
             sustainMult *= Math.Pow(baseValue / value, Consts.ResourceSustainValuePow);
             double sustain = Game.Rand.GaussianOE(sustainMult, Consts.ResourceDev, Consts.ResourceOE, .05);
@@ -71,7 +79,7 @@ namespace ClassLibrary1.Pieces.Terrain
             mult = Math.Pow((this.Value + mult) / (inc + mult), Consts.ExtractorCostPow);
             mult *= Math.Pow(Sustain, Consts.ExtractorSustainCostPow);
             mult *= costMult;
-            energy = MTRandom.Round(baseEnergy * _energyMult * mult, 1 - _rounding);
+            energy = MTRandom.Round(baseEnergy * _energyMult * mult, Consts.MAX_ROUND - _rounding);
             mass = MTRandom.Round(baseMass * _massMult * mult, _rounding);
         }
 

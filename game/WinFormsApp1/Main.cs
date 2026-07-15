@@ -35,7 +35,7 @@ namespace WinFormsApp1
 
         public override void Refresh()
         {
-            Program.Game.Player.GetIncome(out double energyInc, out double massInc, out double researchInc);
+            Program.Game.Player.GetIncome(out double energyInc, out double massInc, out int researchInc);
             //energyInc -= energyUpk;
             //massInc -= massUpk; 
             this.lblEnergy.Text = Format(Program.Game.Player.Energy);
@@ -44,14 +44,14 @@ namespace WinFormsApp1
             FormatInc(lblMassInc, massInc);
             this.lblResearch.Text = string.Format("{0} / {1}", Program.Game.Player.Research.GetProgress(Program.Game.Player.Research.Researching),
                 Program.Game.Player.Research.GetCost(Program.Game.Player.Research.Researching));
-            FormatInc(lblResearchInc, researchInc);
+            FormatInc(lblResearchInc, researchInc, "0");
             this.lblResearching.Text = Program.Game.Player.Research.Researching.ToString();
             base.Refresh();
         }
-        private static void FormatInc(Label label, double inc)
+        private static void FormatInc(Label label, double inc, string format = "0.0")
         {
             label.ForeColor = inc >= 0 ? Color.Black : Color.Red;
-            label.Text = string.Format("{0}{1}", inc >= 0 ? "+" : "", inc.ToString("0.0"));
+            label.Text = string.Format("{0}{1}", inc >= 0 ? "+" : "", inc.ToString(format));
         }
         private static string Format(int value)
         {

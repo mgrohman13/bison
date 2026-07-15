@@ -96,14 +96,14 @@ namespace ClassLibrary1
             this._progress[_researching] -= amt;
         }
 
-        internal Type? AddResearch(double research, out int add)
+        internal Type? AddResearch(int add)
         {
             foreach (Type type in _choices.Keys)
                 _lastSeen[type] = Tuple.Create(Game.Turn, _choices[type]);
 
-            if (_researching != Type.Mech)
-                research = Consts.Income(research);
-            add = Game.Rand.Round(research);
+            //if (_researching != Type.Mech)
+            //    research = Consts.Income(research);
+            //add = Game.Rand.Round(research);
             this._progress[_researching] += add;
 
             Type? result = null;
@@ -486,13 +486,13 @@ namespace ClassLibrary1
         public static readonly Type[] NoUpgrades = [ Type.Mech, Type.Constructor, Type.Turret, Type.Factory, Type.Disband, Type.CoreArmor,
             Type.Outpost, Type.OutpostAttack, Type.OutpostRepair, Type.OutpostArmor, Type.FactoryShields,
             Type.TurretLasers, Type.TurretExplosives, Type.TurretShields, Type.TurretArmor, Type.TurretAutoRepair,
-            Type.FactoryConstructor, Type.FactoryAutoRepair, Type.BuildingAutoRepair, Type.BurnMass, Type.ScrapResearch, Type.FabricateMass, ];
+            Type.FactoryAutoRepair, Type.BuildingAutoRepair, Type.BurnMass, Type.ScrapResearch, Type.FabricateMass, ]; // Type.FactoryConstructor,
         public static readonly Type[] UpgradeOnly = [ Type.ConstructorCost, Type.ConstructorMove,
             Type.TurretRange, Type.TurretAttack, Type.TurretDefense, Type.MissileCost, Type.MissileRange,
             Type.BuildingCost, Type.BuildingDefense, Type.ResearchChoices, Type.ExtractorValue ];
         //pushes down min research requirement
         public static readonly HashSet<Type> KeyTechs = [ Type.Factory, Type.TurretRange, Type.ConstructorDefense, Type.ConstructorMove,
-                Type.FactoryRepair, Type.FactoryConstructor, Type.BuildingDefense, Type.BuildingAutoRepair, ];
+                Type.FactoryRepair, Type.BuildingDefense, Type.BuildingAutoRepair, ]; // Type.FactoryConstructor,
         //pushes up min research requirement
         public static readonly Type[] EndTechs = [Type.AmbientGenerator, Type.ExtractorValue, Type.RepairDrone, Type.Missile];
 
@@ -504,7 +504,7 @@ namespace ClassLibrary1
 
         public static readonly Dictionary<Type, Type[]> Dependencies = new()
         {
-            { Type.Mech, Array.Empty<Type>() },
+            { Type.Mech, [] },
             { Type.CoreDefense, new Type[]          { Type.Mech, } },
             { Type.Constructor, new Type[]          { Type.CoreDefense, } },
             { Type.Outpost, new Type[]              { Type.CoreDefense, } },
@@ -536,17 +536,17 @@ namespace ClassLibrary1
             { Type.TurretAutoRepair, new Type[]     { Type.Turret, Type.TurretArmor, Type.FactoryAutoRepair, } },
 
             { Type.ConstructorCost, new Type[]      { Type.Constructor, } }, //quick
-            { Type.ConstructorDefense, new Type[]   { Type.Constructor, Type.MechShields, Type.MechArmor, } },
-            { Type.ConstructorMove, new Type[]      { Type.Constructor, Type.ConstructorDefense, Type.MechVision, Type.MechMove, } }, //end
-            { Type.RepairDrone, new Type[]          { Type.Constructor, Type.FactoryConstructor, Type.FabricateMass, } }, //end
+            { Type.ConstructorDefense, new Type[]   { Type.Constructor, Type.ConstructorCost, Type.MechShields, Type.MechArmor, } }, 
+            { Type.ConstructorMove, new Type[]      { Type.Constructor, Type.ConstructorCost, Type.MechVision, Type.MechMove, } }, // Type.ConstructorDefense, 
+            { Type.RepairDrone, new Type[]          { Type.Constructor, Type.ConstructorDefense, Type.ConstructorMove, Type.FabricateMass, } }, // Type.FactoryConstructor, //end
 
             { Type.FactoryRepair, new Type[]        { Type.Factory, } },
-            { Type.FactoryConstructor, new Type[]   { Type.Factory, Type.FactoryRepair, Type.ConstructorCost, } },
-            { Type.FactoryShields, new Type[]       { Type.Factory, Type.FactoryConstructor, Type.ConstructorDefense, Type.BuildingDefense, } }, //end
+            //{ Type.FactoryConstructor, new Type[]   { Type.Factory, Type.FactoryRepair, Type.ConstructorCost, } },
+            { Type.FactoryShields, new Type[]       { Type.Factory, Type.ConstructorDefense, Type.BuildingDefense, } }, //Type.FactoryConstructor, //end
             { Type.FactoryAutoRepair, new Type[]    { Type.Factory, Type.FactoryRepair, Type.BuildingAutoRepair, } },
-            { Type.Missile, new Type[]              { Type.FactoryConstructor, Type.FactoryAutoRepair, Type.TurretExplosives } },
-            { Type.MissileCost, new Type[]          { Type.Missile, } }, //end
-            { Type.MissileRange, new Type[]         { Type.Missile, } }, //end
+            { Type.Missile, new Type[]              { Type.Factory, Type.FactoryAutoRepair, Type.TurretExplosives } }, //Type.FactoryConstructor, 
+            { Type.MissileCost, new Type[]          { Type.Factory, Type.Missile, } }, //end
+            { Type.MissileRange, new Type[]         { Type.Factory, Type.Missile, } }, //end
             
             { Type.BuildingDefense, new Type[]      { Type.Constructor } }, //quick
             { Type.BuildingAutoRepair, new Type[]   { Type.BuildingDefense, } },
@@ -559,7 +559,7 @@ namespace ClassLibrary1
             { Type.BurnMass, new Type[]             { Type.Factory, } },
             { Type.FabricateMass, new Type[]        { Type.ResearchChoices, Type.BurnMass, Type.FactoryAutoRepair, } },
             { Type.ExtractorValue, new Type[]       { Type.BuildingAutoRepair, Type.BuildingCost, Type.ScrapResearch, Type.BurnMass, } }, //end
-                                 
+            
             //Type.BuildingResilience - not extractor??
             // Constructor resilience ?
         };
@@ -602,7 +602,7 @@ namespace ClassLibrary1
 
             ConstructorCost = 156, //quick
             ConstructorDefense = 182, //key
-            ConstructorMove = 325, //end
+            ConstructorMove = 325, 
             RepairDrone = 520, //end
 
             OutpostRepair = 90, //quick
@@ -611,7 +611,7 @@ namespace ClassLibrary1
             MissileRange = 195, //end
             FactoryAutoRepair = 205,
             FactoryRepair = 240, //key
-            FactoryConstructor = 290, //key
+            //FactoryConstructor = 290, //key
             Missile = 390,
 
             BuildingDefense = 115, //quick

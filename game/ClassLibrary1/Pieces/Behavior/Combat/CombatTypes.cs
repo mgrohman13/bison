@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using static ClassLibrary1.Map.Map;
 
 namespace ClassLibrary1.Pieces.Behavior.Combat
 {
@@ -88,7 +89,8 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
                     break;
             }
 
-            double piece = defense.Piece.GetBehavior<IKillable>().AllDefenses.Sum(d => Consts.StatValue(d.DefenseCur));
+            double piece = defense.Piece.GetBehavior<IKillable>().CurDefenseValue;
+            //chance += 13 * Tile.Height(defense.Piece.Tile) / Terrain.Island.HEIGHT;
             chance *= LowMult(piece);
             static double LowMult(double value)
             {

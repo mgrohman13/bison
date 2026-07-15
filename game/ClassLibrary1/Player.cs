@@ -18,6 +18,8 @@ namespace ClassLibrary1
         public readonly Research Research;
         private readonly IEnumerable<IUpgradeValues> upgradeValues;
 
+        private double _researchRand, _researchRound;
+
         new public IReadOnlyList<Piece> Pieces => base.Pieces;
         new public IEnumerable<T> PiecesOfType<T>() where T : class, IBehavior
             => base.PiecesOfType<T>();
@@ -148,12 +150,13 @@ namespace ClassLibrary1
             return details;
         }
 
-        public void GetIncome(out double energyInc, out double massInc, out double researchInc)
+        public void GetIncome(out double energyInc, out double massInc, out int researchInc)
         {
-            energyInc = massInc = researchInc = 0;
+            double researchAvg;
+            energyInc = massInc = researchAvg = 0;
             foreach (PlayerPiece piece in IteratePieces())
-                piece.GetIncome(ref energyInc, ref massInc, ref researchInc);
-            PostProcess(ref energyInc, ref researchInc);
+                piece.GetIncome(ref energyInc, ref massInc, ref researchAvg);
+            PostProcess(ref energyInc, researchAvg, out researchInc);
         }
         internal void GenerateResources(out double energyInc, out double massInc, out double researchInc)
         {
@@ -166,27 +169,30 @@ namespace ClassLibrary1
             base.StartTurn();
             this._energy = Consts.IncomeRounding(Energy);
             this._mass = Consts.IncomeRounding(Mass);
+            this._researchRand = Game.Rand.Gaussian();
+            this._researchRound = Game.Rand.NextDouble();
         }
         internal Research.Type? EndTurn()
         {
-            GenerateResources(out double energyInc, out double massInc, out double researchInc);
+            GenerateResources(out double energyInc, out double massInc, out double researchAvg);
 
             base.EndTurn(out double energyUpk, out double massUpk);
-            PostProcess(ref energyInc, ref researchInc);
+            PostProcess(ref energyInc, researchAvg, out int researchInc);
 
             this._energy = Consts.Income(Energy, energyInc - energyUpk);
             this._mass = Consts.Income(Mass, massInc - massUpk);
 
-            return this.Research.AddResearch(researchInc, out _);
+            return this.Research.AddResearch(researchInc);
         }
 
-        private static void PostProcess(ref double energyInc, ref double researchInc)
+        private void PostProcess(ref double energyInc, double researchAvg, out int researchInc)
         {
-            if (researchInc < 0)
+            if (researchAvg < 0)
             {
-                energyInc += researchInc * Consts.MassPerResearchConversion * Consts.EnergyMassRatio;
-                researchInc = 0;
+                energyInc += researchAvg * Consts.MassPerResearchConversion * Consts.EnergyMassRatio;
+                researchAvg = 0;
             }
+            researchInc = MTRandom.Round(researchAvg + _researchRand * Consts.IncomeDev(researchAvg), _researchRound);
         }
     }
 }

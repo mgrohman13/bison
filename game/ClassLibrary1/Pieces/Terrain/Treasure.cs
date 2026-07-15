@@ -81,7 +81,8 @@ namespace ClassLibrary1.Pieces.Terrain
             //Game.Player.Research.FreeTech(research);
             //return research * ConvertResearch;
 
-            var type = Game.Player.Research.AddResearch(value / ConvertResearch, out int add);
+            int add = Game.Rand.Round(value / ConvertResearch);
+            var type = Game.Player.Research.AddResearch(add);
             RaiseCollectEvent(tile, $"Research: {add}", type.HasValue);
             return add * ConvertResearch;
         }

@@ -41,7 +41,7 @@ namespace WinFormsApp1
                 IBuilder.IBuildTurret buildTurret = GetBuilder<IBuilder.IBuildTurret>(selected);
                 IBuilder.IBuildGenerator buildGenerator = GetBuilder<IBuilder.IBuildGenerator>(selected);
                 Piece piece = selected.Piece;
-                if (piece is null)
+                if (piece == null)
                 {
                     if (buildMech != null)
                         return true;
@@ -146,7 +146,7 @@ namespace WinFormsApp1
             }
             if (buildExtractor != null && selected.Piece is Resource resource)
             {
-                Extractor.Cost(out int energy, out int mass, resource);
+                Extractor.Cost(resource, out int energy, out int mass);
                 BuildRow row = new(buildExtractor, "Extractor", energy, mass, Extractor.Resilience);
                 rows.Add(row);
             }
@@ -428,22 +428,24 @@ namespace WinFormsApp1
             {
                 get
                 {
-                    if (Blueprint is not null)
+                    if (Blueprint != null)
                         return Program.GetNotify(Blueprint);
-                    if (Builder is IBuilder.IBuildConstructor)
-                        return Program.NotifyConstructor;
-                    if (Builder is IBuilder.IBuildDrone)
-                        return Program.NotifyDrone;
-                    return true;
+                    return Program.Notify(Builder);
+                    //if (Builder is IBuilder.IBuildConstructor)
+
+                    //if (Builder is IBuilder.IBuildDrone)
+                    //    return Program.NotifyDrone;
+                    //return true;
                 }
                 set
                 {
-                    if (Blueprint is not null)
+                    if (Blueprint != null)
                         Program.SetNotify(Blueprint, value);
-                    if (Builder is IBuilder.IBuildConstructor)
-                        Program.NotifyConstructor = value;
-                    if (Builder is IBuilder.IBuildDrone)
-                        Program.NotifyDrone = value;
+                    Program.Notify(Builder, value);
+                    //if (Builder is IBuilder.IBuildConstructor)
+                    //    Program.NotifyConstructor = value;
+                    //if (Builder is IBuilder.IBuildDrone)
+                    //    Program.NotifyDrone = value;
                 }
             }
             public MechBlueprint Blueprint { get; }

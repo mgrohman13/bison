@@ -30,8 +30,8 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
         public Killable.Events Event { get; }
         internal void RaiseDamagedEvent(Attack attack, Defense defense, Tile defTile);
 
-        internal double CurDefenseValue => AllDefenses.Sum(d => Consts.StatValue(d.DefenseCur));
-        internal double MaxDefenseValue => AllDefenses.Sum(d => Consts.StatValue(d.DefenseMax));
+        public double CurDefenseValue => AllDefenses.Sum(d => Consts.StatValue(d.DefenseCur));
+        public double MaxDefenseValue => AllDefenses.Sum(d => Consts.StatValue(d.DefenseMax));
 
         [Serializable]
         [DataContract(IsReference = true)]
@@ -39,6 +39,9 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
         {
             public readonly DefenseType Type;
             private readonly int _defense;
+
+            public Values() : this(DefenseType.Hits, 1)
+            { }
 
             public Values(DefenseType type, int defense)
             {

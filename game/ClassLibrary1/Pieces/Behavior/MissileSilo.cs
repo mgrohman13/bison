@@ -15,6 +15,10 @@ namespace ClassLibrary1.Pieces.Behavior
     {
         public const double START_RANGE = 26;
 
+        private readonly Piece _piece = piece;
+        private bool _producing = false, _attacked = true;
+        private int _numMissiles = 0;
+
         public Piece Piece => _piece;
 
         public IAttacker.Values Attack => GetValues().Attack;
@@ -35,10 +39,6 @@ namespace ClassLibrary1.Pieces.Behavior
         public int NumMissiles => _numMissiles;
         public bool Attacked => _attacked;
 
-        private readonly Piece _piece = piece;
-        private bool _producing = false, _attacked = true;
-        private int _numMissiles = 0;
-
         public T GetBehavior<T>() where T : class, IBehavior
         {
             return _piece.GetBehavior<T>();
@@ -56,8 +56,7 @@ namespace ClassLibrary1.Pieces.Behavior
 
             if (((IMissileSilo)this).Online)
             {
-                EnemyPiece enemy = killable.Piece as EnemyPiece;
-                if (enemy is not null)
+                if (killable.Piece is EnemyPiece enemy)
                 {
                     double energy = enemy.Cost * Consts.MissileHitRefundPct;
                     double hitPct = killable.CurDefenseValue / killable.MaxDefenseValue;
@@ -92,7 +91,7 @@ namespace ClassLibrary1.Pieces.Behavior
                             Piece.Game.Map.GetClosestSpawner(tile.Location).Spawner.Mult(Game.Rand.Range(1, spawnerMult));
 
                         mult *= mult;
-                        Alien.IncMorale(enemy, mult, Consts.CaveSize, 1, tiles);
+                        Alien.IncMorale(enemy, mult, true, .52, tiles);
                     }
                     else
                         ;
@@ -155,9 +154,9 @@ namespace ClassLibrary1.Pieces.Behavior
         [DataContract(IsReference = true)]
         private class Values : IUpgradeValues
         {
-            private double _costMult, _range = START_RANGE, _rangeMult = 1;
-            private double _energy, _mass;
-            private int _att;
+            private double costMult, range = START_RANGE;
+            private double energy, mass;
+            private int att;
 
             public Values()
             {
@@ -166,9 +165,9 @@ namespace ClassLibrary1.Pieces.Behavior
                 UpgradeMissileCost(1);
             }
 
-            public IAttacker.Values Attack => new(AttackType.Kinetic, _att, _range, 1);
-            public double Energy => _energy;
-            public double Mass => _mass;
+            public IAttacker.Values Attack => new(AttackType.Kinetic, att, range, 1);
+            public double Energy => energy;
+            public double Mass => mass;
 
             public void Upgrade(Research.Type type, double researchMult)
             {
@@ -181,36 +180,34 @@ namespace ClassLibrary1.Pieces.Behavior
             }
             private void UpgradeMissileAttack(double researchMult)
             {
-                double attAvg = Calc(UpgType.MissileAttack, researchMult);
-                this._att = Game.Rand.Round(attAvg);
-
-                this._range /= _rangeMult;
-                this._rangeMult = Math.Sqrt(Consts.StatValue(attAvg) / Consts.StatValue(_att));
-                this._range *= _rangeMult;
-
+                this.att = Game.Rand.Round(Calc(UpgType.MissileAttack, researchMult));
                 SetCost(researchMult);
             }
             private void UpgradeMissileRange(double researchMult)
             {
-                this._range = Calc(UpgType.MissileRange, researchMult) * _rangeMult;
+                this.range = Calc(UpgType.MissileRange, researchMult);
                 SetCost(researchMult);
             }
             private void UpgradeMissileCost(double researchMult)
             {
-                this._costMult = Calc(UpgType.MissileCost, researchMult);
+                this.costMult = Calc(UpgType.MissileCost, researchMult);
                 SetCost(researchMult);
             }
             private void SetCost(double researchMult)
             {
-                double cost = MechBlueprint.MissileCost(Attack, researchMult);
-                double rangeMult = Math.Sqrt(_range / START_RANGE);
-                cost *= rangeMult * _costMult * Consts.MissileCostMult;
+                double cost = MechBlueprint.MissileCost(this.Attack, researchMult);
+                double rangeMult = this.range / START_RANGE;
+                cost *= rangeMult * this.costMult * Consts.MissileCostMult;
 
                 double costE = cost * Consts.MissileEnergyCostRatio;
-                this._energy = Game.Rand.GaussianCappedInt(costE, 1 / costE);
+                this.energy = Game.Rand.GaussianCapped(costE + 1, 1 / costE, 1);
+                if (Game.Rand.Bool())
+                    this.energy = Math.Round(this.energy);
 
-                double costM = (cost - _energy) / Consts.EnergyMassRatio;
-                this._mass = Game.Rand.GaussianCappedInt(costM, 1 / costM);
+                double costM = (cost - energy) / Consts.EnergyMassRatio;
+                this.mass = Game.Rand.Gaussian(costM, 1 / costM);
+                if (Game.Rand.Bool())
+                    this.mass = Math.Round(this.mass);
             }
         }
     }

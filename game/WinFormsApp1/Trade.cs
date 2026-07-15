@@ -73,8 +73,9 @@ namespace WinFormsApp1
                 if (Program.Game.Player.CanScrapResearch())
                 {
                     SetTrade(form.nudScrap, mass, Consts.MassForScrapResearch);
+                    mass -= (int)form.nudScrap.Value;
                 }
-                if (energy <= 0 && Program.Game.Player.CanFabricateMass())
+                if (mass > 0 && energy <= 0 && Program.Game.Player.CanFabricateMass())
                 {
                     SetTrade(form.nudFabricate, mass, 1);
                 }
