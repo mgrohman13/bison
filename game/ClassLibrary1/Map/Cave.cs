@@ -39,21 +39,21 @@ namespace ClassLibrary1.Map
             public double MinSpawnMove => minSpawnMove;
             public bool Explored => explored;
 
-            public Cave(PointD center, PointD connectTo, bool connectCave = false)
+            public Cave(Consts consts, PointD center, PointD connectTo, bool connectCave = false)
             {
-                double off2 = connectCave ? Consts.CaveSize : 1.3 * Consts.PathWidth;
+                double off2 = connectCave ? consts.CaveSize : 1.3 * consts.PathWidth;
                 static double Offset(double amt) => Game.Rand.Gaussian(amt / 2.1);
 
                 Center = center;
-                seg1 = new(center.X + Offset(Consts.CaveSize), center.Y + Offset(Consts.CaveSize));
+                seg1 = new(center.X + Offset(consts.CaveSize), center.Y + Offset(consts.CaveSize));
                 seg2 = new(connectTo.X + Offset(off2), connectTo.Y + Offset(off2));
-                segSize = Game.Rand.GaussianOE(Consts.CavePathWidth, .39, .5, 1.3);
-                //Width = Game.Rand.GaussianCapped(Consts.PathWidth, Consts.PathWidthDev, Consts.PathWidthMin);
+                segSize = Game.Rand.GaussianOE(consts.CavePathWidth, .39, .5, 1.3);
+                //Width = Game.Rand.GaussianCapped(consts.PathWidth, consts.PathDev, consts.PathWidthMin);
 
                 shape = [ Game.Rand.GaussianOE(1.69, .39, .13), 1 + Game.Rand.GaussianOEInt(1.3, .26, .26),
                     Game.Rand.NextDouble() * TWO_PI, GenK(), GenK(), Game.Rand.GaussianCapped(1, .13, .5) ];
 
-                Debug.WriteLine($"Cave - ({Center}) {shape[5] * Consts.CaveSize} (path: {segSize})");
+                Debug.WriteLine($"Cave - ({Center}) {shape[5] * consts.CaveSize} (path: {segSize})");
                 Debug.WriteLine($"K: {shape[3]}");
                 Debug.WriteLine($"K (path): {shape[4]}");
 
@@ -67,13 +67,13 @@ namespace ClassLibrary1.Map
                 explored |= GetDistSqr(new(point.X, point.Y), Center) < vision * vision;
             }
 
-            public double Evaluate(int x, int y)
+            public double Evaluate(Consts consts, int x, int y)
             {
                 double offset = 1.3 + shape[0];
                 double s = offset + Math.Sin((GetAngle(Center.X - x, Center.Y - y) + Math.PI) * shape[1] + shape[2]);
                 s *= s;
                 double distance = GetDistSqr(x, y, Center) / s;
-                double centerMult = GetMult(distance, shape[5] * Consts.CaveSize / offset, shape[3]);//replace shape[3] with K?
+                double centerMult = GetMult(distance, shape[5] * consts.CaveSize / offset, shape[3]);//replace shape[3] with K?
 
                 double connection = GetMult(ConnectionDistSqr(x, y), segSize, shape[4]);
 
@@ -106,7 +106,7 @@ namespace ClassLibrary1.Map
                     Tile from = map.SpawnTile(Center, Math.Sqrt(2), true);
                     path = map.PathFindCore(from, minSpawnMove, blocked =>
                     {
-                        if (minSpawnMove > Constructor.BASE_MOVE_MAX)
+                        if (minSpawnMove > Constructor.MOVE_MAX)
                             return true;
                         double penalty = 1;
                         foreach (var p in blocked)
@@ -114,9 +114,9 @@ namespace ClassLibrary1.Map
                             Tile tile = map.GetTile(p);
                             double div = 1;
                             if (tile == null)
-                                div = 1 + Consts.CaveSize * Consts.CaveSize;
+                                div = 1 + map.Game.Consts.CaveSize * map.Game.Consts.CaveSize;
                             else if (tile.Piece is ITerrain)
-                                div = 1 + Consts.CaveSize / minSpawnMove;
+                                div = 1 + map.Game.Consts.CaveSize / minSpawnMove;
                             if (div > 1)
                                 penalty += div;
                         }
@@ -137,12 +137,12 @@ namespace ClassLibrary1.Map
                     return Game.Rand.Round(_spawn.Chance * Math.Sqrt(2.1 + hives.Count));
                 return 0;
             }
-            public Tile SpawnTile(Map map) => SpawnTile(map, true , 1.69);
+            public Tile SpawnTile(Map map) => SpawnTile(map, true, 1.69);
             public Tile SpawnTile(Map map, bool isEnemy, double deviationMult = 1)
             {
                 bool inPath = !isEnemy && Game.Rand.Bool();
                 PointD spawnCenter = inPath ? PathCenter : Center;
-                double deviation = deviationMult * (inPath ? PathLength / 6.5 : Consts.CaveSize);
+                double deviation = deviationMult * (inPath ? PathLength / 6.5 : map.Game.Consts.CaveSize);
                 Tile tile = map.SpawnTile(spawnCenter, deviation, isEnemy);
                 if (!isEnemy)
                     Debug.WriteLine($"Cave resource ({inPath}): {tile} ({Math.Sqrt(GetDistSqr(spawnCenter, tile.LocationD))})");

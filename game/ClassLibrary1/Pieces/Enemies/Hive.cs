@@ -45,13 +45,15 @@ namespace ClassLibrary1.Pieces.Enemies
         }
         internal static Hive NewHive(Tile tile, int hiveIdx, SpawnChance spawner)
         {
+            Consts consts = tile.Map.Game.Consts;
+
             IEnumerable<IKillable.Values> killable = GenKillable(hiveIdx);
             double resilience = MechBlueprint.GenResilience(.26, .169, 1 + hiveIdx);
             IEnumerable<IAttacker.Values> attacks = GenAttacker(hiveIdx);
             double strInc = Math.Pow(1.5, hiveIdx);
-            MechBlueprint.CalcCost(3.9 + strInc / 2.1, 0, killable, resilience, attacks, null, out double energy, out double mass);
-            double cost = energy + mass * Consts.EnergyMassRatio;
-            energy = Game.Rand.Gaussian(Consts.EnemyEnergy * (39 + 1.69 * strInc) - cost, .13);
+            MechBlueprint.CalcCost(consts, 3.9 + strInc / 2.1, 0, killable, resilience, attacks, null, out double energy, out double mass);
+            double cost = energy + mass * consts.EnergyMassRatio;
+            energy = Game.Rand.Gaussian(consts.EnemyEnergy * (39 + 1.69 * strInc) - cost, .13);
             Debug.WriteLine($"hiveCost #{hiveIdx + 1}: {cost} ({energy})");
 
             Hive obj = new(tile, spawner, killable, resilience, attacks, cost, energy);

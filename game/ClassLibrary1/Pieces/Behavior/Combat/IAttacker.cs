@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
 using static ClassLibrary1.Map.Map;
 using static ClassLibrary1.Pieces.Behavior.Combat.Attacker;
@@ -18,7 +19,7 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
         //public double TotalAttackCurValue2 { get; }
         //public double TotalAttackMaxValue2 { get; }
 
-        void Upgrade(IEnumerable<Values> values);
+        void Upgrade(IEnumerable<Values> values, IReadOnlyList<int> setCur = null);
         public bool Fire(IKillable killable);
         internal bool EnemyFire(IKillable killable, Attack attack = null);
 
@@ -64,6 +65,15 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
             public int Attack => _attack;
             public double Range => _range;
             public int Reload => _reload;
+
+            public override bool Equals([NotNullWhen(true)] object obj)
+            {
+                if (obj == null)
+                    return false;
+                Values other = (Values)obj;
+                return Type == other.Type && _attack == other._attack
+                    && _reload == other._reload && _range == other._range;
+            }
         }
 
     }

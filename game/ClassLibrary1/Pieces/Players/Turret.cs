@@ -1,4 +1,5 @@
-﻿using ClassLibrary1.Pieces.Behavior.Combat;
+﻿using ClassLibrary1.Pieces.Behavior;
+using ClassLibrary1.Pieces.Behavior.Combat;
 using ClassLibrary1.Pieces.Terrain;
 using MattUtil;
 using System;
@@ -41,7 +42,7 @@ namespace ClassLibrary1.Pieces.Players
             SetBehavior(
                 new Killable(this, new IKillable.Values(), Values.Resilience),
                 new Attacker(this, []));
-            Upgrade();
+            Unlock();
         }
         internal static Turret NewTurret(Foundation foundation)
         {
@@ -61,16 +62,30 @@ namespace ClassLibrary1.Pieces.Players
         internal override void Cost(out int energy, out int mass) =>
             Cost(Game, out energy, out mass);
 
+        protected override bool CanReplace<T>(out Tuple<double, double> rounding)
+        {
+            rounding = new(GetValues(Game).Rounding, _rounding);
+            return typeof(T) == typeof(Generator);
+        }
+
         internal override void OnResearch(Research.Type type)
         {
-            Upgrade();
+            Unlock();
         }
         private void Upgrade()
         {
             Values values = GetValues(Game);
             GetBehavior<IKillable>().Upgrade(values.GetKillable(Game.Player.Research, _shieldMult, _armorMult, _rounding), Values.Resilience);
             GetBehavior<IAttacker>().Upgrade(values.GetAttacks(Game.Player.Research, _attMult, _rounding));
+            Builder.UpgradeAll(this, new(.5));
             this.Vision = values.Vision;
+        }
+        private void Unlock()
+        {
+            Research research = Game.Player.Research;
+            if (!HasBehavior<IBuilder.IBuildGenerator>() && research.HasType(Research.Type.AmbientGenerator))
+                SetBehavior(new Builder.BuildGenerator(this, new()));
+            Upgrade();
         }
         private static Values GetValues(Game game) => game.Player.GetUpgradeValues<Values>();
 
@@ -97,32 +112,16 @@ namespace ClassLibrary1.Pieces.Players
             public const double Resilience = .6;
 
             private int energy, mass;
-            private double vision;
+            private double rounding, vision;
 
-            private readonly IKillable.Values[] defenses;
-            private readonly IAttacker.Values[] attacks;
-
-            public Values()
-            {
-                this.defenses = new IKillable.Values[MAX_DEFENSES];
-                for (int a = 0; a < MAX_DEFENSES; a++)
-                    defenses[a] = new(DefenseType.Hits, 1);
-
-                this.attacks = new IAttacker.Values[MAX_ATTACKS];
-                for (int a = 0; a < MAX_ATTACKS; a++)
-                    attacks[a] = new(AttackType.Kinetic, 1, Attack.MELEE_RANGE);
-
-                UpgradeBuildingCost(1);
-                //UpgradeBuildingHits(1);
-                UpgradeTurretDefense(1);
-                UpgradeTurretAttack(1);
-                UpgradeTurretRange(1);
-            }
+            private readonly IKillable.Values[] defenses = new IKillable.Values[MAX_DEFENSES];
+            private readonly IAttacker.Values[] attacks = new IAttacker.Values[MAX_ATTACKS];
 
             public int Energy => energy;
             public int Mass => mass;
             public double Vision => vision;
             public double[] AttackRange => [.. attacks.Select(v => v.Range)];
+            public double Rounding => rounding;
 
             public List<IKillable.Values> GetKillable(Research research, double shieldMult, double armorMult, double rounding)
             {
@@ -135,8 +134,9 @@ namespace ClassLibrary1.Pieces.Players
                     double mult = a switch { 0 => hitsMult, 1 => shieldMult, 2 => armorMult, _ => throw new Exception() };
                     int def = MTRandom.Round(Consts.StatValueInverse(Consts.StatValue(defense.Defense) * mult), Consts.MAX_ROUND - rounding);
                     def = Math.Max(def, 1);
-                    bool has = ((a == 1 && research.HasType(Research.Type.TurretShields))
-                         || (a == 2 && research.HasType(Research.Type.TurretArmor)));
+                    bool has = a == 0
+                        || (a == 1 && research.HasType(Research.Type.TurretShields))
+                        || (a == 2 && research.HasType(Research.Type.TurretArmor));
                     if (has)
                     {
                         results.Add(new(defense.Type, def));
@@ -183,26 +183,41 @@ namespace ClassLibrary1.Pieces.Players
                 return results;
             }
 
-            public void Upgrade(Research.Type type, double researchMult)
+            public void Init(Game game)
+            {
+                for (int a = 0; a < MAX_DEFENSES; a++)
+                    defenses[a] = new(DefenseType.Hits, 1);
+                for (int a = 0; a < MAX_ATTACKS; a++)
+                    attacks[a] = new(AttackType.Kinetic, 1, Attack.MELEE_RANGE);
+
+                UpgradeBuildingCost(game, 1);
+                UpgradeTurretDefense(game, 1);
+                UpgradeTurretAttack(game, 1);
+                UpgradeTurretRange(game, 1);
+            }
+            public void Upgrade(Game game, Research.Type type, double researchMult)
             {
                 if (type == Research.Type.BuildingCost)
-                    UpgradeBuildingCost(researchMult);
+                    UpgradeBuildingCost(game, researchMult);
                 else if (type == Research.Type.TurretDefense)
-                    UpgradeTurretDefense(researchMult);
+                    UpgradeTurretDefense(game, researchMult);
                 else if (type == Research.Type.TurretRange)
-                    UpgradeTurretRange(researchMult);
+                    UpgradeTurretRange(game, researchMult);
                 else if (type == Research.Type.TurretAttack)
-                    UpgradeTurretAttack(researchMult);
+                    UpgradeTurretAttack(game, researchMult);
             }
-            private void UpgradeBuildingCost(double researchMult)
+            private void UpgradeBuildingCost(Game game, double researchMult)
             {
-                double costMult = ResearchUpgValues.Calc(UpgType.TurretCost, researchMult);
-                this.energy = Game.Rand.Round(1150 * costMult);
-                this.mass = Game.Rand.Round(1550 * costMult);
+                this.rounding = Game.Rand.NextDouble();
+                double costMult = game.ResearchUpgValues.Calc(UpgType.TurretCost, researchMult);
+                double e = 1150 * costMult;
+                double m = 1550 * costMult;
+                this.energy = MTRandom.Round(e, rounding);
+                this.mass = MTRandom.Round(m, Consts.MAX_ROUND - rounding);
             }
-            private void UpgradeTurretDefense(double researchMult)
+            private void UpgradeTurretDefense(Game game, double researchMult)
             {
-                this.vision = ResearchUpgValues.Calc(UpgType.TurretVision, researchMult);
+                this.vision = game.ResearchUpgValues.Calc(UpgType.TurretVision, researchMult);
 
                 for (int a = 0; a < MAX_DEFENSES; a++)
                 {
@@ -221,11 +236,11 @@ namespace ClassLibrary1.Pieces.Players
                         _ => throw new Exception(),
                     };
 
-                    int defense = Game.Rand.Round(ResearchUpgValues.Calc(upgType, researchMult));
+                    int defense = Game.Rand.Round(game.ResearchUpgValues.Calc(upgType, researchMult));
                     this.defenses[a] = new(type, defense);
                 }
             }
-            private void UpgradeTurretRange(double researchMult)
+            private void UpgradeTurretRange(Game game, double researchMult)
             {
                 for (int a = 0; a < MAX_ATTACKS; a++)
                 {
@@ -237,11 +252,11 @@ namespace ClassLibrary1.Pieces.Players
                         _ => throw new Exception(),
                     };
 
-                    double range = ResearchUpgValues.Calc(upgType, researchMult);
+                    double range = game.ResearchUpgValues.Calc(upgType, researchMult);
                     this.attacks[a] = new(attacks[a].Type, attacks[a].Attack, range, 1);
                 }
             }
-            private void UpgradeTurretAttack(double researchMult)
+            private void UpgradeTurretAttack(Game game, double researchMult)
             {
                 for (int a = 0; a < MAX_ATTACKS; a++)
                 {
@@ -260,7 +275,7 @@ namespace ClassLibrary1.Pieces.Players
                         _ => throw new Exception(),
                     };
 
-                    int attack = Game.Rand.Round(ResearchUpgValues.Calc(upgType, researchMult));
+                    int attack = Game.Rand.Round(game.ResearchUpgValues.Calc(upgType, researchMult));
                     this.attacks[a] = new(type, attack, attacks[a].Range, 1);
                 }
             }

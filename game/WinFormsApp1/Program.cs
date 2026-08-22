@@ -31,22 +31,6 @@ namespace WinFormsApp1
             set { data.ViewedResearch = value; }
         }
 
-        private static Dictionary<System.Type, bool> notfiy = new();
-        public static bool Notify(IBuilder builder) =>
-            notfiy.GetValueOrDefault(builder.GetType(), true);
-        public static void Notify(IBuilder builder, bool value) =>
-            notfiy[builder.GetType()] = value;
-        //public static bool NotifyConstructor
-        //{
-        //    get { return data.NotifyConstructor; }
-        //    set { data.NotifyConstructor = value; }
-        //}
-        //public static bool NotifyDrone
-        //{
-        //    get { return data.NotifyDrone; }
-        //    set { data.NotifyDrone = value; }
-        //}
-
         public static string savePath;
 
         static Program()
@@ -170,7 +154,7 @@ namespace WinFormsApp1
                     SaveGame();
                     CopyAutoSave("e");
 
-                    static IEnumerable<PlayerPiece> GetRepairs() => data.sleep.Where(p => p.Tile != null && p.IsRepairing());
+                    static IEnumerable<PlayerPiece> GetRepairs() => data.Sleep.Where(p => p.Tile != null && p.IsRepairing());
                     var repairs = GetRepairs().ToHashSet();
 
                     Form.UpdateProgress(null, 0);
@@ -186,9 +170,9 @@ namespace WinFormsApp1
                     {
                         CopyAutoSave("s");
                     }
-                    data.moved.Clear();
-                    data.sleep.RemoveWhere(p => !p.IsPlayer || p.Tile == null || (p.HasBehavior(out IKillable k) && k.Dead));
-                    data.sleep.ExceptWith(repairs.Except(GetRepairs()));
+                    data.Moved.Clear();
+                    data.Sleep.RemoveWhere(p => !p.IsPlayer || p.Tile == null || (p.HasBehavior(out IKillable k) && k.Dead));
+                    data.Sleep.ExceptWith(repairs.Except(GetRepairs()));
 
                     data.AlertResearch = researched.HasValue;
                     if (researched.HasValue && (researched.Value == Type.Mech || Research.IsMech(researched.Value)))
@@ -222,20 +206,20 @@ namespace WinFormsApp1
             SaveGame();
         }
 
-        public static void Hold() => data.sleep.Remove(Toggle(data.moved));
+        public static void Hold() => data.Sleep.Remove(Toggle(data.Moved));
         public static void Sleep()
         {
-            PlayerPiece piece = Toggle(data.sleep);
-            data.moved.Remove(piece);
+            PlayerPiece piece = Toggle(data.Sleep);
+            data.Moved.Remove(piece);
             if (MoveLeft(piece))
-                data.moved.Add(piece);
+                data.Moved.Add(piece);
         }
         public static void Wake(IBehavior behavior)
         {
             if (behavior?.Piece is PlayerPiece playerPiece)
             {
-                data.sleep.Remove(playerPiece);
-                data.moved.Remove(playerPiece);
+                data.Sleep.Remove(playerPiece);
+                data.Moved.Remove(playerPiece);
             }
         }
         private static PlayerPiece Toggle(HashSet<PlayerPiece> set)
@@ -332,7 +316,7 @@ namespace WinFormsApp1
             bool move = false;
             canAttack = false;
 
-            if (data.moved.Contains(piece))
+            if (data.Moved.Contains(piece))
                 return false;
 
             piece.HasBehavior(out IKillable killable);
@@ -355,7 +339,7 @@ namespace WinFormsApp1
                 return attack.GetDefenders(friendly, attackFrom);
             }
 
-            if (data.sleep.Contains(piece))
+            if (data.Sleep.Contains(piece))
             {
                 move |= attacks.Any();
             }
@@ -405,14 +389,28 @@ namespace WinFormsApp1
                         }
                     }
 
-                if (!move && piece is Outpost outpost)
+                if (!move && piece is FoundationPiece foundationPiece)
                 {
-                    if (piece.HasBehavior<IBuilder.IBuildFactory>() || piece.HasBehavior<IBuilder.IBuildTurret>())
-                    //out IBuilder.IReplacer<FoundationPiece> replacer))
+                    bool replaceable;
+                    if (!move)
                     {
-                        outpost.ReplaceFactory(false, out _, out _, out bool f);
-                        outpost.ReplaceTurret(false, out _, out _, out bool t);
-                        move |= t || f;
+                        foundationPiece.ReplaceOutpost(false, out int e, out int m, out replaceable);
+                        move |= replaceable && Game.Player.Has(e, m) && Notify(foundationPiece.GetBehavior<IBuilder.IBuildOutpost>(), true);
+                    }
+                    if (!move)
+                    {
+                        foundationPiece.ReplaceFactory(false, out int e, out int m, out replaceable);
+                        move |= replaceable && Game.Player.Has(e, m) && Notify(foundationPiece.GetBehavior<IBuilder.IBuildFactory>(), true);
+                    }
+                    if (!move)
+                    {
+                        foundationPiece.ReplaceTurret(false, out int e, out int m, out replaceable);
+                        move |= replaceable && Game.Player.Has(e, m) && Notify(foundationPiece.GetBehavior<IBuilder.IBuildTurret>(), true);
+                    }
+                    if (!move)
+                    {
+                        foundationPiece.ReplaceGenerator(false, out int e, out int m, out replaceable);
+                        move |= replaceable && Game.Player.Has(e, m) && Notify(foundationPiece.GetBehavior<IBuilder.IBuildGenerator>(), true);
                     }
                 }
 
@@ -440,7 +438,11 @@ namespace WinFormsApp1
                 }
 
                 if (piece is Mech mech)
+                {
                     move |= mech.CanUpgrade(out _, out _, out _);
+                    if (!move)
+                        move |= mech.CanCombineNow();
+                }
             }
 
             if (piece.HasBehavior(out IAttacker attacker))
@@ -576,23 +578,35 @@ namespace WinFormsApp1
         internal static void SetNotify(MechBlueprint blueprint, bool value)
         {
             if (value)
-                data.notifyOff.Remove(blueprint);
+                data.NotifyOff.Remove(blueprint);
             else
-                data.notifyOff.Add(blueprint);
+                data.NotifyOff.Add(blueprint);
         }
         internal static bool GetNotify(MechBlueprint blueprint)
         {
-            return !data.notifyOff.Contains(blueprint);
+            return !data.NotifyOff.Contains(blueprint);
+        }
+
+        public static bool Notify(IBuilder builder, bool replace = false)
+        {
+            var n = replace ? data.NotfiyReplace : data.Notfiy;
+            return n.GetValueOrDefault(builder.GetType().Name, true);
+        }
+        public static void Notify(IBuilder builder, bool value, bool replace = false)
+        {
+            var n = replace ? data.NotfiyReplace : data.Notfiy;
+            n[builder.GetType().Name] = value;
         }
 
         [Serializable]
         [DataContract(IsReference = true)]
         private class UIData // : ISerializable
         {
-            public readonly HashSet<PlayerPiece> moved = [], sleep = [];
+            public readonly HashSet<PlayerPiece> Moved = [], Sleep = [];
 
-            public readonly HashSet<MechBlueprint> notifyOff = [];
-            public bool NotifyConstructor = true, NotifyDrone = true;
+            public Dictionary<string, bool> Notfiy = new();
+            public Dictionary<string, bool> NotfiyReplace = new();
+            public readonly HashSet<MechBlueprint> NotifyOff = [];
 
             public bool AlertResearch = false;
             [NonSerialized]

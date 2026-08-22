@@ -3,158 +3,228 @@ using ClassLibrary1.Pieces.Behavior;
 using ClassLibrary1.Pieces.Behavior.Combat;
 using MattUtil;
 using System;
+using System.Runtime.Serialization;
+using static ClassLibrary1.Map.Map;
 using DefenseType = ClassLibrary1.Pieces.Behavior.Combat.CombatTypes.DefenseType;
 
 namespace ClassLibrary1
 {
-    public static class Consts
+    [Serializable]
+    [DataContract(IsReference = true)]
+    public class Consts
     {
-        public const double MAX_ROUND = MTRandom.DOUBLE_DIV / MTRandom.DOUBLE_DIV_1;
+        internal const double MAX_ROUND = MTRandom.DOUBLE_DIV / MTRandom.DOUBLE_DIV_1;
 
-        public const double Scale = Math.E * .21;
+        internal readonly double Scale;
+        internal readonly double PathMinSeparation, PathWidth, PathDev, PathWidthMin, FeatureDist, FeatureMin, NoiseDistance;
+        internal readonly double CaveDistance, CaveDev, CaveOE, CaveMinDist, CaveSize, CavePathWidth;
+        internal readonly double TreasureDiv;
 
-        public const double ShapesDistance = CaveDistance * Math.PI;
-        public const double PathMinSeparation = Scale * Math.PI * 1.3;
-        public const double PathWidth = Scale * 16.9;
-        public const double PathWidthDev = .21;
-        public const double PathWidthMin = Math.E;
-        public const double FeatureDist = Scale * 210;//260
-        public const double FeatureMin = FeatureDist / Math.PI;
+        public readonly double ElevationDensity, ElevationMaxEffectDist;
 
-        public const double CaveDistance = Scale * 210;
-        public const double CaveDistanceDev = .13;
-        public const double CaveDistanceOE = .169;
-        public const double CaveMinDist = Scale * 91;
-        public const double CaveSize = Scale * 13;
-        public const double CavePathWidth = Scale * 6.5;
-        public const double CaveDistPow = 1.13;
+        internal readonly double ResearchFactor;
+        internal readonly int ExploreForResearch;
 
-        public const double TreasureDiv = Scale * 13;
-        public const double IslandVisionMult = 6.5;
+        internal readonly double DifficultySetting, EnemyStartEnergy, ExploreEnergy, EnemyIncomeMatchFactor,
+            EnemyEnergy, EnemyEnergyRampTurns, EnemyUnlockTurns, EnemyTreasureMatch, DifficultyIncTurns;
+        internal readonly double DifficultyEnergyPow, DifficultyResearchPow, DifficultyAIPow, AgressionTurns;
+        internal readonly double SpawnEnergyDiv, SpawnTurnAdd, SpawnTurnDiv, SpawnNeg;
+        internal readonly double PortalSpawnTime, PortalSpawnStrMult, PortalCost, PortalExitDef, PortalEntranceDef,
+            PortalDecayRate, PortalRewardPct, PortalLoan, PortalMinDist;
 
-        //public const double TreasureSpacingChance = .5;
-        public const double ResearchFactor = 780 * Math.E;
-        public const int ExploreForResearch = 39;
+        internal readonly double MoveDev, MoveLimitPow, MoveIncCost, MoveMaxCost, MoveLimitCost;
 
-        public const double DifficultySetting = 2.6 / Math.PI;
-        public const double EnemyStartEnergy = 3900;
-        public const double ExploreEnergy = 5200;
-        public const double EnemyIncomeMatchFactor = 6500;
-        public const double EnemyEnergy = 169;
-        public const double EnemyEnergyRampTurns = 91;
-        public const double EnemyUnlockTurns = 210;
+        public readonly double CoreEnergy, CoreMass, CoreResearch;
+        internal readonly double CoreEnergyLow, CoreEnergyMid, CoreEnergyHigh, CoreExtractTurns;
 
-        public const double DifficultyEnergyPow = 1.3;
-        public const double DifficultyResearchPow = 3.9 / Math.E;
-        public const double DifficultyAIPow = .91;
-        public const double AgressionTurns = 26;
+        internal readonly double DroneCost, DroneMassCostMult, DroneRefund;
 
-        public const double PortalSpawnTime = 39;
-        public const double PortalSpawnStrMult = 1.3;
-        public const double PortalCost = 9.1;
-        public const double PortalExitDef = 390;
-        public const double PortalEntranceDef = 169;
-        public const double PortalDecayRate = 16.9;
-        public const double PortalRewardPct = .39;
-        public const double PortalLoan = 10.4;
+        internal readonly double ResourceAvgDist, ResourceDistAdd, ResourceDistDiv, ResourceDistPow, ResourceSustainValuePow,
+            ExtractTurns, ExtractPow, ExtractSustainPow, ExtractorSustainCostPow, ExtractorHitsPow, ResourceDev, ResourceOE, FoundationAmt;
 
-        public const double MoveDev = .013;
-        public const double MoveLimitPow = 1.3;
+        internal readonly double BiomassEnergyInc, BiomassSustain, BiomassResearchDiv, BiomassResearchPow,
+            MetalMassInc, MetalSustain, MetalEnergyUpkDiv, ArtifactResearchInc, ArtifactSustain, ArtifactMassIncDiv, ArtifactEnergyUpkMult;
+        internal readonly double ExtractorCostPow, BiomassExtractorEnergyCost, BiomassExtractorMassCost,
+            MetalExtractorEnergyCost, MetalExtractorMassCost, ArtifactExtractorEnergyCost, ArtifactExtractorMassCost;
 
-        public const double CoreEnergyLow = 260;
-        public const double CoreEnergyMid = 91;
-        public const double CoreEnergyHigh = CoreEnergy - CoreEnergyMid - CoreEnergyLow; //199
-        public const double CoreEnergy = 550;
-        public const double CoreMass = 250;
-        public const double CoreResearch = 20;
-        public const double CoreExtractTurns = 91;//0.98901098901098901098901098901099
+        internal readonly double GeneratorEnergyInc, GeneratorResearchUpk, GeneratorEnergyCost, GeneratorMassCost;
 
-        public const double DroneCost = 16.9;
-        public const double DroneMassCostMult = 1.69;
-        public const double DroneRefund = .65;
+        public readonly int EnergyPerFabricateMass, BurnMassPerEnergy, MassForScrapResearch;
+        public readonly double BaseConstructorUpkeep, BaseDroneUpkeep, BaseMechUpkeep;
 
-        public const double ResourceDistAdd = 21;
-        public const double ResourceDistDiv = 65;
-        public const double ResourceDistPow = .52;
-        public const double ResourceSustainValuePow = .26;
-        public const double ExtractTurns = 65;//0.98461538461538461538461538461538
-        //ExtractPow=x/(1-x) where x is desired exponent when sustain=1 
-        //inverse: x=ExtractPow/(ExtractPow+1)
-        public const double ExtractPow = 3.5; //x=0.77777777777777777777777777777778
-        public const double ExtractSustainPow = .26;//.39?
-        public const double ExtractorSustainCostPow = .65;
-        public const double ExtractorHitsPow = .39;//.26??
-        public const double ResourceDev = .21;
-        public const double ResourceOE = .26;
-        public const double FoundationAmt = 1.3;// (Math.E + Math.PI) / 2.0; //~2.930
+        internal readonly double EnergyPerMove, EnergyPerAttack, EnergyPerShield, MassPerArmor, RegenCostPassiveDiv;
 
-        public const double BiomassEnergyInc = 117;
-        public const double BiomassSustain = .78;
-        public const double BiomassResearchDiv = 8;
-        public const double BiomassResearchPow = .39;
-        public const double MetalMassInc = 52;
-        public const double MetalSustain = 1.17;
-        public const double MetalEnergyUpkDiv = 4;
-        public const double ArtifactResearchInc = 9.1;
-        public const double ArtifactSustain = 1.69;
-        public const double ArtifactMassIncDiv = 3;
-        public const double ArtifactEnergyUpkMult = 2.5;
+        internal readonly double MechCostMult, EnergyMassRatio;
 
-        public const double ExtractorCostPow = .91;
-        public const double BiomassExtractorEnergyCost = 750;
-        public const double BiomassExtractorMassCost = 910;
-        public const double MetalExtractorEnergyCost = 780;
-        public const double MetalExtractorMassCost = 400;
-        public const double ArtifactExtractorEnergyCost = 1300;
-        public const double ArtifactExtractorMassCost = 300;
+        internal readonly double MissileCostMult, MissileEnergyCostRatio, MissileHitRefundPct, MissileScrapRefund, MissileAttImmobileMult, MissileAttMaxMult;
 
-        public const double GeneratorEnergyInc = 30;
-        public const double GeneratorResearchUpk = .5;
-        public const double GeneratorEnergyCost = 280;
-        public const double GeneratorMassCost = 450;
+        internal readonly double DisbandValue, RepairCost, PassiveRepairCost, EnergyRepairDiv, UpgRefundValue;
+        internal readonly int AutoRepair;
 
-        public const int EnergyPerFabricateMass = 10;
-        public const int BurnMassPerEnergy = 2;
-        public const int MassForScrapResearch = 5; //inverted value from the other two
+        internal readonly double MassPerResearchConversion, GeneratorConstValue;
 
-        public const double BaseConstructorUpkeep = 5;
-        public const double BaseDroneUpkeep = 2;
-        public const double BaseMechUpkeep = 1;
+        //internal readonly double EnergyPerResearchConversion = MassPerResearchConversion * EnergyMassRatio;
 
-        public const double EnergyPerMove = 1 / 3.0;
-        public const double EnergyPerAttack = EnergyPerShield / 2.0;
-        public const double EnergyPerShield = 1;
-        public const double MassPerArmor = EnergyPerShield / 2.0;
-        public const double RegenCostPassiveDiv = 2;
+        public Consts()
+        {
+            double Rand(double avg, double div = 1, double cap = .39) => RandCap(avg, Math.Pow(div, .91), avg
+                * Game.Rand.GaussianCapped(cap, Dev(div), Math.Max(2 * cap - 1, 0)));
+            double RandCap(double avg, double div = 1, double cap = 0) => Game.Rand.GaussianCapped(avg, Dev(div), cap);
+            double Dev(double div) => Game.Rand.GaussianOE(.13 / div, .169, .065);
 
-        public const double MechCostMult = .13;
-        public const double EnergyMassRatio = 1.69;
+            EnergyPerFabricateMass = 10;
+            BurnMassPerEnergy = 2;
+            MassForScrapResearch = 5; //inverted value from the other two
 
-        public const double MissileCostMult = (1 - MissileHitRefundPct) / 2.6;
-        public const double MissileEnergyCostRatio = 2.0 / (3 * EnergyMassRatio + 2);
-        public const double MissileHitRefundPct = .78;
-        public const double MissileScrapRefund = .21;
+            EnergyMassRatio = RandCap(1.69, div: 5, cap: 1);
+            MassPerResearchConversion = Rand(MassForScrapResearch * Math.Sqrt(EnergyPerFabricateMass * BurnMassPerEnergy), div: 4, cap: .91);
 
-        public const double DisbandValue = .26;
-        public const double RepairCost = .169;
-        public const double PassiveRepairCost = .91 * RepairCost;
-        public const double EnergyRepairDiv = 1.3 * EnergyMassRatio;
-        public const int AutoRepair = 1;
-        public const double UpgRefundValue = .78;
+            BaseConstructorUpkeep = 3;
+            BaseDroneUpkeep = 2;
+            BaseMechUpkeep = 1;
 
-        public static readonly double NoiseDistance = CaveDistance / Math.Sqrt(Scale);
-        public static readonly double ResourceAvgDist = Math.Sqrt(Scale) * 21;
-        public static readonly double PortalMinDist = Math.Sqrt(Scale) * 78;
-        public static readonly double MissileAttImmobileMult = 1 / Math.Sqrt(5);
-        public static readonly double EnemyTreasureMatch = .5 * Math.Sqrt(DifficultySetting);
-        public static readonly double DifficultyIncTurns = 91 / Math.Sqrt(DifficultySetting);
+            EnergyPerMove = 1 / 3.0;
+            EnergyPerShield = 1;
+            EnergyPerAttack = EnergyPerShield / 2.0;
+            MassPerArmor = EnergyPerShield / 2.0;
+            RegenCostPassiveDiv = 2;
 
-        public static readonly double MassPerResearchConversion = MassForScrapResearch
-            * Math.Sqrt(EnergyPerFabricateMass * BurnMassPerEnergy);
-        public static readonly double GeneratorConstValue = GeneratorResearchUpk
-            * Math.Sqrt((MassPerResearchConversion * EnergyMassRatio) * (MassForScrapResearch / (double)BurnMassPerEnergy));
+            MechCostMult = Rand(.13, div: 3, cap: .78);
+            ResearchFactor = Rand(780 * Math.E, div: 4, cap: .91);
 
-        //public static readonly double EnergyPerResearchConversion = MassPerResearchConversion * EnergyMassRatio;
+            DisbandValue = Rand(.26, div: 4, cap: .78);
+            RepairCost = Rand(.169, div: 5, cap: .91);
+            PassiveRepairCost = Rand(.91 * RepairCost, div: 4, cap: .91);
+            EnergyRepairDiv = RandCap(1.3 * EnergyMassRatio, div: 4, cap: EnergyMassRatio);
+            AutoRepair = 1;
+            UpgRefundValue = Rand(.78, div: 3, cap: .78);
+
+            Scale = Rand(Math.E * .21, div: 4, cap: .78);
+
+            CaveMinDist = Rand(Scale * 91);
+            CaveDistance = RandCap(Scale * 210, div: 3, cap: CaveMinDist);
+            CaveDev = Rand(.13);
+            CaveOE = Rand(.13);
+            CaveSize = Rand(Scale * 13);
+            CavePathWidth = Rand(Scale * 6.5);
+            //CaveDistPow = Rand(1.13);
+
+            PathWidthMin = Rand(Math.E, div: 2, cap: .65);
+            PathWidth = RandCap(Scale * 16.9, div: 3, cap: PathWidthMin);
+            PathDev = Rand(.21);
+            PathMinSeparation = Rand(Scale * Math.PI * 1.3);
+            FeatureDist = Rand(Scale * 260, div: 2);
+            FeatureMin = Rand(FeatureDist / Math.PI);
+            NoiseDistance = RandCap(CaveDistance / Math.Sqrt(Scale), cap: FeatureMin);
+            //ShapesDistance = Rand(CaveDistance * Math.PI);
+
+            TreasureDiv = Rand(Scale * 13, div: 3, cap: .78);
+            //IslandVisionMult = 6.5;
+            ExploreForResearch = Game.Rand.Round(Rand(39, div: 3, cap: .65));
+            //TreasureSpacingChance = .5;
+
+            ElevationDensity = Rand(Scale * 26, div: 2);
+            ElevationMaxEffectDist = Rand(Math.Sqrt(Scale) * 39);
+
+            DifficultySetting = Rand(Math.E / Math.PI, div: 5, cap: .91);
+            ExploreEnergy = Rand(3900, div: 4, cap: .78);
+            EnemyStartEnergy = Rand(ExploreEnergy, div: 2, cap: .52);
+            EnemyIncomeMatchFactor = Rand(5200, div: 4, cap: .78);
+            EnemyEnergy = Rand(169, div: 3, cap: .65);
+            EnemyEnergyRampTurns = Rand(91, div: 2, cap: .52);
+            EnemyUnlockTurns = Rand(210, div: 2, cap: .65);
+            EnemyTreasureMatch = Rand(.65 * Math.Sqrt(DifficultySetting), div: 2, cap: .52);
+            DifficultyIncTurns = Rand(91 / Math.Sqrt(DifficultySetting), div: 4, cap: .91);
+
+            DifficultyEnergyPow = Rand(1 / .91, div: 4, cap: .78);
+            DifficultyResearchPow = Rand(3.9 / Math.E, div: 5, cap: .91);
+            DifficultyAIPow = Rand(.91);
+            AgressionTurns = Rand(26, div: 2, cap: .65);
+
+            SpawnEnergyDiv = Rand(EnemyStartEnergy * 7.8, div: 3, cap: .65);
+            SpawnTurnAdd = Rand(13);
+            SpawnTurnDiv = Rand(21, div: 2, cap: .52);
+            SpawnNeg = Rand(.26);
+
+            PortalSpawnTime = Rand(39, div: 3);
+            PortalSpawnStrMult = Rand(1.3, div: 4, cap: .65);
+            PortalCost = Rand(9.1, div: 3, cap: .65);
+            PortalExitDef = Rand(390);
+            PortalEntranceDef = Rand(169);
+            PortalDecayRate = Rand(16.9, div: 3, cap: .52);
+            PortalRewardPct = Rand(.39, div: 3, cap: .65);
+            PortalLoan = Rand(10.4);
+            PortalMinDist = Rand(Math.Sqrt(Scale) * 78, div: 2, cap: .78);
+
+            MoveDev = Rand(.013);
+            MoveLimitPow = RandCap(1.3, div: 4, cap: 1);
+            MoveLimitCost = RandCap(4, cap: 1);
+            MoveMaxCost = RandCap(10, cap: MoveLimitCost);
+            MoveIncCost = RandCap(25, cap: MoveMaxCost);
+
+            CoreEnergy = 550;
+            CoreMass = 250;
+            CoreResearch = 20;
+            CoreEnergyLow = Rand(260, div: 3, cap: .65);
+            CoreEnergyMid = Rand(91, div: 3, cap: .65);
+            CoreEnergyHigh = CoreEnergy - CoreEnergyMid - CoreEnergyLow; //199
+            CoreExtractTurns = Rand(91, div: 4, cap: .91); //0.98901098901098901098901098901099
+
+            DroneCost = Rand(16.9, div: 4, cap: .78);
+            DroneMassCostMult = RandCap(1.69, div: 3, cap: 1);
+            DroneRefund = Rand(.65, div: 2, cap: .52);
+
+            ResourceAvgDist = Rand(Math.Sqrt(Scale) * 21, div: 4, cap: .91);
+            ResourceDistAdd = Rand(21);
+            ResourceDistDiv = Rand(65);
+            ResourceDistPow = Rand(.52);
+            ResourceSustainValuePow = Rand(.26, div: 2);
+            ResourceDev = Rand(.21, cap: .78);
+            ResourceOE = Rand(.26, cap: .65);
+            FoundationAmt = RandCap(1.3, div: 2, cap: 1); // (Math.E + Math.PI) / 2.0; //~2.930
+            ExtractTurns = Rand(65, div: 5, cap: .91); //0.98461538461538461538461538461538
+            ExtractSustainPow = Rand(.26, div: 3, cap: .65);
+            ExtractorSustainCostPow = Rand(.65, div: 2, cap: .52);
+            ExtractorHitsPow = Rand(.39, div: 2, cap: .78);
+            //ExtractPow=x/(1-x) where x is desired exponent when sustain=1 
+            //inverse: x=ExtractPow/(ExtractPow+1)
+            ExtractPow = RandCap(3.5, div: 4, cap: 2); //x=0.77777777777777777777777777777778
+
+            BiomassEnergyInc = Rand(117, div: 2);
+            BiomassSustain = Rand(.78, div: 3);
+            BiomassResearchDiv = Rand(8, div: 3, cap: .65);
+            BiomassResearchPow = Rand(.39, div: 4, cap: .78);
+            MetalMassInc = Rand(52, div: 2);
+            MetalSustain = Rand(1.17, div: 3);
+            MetalEnergyUpkDiv = 4;
+            ArtifactResearchInc = Rand(9.1, div: 2);
+            ArtifactSustain = Rand(1.69, div: 3);
+            ArtifactMassIncDiv = Rand(3, div: 5, cap: .91);
+            ArtifactEnergyUpkMult = 2.5;
+
+            ExtractorCostPow = Rand(.91, div: 4, cap: .78);
+            BiomassExtractorEnergyCost = Rand(750, div: 3, cap: .65);
+            BiomassExtractorMassCost = Rand(910, div: 4, cap: .65);
+            MetalExtractorEnergyCost = Rand(780, div: 4, cap: .65);
+            MetalExtractorMassCost = Rand(400, div: 3, cap: .65);
+            ArtifactExtractorEnergyCost = Rand(1300, div: 4, cap: .65);
+            ArtifactExtractorMassCost = Rand(300, div: 3, cap: .65);
+
+            GeneratorEnergyInc = Rand(30, div: 5, cap: .91);
+            GeneratorResearchUpk = .5;
+            GeneratorEnergyCost = 280;
+            GeneratorMassCost = 450;
+
+            MissileHitRefundPct = Rand(.78, div: 3, cap: .52);
+            MissileCostMult = Rand((1 - MissileHitRefundPct) / 2.6, div: 4, cap: .65);
+            MissileEnergyCostRatio = Rand(2.0 / (3 * EnergyMassRatio + 2), div: 2);
+            MissileScrapRefund = Rand((1 - MissileHitRefundPct) * .91, div: 3, cap: .91);
+            MissileAttImmobileMult = Rand((1 / Math.Sqrt(5)), div: 4, cap: .78);
+            MissileAttMaxMult = RandCap(Math.Sqrt(2), div: 4, cap: 1);
+
+            GeneratorConstValue = Rand(Math.Sqrt((MassPerResearchConversion * EnergyMassRatio) * (MassForScrapResearch / (double)BurnMassPerEnergy))
+                * GeneratorResearchUpk, div: 4, cap: .91);
+        }
 
         public static double StatValue(double stat)
         {
@@ -166,22 +236,32 @@ namespace ClassLibrary1
             if (value < 0) throw new Exception();
             return (Math.Sqrt(8 * value + 1) - 1) / 2.0;
         }
-        //public static double SumStats(IEnumerable<int> stats)
+        //internal static double SumStats(IEnumerable<int> stats)
         //{
         //    return SumStats(stats.Select(s => (double)s));
         //}
-        //public static double SumStats(IEnumerable<double> stats)
+        //internal static double SumStats(IEnumerable<double> stats)
         //{
         //    return StatValueInverse(stats.Sum(StatValue));
         //}
-        public static double MoveValue(IMovable.Values? movable) =>
+        internal double MoveValue(IMovable.Values? movable) =>
             Math.Pow(MoveValue(movable?.MoveInc ?? 0, movable?.MoveMax ?? 0, movable?.MoveLimit ?? 0), 1.5);
-        public static double MoveValue(double moveInc, double moveMax, double moveLimit)
+        internal double MoveValue(double moveInc, double moveMax, double moveLimit)
         {
-            const double mi = 25, mm = 10, ml = 4;
-            double move = mi * moveInc / 1.0 + mm * moveMax / 2.1 + ml * moveLimit / 5.2;
-            move /= mi + mm + ml;
+            double move = MoveIncCost * moveInc / 1.0 + MoveMaxCost * moveMax / 2.1 + MoveLimitCost * moveLimit / 5.2;
+            move /= MoveIncCost + MoveMaxCost + MoveLimitCost;
             return move;
+        }
+
+        public static float LimitedMove(IMovable movable, out bool limitMove)
+        {
+            if (movable == null)
+            {
+                limitMove = false;
+                return 0;
+            }
+            limitMove = movable.MoveCur + movable.MoveInc > movable.MoveMax;
+            return (float)(limitMove ? movable.MoveCur + movable.MoveInc - movable.MoveMax : movable.MoveCur);
         }
 
         internal static int Income(int cur, double income) => IncomeRounding(cur + Income(income));
@@ -198,7 +278,7 @@ namespace ClassLibrary1
             return Game.Rand.Round(avg / div) * div;
         }
         internal static double Income(double income) => income + Game.Rand.Gaussian(IncomeDev(income));
-        public static double IncomeDev(double income) => .65 + Math.Abs(income) / 65.0;
+        internal static double IncomeDev(double income) => .65 + Math.Abs(income) / 65.0;
 
         internal static double GetPct(double pct, double mult)
         {
@@ -216,13 +296,13 @@ namespace ClassLibrary1
                 canRepair = false;
             return canRepair;
         }
-        public static double GetRepairCost(Piece piece, double energy, double mass) =>
-            (mass + energy / EnergyRepairDiv) * GetRepairMult(piece);
-        public static double GetRepairMult(Piece piece) =>
-            piece.HasBehavior<IAttacker>() ? RepairCost : PassiveRepairCost;
+        internal static double GetRepairCost(Piece piece, double energy, double mass) =>
+            (mass + energy / piece.Game.Consts.EnergyRepairDiv) * GetRepairMult(piece);
+        internal static double GetRepairMult(Piece piece) =>
+            piece.HasBehavior<IAttacker>() ? piece.Game.Consts.RepairCost : piece.Game.Consts.PassiveRepairCost;
         public static double GetDamagedValue(Piece piece, double value, double min) =>
             GetDamagedValue(piece, value, min, false);
-        public static double GetDamagedValue(Piece piece, double value, double min, bool sqrt)
+        internal static double GetDamagedValue(Piece piece, double value, double min, bool sqrt)
         {
             IKillable killable = piece.GetBehavior<IKillable>();
             double resilience = killable.Resilience;
@@ -233,13 +313,13 @@ namespace ClassLibrary1
         }
         internal static int ModAtt(int att, int mod) => att + (att > 0 ? mod : 0);
 
-        public static double IncDefense(bool doEndTurn, DefenseType type, bool isAttacker, int cur, int max, double repairAmt, ref double energyUpk, ref double massUpk)
+        internal double IncDefense(bool doEndTurn, DefenseType type, bool isAttacker, int cur, int max, double repairAmt, ref double energyUpk, ref double massUpk)
         {
             double newValue = cur;
             double regen = CombatTypes.GetRegen(type, repairAmt);
             if (regen > 0)
             {
-                double costMult = CombatTypes.GetRegenCostMult(type, isAttacker, out bool mass);
+                double costMult = CombatTypes.GetRegenCostMult(this, type, isAttacker, out bool mass);
                 double upkeep = 0;
                 newValue = IncStatValue(doEndTurn, cur, max, regen, costMult, ref upkeep);
                 if (mass)
@@ -249,7 +329,7 @@ namespace ClassLibrary1
             }
             return newValue;
         }
-        public static double IncStatValue(bool doEndTurn, int cur, int max, double regen, double upkeepRate, ref double upkeep)
+        internal static double IncStatValue(bool doEndTurn, int cur, int max, double regen, double upkeepRate, ref double upkeep)
         {
             double newValue = cur;
             if (cur < max)
@@ -261,10 +341,10 @@ namespace ClassLibrary1
             }
             return newValue;
         }
-        public static double StatValueCost(int before, double after, double upkeepRate) =>
+        internal static double StatValueCost(double before, double after, double upkeepRate) =>
             (StatValue(after) - StatValue(before)) * upkeepRate;
 
-        public static double IncValueWithMaxLimit(double cur, double inc, double dev, double max, double limit, double pow, bool rand)
+        internal static double IncValueWithMaxLimit(double cur, double inc, double dev, double max, double limit, double pow, bool rand)
         {
             double start = cur;
             if (inc > 0)
@@ -287,6 +367,14 @@ namespace ClassLibrary1
                 }
             }
             return cur - start;
+        }
+
+        internal double MapDistMult(Tile tile, double mapSize) =>
+            MapDistMult(Tile.GetDistanceD(tile.LocationD, new(0, 0)), mapSize);
+        internal double MapDistMult(double dist, double mapSize)
+        {
+            dist -= mapSize + CaveSize;
+            return dist > 0 ? 1 / Math.Pow(13, dist / CaveSize) : 1;
         }
     }
 }

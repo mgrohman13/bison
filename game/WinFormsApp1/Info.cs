@@ -2,7 +2,6 @@
 using ClassLibrary1.Pieces;
 using ClassLibrary1.Pieces.Behavior;
 using ClassLibrary1.Pieces.Behavior.Combat;
-using ClassLibrary1.Pieces.Enemies;
 using ClassLibrary1.Pieces.Players;
 using ClassLibrary1.Pieces.Terrain;
 using System;
@@ -85,7 +84,7 @@ namespace WinFormsApp1
             //}
             if (CanReplace(out _))
             {
-                btnBuild.Text = "Upgrade";
+                btnBuild.Text = "Replace";
                 btnBuild.Show();
             }
             else if (BuildForm.CanBuild(SelTile))
@@ -103,6 +102,8 @@ namespace WinFormsApp1
             {
                 btnBuild.Hide();
             }
+
+            btnCombine.Visible = CanCombine();
 
             this.btnDisband.Visible = SelTile?.Piece is PlayerPiece p && p is not Core && Program.Game.Player.CanDisband();
             this.btnTrade.Visible = Program.Game.Player.CanBurnMass() || Program.Game.Player.CanFabricateMass() || Program.Game.Player.CanScrapResearch();
@@ -219,21 +220,21 @@ namespace WinFormsApp1
                                 lbl7.Show();
                                 lblInf7.Show();
                                 lbl7.Text = "Energy";
-                                lblInf7.Text = FormatInc(energyInc, Consts.CoreEnergy);
+                                lblInf7.Text = FormatInc(energyInc, Program.Game.Consts.CoreEnergy);
                             }
                             if (massInc != 0)
                             {
                                 lbl8.Show();
                                 lblInf8.Show();
                                 lbl8.Text = "Mass";
-                                lblInf8.Text = FormatInc(massInc, Consts.CoreMass);
+                                lblInf8.Text = FormatInc(massInc, Program.Game.Consts.CoreMass);
                             }
                             if (researchInc != 0)
                             {
                                 lbl9.Show();
                                 lblInf9.Show();
                                 lbl9.Text = "Research";
-                                lblInf9.Text = FormatInc(researchInc, Consts.CoreResearch);
+                                lblInf9.Text = FormatInc(researchInc, Program.Game.Consts.CoreResearch);
                             }
                             string FormatInc(double inc, double coreValue)
                             {
@@ -758,6 +759,12 @@ namespace WinFormsApp1
                 }
             }
         }
+        private void BtnCombine_Click(object sender, EventArgs e)
+        {
+            if (CanCombine() && MessageBox.Show("Combine with an adjacent Mech?",
+                    "Combine", MessageBoxButtons.OKCancel) == DialogResult.OK)
+                ((Mech)SelTile.Piece).Combine();
+        }
         private void BtnDisband_Click(object sender, EventArgs e)
         {
             if (SelTile?.Piece is PlayerPiece p && p is not Core)
@@ -801,15 +808,29 @@ namespace WinFormsApp1
                 return mech.CanUpgrade(out _, out _, out _);
             return false;
         }
+        private bool CanCombine() => CanCombine(SelTile);
+        public static bool CanCombine(Tile tile)
+        {
+            if (tile != null && tile.Piece is Mech mech)
+                return mech.CanCombineNow();
+            return false;
+        }
         private bool CanReplace(out Piece piece)
         {
             IBuilder builder = null;
-            if (SelTile != null && SelTile.Piece is Outpost)
+            if (SelTile != null && SelTile.Piece is FoundationPiece foundationPiece)
             {
-                builder ??= BuildForm.GetBuilder<IBuilder.IBuildFactory>(SelTile);
-                builder ??= BuildForm.GetBuilder<IBuilder.IBuildTurret>(SelTile);
-                //else if (Selected.Piece is FoundationPiece)
-                //builder = BuildForm.GetBuilder<IBuilder.IReplacer<FoundationPiece>>(Selected);
+                bool replaceable = false;
+                if (!replaceable)
+                    foundationPiece.ReplaceOutpost(false, out _, out _, out replaceable);
+                if (!replaceable)
+                    foundationPiece.ReplaceFactory(false, out _, out _, out replaceable);
+                if (!replaceable)
+                    foundationPiece.ReplaceTurret(false, out _, out _, out replaceable);
+                if (!replaceable)
+                    foundationPiece.ReplaceGenerator(false, out _, out _, out replaceable);
+                if (replaceable)
+                    builder = foundationPiece.GetBehavior<IBuilder>();
             }
             piece = builder?.Piece;
             return builder != null;

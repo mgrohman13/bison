@@ -60,7 +60,8 @@ namespace ClassLibrary1.Pieces.Enemies
         }
         internal static Portal NewPortal(Tile tile, double difficulty, bool exit, out double cost)
         {
-            IEnumerable<IKillable.Values> killable = GenKillable(difficulty, exit);
+            Consts consts = tile.Map.Game.Consts;
+            IEnumerable<IKillable.Values> killable = GenKillable(consts, difficulty, exit);
             //double resilience = MechBlueprint.GenResilience(.26, .169, 1 + hiveIdx);
             //IEnumerable<IAttacker.Values> attacks = GenAttacker(hiveIdx);
             //double strInc = Math.Pow(1.5, hiveIdx);
@@ -70,7 +71,7 @@ namespace ClassLibrary1.Pieces.Enemies
             //Debug.WriteLine($"hiveCost #{hiveIdx + 1}: {cost} ({energy})");
 
             double range = Game.Rand.GaussianCapped(AvgRange, .13, MIN_RANGE);
-            cost = Consts.PortalCost * (Consts.StatValue(killable.First().Defense) + Consts.PortalDecayRate * range);
+            cost = consts.PortalCost * (Consts.StatValue(killable.First().Defense) + consts.PortalDecayRate * range);
 
             PieceSpawn spawn = exit ? new PieceSpawn() : null;
             spawn?.Spawner?.Mult(3.9); //
@@ -99,10 +100,10 @@ namespace ClassLibrary1.Pieces.Enemies
             Defense hits = killable1.Hits;
             int def = hits.DefenseCur;
 
-            double pct = Math.Max(0, 1 - Game.Rand.DoubleFull(Consts.PortalDecayRate) / Consts.StatValue(def));
+            double pct = Math.Max(0, 1 - Game.Rand.DoubleFull(Game.Consts.PortalDecayRate) / Consts.StatValue(def));
             _range = MIN_RANGE + pct * (_range - MIN_RANGE);
-            int decay = Game.Rand.OEInt(Consts.PortalDecayRate);
-            _collect *= 1 - decay / (decay + Consts.PortalExitDef);
+            int decay = Game.Rand.OEInt(Game.Consts.PortalDecayRate);
+            _collect *= 1 - decay / (decay + Game.Consts.PortalExitDef);
 
             pct = 2 / (1 + pct);
             spawn?.Spawner.Mult(pct * pct);
@@ -123,23 +124,23 @@ namespace ClassLibrary1.Pieces.Enemies
         internal override void Die(out Tile tile, out double treasure)
         {
             base.Die(out tile, out double energy);
-            Side.AddResources(energy + (_cost - _collect) * Consts.PortalRewardPct);
+            Side.AddResources(energy + (_cost - _collect) * Game.Consts.PortalRewardPct);
 
-            Treasure.NewTreasure(tile, _collect * Consts.PortalRewardPct);
+            Treasure.NewTreasure(tile, _collect * Game.Consts.PortalRewardPct);
             treasure = 0;
         }
 
-        private static List<IKillable.Values> GenKillable(double difficulty, bool exit)
+        private static List<IKillable.Values> GenKillable(Consts consts, double difficulty, bool exit)
         {
-            double avg = GetDefAvg(difficulty, exit);
+            double avg = GetDefAvg(consts, difficulty, exit);
             IKillable.Values hits = new(DefenseType.Hits, Game.Rand.GaussianOEInt(avg, .13, .13, 10));
 
             List<IKillable.Values> defenses = [hits];
             return defenses;
         }
-        internal static double GetDefAvg(double difficulty, bool exit)
+        internal static double GetDefAvg(Consts consts, double difficulty, bool exit)
         {
-            double avg = exit ? Consts.PortalExitDef : Consts.PortalEntranceDef;
+            double avg = exit ? consts.PortalExitDef : consts.PortalEntranceDef;
             avg = Consts.StatValueInverse(avg * difficulty);
             return avg;
         }
@@ -147,7 +148,7 @@ namespace ClassLibrary1.Pieces.Enemies
         public bool CanPort(IMovable movable, out Portal exit, out double dist)
         {
             Piece piece = movable.Piece;
-            exit = null; 
+            exit = null;
 
             dist = movable.DistTo(this.Tile);
             if (this.Side == piece.Side && !this.Exit && movable.CanMove && dist <= movable.MoveCur)
@@ -161,17 +162,7 @@ namespace ClassLibrary1.Pieces.Enemies
         internal Tile GetOutTile()
         {
             if (Exit)
-            {
-                Tile tile;
-                double range = _range;
-                do
-                {
-                    tile = Game.Map.GetTile(Tile.X + Game.Rand.GaussianInt(range), Tile.Y + Game.Rand.GaussianInt(range));
-                    range += Game.Rand.DoubleFull();
-                }
-                while (tile == null || tile.Piece != null);
-                return tile;
-            }
+                return Game.Map.RandTile(Tile.LocationD, _range);
             return null;
         }
 

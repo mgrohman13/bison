@@ -67,7 +67,7 @@ namespace ClassLibrary1.Pieces.Enemies
         }
 
         internal override double Cost => _energy
-            * Research.GetResearchMult(_research) / Research.GetResearchMult(Game.Enemy.Research.GetBlueprintLevel()); //Math.Sqrt()
+            * Research.GetResearchMult(Game.Consts, _research) / Research.GetResearchMult(Game.Consts, Game.Enemy.Research.GetBlueprintLevel()); //Math.Sqrt()
 
         public override void OnDeserialization(object sender)
         {
@@ -153,15 +153,15 @@ namespace ClassLibrary1.Pieces.Enemies
                 }
                 else if (moraleMult > 1 && Game.Rand.Bool(1 - 1 / moraleMult))
                 {
-                    if (MoraleCheck(.7 / moraleMult, true))
+                    if (MoraleCheck(.75 / moraleMult, true))
                         _state = AIState.Rush;
-                    else if (MoraleCheck(.3 / moraleMult, true))
+                    else if (MoraleCheck(.25 / moraleMult, true))
                         _state = AIState.Fight;
                 }
             }
         }
         private double EventDistMult(Tile tile, bool offset, double pow) =>
-            Math.Pow(Consts.CaveSize / (Tile.GetDistance(tile) + (offset ? Consts.CaveSize : 1)), pow);
+            Math.Pow(Game.Consts.CaveSize / (Tile.GetDistance(tile) + (offset ? Game.Consts.CaveSize : 1)), pow);
 
         internal static void ModState(EnemyPiece source, AIState prev, AIState state, Tile orig, Tile cur)
         {
@@ -210,18 +210,15 @@ namespace ClassLibrary1.Pieces.Enemies
             {
                 case AIState.Heal:
                     state = AIState.Heal;
-                    if (PlayerThreat())
+                    if (!killable.IsRepairing() || PlayerThreat())
                         goto case AIState.Retreat;
-                    if (!killable.IsRepairing())
-                        if (DefPct() < 1)
-                            goto case AIState.Retreat;
-                        else
-                            goto case AIState.Patrol;
                     break;
                 case AIState.Retreat:
                     state = AIState.Retreat;
                     if (killable.IsRepairing() && !PlayerThreat())
                         goto case AIState.Heal;
+                    if (ValidRetreatTile(Tile))
+                        RecoverMorale();
                     if (MoraleCheck(1 / DefPct() / DefPct() / Math.Sqrt(aggression), true))
                         goto case AIState.Patrol;
                     if (moveTiles.Count > 0 && NeedsRetreatPath())
@@ -244,7 +241,7 @@ namespace ClassLibrary1.Pieces.Enemies
                         goto case AIState.Fight;
                     if (PlayerPassive())
                         goto case AIState.Harass;
-                    if (MoraleCheck(.9, true) && SeePath())
+                    if (MoraleCheck(Game.Rand.Range(1, 2), true) && SeePath())
                         goto case AIState.Rush;
                     break;
                 case AIState.Harass:
@@ -252,7 +249,7 @@ namespace ClassLibrary1.Pieces.Enemies
                     if (MoraleCheck(PlayerThreat() ? .6 : .4, false))
                         goto case AIState.Fight;
                     if (!PlayerThreat() && !PlayerPassive())
-                        if (MoraleCheck(.8 / DefPct(), true))
+                        if (MoraleCheck(1 / DefPct(), true))
                             goto case AIState.Rush;
                         else
                             goto case AIState.Patrol;
@@ -284,13 +281,15 @@ namespace ClassLibrary1.Pieces.Enemies
             bool PlayerThreat() => _targeted || playerAttacks.ContainsKey(Tile) || killables.Any(k => k.Piece.HasBehavior<IAttacker>());
             bool PlayerPassive() => !PlayerThreat() && killables.Count > 0;
             bool SeePath(List<Point> path = null) => (path ?? PathToCore).Any(p => moveTiles.Contains(Game.Map.GetTile(p)));
-            bool NeedsRetreatPath() => RetreatPath == null || RetreatPath.Count == 0 || !ValidRetreat(RetreatPath[^1]) || !SeePath(RetreatPath);
+            bool NeedsRetreatPath() => !ValidRetreatTile(Tile) && (RetreatPath == null || RetreatPath.Count == 0 || !ValidRetreat(RetreatPath[^1]) || !SeePath(RetreatPath));
             bool ValidRetreat(Point point) => ValidRetreatTile(Game.Map.GetTile(point));
-            bool ValidRetreatTile(Tile tile) => tile != null && tile.Piece == null
-                && (Game.TEST_MAP_GEN.HasValue || Game.GameOver || !tile.ShowMove()) && !playerAttacks.ContainsKey(tile);
+            bool ValidRetreatTile(Tile tile) => this.ValidRetreatTile(tile, playerAttacks);
             IEnumerable<Tile> GetRetreatTiles() => RetreatPath?.Where(ValidRetreat).Select(Game.Map.GetTile);
             bool MoraleCheck(double check, bool sign) => this.MoraleCheck(check, sign, difficulty);
         }
+        internal bool ValidRetreatTile(Tile tile, Dictionary<Tile, double> playerAttacks) =>
+            tile != null && !playerAttacks.ContainsKey(tile) && (tile.Piece == null || tile.Piece == this)
+                && (Game.TEST_MAP_GEN.HasValue || Game.GameOver || (!tile.Visible && !tile.ShowMove()));
         private bool MoraleCheck(double check, bool sign, double difficulty = 1)
         {
             double morale = Morale;
@@ -309,7 +308,11 @@ namespace ClassLibrary1.Pieces.Enemies
         internal override void StartTurn()
         {
             base.StartTurn();
-
+            this._targeted = false;
+            RecoverMorale();
+        }
+        internal void RecoverMorale()
+        {
             if (Morale < 0)
             {
                 Debug.WriteLine($"!!! {this} morale: {Morale}");
@@ -319,7 +322,6 @@ namespace ClassLibrary1.Pieces.Enemies
             double pct = DefPct();
             pct = 1 - .65 * pct * pct * pct;
             this._morale = float.Epsilon + Math.Pow(Morale, Game.Rand.Range(pct, 1));
-            this._targeted = false;
 
             if (Morale > 1)
             {
@@ -327,6 +329,7 @@ namespace ClassLibrary1.Pieces.Enemies
                 this._morale = 1;
             }
         }
+
         private double DefPct()
         {
             double pct = Consts.GetDamagedValue(this, 1, 0);

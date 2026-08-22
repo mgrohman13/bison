@@ -213,34 +213,22 @@ namespace WinFormsApp1
             //        rows.Add(new(buildExtractor, "Extractor", energy, mass, Extractor.Resilience));
             //}
             //else
-            if (selected.Piece is Outpost outpost)
+            if (selected.Piece is FoundationPiece foundationPiece && builder.HasBehavior<IBuilder>(out var b))
             {
-                //if (builder.HasBehavior<IBuilder.IBuildOutpost>(out var buildOutpost))
-                //{
-                //    buildOutpost.Replace(false, foundationPiece, out int energy, out int mass, out bool couldReplace, out _);
-                //    if (couldReplace)
-                //        rows.Add(new(buildOutpost, "Outpost", energy, mass, Outpost.Resilience));
-                //}
-                if (builder.HasBehavior<IBuilder.IBuildFactory>(out var buildFactory))
-                {
-                    outpost.ReplaceFactory(false, out int energy, out int mass, out bool _);
-                    //buildFactory.Replace(false, foundationPiece, out int energy, out int mass, out bool couldReplace, out _);
-                    //if (canReplace)
-                    rows.Add(new(buildFactory, "Factory", energy, mass, Factory.Resilience));
-                }
-                if (builder.HasBehavior<IBuilder.IBuildTurret>(out var buildTurret))
-                {
-                    outpost.ReplaceTurret(false, out int energy, out int mass, out bool _);
-                    //buildTurret.Replace(false, foundationPiece, out int energy, out int mass, out bool couldReplace, out _);
-                    //if (canReplace)
-                    rows.Add(new(buildTurret, "Turret", energy, mass, Turret.Resilience));
-                }
-                //if (builder.HasBehavior<IBuilder.IBuildGenerator>(out var buildGenerator))
-                //{
-                //    buildGenerator.Replace(false, foundationPiece, out int energy, out int mass, out bool couldReplace, out _);
-                //    if (couldReplace)
-                //        rows.Add(new(buildGenerator, "Generator", energy, mass, Generator.Resilience));
-                //}
+                bool replaceable;
+                int energy, mass;
+                foundationPiece.ReplaceOutpost(false, out energy, out mass, out replaceable);
+                if (replaceable)
+                    rows.Add(new(b.GetBehavior<IBuilder.IBuildOutpost>(), "Outpost", energy, mass, Outpost.Resilience, replace: true));
+                foundationPiece.ReplaceFactory(false, out energy, out mass, out replaceable);
+                if (replaceable)
+                    rows.Add(new(b.GetBehavior<IBuilder.IBuildFactory>(), "Factory", energy, mass, Factory.Resilience, replace: true));
+                foundationPiece.ReplaceTurret(false, out energy, out mass, out replaceable);
+                if (replaceable)
+                    rows.Add(new(b.GetBehavior<IBuilder.IBuildTurret>(), "Turret", energy, mass, Turret.Resilience, replace: true));
+                foundationPiece.ReplaceGenerator(false, out energy, out mass, out replaceable);
+                if (replaceable)
+                    rows.Add(new(b.GetBehavior<IBuilder.IBuildGenerator>(), "Generator", energy, mass, Generator.Resilience, replace: true));
             }
         }
         internal void ReplaceCost(Tile selected, Piece builder, out int energy, out int mass)
@@ -378,18 +366,16 @@ namespace WinFormsApp1
                 else if (builder is IBuilder.IBuildExtractor buildExtractor)
                     this.result = buildExtractor.Build(selected.Piece as Resource);
 
-                if (selected.Piece is Outpost outpost)// && builder is IBuilder.IReplacer<FoundationPiece>)
+                if (selected.Piece is FoundationPiece foundationPiece)
                 {
-                    //if (row.Name == "Outpost")
-                    //    this.result = builder.GetBehavior<IBuilder.IBuildOutpost>().Replace(true, foundationPiece, out _, out _, out _, out _);
+                    if (row.Name == "Outpost")
+                        this.result = foundationPiece.ReplaceOutpost(true, out _, out _, out _);
                     if (row.Name == "Factory")
-                        this.result = outpost.ReplaceFactory(true, out _, out _, out _);
-                    //this.result = builder.GetBehavior<IBuilder.IBuildFactory>().Replace(true, foundationPiece, out _, out _, out _, out _);
+                        this.result = foundationPiece.ReplaceFactory(true, out _, out _, out _);
                     if (row.Name == "Turret")
-                        this.result = outpost.ReplaceTurret(true, out _, out _, out _);
-                    //this.result = builder.GetBehavior<IBuilder.IBuildTurret>().Replace(true, foundationPiece, out _, out _, out _, out _);
-                    //if (row.Name == "Generator")
-                    //    this.result = builder.GetBehavior<IBuilder.IBuildGenerator>().Replace(true, foundationPiece, out _, out _, out _, out _);
+                        this.result = foundationPiece.ReplaceTurret(true, out _, out _, out _);
+                    if (row.Name == "Generator")
+                        this.result = foundationPiece.ReplaceGenerator(true, out _, out _, out _);
                 }
                 else
                 {
@@ -408,8 +394,9 @@ namespace WinFormsApp1
             }
         }
 
-        public class BuildRow(IBuilder builder, string name, double energy, double mass, double resilience)
+        public class BuildRow(IBuilder builder, string name, double energy, double mass, double resilience, bool replace = false)
         {
+            private bool replace = replace;
             public BuildRow(IBuilder builder, string name, double energy, double mass, MechBlueprint blueprint)
                 : this(builder, name, energy, mass, blueprint.Resilience)
             {
@@ -430,22 +417,13 @@ namespace WinFormsApp1
                 {
                     if (Blueprint != null)
                         return Program.GetNotify(Blueprint);
-                    return Program.Notify(Builder);
-                    //if (Builder is IBuilder.IBuildConstructor)
-
-                    //if (Builder is IBuilder.IBuildDrone)
-                    //    return Program.NotifyDrone;
-                    //return true;
+                    return Program.Notify(Builder, replace);
                 }
                 set
                 {
                     if (Blueprint != null)
                         Program.SetNotify(Blueprint, value);
-                    Program.Notify(Builder, value);
-                    //if (Builder is IBuilder.IBuildConstructor)
-                    //    Program.NotifyConstructor = value;
-                    //if (Builder is IBuilder.IBuildDrone)
-                    //    Program.NotifyDrone = value;
+                    Program.Notify(Builder, value, replace);
                 }
             }
             public MechBlueprint Blueprint { get; }

@@ -26,10 +26,14 @@ namespace ClassLibrary1
             //TEST_MAP_GEN = Rand.GaussianCappedInt(1.3 * Consts.CaveDistance * Math.Sqrt(2), .13);
         }
 
+        public readonly Consts Consts;
+
         public readonly Map.Map Map;
         public readonly Player Player;
         public readonly Enemy Enemy;
         public readonly Log Log;
+
+        internal readonly ResearchUpgValues ResearchUpgValues;
 
         private int _turn, _victory;
         public int Turn => _turn;
@@ -45,6 +49,9 @@ namespace ClassLibrary1
 
         public Game(string savePath)
         {
+            this.Consts = new();
+            this.ResearchUpgValues = new(Consts);
+
             this.Map = new(this);
             this.Player = new(this);
             this.Enemy = new(this);
@@ -69,11 +76,11 @@ namespace ClassLibrary1
                 new( 2,  1),
             });
 
-            Player.NewGame(constructor);
+            Player.NewGame(Consts, constructor);
 
             constructor = new(Player.Core.Tile.X + constructor.X, Player.Core.Tile.Y + constructor.Y);
             Tile tile = Map.GetTile(constructor);
-            Map.Clear(tile.Location, Constructor.BASE_VISION);
+            Map.Clear(tile.Location, Constructor.START_VISION);
             tile = Map.GetTile(constructor);
             Constructor.NewConstructor(tile, true);
 
@@ -94,7 +101,7 @@ namespace ClassLibrary1
 
         internal void CollectResources(Tile tile, double value, out int energy, out int mass)
         {
-            const double massWeight = Consts.EnergyMassRatio / (1 + Consts.EnergyMassRatio);
+            double massWeight = Consts.EnergyMassRatio / (1 + Consts.EnergyMassRatio);
             double massMax = value / Consts.EnergyMassRatio;
             double massAvg;
             if (Game.Rand.Bool())

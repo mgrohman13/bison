@@ -103,7 +103,7 @@ namespace ClassLibrary1.Pieces
                 double min = Game.Rand.Range(1, 13 + offset);
                 bool Test(double value) => value > Game.Rand.GaussianCapped(39 + offset, .52, min);
 
-                double matchMult = 1 / (1 - Consts.EnemyTreasureMatch);
+                double matchMult = 1 / (1 - Game.Consts.EnemyTreasureMatch);
                 if (tile.Piece == null && Test(treasure * matchMult))
                     Treasure.NewTreasure(tile, treasure * matchMult);
                 else if (Test(treasure))//canCollect &&
@@ -144,7 +144,7 @@ namespace ClassLibrary1.Pieces
         }
 
         void IBehavior.StartTurn()
-        { 
+        {
             StartTurn();
         }
         internal virtual void StartTurn()
@@ -174,11 +174,11 @@ namespace ClassLibrary1.Pieces
             IMovable movable = GetBehavior<IMovable>();
             if (attacker != null && killable != null && (includeImmobile || movable != null))
             {
-                double researchMult = Research.GetResearchMult(research);
-                MechBlueprint.CalcCost(researchMult, 0, killable.AllDefenses.Select(d => new IKillable.Values(d)),
+                double researchMult = Research.GetResearchMult(Game.Consts, research);
+                MechBlueprint.CalcCost(Game.Consts, researchMult, 0, killable.AllDefenses.Select(d => new IKillable.Values(d)),
                     killable.Resilience, attacker.Attacks.Select(a => new IAttacker.Values(a)),
                     new IMovable.Values(movable), out double energy, out double mass);
-                return (energy + mass * Consts.EnergyMassRatio) * Consts.GetDamagedValue(killable.Piece, 1, 0);
+                return (energy + mass * Game.Consts.EnergyMassRatio) * Consts.GetDamagedValue(killable.Piece, 1, 0);
             }
             return 0;
         }

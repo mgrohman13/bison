@@ -16,7 +16,7 @@ namespace ClassLibrary1.Pieces.Enemies
     public abstract class EnemyPiece : Piece, IDeserializationCallback
     {
         protected AIState _state;
-        internal AIState State => _state;// hide behind research
+        public AIState State => _state;// hide behind research
 
         //cant use these tiles as references...
         private Tile lastMove = null, curMove = null;
@@ -90,7 +90,7 @@ namespace ClassLibrary1.Pieces.Enemies
         }
 
         //order is used
-        internal protected enum AIState
+        public enum AIState // internal protected
         {
             Heal,
             Retreat,

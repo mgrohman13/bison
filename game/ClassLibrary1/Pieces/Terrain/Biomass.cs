@@ -9,7 +9,7 @@ namespace ClassLibrary1.Pieces.Terrain
     public class Biomass : Resource
     {
         private Biomass(Tile tile)
-            : base(tile, Consts.BiomassEnergyInc, Consts.BiomassSustain)
+            : base(tile, tile.Map.Game.Consts.BiomassEnergyInc, tile.Map.Game.Consts.BiomassSustain)
         {
         }
         internal static Biomass NewBiomass(Tile tile)
@@ -20,14 +20,14 @@ namespace ClassLibrary1.Pieces.Terrain
         }
         internal override void GetCost(double costMult, out int energy, out int mass)
         {
-            GetCost(costMult, Consts.BiomassEnergyInc, Consts.BiomassExtractorEnergyCost, Consts.BiomassExtractorMassCost, out energy, out mass);
+            GetCost(costMult,Game. Consts.BiomassEnergyInc, Game.Consts.BiomassExtractorEnergyCost, Game.Consts.BiomassExtractorMassCost, out energy, out mass);
         }
 
         protected override void GenerateResources(double value, out double energyInc, out double massInc, out double researchInc)
         {
             energyInc = value;
             massInc = 0;
-            researchInc = Math.Pow(value / Consts.BiomassResearchDiv + 1, Consts.BiomassResearchPow) - 1;
+            researchInc = Math.Pow(value / Game.Consts.BiomassResearchDiv + 1, Game.Consts.BiomassResearchPow) - 1;
         }
         public override string GetResourceName()
         {

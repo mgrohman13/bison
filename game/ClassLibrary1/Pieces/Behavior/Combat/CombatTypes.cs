@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using static ClassLibrary1.Map.Map;
 
 namespace ClassLibrary1.Pieces.Behavior.Combat
 {
@@ -142,23 +141,23 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
             DefenseType.Armor => repairAmt,
             _ => throw new Exception(),
         };
-        internal static double GetRegenCostMult(DefenseType defenseType, bool isAttacker, out bool mass)
+        internal static double GetRegenCostMult(Consts consts, DefenseType defenseType, bool isAttacker, out bool mass)
         {
             double result;
             switch (defenseType)
             {
                 case DefenseType.Shield:
                     mass = false;
-                    result = Consts.EnergyPerShield;
+                    result = consts.EnergyPerShield;
                     break;
                 case DefenseType.Armor:
                     mass = true;
-                    result = Consts.MassPerArmor;
+                    result = consts.MassPerArmor;
                     break;
                 default: throw new Exception();
             }
             if (!isAttacker)
-                result /= Consts.RegenCostPassiveDiv;
+                result /= consts.RegenCostPassiveDiv;
             return result;
         }
         internal static bool Repair(DefenseType defenseType) =>

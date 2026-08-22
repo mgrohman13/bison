@@ -12,8 +12,6 @@ namespace ClassLibrary1.Pieces.Terrain
     [DataContract(IsReference = true)]
     public class Treasure : Piece
     {
-        private static readonly double ConvertResearch = Consts.MassPerResearchConversion * Consts.EnergyMassRatio / 1.5;
-
         private readonly double? _value;
 
         internal Treasure(Tile tile, double? value) : base(null, tile)
@@ -64,7 +62,7 @@ namespace ClassLibrary1.Pieces.Terrain
             if (value < min)
                 min = value * .21;
             value = Func(tile, Rand(value, min));
-            Game.Enemy.AddResources(value * Consts.EnemyTreasureMatch);
+            Game.Enemy.AddResources(value * Game.Consts.EnemyTreasureMatch);
         }
         internal static double Rand(double value, double min) =>
             Game.Rand.GaussianOE(value, .26, .13, min);
@@ -73,7 +71,7 @@ namespace ClassLibrary1.Pieces.Terrain
         {
             Game.CollectResources(tile, value, out int energy, out int mass);
             //RaiseCollectEvent($"Energy: {energy}  Mass: {mass}");
-            return energy + mass * Consts.EnergyMassRatio;
+            return energy + mass * Game.Consts.EnergyMassRatio;
         }
         private double Research(Tile tile, double value)
         {
@@ -81,10 +79,10 @@ namespace ClassLibrary1.Pieces.Terrain
             //Game.Player.Research.FreeTech(research);
             //return research * ConvertResearch;
 
-            int add = Game.Rand.Round(value / ConvertResearch);
+            int add = Game.Rand.Round(value / ConvertResearch());
             var type = Game.Player.Research.AddResearch(add);
             RaiseCollectEvent(tile, $"Research: {add}", type.HasValue);
-            return add * ConvertResearch;
+            return add * ConvertResearch();
         }
         private double NewResource(Tile tile, double value)
         {
@@ -105,7 +103,7 @@ namespace ClassLibrary1.Pieces.Terrain
             int min = Game.Rand.Round(value / rangeMult);
             int max = Game.Rand.Round(value * rangeMult);
 
-            double convert = Math.Sqrt(ConvertResearch);
+            double convert = Math.Sqrt(ConvertResearch());
             value /= convert;
 
             Research research = Game.Player.Research;
@@ -117,16 +115,17 @@ namespace ClassLibrary1.Pieces.Terrain
 
             MechBlueprint blueprint;
             do
-                blueprint = MechBlueprint.MechOneOff(new ResearchMinMaxCost(research, min, max), researchLevel);
+                blueprint = MechBlueprint.MechOneOff(Game.Consts, new ResearchMinMaxCost(research, min, max), researchLevel);
             while (Game.Map.PathFindCore(tile, GetMove(blueprint.Movable), blocked => blocked.Count == 0) == null);
             static double GetMove(IMovable.Values movable) => (movable.MoveMax + movable.MoveLimit) / 2.0;
             Players.Mech.NewMech(tile, blueprint);
 
             RaiseCollectEvent(tile, $"Research Level: {researchLevel}"); //
-            return blueprint.EnergyEquivalent() + researchCost;
+            return blueprint.EnergyEquivalent(Game.Consts) + researchCost;
         }
+        private double ConvertResearch() => Game.Consts.MassPerResearchConversion * Game.Consts.EnergyMassRatio / 1.5;
 
-        public override string ToString() => _value.HasValue ? $"Resources ~ {_value.Value * 2 / (1.0 + Consts.EnergyMassRatio):0}" : "Unknown Object";
+        public override string ToString() => _value.HasValue ? $"Resources ~ {_value.Value * 2 / (1.0 + Game.Consts.EnergyMassRatio):0}" : "Unknown Object";
 
         internal static void RaiseCollectEvent(Tile tile, int energy, int mass) =>
             RaiseCollectEvent(tile, $"Energy: {energy}  Mass: {mass}");

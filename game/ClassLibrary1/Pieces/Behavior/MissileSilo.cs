@@ -58,7 +58,7 @@ namespace ClassLibrary1.Pieces.Behavior
             {
                 if (killable.Piece is EnemyPiece enemy)
                 {
-                    double energy = enemy.Cost * Consts.MissileHitRefundPct;
+                    double energy = enemy.Cost * Piece.Game.Consts.MissileHitRefundPct;
                     double hitPct = killable.CurDefenseValue / killable.MaxDefenseValue;
 
                     Tile[] tiles = [this.Piece.Tile, enemy.Tile];
@@ -78,7 +78,7 @@ namespace ClassLibrary1.Pieces.Behavior
                         Values values = GetValues();
                         double attLoss = Consts.StatValue(attack.AttackMax);
                         attLoss = (attLoss - Consts.StatValue(attack.AttackCur)) / attLoss;
-                        attLoss *= values.Energy + values.Mass * Consts.EnergyMassRatio;
+                        attLoss *= values.Energy + values.Mass * Piece.Game.Consts.EnergyMassRatio;
                         energy += attLoss * attMult;
 
                         killable.Piece.Side.AddResources(energy);
@@ -108,12 +108,12 @@ namespace ClassLibrary1.Pieces.Behavior
 
             double distance = Piece.Tile.MoveDistTo(killable.Piece.Tile) / GetValues().Attack.Range;
             if (distance < 1)
-                mult = 1 + (1 - distance) * (Math.Sqrt(2) - 1);
+                mult = 1 + (1 - distance) * (Piece.Game.Consts.MissileAttMaxMult - 1);
             else
                 mult = 1 / distance;
 
             if (!killable.Piece.HasBehavior<IMovable>())
-                mult *= Consts.MissileAttImmobileMult;
+                mult *= Piece.Game.Consts.MissileAttImmobileMult;
 
             return mult;
         }
@@ -146,8 +146,8 @@ namespace ClassLibrary1.Pieces.Behavior
         double IBehavior.Die()
         {
             Values values = GetValues();
-            double value = _numMissiles * Consts.MissileScrapRefund;
-            return (values.Energy + values.Mass * Consts.EnergyMassRatio) * value;
+            double value = _numMissiles * Piece.Game.Consts.MissileScrapRefund;
+            return (values.Energy + values.Mass * Piece.Game.Consts.EnergyMassRatio) * value;
         }
 
         [Serializable]
@@ -158,53 +158,52 @@ namespace ClassLibrary1.Pieces.Behavior
             private double energy, mass;
             private int att;
 
-            public Values()
-            {
-                UpgradeMissileAttack(1);
-                UpgradeMissileRange(1);
-                UpgradeMissileCost(1);
-            }
-
             public IAttacker.Values Attack => new(AttackType.Kinetic, att, range, 1);
             public double Energy => energy;
             public double Mass => mass;
 
-            public void Upgrade(Research.Type type, double researchMult)
+            public void Init(Game game)
+            {
+                UpgradeMissileAttack(game, 1);
+                UpgradeMissileRange(game, 1);
+                UpgradeMissileCost(game, 1);
+            }
+            public void Upgrade(Game game, Research.Type type, double researchMult)
             {
                 if (type == Research.Type.Missile)
-                    UpgradeMissileAttack(researchMult);
+                    UpgradeMissileAttack(game, researchMult);
                 else if (type == Research.Type.MissileRange)
-                    UpgradeMissileRange(researchMult);
+                    UpgradeMissileRange(game, researchMult);
                 else if (type == Research.Type.MissileCost)
-                    UpgradeMissileCost(researchMult);
+                    UpgradeMissileCost(game, researchMult);
             }
-            private void UpgradeMissileAttack(double researchMult)
+            private void UpgradeMissileAttack(Game game, double researchMult)
             {
-                this.att = Game.Rand.Round(Calc(UpgType.MissileAttack, researchMult));
-                SetCost(researchMult);
+                this.att = Game.Rand.Round(game.ResearchUpgValues.Calc(UpgType.MissileAttack, researchMult));
+                SetCost(game, researchMult);
             }
-            private void UpgradeMissileRange(double researchMult)
+            private void UpgradeMissileRange(Game game, double researchMult)
             {
-                this.range = Calc(UpgType.MissileRange, researchMult);
-                SetCost(researchMult);
+                this.range = game.ResearchUpgValues.Calc(UpgType.MissileRange, researchMult);
+                SetCost(game, researchMult);
             }
-            private void UpgradeMissileCost(double researchMult)
+            private void UpgradeMissileCost(Game game, double researchMult)
             {
-                this.costMult = Calc(UpgType.MissileCost, researchMult);
-                SetCost(researchMult);
+                this.costMult = game.ResearchUpgValues.Calc(UpgType.MissileCost, researchMult);
+                SetCost(game, researchMult);
             }
-            private void SetCost(double researchMult)
+            private void SetCost(Game game, double researchMult)
             {
-                double cost = MechBlueprint.MissileCost(this.Attack, researchMult);
+                double cost = MechBlueprint.MissileCost(game.Consts, this.Attack, researchMult);
                 double rangeMult = this.range / START_RANGE;
-                cost *= rangeMult * this.costMult * Consts.MissileCostMult;
+                cost *= rangeMult * this.costMult * game.Consts.MissileCostMult;
 
-                double costE = cost * Consts.MissileEnergyCostRatio;
+                double costE = cost * game.Consts.MissileEnergyCostRatio;
                 this.energy = Game.Rand.GaussianCapped(costE + 1, 1 / costE, 1);
                 if (Game.Rand.Bool())
                     this.energy = Math.Round(this.energy);
 
-                double costM = (cost - energy) / Consts.EnergyMassRatio;
+                double costM = (cost - energy) / game.Consts.EnergyMassRatio;
                 this.mass = Game.Rand.Gaussian(costM, 1 / costM);
                 if (Game.Rand.Bool())
                     this.mass = Math.Round(this.mass);

@@ -12,9 +12,6 @@ namespace ClassLibrary1.Map
         [DataContract(IsReference = true)]
         private class Elevation(PointD center)
         {
-            public const double DENSITY = Consts.Scale * 21;
-            public static readonly double MAX_EFFECT_DIST = Math.Sqrt(Consts.Scale) * 26;
-
             private readonly PointD _center = center;
             private readonly List<double> _steps = [];
             private readonly double _rounding = Game.Rand.NextDouble();
@@ -22,11 +19,11 @@ namespace ClassLibrary1.Map
             //private readonly double[] _fudge =
             //    [Game.Rand.Gaussian(), Game.Rand.Gaussian(), Game.Rand.Gaussian(), Game.Rand.Gaussian()];
 
-            public static IEnumerable<Elevation> GeneratePlateaus(double curExplore, ref double nextElevation)
+            public static IEnumerable<Elevation> GeneratePlateaus(Consts consts, double curExplore, ref double nextElevation)
             {
-                double generationBuffer = MAX_EFFECT_DIST + 2;
+                double generationBuffer = 2 * consts.ElevationMaxEffectDist;
                 if (Game.TEST_MAP_GEN.HasValue)
-                    generationBuffer = Game.TEST_MAP_GEN.Value;
+                    generationBuffer += Game.TEST_MAP_GEN.Value;
                 curExplore += generationBuffer;
 
                 List<Elevation> ret = [];
@@ -34,7 +31,7 @@ namespace ClassLibrary1.Map
                 {
                     double angle = Game.Rand.NextDouble() * TWO_PI;
                     PointD next = GetPoint(angle, nextElevation);
-                    nextElevation += Game.Rand.OE(DENSITY / (nextElevation / DENSITY + 1));
+                    nextElevation += Game.Rand.OE(consts.ElevationDensity / (nextElevation / consts.ElevationDensity + 1));
 
                     ret.Add(new Elevation(next));
                 }
@@ -47,19 +44,20 @@ namespace ClassLibrary1.Map
                 h *= 16.9;
                 return Tile.GetDistanceD(_center.X, _center.Y, p.X, p.Y) + _fudge + h;
             }
-            public static double Evaluate(double dist) =>
-                1.75 * MAX_EFFECT_DIST / (2 * Math.Min(dist + 1, MAX_EFFECT_DIST) + MAX_EFFECT_DIST);
-            public double Round(double height, IEnumerable<Elevation> all)
+            public static double Evaluate(Consts consts, double dist) =>
+                1.75 * consts.ElevationMaxEffectDist / (2 * Math.Min(dist + 1, consts.ElevationMaxEffectDist) + consts.ElevationMaxEffectDist);
+            public double Round(Consts consts, double height, IEnumerable<Elevation> all)
             {
                 List<double> adjacent = null;
 
                 double max = _steps.Count > 0 ? _steps[^1] : 0;
                 while (height > max)
                 {
+                    //TODO: Consts
                     double next = 1 + Game.Rand.Weighted(.91) + Game.Rand.OE(.39) + Game.Rand.GaussianCapped(.78, .65); //3.08
                     max += next;
 
-                    adjacent ??= [.. all.Where(e => e != this && Tile.GetDistanceD(e._center, this._center) < MAX_EFFECT_DIST * 2)
+                    adjacent ??= [.. all.Where(e => e != this && Tile.GetDistanceD(e._center, this._center) < consts.ElevationMaxEffectDist * 2)
                         .SelectMany(e => e._steps)];
                     var match = adjacent.Where(s => Math.Abs(s - max) < Game.Rand.GaussianCapped(1.3, .13)).ToArray();
                     if (!match.Any())

@@ -23,7 +23,7 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
         public bool Dead { get; }
 
         internal void SetHits(int cur, int max);
-        internal void Upgrade(IEnumerable<Values> defenses, double resilience);
+        internal void Upgrade(IReadOnlyList<Values> values, double resilience, IReadOnlyList<int> setCur = null);
         internal void OnAttacked();
         internal void GetHitsRepair(out double hitsInc, out double massCost);
         internal bool IsRepairing();
@@ -40,8 +40,7 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
             public readonly DefenseType Type;
             private readonly int _defense;
 
-            public Values() : this(DefenseType.Hits, 1)
-            { }
+            public Values() : this(DefenseType.Hits, 1) { }
 
             public Values(DefenseType type, int defense)
             {

@@ -33,15 +33,17 @@ namespace ClassLibrary1
             : base(game, 0, 1000)
         {
             this.Research = new(game);
-            this.upgradeValues = AppDomain.CurrentDomain.GetAssemblies()
+            this.upgradeValues = Game.Rand.Iterate(AppDomain.CurrentDomain.GetAssemblies()
                 .SelectMany(a => a.GetTypes())
                 .Where(t => t.IsClass && typeof(IUpgradeValues).IsAssignableFrom(t))
                 .Select(Activator.CreateInstance)
-                .OfType<IUpgradeValues>().ToList();
+                .OfType<IUpgradeValues>()).ToList();
+            foreach (var upgradeValue in upgradeValues)
+                upgradeValue.Init(game);
         }
-        internal void NewGame(Point constructorOffset)
+        internal void NewGame(Consts consts, Point constructorOffset)
         {
-            const double stdDev = Consts.PathWidth / 1.3;
+            double stdDev = consts.PathWidth / 1.3;
             Tile tile;
             do
             {
@@ -49,7 +51,7 @@ namespace ClassLibrary1
 
                 if (tile != null)
                 {
-                    var checkTiles = Tile.GetPointsInRange(new(tile.X + constructorOffset.X, tile.Y + constructorOffset.Y), Constructor.BASE_VISION);
+                    var checkTiles = Tile.GetPointsInRange(new(tile.X + constructorOffset.X, tile.Y + constructorOffset.Y), Constructor.START_VISION);
                     if (checkTiles.Select(Game.Map.GetTile).Any(t => t == null || t.Piece != null))
                         tile = null;
                 }
@@ -68,7 +70,7 @@ namespace ClassLibrary1
         internal void OnResearch(Research.Type type, double researchMult)
         {
             foreach (IUpgradeValues values in Game.Rand.Iterate(upgradeValues))
-                values.Upgrade(type, researchMult);
+                values.Upgrade(Game, type, researchMult);
             foreach (PlayerPiece piece in IteratePieces())
                 piece.OnResearch(type);
         }
@@ -88,11 +90,11 @@ namespace ClassLibrary1
             if (scrapResearch <= 0 || !CanScrapResearch())
                 scrapResearch = 0;
 
-            if (Research.HasScrap(scrapResearch) && Spend(fabricateMass * Consts.EnergyPerFabricateMass, burnMass * Consts.BurnMassPerEnergy))
+            if (Research.HasScrap(scrapResearch) && Spend(fabricateMass * Game.Consts.EnergyPerFabricateMass, burnMass * Game.Consts.BurnMassPerEnergy))
             {
                 Research.Scrap(scrapResearch);
                 this._energy += burnMass;
-                this._mass += fabricateMass + scrapResearch * Consts.MassForScrapResearch;
+                this._mass += fabricateMass + scrapResearch * Game.Consts.MassForScrapResearch;
             }
         }
 
@@ -189,7 +191,7 @@ namespace ClassLibrary1
         {
             if (researchAvg < 0)
             {
-                energyInc += researchAvg * Consts.MassPerResearchConversion * Consts.EnergyMassRatio;
+                energyInc += researchAvg * Game.Consts.MassPerResearchConversion * Game.Consts.EnergyMassRatio;
                 researchAvg = 0;
             }
             researchInc = MTRandom.Round(researchAvg + _researchRand * Consts.IncomeDev(researchAvg), _researchRound);

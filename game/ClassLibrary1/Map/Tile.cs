@@ -283,7 +283,7 @@ namespace ClassLibrary1.Map
                 if (piece != null && !(piece.GetBehavior<IKillable>()?.Dead ?? false))
                 {
                     Tile start = piece.Tile;
-                    var attacks = attacker.Attacks.Where(a => a.AttackCur > 0);
+                    var attacks = attacker.Attacks.Where(a => a.CanAttack());
                     IMovable movable = piece.GetBehavior<IMovable>();
                     bool melee = movable != null && attacks.Any(a => a.Range == Attack.MELEE_RANGE);
 

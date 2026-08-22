@@ -38,28 +38,31 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
             CombatTypes.GetReload(this, Attacked, Piece.HasBehavior(out IKillable killable) ? killable.Hits.GetRepair() : 0));
         public int ReloadBase => _values.Reload;
 
-        internal Attack(Piece piece, Values values)
+        internal Attack(Piece piece, Values values, int? cur = null)
         {
             Piece = piece;
             _values = values;
 
-            _attackCur = CombatTypes.GetStartCur(values.Type, values.Attack);
+            _attackCur = cur ?? CombatTypes.GetStartCur(values.Type, values.Attack);
             _attacked = true;
             _restrictMove = false;
         }
 
-        internal void Upgrade(Values values)
+        internal void Upgrade(Values values, int? cur = null)
         {
+            if (!_values.Equals(values))
+                _attacked = _restrictMove = true;
             _values = values;
+
+            if (cur.HasValue)
+                _attackCur = cur.Value;
 
             if (AttackCur > AttackMax)
             {
-                double costE = Consts.StatValueCost(AttackCur, AttackMax, Consts.EnergyPerAttack);
+                double costE = Consts.StatValueCost(AttackCur, AttackMax, Piece.Game.Consts.EnergyPerAttack);
                 Piece.Side.AddResources(-costE, 0);
                 _attackCur = AttackMax;
             }
-
-            _attacked = _restrictMove = true;
         }
 
         internal void Damage()//int damage)
@@ -199,7 +202,7 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         private void EndTurn(bool doEndTurn, ref double energyUpk, ref double massUpk)
         {
-            double newValue = Consts.IncStatValue(doEndTurn, AttackCur, AttackMax, Reload, Consts.EnergyPerAttack, ref energyUpk);
+            double newValue = Consts.IncStatValue(doEndTurn, AttackCur, AttackMax, Reload, Piece.Game.Consts.EnergyPerAttack, ref energyUpk);
             if (doEndTurn)
             {
                 if (newValue != (int)newValue)
@@ -210,7 +213,7 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
 
         internal double Die()
         {
-            double treasure = Consts.StatValueCost(0, AttackCur, Consts.EnergyPerAttack);
+            double treasure = Consts.StatValueCost(0, AttackCur, Piece.Game.Consts.EnergyPerAttack);
             this._attackCur = 0;
             return treasure;
         }

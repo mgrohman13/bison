@@ -31,9 +31,9 @@ namespace ClassLibrary1
             //_research = 0;
             _difficulty = 1;
 
-            _unlockTurns = GenUnlockTurns();
+            _unlockTurns = GenUnlockTurns(game.Consts );
         }
-        private static Dictionary<Type, int> GenUnlockTurns()
+        private static Dictionary<Type, int> GenUnlockTurns(Consts consts)
         {
             Type[] Skips = [Type.ConstructorCost, Type.ConstructorDefense, Type.ConstructorMove];
             //in order of liklihood
@@ -53,7 +53,7 @@ namespace ClassLibrary1
 
                 if (!Skips.Contains(next))
                 {
-                    double avg = (a + 1) * Consts.EnemyUnlockTurns / count;
+                    double avg = (a + 1) * consts.EnemyUnlockTurns / count;
                     double dev = (1 + count - a) * .39 / (count + 1);
                     if (avg < 13) throw new Exception();
                     int min = Game.Rand.RangeInt(Game.Rand.RangeInt(1, 13), Game.Rand.RangeInt(13, Game.Rand.Round(avg / Math.PI)));
@@ -75,9 +75,9 @@ namespace ClassLibrary1
         }
 
         internal bool TypeVailable(Type type) => !_unlockTurns.ContainsKey(type) || _unlockTurns[type] < Game.Turn;
-        public int GetBlueprintLevel() => Game.Rand.Round(Consts.ResearchFactor * (_difficulty - 1));// + _research);
-        public int GetMinCost() => Game.Rand.Round(Math.Pow(GetBlueprintLevel() + 7.8 * Consts.ResearchFactor, 0.65));
-        public int GetMaxCost() => Game.Rand.Round(Math.Pow(GetBlueprintLevel() + 0.169 * Consts.ResearchFactor, 1.04)) + 390;
+        public int GetBlueprintLevel() => Game.Rand.Round(Game.Consts.ResearchFactor * (_difficulty - 1));// + _research);
+        public int GetMinCost() => Game.Rand.Round(Math.Pow(GetBlueprintLevel() + 7.8 * Game.Consts.ResearchFactor, 0.65));
+        public int GetMaxCost() => Game.Rand.Round(Math.Pow(GetBlueprintLevel() + 0.169 * Game.Consts.ResearchFactor, 1.04)) + 390;
 
         public double GetMult(Type type, double pow)
         {

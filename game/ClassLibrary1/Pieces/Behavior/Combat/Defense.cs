@@ -24,12 +24,12 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
         public bool Dead => _defenseCur < 1;
         //|| (Type != DefenseType.Hits && Piece.GetBehavior<IKillable>().Dead == true);
 
-        internal Defense(Piece piece, Values values)
+        internal Defense(Piece piece, Values values, int? cur = null)
         {
             Piece = piece;
             _values = values;
 
-            _defenseCur = CombatTypes.GetStartCur(values.Type, values.Defense);
+            _defenseCur = cur ?? CombatTypes.GetStartCur(values.Type, values.Defense);
         }
         public T GetBehavior<T>() where T : class, IBehavior
         {
@@ -42,37 +42,46 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
             if (max != DefenseMax)
                 _values = new(Type, max);
         }
-        internal void Upgrade(Values values)
+        internal void Upgrade(Values values, int? cur = null)
         {
+            double defPct = Consts.StatValue(DefenseCur) / Consts.StatValue(DefenseMax);
+            _values = values;
+
             double costE = 0, costM = 0;
-            if (Type == DefenseType.Hits)
+            if (cur.HasValue)
             {
-                double defPct = Consts.StatValue(DefenseCur) / Consts.StatValue(DefenseMax);
-                _values = values;
+                _defenseCur = cur.Value;
+            }
+            else if (Type == DefenseType.Hits)
+            {
                 _defenseCur = Game.Rand.Round(Consts.StatValueInverse(Consts.StatValue(DefenseMax) * defPct));
                 if (DefenseCur < 1)
                 {
                     _defenseCur = 1;
+
                     if (Piece is IKillable.IRepairable repairable)
                         costM = repairable.RepairCost * Consts.StatValue(DefenseCur) / Consts.StatValue(DefenseMax);
                     else
                         costM = 2;
                 }
             }
-            else
+
+            if (DefenseCur > DefenseMax)
             {
-                _values = values;
-                if (DefenseCur > DefenseMax)
+                _defenseCur = DefenseMax;
+
+                if (Type != DefenseType.Hits)
                 {
                     double cost = Consts.StatValueCost(DefenseCur, DefenseMax, GetRegenCost(out bool mass));
                     if (mass)
                         costM = cost;
                     else
                         costE = cost;
-                    _defenseCur = DefenseMax;
                 }
             }
-            Piece.Side.AddResources(-costE, -costM);
+
+            if (!cur.HasValue)
+                Piece.Side.AddResources(-costE, -costM);
         }
 
         internal void DoDamage(Attack attack)
@@ -93,10 +102,16 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
         {
             Tile tile = Piece.Tile;
 
-            if (Type == DefenseType.Hits && Piece.HasBehavior(out IAttacker attacker))
-                foreach (Attack attack in Game.Rand.Iterate(attacker.Attacks))
-                    if (DoCollateralDamage(null, attack.AttackCur))//null to do reduced damage
-                        attack.Damage();
+            if (Type == DefenseType.Hits)
+            {
+                if (Piece.HasBehavior(out IAttacker attacker))
+                    foreach (Attack attack in Game.Rand.Iterate(attacker.Attacks))
+                        if (DoCollateralDamage(null, attack.AttackCur))//null to do reduced damage
+                            attack.Damage();
+                if (Piece.HasBehavior(out IMovable movable))
+                    if (DoCollateralDamage(null, DefenseCur))
+                        movable.Damage(DefenseCur / Consts.StatValue(DefenseMax));
+            }
 
             if (!Dead)
                 _defenseCur--;
@@ -161,7 +176,7 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
                     .Where(r => Piece != r.Piece && Piece.Side == r.Piece.Side && Piece.Tile.GetDistance(r.Piece.Tile) <= r.Range);
                 double[] repairs = [.. repairers
                     .Select(r => (r?.Rate))
-                    .Concat(repairable.AutoRepair ? new double?[] { Consts.AutoRepair } : [])
+                    .Concat(repairable.AutoRepair ? new double?[] { Piece.Game.Consts.AutoRepair } : [])
                     .Where(v => v.HasValue)
                     .Select(v => v.Value)
                     .OrderByDescending(v => v)];
@@ -217,7 +232,7 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
         }
         private double IncDefense(bool doEndTurn, ref double energyUpk, ref double massUpk)
         {
-            return Consts.IncDefense(doEndTurn, Type, Piece.HasBehavior<IAttacker>(), DefenseCur, DefenseMax, GetRepair(), ref energyUpk, ref massUpk);
+            return Piece.Game.Consts.IncDefense(doEndTurn, Type, Piece.HasBehavior<IAttacker>(), DefenseCur, DefenseMax, GetRepair(), ref energyUpk, ref massUpk);
         }
 
         internal double Die()
@@ -225,9 +240,9 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
             bool mass = false;
             double treasure = 0;
             if (Type != DefenseType.Hits)
-                treasure = GetRegenCost(out mass); 
+                treasure = GetRegenCost(out mass);
             if (mass)
-                treasure *= Consts.EnergyMassRatio;
+                treasure *= Piece.Game.Consts.EnergyMassRatio;
 
             treasure = Consts.StatValueCost(0, DefenseCur, treasure);
             this._defenseCur = 0;
@@ -235,7 +250,7 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
         }
         private double GetRegenCost(out bool mass)
         {
-            return CombatTypes.GetRegenCostMult(Type, Piece.HasBehavior<IAttacker>(), out mass);
+            return CombatTypes.GetRegenCostMult(Piece.Game.Consts, Type, Piece.HasBehavior<IAttacker>(), out mass);
         }
     }
 }

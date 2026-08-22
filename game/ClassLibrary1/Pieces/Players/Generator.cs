@@ -56,6 +56,12 @@ namespace ClassLibrary1.Pieces.Players
         internal override void Cost(out int energy, out int mass) =>
             Cost(Game, out energy, out mass);
 
+        protected override bool CanReplace<T>(out Tuple<double, double> rounding)
+        {
+            rounding = null;
+            return false;
+        }
+
         internal override void OnResearch(Research.Type type)
         {
             Upgrade(type);
@@ -74,7 +80,7 @@ namespace ClassLibrary1.Pieces.Players
         internal override void GenerateResources(ref double energyInc, ref double massInc, ref double researchInc)
         {
             energyInc += Consts.GetDamagedValue(this, GetGenValue(), 0);
-            researchInc -= Consts.GeneratorResearchUpk;
+            researchInc -= Game.Consts.GeneratorResearchUpk;
 
             base.GenerateResources(ref energyInc, ref massInc, ref researchInc);
         }
@@ -82,12 +88,12 @@ namespace ClassLibrary1.Pieces.Players
         private static double GetGenValue(Tile tile, Generator generator = null, Tile testNew = null)
         {
             Game game = tile.Map.Game;
-            static double Logistic(double dist) =>
-                (1 - 1 / (1.0 + Math.Pow(Math.E, -9.1 * (dist / (Consts.ResourceAvgDist * 1.13) - 1))));
+            double Logistic(double dist) =>
+                (1 - 1 / (1.0 + Math.Pow(Math.E, -9.1 * (dist / (game.Consts.ResourceAvgDist * 1.13) - 1))));
             double div = 1 + game.Player.PiecesOfType<Generator>().Where(g => g != generator)
                 .Select(g => g.Tile).Append(testNew).Where(t => t != null)
                 .Select(t => t.GetDistance(tile)).Sum(Logistic);
-            return GetValues(game).EnergyInc / div + Consts.GeneratorConstValue;
+            return GetValues(game).EnergyInc / div + game.Consts.GeneratorConstValue;
         }
         public static void PlacementEfficiency(Tile testNew, out double energy, out double pct)
         {
@@ -97,8 +103,8 @@ namespace ClassLibrary1.Pieces.Players
             pct = energy / GetValues(game).EnergyInc;
         }
 
-        private static double HitsMult() =>
-            Extractor.HitsMult(Consts.GeneratorEnergyCost + Consts.GeneratorMassCost * Consts.EnergyMassRatio);
+        private double HitsMult() =>
+            Extractor.HitsMult(Game.Consts, Game.Consts.GeneratorEnergyCost + Game.Consts.GeneratorMassCost * Game.Consts.EnergyMassRatio);
 
         public override string ToString()
         {
@@ -113,13 +119,6 @@ namespace ClassLibrary1.Pieces.Players
 
             private int energy, mass;
             private double hits, inc;
-
-            public Values()
-            {
-                UpgradeBuildingCost(1);
-                UpgradeBuildingDefense(1);
-                UpgradeAmbientGenerator(1);
-            }
 
             public int Energy => energy;
             public int Mass => mass;
@@ -138,28 +137,34 @@ namespace ClassLibrary1.Pieces.Players
                 Research.Type.AmbientGenerator => false,
                 _ => false
             };
-            public void Upgrade(Research.Type type, double researchMult)
+            public void Init(Game game)
+            {
+                UpgradeBuildingCost(game, 1);
+                UpgradeBuildingDefense(game, 1);
+                UpgradeAmbientGenerator(game, 1);
+            }
+            public void Upgrade(Game game, Research.Type type, double researchMult)
             {
                 if (type == Research.Type.BuildingCost)
-                    UpgradeBuildingCost(researchMult);
+                    UpgradeBuildingCost(game, researchMult);
                 else if (type == Research.Type.BuildingDefense)
-                    UpgradeBuildingDefense(researchMult);
+                    UpgradeBuildingDefense(game, researchMult);
                 else if (type == Research.Type.AmbientGenerator)
-                    UpgradeAmbientGenerator(researchMult);
+                    UpgradeAmbientGenerator(game, researchMult);
             }
-            private void UpgradeBuildingCost(double researchMult)
+            private void UpgradeBuildingCost(Game game, double researchMult)
             {
-                double costMult = ResearchUpgValues.Calc(UpgType.TurretCost, researchMult);
-                this.energy = Game.Rand.Round(Consts.GeneratorEnergyCost * costMult);
-                this.mass = Game.Rand.Round(Consts.GeneratorMassCost * costMult);
+                double costMult = game.ResearchUpgValues.Calc(UpgType.TurretCost, researchMult);
+                this.energy = Game.Rand.Round(game.Consts.GeneratorEnergyCost * costMult);
+                this.mass = Game.Rand.Round(game.Consts.GeneratorMassCost * costMult);
             }
-            private void UpgradeBuildingDefense(double researchMult)
+            private void UpgradeBuildingDefense(Game game, double researchMult)
             {
-                this.hits = ResearchUpgValues.Calc(UpgType.ExtractorDefense, researchMult);
+                this.hits = game.ResearchUpgValues.Calc(UpgType.ExtractorDefense, researchMult);
             }
-            private void UpgradeAmbientGenerator(double researchMult)
+            private void UpgradeAmbientGenerator(Game game, double researchMult)
             {
-                this.inc = ResearchUpgValues.Calc(UpgType.AmbientGenerator, researchMult);
+                this.inc = game.ResearchUpgValues.Calc(UpgType.AmbientGenerator, researchMult);
             }
         }
     }

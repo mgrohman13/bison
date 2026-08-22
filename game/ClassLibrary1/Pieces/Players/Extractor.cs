@@ -13,10 +13,6 @@ namespace ClassLibrary1.Pieces.Players
     [DataContract(IsReference = true)]
     public class Extractor : PlayerPiece, IKillable.IRepairable
     {
-        public const double AvgCost = (Consts.BiomassExtractorEnergyCost
-            + Consts.MetalExtractorEnergyCost + Consts.ArtifactExtractorEnergyCost
-            + (Consts.BiomassExtractorMassCost + Consts.MetalExtractorMassCost
-                + Consts.ArtifactExtractorMassCost) * Consts.EnergyMassRatio) / 3.0;
         public static double Resilience => Values.Resilience;
 
         public readonly Resource Resource;
@@ -85,6 +81,7 @@ namespace ClassLibrary1.Pieces.Players
         private void Die(bool resource, out Tile tile, out double treasure)
         {
             base.Die(out tile, out treasure);
+            //TODO: Consts
             if (resource && VanishStr() > Game.Rand.GaussianOE(13, .26, .13))
             {
                 Resource.SetTile(tile);
@@ -92,7 +89,7 @@ namespace ClassLibrary1.Pieces.Players
             else
             {
                 BaseCost(out int energy, out int mass);
-                treasure += energy + mass * Consts.EnergyMassRatio;
+                treasure += energy + mass * Game.Consts.EnergyMassRatio;
             }
         }
 
@@ -124,9 +121,16 @@ namespace ClassLibrary1.Pieces.Players
         private double HitsMult()
         {
             BaseCost(out int energy, out int mass);
-            return HitsMult(energy + mass * Consts.EnergyMassRatio);
+            return HitsMult(Game.Consts, energy + mass * Game.Consts.EnergyMassRatio);
         }
-        internal static double HitsMult(double cost) => Math.Pow(cost / AvgCost, Consts.ExtractorHitsPow);
+        internal static double HitsMult(Consts consts, double cost)
+        {
+            double AvgCost = (consts.BiomassExtractorEnergyCost
+                + consts.MetalExtractorEnergyCost + consts.ArtifactExtractorEnergyCost
+                + (consts.BiomassExtractorMassCost + consts.MetalExtractorMassCost
+                + consts.ArtifactExtractorMassCost) * consts.EnergyMassRatio) / 3.0;
+            return Math.Pow(cost / AvgCost, consts.ExtractorHitsPow);
+        }
 
         internal override void GenerateResources(ref double energyInc, ref double massInc, ref double researchInc)
         {
@@ -171,15 +175,6 @@ namespace ClassLibrary1.Pieces.Players
 
             private double costMult, vision, hits, valueMult, sustainMult;
 
-            public Values()
-            {
-                UpgradeBuildingCost(1);
-                UpgradeBuildingDefense(1);
-                UpgradeExtractorValue(1);
-                this.valueMult = 1;
-                this.sustainMult = 1;
-            }
-
             public double CostMult => costMult;
             public double Vision => vision;
             public double ValueMult => valueMult;
@@ -202,28 +197,36 @@ namespace ClassLibrary1.Pieces.Players
                 Research.Type.ExtractorValue => true,
                 _ => false
             };
-            public void Upgrade(Research.Type type, double researchMult)
+            public void Init(Game game)
+            {
+                UpgradeBuildingCost(game, 1);
+                UpgradeBuildingDefense(game, 1);
+                UpgradeExtractorValue(game, 1);
+                this.valueMult = 1;
+                this.sustainMult = 1;
+            }
+            public void Upgrade(Game game, Research.Type type, double researchMult)
             {
                 if (type == Research.Type.BuildingCost)
-                    UpgradeBuildingCost(researchMult);
+                    UpgradeBuildingCost(game, researchMult);
                 else if (type == Research.Type.BuildingDefense)
-                    UpgradeBuildingDefense(researchMult);
+                    UpgradeBuildingDefense(game, researchMult);
                 else if (type == Research.Type.ExtractorValue)
-                    UpgradeExtractorValue(researchMult);
+                    UpgradeExtractorValue(game, researchMult);
             }
-            private void UpgradeBuildingCost(double researchMult)
+            private void UpgradeBuildingCost(Game game, double researchMult)
             {
-                this.costMult = ResearchUpgValues.Calc(UpgType.ExtractorCost, researchMult);
+                this.costMult = game.ResearchUpgValues.Calc(UpgType.ExtractorCost, researchMult);
             }
-            private void UpgradeBuildingDefense(double researchMult)
+            private void UpgradeBuildingDefense(Game game, double researchMult)
             {
-                this.vision = ResearchUpgValues.Calc(UpgType.ExtractorVision, researchMult);
-                this.hits = ResearchUpgValues.Calc(UpgType.ExtractorDefense, researchMult);
+                this.vision = game.ResearchUpgValues.Calc(UpgType.ExtractorVision, researchMult);
+                this.hits = game.ResearchUpgValues.Calc(UpgType.ExtractorDefense, researchMult);
             }
-            private void UpgradeExtractorValue(double researchMult)
+            private void UpgradeExtractorValue(Game game, double researchMult)
             {
-                this.valueMult = ResearchUpgValues.Calc(UpgType.ExtractorValue, researchMult);
-                this.sustainMult = ResearchUpgValues.Calc(UpgType.ExtractorSustain, researchMult); 
+                this.valueMult = game.ResearchUpgValues.Calc(UpgType.ExtractorValue, researchMult);
+                this.sustainMult = game.ResearchUpgValues.Calc(UpgType.ExtractorSustain, researchMult);
             }
         }
     }

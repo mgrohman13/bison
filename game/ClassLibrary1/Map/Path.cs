@@ -32,13 +32,13 @@ namespace ClassLibrary1.Map
 
             private readonly double K;
 
-            public Path(double angle)
+            public Path(Consts consts, double angle)
             {
                 Angle = angle;
 
-                Width = Game.Rand.GaussianCapped(Consts.PathWidth, Consts.PathWidthDev, Consts.PathWidthMin);
+                Width = Game.Rand.GaussianCapped(consts.PathWidth, consts.PathDev, consts.PathWidthMin);
 
-                double GetCoord() => Game.Rand.Gaussian((Width + Consts.PathWidth) / 2.0);
+                double GetCoord() => Game.Rand.Gaussian((Width + consts.PathWidth) / 2.0);
                 Start = new(GetCoord(), GetCoord());
 
                 K = GenK();
@@ -49,13 +49,13 @@ namespace ClassLibrary1.Map
                 ResourceNum = 0;
                 ExploredDist = 0;
                 NextResourceDist = 0;
-                GetNextDist();
+                GetNextDist(consts);
             }
-            private void GetNextDist()
+            private void GetNextDist(Consts consts)
             {
-                double avg = ResourceNum * Consts.ResourceAvgDist + Consts.PathWidth;
-                double inc = Math.Max(avg - NextResourceDist, 0) + Consts.ResourceAvgDist / 2.0;
-                double oe = Math.Min(inc, Consts.ResourceAvgDist);
+                double avg = ResourceNum * consts.ResourceAvgDist + consts.PathWidth;
+                double inc = Math.Max(avg - NextResourceDist, 0) + consts.ResourceAvgDist / 2.0;
+                double oe = Math.Min(inc, consts.ResourceAvgDist);
                 inc -= oe;
                 NextResourceDist += Game.Rand.DoubleFull(inc) + Game.Rand.OE(oe);
             }
@@ -68,11 +68,11 @@ namespace ClassLibrary1.Map
             {
                 if (dist > ExploredDist)
                 {
-                    double mult = (dist - ExploredDist) * dist / Consts.CaveDistance / Consts.ResourceAvgDist;
+                    double mult = (dist - ExploredDist) * dist / map.Game.Consts.CaveDistance / map.Game.Consts.ResourceAvgDist;
 
                     _spawn.Mult(1 + mult);
 
-                    double energy = mult * Consts.ExploreEnergy;
+                    double energy = mult * map.Game.Consts.ExploreEnergy;
                     Debug.WriteLine($"ExploreEnergy: {energy}");
                     map.Game.Enemy.Income(energy);
 
@@ -104,17 +104,17 @@ namespace ClassLibrary1.Map
             }
             private void CreateResources(Map map)
             {
-                double generationBuffer = Consts.ResourceAvgDist + Consts.PathWidth;
+                double generationBuffer = map.Game.Consts.ResourceAvgDist + map.Game.Consts.PathWidth;
                 if (Game.TEST_MAP_GEN.HasValue)
                     generationBuffer = Game.TEST_MAP_GEN.Value;
 
                 List<double> create = [];
                 while (ExploredDist + generationBuffer > NextResourceDist)
                 {
-                    map.GenResources(() => map.SpawnTile(GetLinePoint(NextResourceDist), Consts.PathWidth, false), 1);
+                    map.GenResources(() => map.SpawnTile(GetLinePoint(NextResourceDist), map.Game.Consts.PathWidth, false), 1);
 
                     ResourceNum++;
-                    GetNextDist();
+                    GetNextDist(map.Game.Consts);
                 }
             }
 
@@ -131,7 +131,7 @@ namespace ClassLibrary1.Map
             //public void Turn(int turn) => _spawn.Turn(turn);
             public int SpawnChance(int turn, double? enemyMove) => _spawn.Chance;
             public Tile SpawnTile(Map map)
-                => map.SpawnTile(ExploredPoint(), Consts.PathWidth * 1.69, true);
+                => map.SpawnTile(ExploredPoint(), map.Game. Consts.PathWidth * 1.69, true);
             public PointD ExploredPoint(double buffer = 0) => GetLinePoint(ExploredDist + buffer);
             private PointD GetLinePoint(double dist)
             {

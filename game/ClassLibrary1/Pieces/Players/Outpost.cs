@@ -48,43 +48,10 @@ namespace ClassLibrary1.Pieces.Players
         internal override void Cost(out int energy, out int mass) =>
             Cost(Game, out energy, out mass);
 
-        public Factory ReplaceFactory(bool doReplace, out int energy, out int mass, out bool canReplace)
+        protected override bool CanReplace<T>(out Tuple<double, double> rounding)
         {
-            canReplace = HasBehavior<IBuilder.IBuildFactory>();
-            Factory.Cost(Game, out int energyCost, out int massCost);
-            return Replace(doReplace, out energy, out mass, ref canReplace,
-                    energyCost, massCost, f => Factory.NewFactory(f));
-        }
-        public Turret ReplaceTurret(bool doReplace, out int energy, out int mass, out bool canReplace)
-        {
-            canReplace = HasBehavior<IBuilder.IBuildTurret>();
-            Turret.Cost(Game, out int energyCost, out int massCost);
-            return Replace(doReplace, out energy, out mass, ref canReplace,
-                energyCost, massCost, f => Turret.NewTurret(f));
-        }
-        private T Replace<T>(bool doReplace, out int energy, out int mass, ref bool canReplace,
-            double energyCost, double massCost, Func<Foundation, T> NewPiece) where T : FoundationPiece
-        {
-            T newPiece = null;
-
-            DisbandValue(out double e, out double m);
-            static void Mult(ref double v) => v *= Consts.UpgRefundValue / Consts.DisbandValue;
-            Mult(ref e);
-            Mult(ref m);
-
-            GetValues(Game).Round(energyCost - e, massCost - m, out energy, out mass);
-
-            canReplace &= Game.Player.Has(energy, mass);
-            if (doReplace && canReplace)
-            {
-                this.Die(out Tile tile, out double treasure);
-                Game.Enemy.AddResources(-treasure);
-                if (tile.Piece is Foundation f && Game.Player.Spend(energy, mass))
-                    newPiece = NewPiece(f);
-                else
-                    ;
-            }
-            return newPiece;
+            rounding = new(GetValues(Game).Rounding, _rounding);
+            return true;
         }
 
         internal override void OnResearch(Research.Type type)
@@ -111,10 +78,14 @@ namespace ClassLibrary1.Pieces.Players
         {
             Research research = Game.Player.Research;
 
+            if (!HasBehavior<IBuilder.IBuildOutpost>() && research.HasType(Research.Type.Outpost))
+                SetBehavior(new Builder.BuildOutpost(this, new()));
             if (!HasBehavior<IBuilder.IBuildFactory>() && research.HasType(Research.Type.Factory))
                 SetBehavior(new Builder.BuildFactory(this, new()));
             if (!HasBehavior<IBuilder.IBuildTurret>() && research.HasType(Research.Type.Turret))
                 SetBehavior(new Builder.BuildTurret(this, new()));
+            if (!HasBehavior<IBuilder.IBuildGenerator>() && research.HasType(Research.Type.AmbientGenerator))
+                SetBehavior(new Builder.BuildGenerator(this, new()));
 
             if (!HasBehavior<IRepair>() && research.HasType(Research.Type.OutpostRepair))
                 SetBehavior(new Repair(this, new()));
@@ -151,24 +122,11 @@ namespace ClassLibrary1.Pieces.Players
             private int energy, mass;
             private double rounding, att, def, vision, repair;
 
-            public Values()
-            {
-                UpgradeTurretAttack(1);
-                UpgradeBuildingCost(1);
-                UpgradeBuildingDefense(1);
-                UpgradeFactoryRepair(1);
-            }
-
             public int Energy => energy;
             public int Mass => mass;
             public double Vision => vision;
             public double Range => repair;
-
-            public void Round(double e, double m, out int energy, out int mass)
-            {
-                energy = MTRandom.Round(e, rounding);
-                mass = MTRandom.Round(m, Consts.MAX_ROUND - rounding);
-            }
+            public double Rounding => rounding;
 
             public IKillable.Values[] GetKillable(Game game, double rounding)
             {
@@ -190,35 +148,45 @@ namespace ClassLibrary1.Pieces.Players
                 return new(new(range), 1);
             }
 
-            public void Upgrade(Research.Type type, double researchMult)
+            public void Init(Game game)
+            {
+                UpgradeTurretAttack(game, 1);
+                UpgradeBuildingCost(game, 1);
+                UpgradeBuildingDefense(game, 1);
+                UpgradeFactoryRepair(game, 1);
+            }
+            public void Upgrade(Game game, Research.Type type, double researchMult)
             {
                 if (type == Research.Type.BuildingCost)
-                    UpgradeBuildingCost(researchMult);
+                    UpgradeBuildingCost(game, researchMult);
                 else if (type == Research.Type.TurretAttack)
-                    UpgradeTurretAttack(researchMult);
+                    UpgradeTurretAttack(game, researchMult);
                 else if (type == Research.Type.BuildingDefense)
-                    UpgradeBuildingDefense(researchMult);
+                    UpgradeBuildingDefense(game, researchMult);
                 else if (type == Research.Type.FactoryRepair)
-                    UpgradeFactoryRepair(researchMult);
+                    UpgradeFactoryRepair(game, researchMult);
             }
-            private void UpgradeBuildingCost(double researchMult)
+            private void UpgradeBuildingCost(Game game, double researchMult)
             {
                 this.rounding = Game.Rand.NextDouble();
-                double costMult = ResearchUpgValues.Calc(UpgType.OutpostCost, researchMult);
-                Round(800 * costMult, 350 * costMult, out this.energy, out this.mass);
+                double costMult = game.ResearchUpgValues.Calc(UpgType.OutpostCost, researchMult);
+                double e = 800 * costMult;
+                double m = 350 * costMult;
+                this.energy = MTRandom.Round(e, rounding);
+                this.mass = MTRandom.Round(m, Consts.MAX_ROUND - rounding);
             }
-            private void UpgradeTurretAttack(double researchMult)
+            private void UpgradeTurretAttack(Game game, double researchMult)
             {
-                this.att = ResearchUpgValues.Calc(UpgType.OutpostAttack, researchMult);
+                this.att = game.ResearchUpgValues.Calc(UpgType.OutpostAttack, researchMult);
             }
-            private void UpgradeBuildingDefense(double researchMult)
+            private void UpgradeBuildingDefense(Game game, double researchMult)
             {
-                this.def = ResearchUpgValues.Calc(UpgType.OutpostDefense, researchMult);
-                this.vision = ResearchUpgValues.Calc(UpgType.OutpostVision, researchMult);
+                this.def = game.ResearchUpgValues.Calc(UpgType.OutpostDefense, researchMult);
+                this.vision = game.ResearchUpgValues.Calc(UpgType.OutpostVision, researchMult);
             }
-            private void UpgradeFactoryRepair(double researchMult)
+            private void UpgradeFactoryRepair(Game game, double researchMult)
             {
-                this.repair = ResearchUpgValues.Calc(UpgType.OutpostRepair, researchMult);
+                this.repair = game.ResearchUpgValues.Calc(UpgType.OutpostRepair, researchMult);
             }
         }
     }

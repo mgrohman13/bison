@@ -183,7 +183,7 @@ namespace ClassLibrary1
             this._progress.Remove(_researching);
             Game.Player.OnResearch(_researching, GetUpgMult(_researching, _researchLast));
             if (_researching == Type.Mech || IsMech(_researching))
-                MechBlueprint.OnResearch(this, _blueprints);
+                MechBlueprint.OnResearch(Game.Consts, this, _blueprints);
             if (_researching == Type.ResearchChoices)
                 _numChoices++;
 
@@ -192,7 +192,7 @@ namespace ClassLibrary1
 
             return _researching;
         }
-        private double GetUpgMult(Type type, int research) => GetResearchMult(research > _minResearch[type] ? research - _minResearch[type] : 0);
+        private double GetUpgMult(Type type, int research) => GetResearchMult(Game.Consts, research > _minResearch[type] ? research - _minResearch[type] : 0);
         public string GetUpgInfo(Type type)
         {
             if (!HasMin(type))
@@ -201,11 +201,11 @@ namespace ClassLibrary1
                 return ResearchUpgValues.GetUpgInfo(Type.ResearchChoices, _numChoices, _numChoices + 1, v => v.ToString("0"));
             double prevMult = GetUpgMult(type, GetLast(type));
             double nextMult = GetUpgMult(type, _researchLast + _choices[type]);
-            return ResearchUpgValues.GetUpgInfo(Game, type, prevMult, nextMult);
+            return Game.ResearchUpgValues.GetUpgInfo(Game, type, prevMult, nextMult);
         }
         private static bool HasMin(Type type) => !NoUpgrades.Contains(type) && !IsMech(type);
 
-        public static double GetResearchMult(double research) => (research + Consts.ResearchFactor) / Consts.ResearchFactor;
+        public static double GetResearchMult(Consts consts, double research) => (research + consts.ResearchFactor) / consts.ResearchFactor;
 
         private void GetNextChoices(int excess, int previous, Type result)
         {
@@ -268,12 +268,12 @@ namespace ClassLibrary1
 
                 int last = GetLast(type);
                 bool hasType = last > 0;
-                mult *= (_researchLast + Consts.ResearchFactor) / (last + Consts.ResearchFactor);
+                mult *= (_researchLast + Game.Consts.ResearchFactor) / (last + Game.Consts.ResearchFactor);
 
                 if (!hasType)
                 {
                     int min = _minResearch[type];
-                    double minMult = (_researchLast - min) * 16.9 / (min + _minResearch.Values.Average() + Consts.ResearchFactor);
+                    double minMult = (_researchLast - min) * 16.9 / (min + _minResearch.Values.Average() + Game.Consts.ResearchFactor);
                     if (minMult > 0)
                         minMult = Math.Sqrt(minMult);
                     mult *= minMult;
@@ -281,7 +281,7 @@ namespace ClassLibrary1
 
                 if (IsUpgradeOnly(type, last) && (hasType || GetAllUnlocks(type).All(t => IsUpgradeOnly(t, GetLast(t)))))
                 {
-                    double upgMult = (_researchLast - last) / Consts.ResearchFactor;
+                    double upgMult = (_researchLast - last) / Game.Consts.ResearchFactor;
                     upgMult = Math.Pow(upgMult, upgMult > 1 ? .39 : .78);
                     mult *= upgMult;
                 }
@@ -295,10 +295,10 @@ namespace ClassLibrary1
 
         private void GetCostParams(int excess, int previous, out double nextAvg, out double nextDev, out double nextOE, out double nextMin)
         {
-            double mult = (1 - Math.Pow(previous / (double)_researchLast, _researchLast / Consts.ResearchFactor));
+            double mult = (1 - Math.Pow(previous / (double)_researchLast, _researchLast / Game.Consts.ResearchFactor));
             if (IsUpgradeOnly(_researching, previous))
                 mult *= .65;
-            const double padding = Consts.CoreResearch * .91;
+            double padding = Game.Consts.CoreResearch * .91;
             mult *= ((_researchLast + _progress.Values.Sum() + padding) / (1.0 + Game.Turn) + padding) / (26.0 + .21 * Game.Turn + padding);
             nextAvg = GetNext(_nextAvg) * mult;
             this._nextAvg += nextAvg;
@@ -374,11 +374,11 @@ namespace ClassLibrary1
         }
         public int GetMinCost()
         {
-            return Game.Rand.Round(Math.Pow(GetTotalLevel() + 2.6 * Consts.ResearchFactor, 0.78));
+            return Game.Rand.Round(Math.Pow(GetTotalLevel() + 2.6 * Game.Consts.ResearchFactor, 0.78));
         }
         public int GetMaxCost()
         {
-            return Game.Rand.Round(Math.Pow(GetTotalLevel() + 1.69 * Consts.ResearchFactor, 0.91));
+            return Game.Rand.Round(Math.Pow(GetTotalLevel() + 1.69 * Game.Consts.ResearchFactor, 0.91));
         }
         public bool MakeType(Type type)
         {
@@ -404,14 +404,14 @@ namespace ClassLibrary1
             }
 
             double chance = .65;
-            chance *= Math.Pow(GetTotalLevel() / (GetTotalLevel() + Consts.ResearchFactor), totalPow);
+            chance *= Math.Pow(GetTotalLevel() / (GetTotalLevel() + Game.Consts.ResearchFactor), totalPow);
             chance *= Math.Pow(GetLast(type) / (double)GetTotalLevel(), typePow);
 
             return HasType(type) && Game.Rand.Bool(chance);
         }
         public double GetMult(Type type, double pow)
         {
-            return Math.Pow(GetResearchMult(GetTotalLevel()) * GetResearchMult(GetLast(type)), pow / 2.0);
+            return Math.Pow(GetResearchMult(Game.Consts, GetTotalLevel()) * GetResearchMult(Game.Consts, GetLast(type)), pow / 2.0);
         }
 
         private static ReadOnlyDictionary<Type, int> CalcMinResearch()
@@ -487,7 +487,7 @@ namespace ClassLibrary1
             Type.Outpost, Type.OutpostAttack, Type.OutpostRepair, Type.OutpostArmor, Type.FactoryShields,
             Type.TurretLasers, Type.TurretExplosives, Type.TurretShields, Type.TurretArmor, Type.TurretAutoRepair,
             Type.FactoryAutoRepair, Type.BuildingAutoRepair, Type.BurnMass, Type.ScrapResearch, Type.FabricateMass, ]; // Type.FactoryConstructor,
-        public static readonly Type[] UpgradeOnly = [ Type.ConstructorCost, Type.ConstructorMove,
+        public static readonly Type[] UpgradeOnly = [ Type.ConstructorCost, Type.ConstructorMove, // Type.FactoryRepair,
             Type.TurretRange, Type.TurretAttack, Type.TurretDefense, Type.MissileCost, Type.MissileRange,
             Type.BuildingCost, Type.BuildingDefense, Type.ResearchChoices, Type.ExtractorValue ];
         //pushes down min research requirement
@@ -524,6 +524,7 @@ namespace ClassLibrary1
             { Type.MechEnergyWeapons, new Type[]    { Type.Mech, Type.MechAttack, } },
             { Type.MechLasers, new Type[]           { Type.Mech, Type.MechRange, Type.MechEnergyWeapons, } },
             { Type.MechExplosives, new Type[]       { Type.Mech, Type.MechRange, Type.MechResilience, } },
+            { Type.CombineMechs, new Type[]         { Type.Mech, Type.MechLasers, Type.MechExplosives, } }, //end
 
             { Type.TurretAttack, new Type[]         { Type.Turret, Type.MechAttack, } }, //delay
             { Type.TurretLasers, new Type[]         { Type.Turret, Type.TurretAttack, Type.MechLasers, } }, //end
@@ -536,7 +537,7 @@ namespace ClassLibrary1
             { Type.TurretAutoRepair, new Type[]     { Type.Turret, Type.TurretArmor, Type.FactoryAutoRepair, } },
 
             { Type.ConstructorCost, new Type[]      { Type.Constructor, } }, //quick
-            { Type.ConstructorDefense, new Type[]   { Type.Constructor, Type.ConstructorCost, Type.MechShields, Type.MechArmor, } }, 
+            { Type.ConstructorDefense, new Type[]   { Type.Constructor, Type.ConstructorCost, Type.MechShields, Type.MechArmor, } },
             { Type.ConstructorMove, new Type[]      { Type.Constructor, Type.ConstructorCost, Type.MechVision, Type.MechMove, } }, // Type.ConstructorDefense, 
             { Type.RepairDrone, new Type[]          { Type.Constructor, Type.ConstructorDefense, Type.ConstructorMove, Type.FabricateMass, } }, // Type.FactoryConstructor, //end
 
@@ -588,6 +589,7 @@ namespace ClassLibrary1
             MechRange = 137,
             MechArmor = 146,
             MechExplosives = 149,
+            CombineMechs = 275, //end
 
             OutpostAttack = 80, //quick
             TurretShields = 110, //quick
@@ -602,7 +604,7 @@ namespace ClassLibrary1
 
             ConstructorCost = 156, //quick
             ConstructorDefense = 182, //key
-            ConstructorMove = 325, 
+            ConstructorMove = 325,
             RepairDrone = 520, //end
 
             OutpostRepair = 90, //quick

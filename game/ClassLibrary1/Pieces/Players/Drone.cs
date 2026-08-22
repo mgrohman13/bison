@@ -34,14 +34,14 @@ namespace ClassLibrary1.Pieces.Players
             this._baseDef = killable.Hits.DefenseMax;
             this._turns = values.GetTurns(_baseDef);
             this._baseTurns = _turns;
-            this._treasure = cost * Consts.DroneRefund;
+            this._treasure = cost * Game.Consts.DroneRefund;
 
             OnDeserialization(this);
         }
         internal static Drone NewDrone(Tile tile)
         {
             Cost(tile.Map.Game, out int energy, out int mass);
-            double cost = energy + mass * Consts.EnergyMassRatio;
+            double cost = energy + mass * tile.Map.Game.Consts.EnergyMassRatio;
 
             Drone obj = new(tile, GetValues(tile.Map.Game), cost);
             tile.Map.Game.AddPiece(obj);
@@ -126,12 +126,12 @@ namespace ClassLibrary1.Pieces.Players
         internal override void GetUpkeep(ref double energyUpk, ref double massUpk)
         {
             base.GetUpkeep(ref energyUpk, ref massUpk);
-            energyUpk += Consts.BaseDroneUpkeep;
+            energyUpk += Game.Consts.BaseDroneUpkeep;
         }
         internal override void EndTurn(ref double energyUpk, ref double massUpk)
         {
             base.EndTurn(ref energyUpk, ref massUpk);
-            energyUpk += Consts.BaseDroneUpkeep;
+            energyUpk += Game.Consts.BaseDroneUpkeep;
         }
 
         public override string ToString()
@@ -148,13 +148,6 @@ namespace ClassLibrary1.Pieces.Players
             private int energy, mass;
             private double turns, hits, repairRate, moveInc, moveMax, moveLimit, costMult;
 
-            public Values()
-            {
-                UpgradeConstructorCost(1);
-                UpgradeConstructorDefense(1);
-                UpgradeConstructorMove(1);
-                UpgradeRepairDrone(1);
-            }
             public int Energy => energy;
             public int Mass => mass;
 
@@ -181,54 +174,61 @@ namespace ClassLibrary1.Pieces.Players
                 return Game.Rand.Round(turns * Math.Sqrt(mult));
             }
 
-            public void Upgrade(Research.Type type, double researchMult)
+            public void Init(Game game)
+            {
+                UpgradeConstructorCost(game, 1);
+                UpgradeConstructorDefense(game, 1);
+                UpgradeConstructorMove(game, 1);
+                UpgradeRepairDrone(game, 1);
+            }
+            public void Upgrade(Game game, Research.Type type, double researchMult)
             {
                 if (type == Research.Type.ConstructorCost)
-                    UpgradeConstructorCost(researchMult);
+                    UpgradeConstructorCost(game, researchMult);
                 else if (type == Research.Type.ConstructorDefense)
-                    UpgradeConstructorDefense(researchMult);
+                    UpgradeConstructorDefense(game, researchMult);
                 else if (type == Research.Type.ConstructorMove)
-                    UpgradeConstructorMove(researchMult);
+                    UpgradeConstructorMove(game, researchMult);
                 else if (type == Research.Type.RepairDrone)
-                    UpgradeRepairDrone(researchMult);
+                    UpgradeRepairDrone(game, researchMult);
             }
-            private void UpgradeConstructorCost(double researchMult)
+            private void UpgradeConstructorCost(Game game, double researchMult)
             {
-                this.costMult = ResearchUpgValues.Calc(UpgType.DroneCost, researchMult);
-                SetCost();
+                this.costMult = game.ResearchUpgValues.Calc(UpgType.DroneCost, researchMult);
+                SetCost(game);
             }
-            private void UpgradeConstructorDefense(double researchMult)
+            private void UpgradeConstructorDefense(Game game, double researchMult)
             {
-                this.hits = ResearchUpgValues.Calc(UpgType.DroneDefense, researchMult);
-                SetCost();
+                this.hits = game.ResearchUpgValues.Calc(UpgType.DroneDefense, researchMult);
+                SetCost(game);
             }
-            private void UpgradeConstructorMove(double researchMult)
+            private void UpgradeConstructorMove(Game game, double researchMult)
             {
-                double move = ResearchUpgValues.Calc(UpgType.DroneMove, researchMult);
+                double move = game.ResearchUpgValues.Calc(UpgType.DroneMove, researchMult);
                 this.moveInc = move;
                 this.moveMax = move + 1.5;
                 this.moveLimit = move * 1.69;
-                SetCost();
+                SetCost(game);
             }
-            private void UpgradeRepairDrone(double researchMult)
+            private void UpgradeRepairDrone(Game game, double researchMult)
             {
-                this.turns = ResearchUpgValues.Calc(UpgType.DroneTurns, researchMult);
-                this.repairRate = ResearchUpgValues.Calc(UpgType.DroneRepair, researchMult);
-                SetCost();
+                this.turns = game.ResearchUpgValues.Calc(UpgType.DroneTurns, researchMult);
+                this.repairRate = game.ResearchUpgValues.Calc(UpgType.DroneRepair, researchMult);
+                SetCost(game);
             }
-            private void SetCost()
+            private void SetCost(Game game)
             {
                 double turn = turns * 3.9 + Math.Sqrt(Consts.StatValue(hits));
-                double repair = repairRate * 3.9 + Consts.MoveValue(moveInc, moveMax, moveLimit);
+                double repair = repairRate * 3.9 + game.Consts.MoveValue(moveInc, moveMax, moveLimit);
 
-                double costE = Consts.DroneCost * costMult * Math.Sqrt(turn * repair);
+                double costE = game.Consts.DroneCost * costMult * Math.Sqrt(turn * repair);
                 this.energy = Game.Rand.GaussianCappedInt(costE + 1, 1 / costE, 1);
 
-                double costM = costE * Consts.DroneMassCostMult + (costE - energy) / Consts.EnergyMassRatio;
+                double costM = costE * game.Consts.DroneMassCostMult + (costE - energy) / game.Consts.EnergyMassRatio;
                 this.mass = Game.Rand.GaussianInt(costM, 1 / costM);
                 if (this.mass < 0)
                 {
-                    this.energy += Game.Rand.Round(this.mass * Consts.EnergyMassRatio);
+                    this.energy += Game.Rand.Round(this.mass * game.Consts.EnergyMassRatio);
                     this.mass = 0;
                 }
             }

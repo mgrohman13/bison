@@ -65,7 +65,7 @@ namespace ClassLibrary1.Pieces.Players
             Upgrade(type);
         }
         private void Upgrade(Research.Type type)
-        { 
+        {
             Values values = Game.Player.GetUpgradeValues<Values>();
             IKillable killable = GetBehavior<IKillable>();
             killable.Upgrade(values.GetKillable(type, Game.Player.Research, killable.Hits.DefenseCur, ref _hitsResearchMult), 1);
@@ -93,14 +93,14 @@ namespace ClassLibrary1.Pieces.Players
             base.GenerateResources(ref energyInc, ref massInc, ref researchInc);
             double mult = _income;
             double lowMult = Math.Sqrt(mult), highMult = mult * mult;
-            energyInc += Consts.CoreEnergyLow * lowMult + Consts.CoreEnergyMid * mult + Consts.CoreEnergyHigh * highMult;
-            massInc += Consts.CoreMass * highMult;
-            researchInc += Consts.CoreResearch * lowMult;
+            energyInc += Game.Consts.CoreEnergyLow * lowMult + Game.Consts.CoreEnergyMid * mult + Game.Consts.CoreEnergyHigh * highMult;
+            massInc += Game.Consts.CoreMass * highMult;
+            researchInc += Game.Consts.CoreResearch * lowMult;
         }
         internal override void EndTurn(ref double energyUpk, ref double massUpk)
         {
             base.EndTurn(ref energyUpk, ref massUpk);
-            const double factor = 1 - 1.0 / Consts.CoreExtractTurns;
+            double factor = 1 - 1.0 / Game.Consts.CoreExtractTurns;
             this._incomeTrg *= factor;
             this._income = Game.Rand.GaussianCapped(Math.Sqrt(_incomeTrg * _income), 1 - factor, _incomeTrg / 2.0);
         }
@@ -147,20 +147,26 @@ namespace ClassLibrary1.Pieces.Players
                 return [.. defs];
             }
 
-            public void Upgrade(Research.Type type, double researchMult)
+            public void Init(Game game)
+            {
+                UpgradeCoreDefense(game, 1);
+            }
+            public void Upgrade(Game game, Research.Type type, double researchMult)
             {
                 if (type == Research.Type.CoreDefense)
-                    UpgradeCoreDefense(researchMult);
+                    UpgradeCoreDefense(game, researchMult);
             }
-            private void UpgradeCoreDefense(double researchMult)
+            private void UpgradeCoreDefense(Game game, double researchMult)
             {
                 this.hitsResearchMult = researchMult;
 
-                double shieldAvg = ResearchUpgValues.Calc(UpgType.CoreShields, researchMult);
+                double shieldAvg = game.ResearchUpgValues.Calc(UpgType.CoreShields, researchMult);
                 this.shields = Game.Rand.Round(shieldAvg);
 
-                double armorAvg = ResearchUpgValues.Calc(UpgType.CoreArmor, researchMult);
-                armorAvg = Consts.StatValueInverse(Consts.StatValue(armorAvg) + Consts.StatValue(shieldAvg) - Consts.StatValue(shields));
+                double armorAvg = game.ResearchUpgValues.Calc(UpgType.CoreArmor, researchMult);
+                armorAvg = Consts.StatValue(armorAvg) + Consts.StatValue(shieldAvg) - Consts.StatValue(shields);
+                if (armorAvg > 0)
+                    armorAvg = Consts.StatValueInverse(armorAvg);
                 armorAvg = Math.Max(armorAvg, 1);
                 this.armor = Game.Rand.Round(armorAvg);
             }

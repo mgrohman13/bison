@@ -69,11 +69,11 @@ namespace ClassLibrary1.Pieces.Players
         public double DisbandMass()
         {
             DisbandValue(out double energy, out double mass);
-            return energy / Consts.EnergyRepairDiv + mass;
+            return energy / Game.Consts.EnergyRepairDiv + mass;
         }
         internal virtual void DisbandValue(out double energy, out double mass)
         {
-            double pct = Consts.DisbandValue;
+            double pct = Game.Consts.DisbandValue;
             if (HasBehavior(out IKillable killable))
             {
                 double totCur = 0, totMax = 0;

@@ -38,18 +38,27 @@ namespace ClassLibrary1.Pieces.Behavior
         public int MoveLimit => _values.MoveLimit;
         public bool Moved => _moved;
 
-        void IMovable.Upgrade(IMovable.Values values)
+        void IMovable.Upgrade(IMovable.Values values, double? setCur)
         {
             _values = values;
 
+            if (setCur.HasValue)
+                _moveCur = setCur.Value;
+
             if (MoveCur > MoveLimit)
             {
-                double costE = (MoveLimit - MoveCur) * Consts.EnergyPerMove;
+                double costE = (MoveLimit - MoveCur) * Piece.Game.Consts.EnergyPerMove;
                 Piece.Side.AddResources(-costE, 0);
                 _moveCur = MoveLimit;
             }
 
-            _moved = true;
+            if (!_values.Equals(values))
+                _moved = true;
+        }
+
+        void IMovable.Damage(double dmgPct)
+        {
+            _moveCur -= Game.Rand.DoubleHalf(MoveCur * dmgPct);
         }
 
         bool IMovable.Move(Tile to)
@@ -121,7 +130,7 @@ namespace ClassLibrary1.Pieces.Behavior
         }
         private double IncMove(bool doEndTurn)
         {
-            double moveInc = Consts.IncValueWithMaxLimit(MoveCur, MoveInc, Consts.MoveDev, MoveMax, MoveLimit, Consts.MoveLimitPow, doEndTurn);
+            double moveInc = Consts.IncValueWithMaxLimit(MoveCur, MoveInc, Piece.Game.Consts.MoveDev, MoveMax, MoveLimit, Piece.Game.Consts.MoveLimitPow, doEndTurn);
             if (doEndTurn)
             {
                 //this._moved = false;
@@ -144,11 +153,11 @@ namespace ClassLibrary1.Pieces.Behavior
         }
         private void EndTurn(bool doEndTurn, ref double energyUpk)
         {
-            energyUpk += IncMove(doEndTurn) * Consts.EnergyPerMove;
+            energyUpk += IncMove(doEndTurn) * Piece.Game.Consts.EnergyPerMove;
         }
         double IBehavior.Die()
         {
-            double treasure = MoveCur * Consts.EnergyPerMove;
+            double treasure = MoveCur * Piece.Game.Consts.EnergyPerMove;
             this._moveCur = 0;
             return treasure;
         }

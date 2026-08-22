@@ -46,7 +46,7 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
             return _piece.GetBehavior<T>();
         }
 
-        void IAttacker.Upgrade(IEnumerable<Values> values)
+        void IAttacker.Upgrade(IEnumerable<Values> values, IReadOnlyList<int> setCur)
         {
             Values[] attacks = [.. values];
 
@@ -56,17 +56,19 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
                 var cur = Game.Rand.SelectValue(Attacks);
                 _attacks.Remove(cur);
 
-                energy += Consts.StatValue(cur.AttackCur) * Consts.EnergyPerAttack;
+                energy += Consts.StatValue(cur.AttackCur) * Piece.Game.Consts.EnergyPerAttack;
             }
-            Piece.Side.AddResources(energy);
+            if (setCur == null)
+                Piece.Side.AddResources(energy);
 
             for (int a = 0; a < attacks.Length; a++)
             {
                 var upg = attacks[a];
+                int? curAtt = setCur?[a];
                 if (a >= Attacks.Count)
-                    _attacks.Add(new(Piece, upg));
+                    _attacks.Add(new(Piece, upg, curAtt));
                 else
-                    _attacks[a].Upgrade(upg);
+                    _attacks[a].Upgrade(upg, curAtt);
             }
         }
 

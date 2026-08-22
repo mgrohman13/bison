@@ -174,7 +174,7 @@ namespace WinFormsApp1
                     double moveCur = movable.MoveCur;
                     //find the best stopping point on the path if piece move will fill up this turn
                     //otherwise, we don't care and can simply follow the path
-                    double innerRange = LimitedMove(movable, out bool limitMove);
+                    double innerRange = Consts.LimitedMove(movable, out bool limitMove);
                     if (limitMove && !Stop())//&& !Program.TurnPath(movable).Contains(to.Location)
                     {
                         double pathDist = 0;
@@ -188,7 +188,7 @@ namespace WinFormsApp1
                             double stepsDist = 0;
                             double distDiff = double.MaxValue;
                             int a = 1;
-                            for (; a < tiles.Count && stepsDist < moveCur; a++)
+                            while (a < tiles.Count)
                             {
                                 Tile[] line = [.. GetLine(tiles[a - 1], tiles[a])];
                                 //double minHeight = Math.Min(Height(tiles[a - 1]), Height(tiles[a]));
@@ -239,11 +239,15 @@ namespace WinFormsApp1
                                 }
                                 //anchor to last path tile
                                 stepsDist = dist;
+                                if (stepsDist < moveCur)
+                                    a++;
+                                else
+                                    break;
                             }
 
                             //reassemble path back together with new stopping points
                             if (move.Count > 0)
-                                path = [from.Location, .. move.Select(t => t.Location), .. tiles.Skip(a - 1).Select(t => t.Location)];
+                                path = [from.Location, .. move.Select(t => t.Location), .. path.Skip(a)];
                         }
                     }
 
@@ -504,6 +508,20 @@ namespace WinFormsApp1
                     e.Graphics.DrawLine(new Pen(Color.GreenYellow, 2f), p1.X, p1.Y, p2.X, p2.Y);
                 }
             }
+            //if (SelTile?.Piece is Alien alien)
+            //{
+            //    bool color = true;
+            //    foreach (List<Point> path in new List<Point>[] { alien.PathToCore, alien.RetreatPath })
+            //    {
+            //        for (int d = 1; d < path.Count; d++)
+            //        {
+            //            var p1 = GetCenter(path[d - 1]);
+            //            var p2 = GetCenter(path[d]);
+            //            e.Graphics.DrawLine(new Pen(color ? Color.Orange : Color.Fuchsia, 2f), p1.X, p1.Y, p2.X, p2.Y);
+            //        }
+            //        color = false;
+            //    } 
+            //}
         }
 
         private void Tiles(PaintEventArgs e)
@@ -535,18 +553,21 @@ namespace WinFormsApp1
             Brush indicatorBase = Brushes.Black;
             Brush indicatorAtt = Brushes.Red;
             Brush indicatorAccent = Brushes.DarkGray;
+            Brush indicator4 = Brushes.LightGray;
             Brush healBrush = Brushes.HotPink;
             ellipses.Add(playerBrush, []);
             ellipses.Add(playerLight, []);
             ellipses.Add(indicatorBase, []);
             ellipses.Add(indicatorAtt, []);
             ellipses.Add(indicatorAccent, []);
+            ellipses.Add(indicator4, []);
             ellipses.Add(healBrush, []);
             polygons.Add(playerBrush, []);
             polygons.Add(playerLight, []);
             polygons.Add(indicatorBase, []);
             polygons.Add(indicatorAtt, []);
             polygons.Add(indicatorAccent, []);
+            polygons.Add(indicator4, []);
             polygons.Add(healBrush, []);
 
             HashSet<Brush> terrainBrushes = [];
@@ -736,11 +757,11 @@ namespace WinFormsApp1
                         }
                     }
 
-                    if (Info.HasAnyUpgrade(piece.Tile))
-                        polygons[indicatorAccent].Add([new(rect.X + rect.Width / 2f, rect.Y), new(rect.Right, rect.Y), new(rect.Right, rect.Y + rect.Height / 2f)]);
-
+                    bool combine = false;
                     if (piece is PlayerPiece playerPiece)
                     {
+                        combine = playerPiece is Mech mech && mech.CanCombine;
+
                         if (piece is IKillable.IRepairable repairable)
                             if (playerPiece.IsRepairing())
                             {
@@ -767,6 +788,20 @@ namespace WinFormsApp1
                             return new(rect.X + xPad, rect.Y + yPad, rect.Width / 2f - xPad * 2f, rect.Height / 2f - yPad * 2f);
                         }
                     }
+
+                    PointF[] Corner() => [new(rect.X + rect.Width / 2f, rect.Y), new(rect.Right, rect.Y), new(rect.Right, rect.Y + rect.Height / 2f)];
+                    bool hasUpgrade = Info.HasAnyUpgrade(piece.Tile);
+                    if (combine && hasUpgrade)
+                    {
+                        PointF[] corner = Corner();
+                        PointF mid = new(rect.X + rect.Width * 3f / 4f, rect.Y + rect.Height / 4f);
+                        polygons[indicator4].Add([corner[0], corner[1], mid]);
+                        polygons[indicatorAccent].Add([corner[1], corner[2], mid]);
+                    }
+                    else if (combine)
+                        polygons[indicator4].Add(Corner());
+                    else if (hasUpgrade)
+                        polygons[indicatorAccent].Add(Corner());
 
                     if (piece != null && piece.HasBehavior(out IKillable killable))
                     {
@@ -959,7 +994,7 @@ namespace WinFormsApp1
                 e.Graphics.FillRectangles(Brushes.White, allrects);
 
             HashSet<Brush> afterBrushes = [ Brushes.White, Brushes.Black, Brushes.LightPink,
-                Brushes.DarkGray, Brushes.LightSlateGray, Brushes.SkyBlue, Brushes.DarkGray, Brushes.SandyBrown, Brushes.MediumPurple,
+                Brushes.DarkGray, Brushes.LightSlateGray, Brushes.SkyBlue, Brushes.LightGray, Brushes.SandyBrown, Brushes.MediumPurple,
             ];
             foreach (var p in Game.Rand.Iterate(fill))
                 if (terrainBrushes.Contains(p.Key))
@@ -1858,12 +1893,6 @@ namespace WinFormsApp1
                 //        Program.Next(true);
                 //}
             }
-        }
-
-        private static float LimitedMove(IMovable movable, out bool limitMove)
-        {
-            limitMove = movable.MoveCur + movable.MoveInc > movable.MoveMax;
-            return (float)(limitMove ? movable.MoveCur + movable.MoveInc - movable.MoveMax : movable.MoveCur);
         }
 
         private void LblMouseAtt_MouseClick(object sender, MouseEventArgs e)

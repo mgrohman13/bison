@@ -23,12 +23,12 @@ namespace WinFormsApp1
             form.pnlScrap.Visible = Program.Game.Player.CanScrapResearch();
 
             form.nudBurn.Value = 0;
-            form.nudBurn.Maximum = Math.Max(0, Program.Game.Player.Mass / Consts.BurnMassPerEnergy);
+            form.nudBurn.Maximum = Math.Max(0, Program.Game.Player.Mass / Program.Game.Consts.BurnMassPerEnergy);
             form.nudFabricate.Value = 0;
-            form.nudFabricate.Maximum = Math.Max(0, Program.Game.Player.Energy / Consts.EnergyPerFabricateMass);
+            form.nudFabricate.Maximum = Math.Max(0, Program.Game.Player.Energy / Program.Game.Consts.EnergyPerFabricateMass);
             form.nudScrap.Value = 0;
-            form.nudScrap.Increment = Consts.MassForScrapResearch;
-            form.nudScrap.Maximum = Program.Game.Player.Research.GetProgress(Program.Game.Player.Research.Researching) * Consts.MassForScrapResearch;
+            form.nudScrap.Increment = Program.Game.Consts.MassForScrapResearch;
+            form.nudScrap.Maximum = Program.Game.Player.Research.GetProgress(Program.Game.Player.Research.Researching) * Program.Game.Consts.MassForScrapResearch;
 
             SetTrade(selected, replace, replacePiece, build, upgrade, upgEnergy, upgMass);
 
@@ -72,7 +72,7 @@ namespace WinFormsApp1
             {
                 if (Program.Game.Player.CanScrapResearch())
                 {
-                    SetTrade(form.nudScrap, mass, Consts.MassForScrapResearch);
+                    SetTrade(form.nudScrap, mass, Program.Game.Consts.MassForScrapResearch);
                     mass -= (int)form.nudScrap.Value;
                 }
                 if (mass > 0 && energy <= 0 && Program.Game.Player.CanFabricateMass())
@@ -89,11 +89,11 @@ namespace WinFormsApp1
 
         private void NUD_ValueChanged(object sender, EventArgs e)
         {
-            SetLext(lblBurn, form.nudBurn.Value * Consts.BurnMassPerEnergy);
-            SetLext(lblFabricate, form.nudFabricate.Value * Consts.EnergyPerFabricateMass);
+            SetLext(lblBurn, form.nudBurn.Value * Program.Game.Consts.BurnMassPerEnergy);
+            SetLext(lblFabricate, form.nudFabricate.Value * Program.Game.Consts.EnergyPerFabricateMass);
             SetLext(lblScrap, GetResearch());
         }
-        private static int GetResearch() => (int)Math.Ceiling(form.nudScrap.Value / Consts.MassForScrapResearch);
+        private static int GetResearch() => (int)Math.Ceiling(form.nudScrap.Value / Program.Game.Consts.MassForScrapResearch);
         private static void SetLext(Label label, decimal value)
         {
             label.Text = ((int)(-value)).ToString();

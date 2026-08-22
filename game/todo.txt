@@ -1,5 +1,13 @@
 
 NEW	
+		dont show move circle when alien selected
+		allow zoom/panning during enemy turn?
+		help, tooltips, info, hotkeyts, etc.
+		constructor upg dialog tell you what is upgraded
+		turret only shows range on mouse over
+			mechs shows moved range on enemy movable tile
+				maybe only not when in attack range?
+		always re-path on hotkeys/etc
 		if first move leaves you farther away, propose staying put
 			required 2x pathfinding when move < max
 		limit move even when moving within max range, unless holding shift?
@@ -42,6 +50,13 @@ NEW
 		hide unused columns for build extractor/turret/etc only
 		scrolling is laggy when there is a mouse path or in range mouse tile
 		remove extended att range display functionality
+		Generator.PlacementEfficiency
+		add a loading bar while building cache?
+			for progress use eval cache count vs vision count
+		select next mech is slow late game
+		resources per turn - option to split extractors by type, mech by bp
+		on pan, only do mouse tile updates when panning stops
+			never use timing adjustment for first pan 
 
 		center from core somewhat override height foundation mult?
 		Evaluate item2 extreme spikes for elevation
@@ -49,20 +64,70 @@ NEW
 			mech lasers?
 				need more mech upgrades in general though
 		
-		remove energy contribution to spawn from sqrt?
-		increase distance for foundation chance reduction?
-		foundations
-			inc ratio??
-			bigger clumps?
-				need seaparate turrets
-		patrol also has chance to move closer to a target, but reduced chance?
-		rush now too likely early??
-		rush path
-			always uses full move
-			hardly deviates at all
-		taking damage can decrease cur move?
+		combine
+			machanics
+				results in nothing but unique mechs
+					but dont want it to be too difficult to decide what to combine into 
+				research too early
+					need more mech upgs in general...
+				gives resources too often
+				upg/combine interaction?
+					indicators too similar
+					existing mechs rarely upg anymore 
+				mechs tent to become generic combo mechs?
+				range+no-att results in lower range
+				can build combined mech types directly?
+				cant combine mechs with research level higher than last combine 
+			combine shouldnt pay you for 2nd mech death
+			combine too early
+				maybe not
+			refresh info after combine
+			show result comparison
+			OP?
+			randomize Values.researchLevel
+				min value is 2nd lowest existing mech? (or bp if <2... or 0)
+				progressively allow a higher pct of mechs 
+				will fix many issues
+					incl combine -> upg can't combine again with current flag (remove flag)
+				clears any blueprints that are comba-able?
+			max moves too high in general?
+	
+		mech type attack combine logic - replace with simple post-process step
+		reduce building upg options?
+			outpost -> factory/turret
+			factory -> turret/generator
+			turret -> generator?
+		addtl variables in ai attack weight
+		Elevation.Dist apply _fudge as mult to h
+			use ElevationMaxEffectDist isntead of const
+		upgs should alwyas stop moving/attacking
+			moved is currently bugged anyways
+		add replace upgrade? desband -> replace
+			does taht make early outposts useless though?
+			any other way to make disband relevant?
+		extractor value needs higher dependencies
+		mech armor too late to block outpost?
+			constructor def comes late too - later than move
+		alien vaid retreat tile no diff between visible or not visible when move to or from 
+			neighbors matter
+		ensure treasure never placed on single-tile spots
+		attack before/after wormhole move?
+			currently allowed, AI probably checking after incorrectly
+		limit builders to 1 build per turn??
+		retreat aliens more likely to move to heal spot even when not on path
+		alien income balancing also add research??
+		move disband up tree - require for a key early tech
+		Keep temp balancing numbers instead of trading opposite with enemy, cashed in at turn start. Fixes upg number offset. Affects income average though?
+			use with combine as well
+		elevation points performance
+		can remove vision from GeneratePlateaus - GetTile should be sufficient
+		merge evaluateCache and heightCache
+			clear on new plateau point add 
+		fist factory repair is misleading 
+		spawn treasure on end game map reveal?
+		you can double end turn!?
+			also inc global morale? change states? 
 		pause move when see lake only if not already any in vision?
-		reduce alien early spawn cap again?
 		laser turret
 			higher range
 			lower att
@@ -76,19 +141,15 @@ NEW
 			turret -> laser/generator
 			laser -> generator
 			factory -> generator 
-		factory build all other buildings?
 		mech upgs use only partial prev cost?
 		speed up game start pathfinding clear terrain somehow
 		playerAttacks doesnt check for move around corners
 		constructor defense show armor/shields too
-		missile range cost sqrt?
 		sometimes aliens not using full attack?
 		GetDefenceChance account for terrain??
 		outpost attack doesnt show reasearch upg value?
 		factory repair 1st step research upg value
 		LastAttacks not storing both when alien splits attacks
-		merge evaluateCache and heightCache
-			clear on new plateau point add 
 		check GetDistSqr for movement
 		moving to tile you cant see full path between??
 			always act like you can move over non-visible tiles
@@ -106,10 +167,35 @@ NEW
 		rethink complete research redo every step??
 
 UP NEXT
-	consistent upgrade values handling, randomness, balancing
-		prepare for separating turrets
-	randomize consts
-		also will allow flexible difficulty setting
+	turret def > outpost def
+	vision alg needs to return blocker 
+		use local hashset to avoid dups
+	separate turrets
+	combine mechs
+		system needs to incentivize max combines
+		max combines that increase with research
+			last combine tech research used to determine combined research level
+			also increases discount/power per combine
+		decisions
+			cost vs free?
+			random result? deterministic-random?
+				completely deterministic will only work with cost
+			naming?
+				on-map display?
+		proposal
+			no extra cost, random result
+			determine low-high range for each stat based on mechs
+				select within ranges to balance cost
+				low must be set by one existing mech
+				high can be open ended
+			unique blueprint and name? - XX1, XX2
+				gen new letter? probably better but need a visible distinction for combo-mechs
+					show as upgradeable if less than max??
+						similr but different indicator
+				stringing letters together gets ugly after 3+
+		can be done anywhere, no factory required
+		can research upgs to combined mechs?
+		alien combine??
 
 MUST FIX
 	actions during enemy turn - fixed??

@@ -61,11 +61,11 @@ namespace ClassLibrary1.Map
             Game = game;
 
             const double dev = .21, oe = .13;
-            double max = Game.Rand.GaussianOE(Consts.NoiseDistance, dev, oe, Consts.FeatureMin);
+            double max = Game.Rand.GaussianOE(game.Consts.NoiseDistance, dev, oe, game.Consts.FeatureMin);
             double min = Game.Rand.GaussianOE(13, dev, oe, Game.Rand.Range(2, 4));
             int steps = Game.Rand.GaussianOEInt(5.2, dev, oe, Game.Rand.RangeInt(2, 5));
             double weightScale = Game.Rand.Weighted(.78) + Game.Rand.OE(.13);
-            _featureDist = Game.Rand.GaussianOE(Consts.FeatureDist, dev, oe, Consts.FeatureMin);
+            _featureDist = Game.Rand.GaussianOE(game.Consts.FeatureDist, dev, oe, game.Consts.FeatureMin);
             _noise = new Noise(Game.Rand, min, max, steps, .065, weightScale);
 
             _clearTerrain = [];
@@ -75,14 +75,14 @@ namespace ClassLibrary1.Map
             _resourcePool = new() { { ResourceType.Foundation, 1 },
                 { ResourceType.Biomass, 3 }, { ResourceType.Artifact, 3 }, { ResourceType.Metal, 6 }, };
 
-            int numPaths = Game.Rand.GaussianOEInt(Math.PI, .091, .039, 2);
-            double separation = Consts.PathMinSeparation;
+            int numPaths = Game.Rand.GaussianOEInt(Math.PI, game.Consts.PathDev / 2.0, .039, 2);
+            double separation = game.Consts.PathMinSeparation;
             separation = Game.Rand.GaussianCapped(separation, .104, Math.Max(0, 2 * separation - TWO_PI)) / numPaths;
             _paths = GeneratePaths(numPaths, separation, out double[] pathAngles);
             _caves = GenerateCaves(numPaths, separation, pathAngles);
 
             _elevation = [];
-            GeneratePlateaus(0);
+            //GeneratePlateaus(0);
 
             LogEvalTime();
         }
@@ -105,14 +105,14 @@ namespace ClassLibrary1.Map
 
             Path[] paths = new Path[numPaths];
             for (int d = 0; d < numPaths; d++)
-                paths[d] = new Path(angles[d]);
+                paths[d] = new Path(Game.Consts, angles[d]);
             return paths;
         }
         private Cave[] GenerateCaves(int numPaths, double separation, double[] pathAngles)
         {
             separation /= 2.6;
             double caveMult = Math.PI / numPaths;
-            int numCaves = Game.Rand.GaussianOEInt(2 + (Math.PI - 2) * caveMult * caveMult, .091, .039, 2);
+            int numCaves = Game.Rand.GaussianOEInt(2 + (Math.PI - 2) * caveMult * caveMult, Game.Consts.CaveDev, Game.Consts.CaveOE / 2.0, 2);
             List<Cave> caves = [];
             for (int e = 0; e < numCaves; e++)
             {
@@ -131,10 +131,11 @@ namespace ClassLibrary1.Map
                 }
                 while (caves.Select(c => GetAngle(c.Center)).Concat(pathAngles).Any(a => GetAngleDiff(caveDir, a) < separation));
 
-                PointD cave = GetPoint(caveDir, Game.Rand.GaussianOE(Consts.CaveDistance * distMult, Consts.CaveDistanceDev / distMult, Consts.CaveDistanceOE, Consts.CaveMinDist));
+                PointD cave = GetPoint(caveDir, Game.Rand.GaussianOE(Game.Consts.CaveDistance * distMult,
+                    Game.Consts.CaveDev / distMult, Game.Consts.CaveOE * 2.0, Game.Consts.CaveMinDist));
                 PointD connect = Game.Rand.SelectValue(caves.Select(c => c.Center).Concat(_paths.Select(p => p.GetClosestPoint(cave.X, cave.Y)))
                      .OrderBy(p => GetDistSqr(cave, p)).Take(2));
-                caves.Add(new(cave, connect));//, connectCave));
+                caves.Add(new(Game.Consts, cave, connect));//, connectCave));
             }
             if (caves.Count < 2)
                 throw new Exception();
@@ -182,9 +183,16 @@ namespace ClassLibrary1.Map
             }
         }
 
-        private void GeneratePlateaus(double dist)
+        private void GeneratePlateaus(Point point)
         {
-            _elevation.AddRange(Elevation.GeneratePlateaus(dist, ref _nextElevation));
+            double dist = Tile.GetDistance(point, new Point(0, 0));
+            IEnumerable<Elevation> elevation = Elevation.GeneratePlateaus(Game.Consts, dist, ref _nextElevation);
+            if (elevation.Any())
+            {
+                _elevation.AddRange(elevation);
+                evaluateCache.Clear();
+                heightCache.Clear();
+            }
         }
 
         private void GenerateStartResources()
@@ -195,7 +203,7 @@ namespace ClassLibrary1.Map
         private void InitExplorePaths()
         {
             foreach (var explore in Game.Rand.Iterate(_paths))
-                explore.Explore(this, Consts.PathWidth);
+                explore.Explore(this, Game.Consts.PathWidth);
         }
         private void SpawnHives()
         {
@@ -213,7 +221,7 @@ namespace ClassLibrary1.Map
                 Cave cave = Game.Rand.SelectValue(chances);
                 if (Game.Rand.Next(13) > 0)
                     chances[cave]--;
-                Tile tile = SpawnTile(cave.Center, Consts.CaveSize, true);
+                Tile tile = SpawnTile(cave.Center, Game.Consts.CaveSize, true, false);
                 cave.AddHive(Hive.NewHive(tile, f, cave.Spawner));
 
                 counts.TryGetValue(cave, out int count);
@@ -268,7 +276,7 @@ namespace ClassLibrary1.Map
         //}
 
         [NonSerialized]
-        private Dictionary<Point, Tuple<float, float>> evaluateCache;
+        private Dictionary<Point, Tuple<float, float>> evaluateCache = [];
         private Tuple<float, float> Evaluate(Point point)
         {
             int x = point.X, y = point.Y;
@@ -279,9 +287,11 @@ namespace ClassLibrary1.Map
             _watch.Start();
             _evalCount++;
 
+            GeneratePlateaus(point);
+
             double mult = 0;
             mult += _paths.Sum(p => p.Evaluate(point));
-            mult += _caves.Sum(c => c.Evaluate(x, y));
+            mult += _caves.Sum(c => c.Evaluate(Game.Consts, x, y));
 
             double eval = _noise.Evaluate(x, y);
             double dist = Tile.GetDistance(point, new(0, 0)) + 1;// + Math.Sqrt(Consts.FeatureDist);
@@ -347,7 +357,7 @@ namespace ClassLibrary1.Map
         }
 
         [NonSerialized]
-        private Dictionary<Point, float> heightCache;
+        private Dictionary<Point, float> heightCache = [];
         private float GetHeight(Point p, Tuple<float, float> evaluate)
         {
             heightCache ??= [];
@@ -356,7 +366,7 @@ namespace ClassLibrary1.Map
 
             List<Tuple<Elevation, double>> hills = [.. _elevation.Select(e => Tuple.Create(e, e.Dist(p, evaluate)))];
             double minDist = hills.Min(h => h.Item2);
-            double m1 = Elevation.Evaluate(minDist);
+            double m1 = Elevation.Evaluate(Game.Consts, minDist);
 
             double m2 = evaluate.Item1 / .5;
             m2 *= m2;
@@ -377,7 +387,7 @@ namespace ClassLibrary1.Map
                 height *= Island.HEIGHT;
 
                 Elevation elevation = hills.Where(e => e.Item2 == minDist).Select(e => e.Item1).First();
-                height = elevation.Round(height, _elevation);
+                height = elevation.Round(Game.Consts, height, _elevation);
                 island = height > .05;
             }
             if (!island)
@@ -467,7 +477,7 @@ namespace ClassLibrary1.Map
             foreach (Point p in Tile.GetAllVision(this, point, vision))
                 if (_explored.Add(p))
                 {
-                    if (Game.Rand.Next(Consts.ExploreForResearch) == 0)
+                    if (Game.Rand.Next(Game.Consts.ExploreForResearch) == 0)
                         Game.Player.Research.AddBackground();
 
                     Tile explored = GetTile(p);
@@ -506,14 +516,14 @@ namespace ClassLibrary1.Map
                         .Concat(_paths.Select(p => p.GetClosestPoint(x, y)))
                         .Select(p => GetDistSqr(p, new(x, y))).Concat(_caves.Select(c => c.ConnectionDistSqr(x, y)))
                         .Min() + 1;
-                    dist = Math.Sqrt(dist) / Consts.PathWidth / 2;
+                    dist = Math.Sqrt(dist) / Game.Consts.PathWidth / 2;
 
                     double chance;
                     if (dist > 1.5)
                         chance = .21 - 1 / (dist - .5) / 5;
                     else
                         chance = .01 * dist / 1.5;
-                    chance /= Consts.TreasureDiv;
+                    chance /= Game.Consts.TreasureDiv;
 
                     if (Game.Rand.Bool(chance))
                     {
@@ -539,20 +549,24 @@ namespace ClassLibrary1.Map
         }
 
         internal Tile StartTile() => StartTile(new(0, 0));
-        internal Tile StartTile(Point center) => SpawnTile(new(center.X, center.Y), Consts.PathWidth + Consts.ResourceAvgDist, false);
-        private Tile SpawnTile(PointD center, double deviation, bool isEnemy, Func<Tile, bool> Valid = null)
+        internal Tile StartTile(Point center) => SpawnTile(new(center.X, center.Y), Game.Consts.PathWidth + Game.Consts.ResourceAvgDist, false);
+        private Tile SpawnTile(PointD center, double dev, bool isEnemy, bool checkBounds = true, Func<Tile, bool> Valid = null) =>
+            RandTile(center, dev, checkBounds, tile => (Valid == null || Valid(tile)) && !InvalidStartTile(tile, isEnemy));
+        internal Tile RandTile(PointD center, double dev, bool checkBounds = true, Func<Tile, bool> Valid = null)
         {
-            int RandCoord(double coord) => Game.Rand.Round(coord + Game.Rand.Gaussian(deviation));
+            double mapSize = GetMapSize();
             Tile tile;
             do
             {
                 tile = GetTile(RandCoord(center.X), RandCoord(center.Y));
-                deviation += Game.Rand.DoubleFull(Consts.CavePathWidth);
+
+                dev += Game.Rand.NextDouble();
+                if (!Game.Rand.Bool(Game.Consts.MapDistMult(dev, mapSize)))
+                    dev = Math.Sqrt(dev);
             }
-            while ((Valid != null && !Valid(tile)) || InvalidStartTile(tile, isEnemy));
-
-            //Debug.WriteLine($"SpawnTile ({Angle:0.00}) {distance:0.0}: {spawnCenter} -> {tile}");
-
+            while (tile == null || tile.Piece != null || (Valid != null && !Valid(tile))
+                || (checkBounds && !Game.Rand.Bool(Game.Consts.MapDistMult(tile, mapSize))));
+            int RandCoord(double coord) => Game.Rand.Round(coord + Game.Rand.Gaussian(dev));
             return tile;
         }
         internal static bool InvalidStartTile(Tile tile, bool isEnemy)
@@ -570,34 +584,45 @@ namespace ClassLibrary1.Map
             return invalid;
         }
 
+        internal double GetMapSize() => Math.Sqrt(_explored.Select(p => new PointD(p.X, p.Y)) //PointD add
+            .Concat(_pieces.Values.OfType<Hive>().Select(h => h.Tile.LocationD))
+            //.Append(add)
+            .Max(p => GetDistSqr(new(p.X, p.Y), new(0, 0))));
+
         internal void Explore(Point point, double vision)
         {
             foreach (Path p in Game.Rand.Iterate(_paths))
                 p.Explore(this, point, vision);
             foreach (Cave c in Game.Rand.Iterate(_caves))
                 c.Explore(point, vision);
-            GeneratePlateaus(Tile.GetDistance(point, new Point(0, 0)) + vision);
+            //GeneratePlateaus(point, vision);
         }
         internal void GenResources(Func<Tile> GetTile, double foundationMult, int numResources = 1)
         {
             for (int a = 0; a < numResources; a++)
             {
                 Tile tile = GetTile();
-                if (!Game.TEST_MAP_GEN.HasValue && tile.Visible)
-                    foundationMult = 0;
 
-                double fMult2 = _caves.Select(c => c.Center).Concat(AllFoundations)
-                    .Concat(_clearTerrain.Concat(Game.Player.Core.Tile.GetPointsInRange(Constructor.BASE_VISION))
-                        .Select(p => new PointD(p.X, p.Y)))
-                    .Min(p => Tile.GetDistanceD(tile.X, tile.Y, p.X, p.Y));
-                fMult2 /= (fMult2 + (Consts.CaveSize + Consts.PathWidth) / 6.5);
-                fMult2 *= fMult2 * fMult2 * foundationMult;
                 bool island = tile.Terrain is Island;
-                if (island)
-                    fMult2 = Math.Sqrt(fMult2) * 5.2;
-                else
-                    fMult2 *= .39;
+                double islandMult = tile.Terrain is Island i ? Math.Sqrt(i.Height / Island.HEIGHT) : 1;
 
+                double fMult = 0;
+                if (Game.TEST_MAP_GEN.HasValue || !tile.Visible)
+                {
+                    fMult = 1 + _caves.Select(c => c.Center).Concat(AllFoundations)
+                        .Concat(_clearTerrain.Append(Game.Player.Core.Tile.Location).Select(p => new PointD(p.X, p.Y)))
+                        .Min(p => Tile.GetDistanceD(tile.X, tile.Y, p.X, p.Y));
+                    fMult /= (fMult + (Game.Consts.CaveSize + Game.Consts.PathWidth) / 2.1);
+                    fMult *= fMult * fMult * foundationMult;
+                    const double baseMult = .26;
+                    if (island)
+                        fMult = Math.Sqrt(fMult) * (baseMult + islandMult * 2.1);
+                    else
+                        fMult *= baseMult;
+                    fMult *= 2.6;
+                }
+
+                // TODO: Consts
                 if (_resourcePool.Values.Any(v => v <= 0))
                 {
                     _resourcePool[ResourceType.Artifact] += 2;
@@ -606,10 +631,12 @@ namespace ClassLibrary1.Map
                     _resourcePool[ResourceType.Metal] += 6;
                 }
 
+                islandMult = .78 + (island ? islandMult : 0);
                 double Mult(ResourceType r) => r switch
                 {
-                    ResourceType.Foundation => fMult2,
-                    ResourceType.Metal => island ? 2.6 : .65,
+                    ResourceType.Artifact => Math.Sqrt(islandMult),
+                    ResourceType.Foundation => fMult,
+                    ResourceType.Metal => islandMult,
                     _ => 1
                 };
                 ResourceType type = Game.Rand.SelectValue(_resourcePool.Keys, r =>
@@ -631,7 +658,7 @@ namespace ClassLibrary1.Map
                     case ResourceType.Foundation:
 
                         int count = 0;
-                        int size = Game.Rand.GaussianOEInt(Consts.FoundationAmt, 0, 1, 1);
+                        int size = Game.Rand.GaussianOEInt(Game.Consts.FoundationAmt, 0, 1, 1);
                         while (true)
                         {
                             count++;
@@ -651,7 +678,7 @@ namespace ClassLibrary1.Map
                         }
 
                         //- 1 to account for the first one already removed from the pool
-                        _resourcePool[type] -= Game.Rand.Round(count / Consts.FoundationAmt) - 1;
+                        _resourcePool[type] -= Game.Rand.Round(Math.Sqrt(count / Game.Consts.FoundationAmt)) - 1;
                         break;
                 }
             }
@@ -746,16 +773,16 @@ namespace ClassLibrary1.Map
                     Tile tile = GetTile(p2);
                     if (tile == null)
                     {
-                        penalty = Game.Rand.GaussianCapped((Consts.PathWidth + move) * 2.25 * Consts.PathWidth, .065);
+                        penalty = Game.Rand.GaussianCapped((Game.Consts.PathWidth + move) * 2.25 * Game.Consts.PathWidth, .065);
                     }
                     else if (tile.Piece is Block block)
                     {
                         double mult = .5 + block.Value; //ranges from 0.5 - 1.5
                         mult *= mult; //ranges from 0.25 - 2.25
-                        penalty = Game.Rand.GaussianCapped((Consts.PathWidth + move) * mult, .065);
+                        penalty = Game.Rand.GaussianCapped((Game.Consts.PathWidth + move) * mult, .065);
                     }
                     if (penalty > 0 && !Game.GameOver && !Game.TEST_MAP_GEN.HasValue && Visible(p2))
-                        penalty *= Consts.PathWidth;
+                        penalty *= Game.Consts.PathWidth;
                     return penalty;
                 }, known.Contains, out var blocked);
 
@@ -823,16 +850,16 @@ namespace ClassLibrary1.Map
         private IEnumerable<Tile> FindRetreatTiles(Tile tile, Func<Tile, bool> ValidRetreat)
         {
             Dictionary<PointD, double> dists = [];
-            return _paths.Select(p => p.ExploredPoint(Consts.PathWidth))
+            return _paths.Select(p => p.ExploredPoint(Game.Consts.PathWidth))
                 .Concat(_caves.Where(c => !c.Explored).Select(c => c.Center))
                 .OrderBy(p =>
                 {
-                    if (dists.TryAdd(p, Math.Sqrt(GetDistSqr(tile.X, tile.Y, p)) + Game.Rand.OE(Consts.CavePathWidth)))
+                    if (dists.TryAdd(p, Math.Sqrt(GetDistSqr(tile.X, tile.Y, p)) + Game.Rand.OE(Game.Consts.CavePathWidth)))
                         ;
                     else
                         ; //if never hit can remove dists dict
                     return dists[p];
-                }).Select(point => SpawnTile(point, Consts.PathWidth + Consts.CaveSize, false, ValidRetreat));
+                }).Select(point => SpawnTile(point, Game.Consts.PathWidth + Game.Consts.CaveSize, false, Valid: ValidRetreat));
         }
         internal List<Point> PathFindRetreat(Tile from, IEnumerable<Tile> targets, double move, double defense, Dictionary<Tile, double> playerAttacks, Func<Tile, bool> ValidRetreat)
         {
@@ -851,7 +878,7 @@ namespace ClassLibrary1.Map
                         playerAttacks.TryGetValue(key, out att);
                     if (att == 0)
                         return 0;
-                    return Math.Sqrt((att + 1) / (defense + 1)) * Consts.PathWidth;
+                    return Math.Sqrt((att + 1) / (defense + 1)) * Game.Consts.PathWidth;
                 },
                 p => ValidRetreat(GetTile(p)),
                 out var blocked);

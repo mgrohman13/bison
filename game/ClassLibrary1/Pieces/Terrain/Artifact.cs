@@ -8,30 +8,31 @@ namespace ClassLibrary1.Pieces.Terrain
     [DataContract(IsReference = true)]
     public class Artifact : Resource
     {
-        private Artifact(Tile tile, double mult)
-            : base(tile, Consts.ArtifactResearchInc * mult, Consts.ArtifactSustain, true)
+        private Artifact(Consts consts, Tile tile, double mult)
+            : base(tile, consts.ArtifactResearchInc * mult, consts.ArtifactSustain, true)
         {
         }
         internal static Artifact NewArtifact(Tile tile)
         {
+            Consts consts = tile.Map.Game.Consts;
             double caveDist = tile.Map.ClosestCaveDistSqr(tile);
-            double factor = Consts.CaveSize * Consts.CaveSize;
+            double factor = consts.CaveSize * consts.CaveSize;
             caveDist = 1 + factor / (caveDist + factor);
             while (caveDist > 1 && Game.Rand.Bool())
                 caveDist = Math.Sqrt(caveDist);
-            Artifact artifact = new(tile, caveDist);
+            Artifact artifact = new(consts, tile, caveDist);
             tile.Map.Game.AddPiece(artifact);
             return artifact;
         }
         internal override void GetCost(double costMult, out int energy, out int mass)
         {
-            GetCost(costMult, Consts.ArtifactResearchInc, Consts.ArtifactExtractorEnergyCost, Consts.ArtifactExtractorMassCost, out energy, out mass);
+            GetCost(costMult, Game.Consts.ArtifactResearchInc, Game.Consts.ArtifactExtractorEnergyCost, Game.Consts.ArtifactExtractorMassCost, out energy, out mass);
         }
 
         protected override void GenerateResources(double value, out double energyInc, out double massInc, out double researchInc)
         {
-            energyInc = -value * Consts.ArtifactEnergyUpkMult;
-            massInc = value / Consts.ArtifactMassIncDiv;
+            energyInc = -value * Game.Consts.ArtifactEnergyUpkMult;
+            massInc = value / Game.Consts.ArtifactMassIncDiv;
             researchInc = value;
         }
 

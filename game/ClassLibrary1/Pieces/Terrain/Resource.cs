@@ -23,7 +23,9 @@ namespace ClassLibrary1.Pieces.Terrain
         internal Resource(Tile tile, double baseValue, double sustainMult, bool limit = false)
             : base(null, tile)
         {
-            double distMult = Math.Pow((tile.GetDistance(0, 0) + Consts.ResourceDistAdd) / Consts.ResourceDistDiv, Consts.ResourceDistPow);
+            Consts consts = tile.Map.Game.Consts;
+
+            double distMult = Math.Pow((tile.GetDistance(0, 0) + consts.ResourceDistAdd) / consts.ResourceDistDiv, consts.ResourceDistPow);
             while (distMult > 1 && Game.Rand.Bool())
                 distMult = Math.Sqrt(distMult);
             if (limit)
@@ -31,7 +33,7 @@ namespace ClassLibrary1.Pieces.Terrain
 
             double oeDiv = limit ? Math.Sqrt(baseValue) : 1;
             baseValue *= distMult;
-            double value = Game.Rand.GaussianOE(baseValue, Consts.ResourceDev, Consts.ResourceOE / oeDiv, 1.69);
+            double value = Game.Rand.GaussianOE(baseValue, consts.ResourceDev, consts.ResourceOE / oeDiv, 1.69);
             if (Game.Rand.GaussianCapped(value, .26) > Game.Rand.GaussianCapped(52, .26))
                 value = Consts.IncomeRounding(value);
             else if (Game.Rand.Bool())
@@ -41,8 +43,8 @@ namespace ClassLibrary1.Pieces.Terrain
             if (value < 1)
                 value = 1;
 
-            sustainMult *= Math.Pow(baseValue / value, Consts.ResourceSustainValuePow);
-            double sustain = Game.Rand.GaussianOE(sustainMult, Consts.ResourceDev, Consts.ResourceOE, .05);
+            sustainMult *= Math.Pow(baseValue / value, consts.ResourceSustainValuePow);
+            double sustain = Game.Rand.GaussianOE(sustainMult, consts.ResourceDev, consts.ResourceOE, .05);
             if (Game.Rand.Bool(.91 * sustain / (sustain + 1)))
             {
                 double mult = Game.Rand.Next(sustain > 1 ? 2 : 3) == 0 ? 10 : 20;
@@ -67,8 +69,8 @@ namespace ClassLibrary1.Pieces.Terrain
         internal void Extract(Extractor extractor, double valueMult, double sustainMult)
         {
             sustainMult *= Sustain;
-            double pow = Consts.ExtractPow / (Consts.ExtractPow + Math.Pow(sustainMult, Consts.ExtractSustainPow));
-            double extract = Math.Pow(GetValue(extractor, valueMult) / sustainMult / Consts.ExtractTurns + 1, pow) - 1;
+            double pow = Game.Consts.ExtractPow / (Game.Consts.ExtractPow + Math.Pow(sustainMult, Game.Consts.ExtractSustainPow));
+            double extract = Math.Pow(GetValue(extractor, valueMult) / sustainMult / Game.Consts.ExtractTurns + 1, pow) - 1;
             double cap = Math.Max(0, 2 * extract - this._value);
             this._value -= Game.Rand.GaussianCapped(extract, .13, cap);
         }
@@ -76,8 +78,8 @@ namespace ClassLibrary1.Pieces.Terrain
         protected void GetCost(double costMult, double inc, double baseEnergy, double baseMass, out int energy, out int mass)
         {
             double mult = Math.Sqrt(inc);
-            mult = Math.Pow((this.Value + mult) / (inc + mult), Consts.ExtractorCostPow);
-            mult *= Math.Pow(Sustain, Consts.ExtractorSustainCostPow);
+            mult = Math.Pow((this.Value + mult) / (inc + mult), Game.Consts.ExtractorCostPow);
+            mult *= Math.Pow(Sustain, Game.Consts.ExtractorSustainCostPow);
             mult *= costMult;
             energy = MTRandom.Round(baseEnergy * _energyMult * mult, Consts.MAX_ROUND - _rounding);
             mass = MTRandom.Round(baseMass * _massMult * mult, _rounding);

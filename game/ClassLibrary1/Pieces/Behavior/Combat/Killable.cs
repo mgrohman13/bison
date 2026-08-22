@@ -60,40 +60,45 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
         }
 
         void IKillable.SetHits(int cur, int max) => Hits.SetHits(cur, max);
-        void IKillable.Upgrade(IEnumerable<Values> values, double resilience)
+        void IKillable.Upgrade(IReadOnlyList<Values> values, double resilience, IReadOnlyList<int> setCur)
         {
-            Values hits = GetHits(values);
-            Values[] defenses = [.. GetOther(values)];
-
-            _hits.Upgrade(hits);
-
             double energy = 0, mass = 0;
-            foreach (var cur in Game.Rand.Iterate(Protection.Where(d1 => !defenses.Any(d2 => d1.Type == d2.Type))))
+            foreach (var cur in Game.Rand.Iterate(Protection.Where(d1 => !values.Any(d2 => d1.Type == d2.Type))))
             {
                 _defenses.Remove(cur);
 
-                double costMult = CombatTypes.GetRegenCostMult(cur.Type, Piece.HasBehavior<IAttacker>(), out bool isMass);
+                double costMult = CombatTypes.GetRegenCostMult(Piece.Game.Consts, cur.Type, Piece.HasBehavior<IAttacker>(), out bool isMass);
                 double cost = Consts.StatValue(cur.DefenseCur) * costMult;
                 if (isMass)
                     mass += cost;
                 else
                     energy += cost;
-            } 
-            Piece.Side.AddResources(energy, mass);
+            }
+            if (setCur == null)
+                Piece.Side.AddResources(energy, mass);
 
-            foreach (var upg in defenses)
+            for (int a = 0; a < values.Count; a++)
             {
-                var cur = Protection.Where(d => d.Type == upg.Type).SingleOrDefault();
-                if (cur == null)
-                    _defenses.Add(new(Piece, upg));
+                var upg = values[a];
+                int? curDef = setCur?[a];
+                if (upg.Type == CombatTypes.DefenseType.Hits)
+                {
+                    _hits.Upgrade(upg, curDef);
+                }
                 else
-                    cur.Upgrade(upg);
+                {
+                    var cur = Protection.SingleOrDefault(d => d.Type == upg.Type);
+                    if (cur == null)
+                        _defenses.Add(new(Piece, upg, curDef));
+                    else
+                        cur.Upgrade(upg, curDef);
+                }
             }
 
             _resilience = resilience;
         }
         private static Values GetHits(IEnumerable<Values> values) =>
-            values.Where(d => d.Type == CombatTypes.DefenseType.Hits).Single();
+            values.Single(d => d.Type == CombatTypes.DefenseType.Hits);
         private static IEnumerable<Values> GetOther(IEnumerable<Values> values) =>
             values.Where(d => d.Type != CombatTypes.DefenseType.Hits);
         private IEnumerable<Defense> IterateDefenses() =>

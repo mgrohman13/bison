@@ -15,7 +15,7 @@ namespace ClassLibrary1.Pieces.Players
     [DataContract(IsReference = true)]
     public class Constructor : PlayerPiece, IKillable.IRepairable
     {
-        public const double BASE_VISION = 6.5, MOVE_RAMP = 1.3, BASE_MOVE_INC = 4.5, BASE_MOVE_MAX = 10 * MOVE_RAMP;
+        public const double START_VISION = 7.50, VISION_ADD = 1.40, MOVE_RAMP = 1.30, START_MOVE_INC = 4.50, MOVE_MAX = 12 * MOVE_RAMP;
         public static double Resilience => Values.Resilience;
 
         private bool _canUpgrade;
@@ -25,7 +25,7 @@ namespace ClassLibrary1.Pieces.Players
         public bool CanUpgrade => _canUpgrade;
 
         private Constructor(Tile tile, Values values, bool starter)
-            : base(tile, starter ? BASE_VISION : values.Vision)
+            : base(tile, starter ? START_VISION : values.Vision)
         {
             this._canUpgrade = !starter;
 
@@ -42,7 +42,7 @@ namespace ClassLibrary1.Pieces.Players
 
             SetBehavior(
                     new Killable(this, new IKillable.Values(DefenseType.Hits, ResearchUpgValues.ConstructorStartDef), Values.Resilience),
-                    new Movable(this, Values.GetStartMovable(), 0),
+                    new Movable(this, Values.GetStartMovable(), starter ? START_MOVE_INC : 0),
                     new Builder.BuildExtractor(this, new(ResearchUpgValues.ConstructorStartRange)));
             Unlock();
         }
@@ -120,12 +120,12 @@ namespace ClassLibrary1.Pieces.Players
         internal override void GetUpkeep(ref double energyUpk, ref double massUpk)
         {
             base.GetUpkeep(ref energyUpk, ref massUpk);
-            energyUpk += Consts.BaseConstructorUpkeep;
+            energyUpk += Game.Consts.BaseConstructorUpkeep;
         }
         internal override void EndTurn(ref double energyUpk, ref double massUpk)
         {
             base.EndTurn(ref energyUpk, ref massUpk);
-            energyUpk += Consts.BaseConstructorUpkeep;
+            energyUpk += Game.Consts.BaseConstructorUpkeep;
             Upgrade();
         }
 
@@ -167,13 +167,6 @@ namespace ClassLibrary1.Pieces.Players
 
             private int energy, mass;
             private double def, vision, range, moveInc, moveMax, moveLimit;
-
-            public Values()
-            {
-                UpgradeConstructorCost(1);
-                UpgradeConstructorDefense(1);
-                UpgradeConstructorMove(1);
-            }
 
             public static double Resilience => resilience;
             public int Energy => energy;
@@ -217,6 +210,12 @@ namespace ClassLibrary1.Pieces.Players
                 return new(inc, (int)Math.Round(max), (int)Math.Round(limit));
             }
 
+            public void Init(Game game)
+            {
+                UpgradeConstructorCost(game, 1);
+                UpgradeConstructorDefense(game, 1);
+                UpgradeConstructorMove(game, 1);
+            }
             public static bool CanUpgrade(Research.Type type) => type switch
             {
                 Research.Type.ConstructorCost => false,
@@ -224,30 +223,30 @@ namespace ClassLibrary1.Pieces.Players
                 Research.Type.ConstructorMove => true,
                 _ => false
             };
-            public void Upgrade(Research.Type type, double researchMult)
+            public void Upgrade(Game game, Research.Type type, double researchMult)
             {
                 if (type == Research.Type.ConstructorCost)
-                    UpgradeConstructorCost(researchMult);
+                    UpgradeConstructorCost(game, researchMult);
                 else if (type == Research.Type.ConstructorDefense)
-                    UpgradeConstructorDefense(researchMult);
+                    UpgradeConstructorDefense(game, researchMult);
                 else if (type == Research.Type.ConstructorMove)
-                    UpgradeConstructorMove(researchMult);
+                    UpgradeConstructorMove(game, researchMult);
             }
-            private void UpgradeConstructorCost(double researchMult)
+            private void UpgradeConstructorCost(Game game, double researchMult)
             {
-                double costMult = ResearchUpgValues.Calc(UpgType.ConstructorCost, researchMult);
+                double costMult = game.ResearchUpgValues.Calc(UpgType.ConstructorCost, researchMult);
                 this.energy = this.mass = Game.Rand.Round(1250 * costMult);
             }
-            private void UpgradeConstructorDefense(double researchMult)
+            private void UpgradeConstructorDefense(Game game, double researchMult)
             {
-                this.def = ResearchUpgValues.Calc(UpgType.ConstructorDefense, researchMult);
+                this.def = game.ResearchUpgValues.Calc(UpgType.ConstructorDefense, researchMult);
             }
-            private void UpgradeConstructorMove(double researchMult)
+            private void UpgradeConstructorMove(Game game, double researchMult)
             {
-                this.vision = ResearchUpgValues.Calc(UpgType.ConstructorVision, researchMult);
-                this.range = ResearchUpgValues.Calc(UpgType.ConstructorRange, researchMult);
+                this.vision = game.ResearchUpgValues.Calc(UpgType.ConstructorVision, researchMult);
+                this.range = game.ResearchUpgValues.Calc(UpgType.ConstructorRange, researchMult);
 
-                double moveMult = ResearchUpgValues.Calc(UpgType.ConstructorMove, researchMult) / BASE_MOVE_INC;
+                double moveMult = game.ResearchUpgValues.Calc(UpgType.ConstructorMove, researchMult) / START_MOVE_INC;
                 GetStartMovable(out double inc, out double max, out double limit);
                 this.moveInc = inc * moveMult;
                 this.moveMax = max * moveMult;
@@ -255,9 +254,9 @@ namespace ClassLibrary1.Pieces.Players
             }
             private static void GetStartMovable(out double inc, out double max, out double limit)
             {
-                inc = BASE_MOVE_INC;
-                max = BASE_MOVE_MAX / MOVE_RAMP;
-                limit = 2 * max;
+                inc = START_MOVE_INC;
+                max = MOVE_MAX / MOVE_RAMP;
+                limit = 2.1 * max;
             }
         }
     }

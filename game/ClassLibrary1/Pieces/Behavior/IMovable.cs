@@ -1,5 +1,6 @@
 ﻿using ClassLibrary1.Pieces.Enemies;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
 using Tile = ClassLibrary1.Map.Map.Tile;
 
@@ -15,7 +16,8 @@ namespace ClassLibrary1.Pieces.Behavior
         bool Moved { get; }
         public bool CanMove { get; }
 
-        void Upgrade(Values values);
+        void Upgrade(Values values, double? cur = null);
+        internal void Damage(double dmgPct);
         public bool Move(Tile to);
         internal bool EnemyMove(Tile to);
         internal bool Port(Portal portal);
@@ -49,6 +51,14 @@ namespace ClassLibrary1.Pieces.Behavior
             public double MoveInc => _moveInc;
             public int MoveMax => _moveMax;
             public int MoveLimit => _moveLimit;
+
+            public override bool Equals([NotNullWhen(true)] object obj)
+            {
+                if (obj == null)
+                    return false;
+                Values other = (Values)obj;
+                return _moveMax == other._moveMax && _moveLimit == other._moveLimit && _moveInc == other._moveInc;
+            }
         }
     }
 }

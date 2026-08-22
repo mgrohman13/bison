@@ -9,7 +9,7 @@ namespace ClassLibrary1.Pieces.Terrain
     public class Metal : Resource
     {
         private Metal(Tile tile)
-            : base(tile, Consts.MetalMassInc, Consts.MetalSustain)
+            : base(tile, tile.Map.Game.Consts.MetalMassInc, tile.Map.Game.Consts.MetalSustain)
         {
         }
         internal static Metal NewMetal(Tile tile)
@@ -20,12 +20,12 @@ namespace ClassLibrary1.Pieces.Terrain
         }
         internal override void GetCost(double costMult, out int energy, out int mass)
         {
-            GetCost(costMult, Consts.MetalMassInc, Consts.MetalExtractorEnergyCost, Consts.MetalExtractorMassCost, out energy, out mass);
+            GetCost(costMult, Game.Consts.MetalMassInc, Game.Consts.MetalExtractorEnergyCost, Game.Consts.MetalExtractorMassCost, out energy, out mass);
         }
 
         protected override void GenerateResources(double value, out double energyInc, out double massInc, out double researchInc)
         {
-            energyInc = -value / Consts.MetalEnergyUpkDiv;
+            energyInc = -value / Game.Consts.MetalEnergyUpkDiv;
             massInc = value;
             researchInc = 0;
         }
