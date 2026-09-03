@@ -19,10 +19,43 @@ namespace ClassLibrary1
         //private double _research;
         private double _difficulty;
 
+        private readonly double[] _startMult, _multsMult, _startMake, _multsMake;
+
         private readonly Dictionary<Type, int> _unlockTurns;
 
         internal EnemyResearch()
         {
+            //Type.MechAttack
+            //Type.MechEnergyWeapons
+            //Type.MechLasers
+            //Type.MechExplosives
+            //Type.MechRange
+            //Type.MechDefense
+            //Type.MechShields
+            //Type.MechArmor
+            //Type.MechMove
+            //Type.MechResilience
+            _startMult = [1.4, 1.1, 0.6, 1.0, 0.5, 0.7, 1.2, 1.0, 1.3, 1.0];
+            _multsMult = [1.2, 1.0, 0.8, 0.7, 0.9, 1.0, 0.6, 1.1, 0.2, 0.4];
+
+            //Type.MechEnergyWeapons
+            //Type.MechLasers
+            //Type.MechExplosives
+            //Type.MechRange
+            //Type.MechShields
+            //Type.MechArmor
+            _startMake = [.91, .13, .01, .52, 1.0, .39];
+            _multsMake = [.91, .39, .65, .52, .78, 1.0];
+
+            for (int a = 0; a < _startMult.Length; a++)
+                _startMult[a] = Game.Rand.GaussianCapped(_startMult[a], .21, .1);
+            for (int a = 0; a < _multsMult.Length; a++)
+                _multsMult[a] = Game.Rand.GaussianCapped(_multsMult[a], .26, .1);
+
+            for (int a = 0; a < _startMake.Length; a++)
+                _startMake[a] = Game.Rand.GaussianCapped(_startMake[a], .169);
+            for (int a = 0; a < _multsMake.Length; a++)
+                _multsMake[a] = Game.Rand.GaussianCapped(_multsMake[a], .13, .1);
         }
         public EnemyResearch(Game game)
         {
@@ -31,7 +64,7 @@ namespace ClassLibrary1
             //_research = 0;
             _difficulty = 1;
 
-            _unlockTurns = GenUnlockTurns(game.Consts );
+            _unlockTurns = GenUnlockTurns(game.Consts);
         }
         private static Dictionary<Type, int> GenUnlockTurns(Consts consts)
         {
@@ -77,7 +110,7 @@ namespace ClassLibrary1
         internal bool TypeVailable(Type type) => !_unlockTurns.ContainsKey(type) || _unlockTurns[type] < Game.Turn;
         public int GetBlueprintLevel() => Game.Rand.Round(Game.Consts.ResearchFactor * (_difficulty - 1));// + _research);
         public int GetMinCost() => Game.Rand.Round(Math.Pow(GetBlueprintLevel() + 7.8 * Game.Consts.ResearchFactor, 0.65));
-        public int GetMaxCost() => Game.Rand.Round(Math.Pow(GetBlueprintLevel() + 0.169 * Game.Consts.ResearchFactor, 1.04)) + 390;
+        public int GetMaxCost() => Game.Rand.Round(Math.Pow(GetBlueprintLevel() + .39 * Game.Consts.ResearchFactor, 1.04)) + 390;
 
         public double GetMult(Type type, double pow)
         {
@@ -85,39 +118,44 @@ namespace ClassLibrary1
             switch (type)
             {
                 case Type.MechAttack:
-                    start = 1.4;
-                    mult = 1.2;
+                    start = _startMult[0];
+                    mult = _multsMult[0];
                     break;
                 case Type.MechEnergyWeapons:
-                    start = 1.1;
+                    start = _startMult[1];
+                    mult = _multsMult[1];
                     break;
                 case Type.MechLasers:
-                    start = 0.6;
-                    mult = 0.8;
+                    start = _startMult[2];
+                    mult = _multsMult[2];
                     break;
                 case Type.MechExplosives:
-                    mult = 0.7;
+                    start = _startMult[3];
+                    mult = _multsMult[3];
                     break;
                 case Type.MechRange:
-                    start = 0.5;
-                    mult = 0.9;
+                    start = _startMult[4];
+                    mult = _multsMult[4];
                     break;
                 case Type.MechDefense:
-                    start = 0.7;
+                    start = _startMult[5];
+                    mult = _multsMult[5];
                     break;
                 case Type.MechShields:
-                    start = 1.2;
-                    mult = 0.6;
+                    start = _startMult[6];
+                    mult = _multsMult[6];
                     break;
                 case Type.MechArmor:
-                    mult = 1.1;
+                    start = _startMult[7];
+                    mult = _multsMult[7];
                     break;
                 case Type.MechMove:
-                    start = 1.3;
-                    mult = 0.2;
+                    start = _startMult[8];
+                    mult = _multsMult[8];
                     break;
                 case Type.MechResilience:
-                    mult = 0.4;
+                    start = _startMult[9];
+                    mult = _multsMult[9];
                     break;
                 case Type.MechVision:
                     break;
@@ -133,28 +171,28 @@ namespace ClassLibrary1
             switch (type)
             {
                 case Type.MechEnergyWeapons:
-                    start = .91;
-                    mult = .91;
+                    start = _startMake[0];
+                    mult = _multsMake[0];
                     break;
                 case Type.MechLasers:
-                    start = .13;
-                    mult = .39;
+                    start = _startMake[1];
+                    mult = _multsMake[1];
                     break;
                 case Type.MechExplosives:
-                    start = 0;
-                    mult = .65;
+                    start = _startMake[2];
+                    mult = _multsMake[2];
                     break;
                 case Type.MechRange:
-                    start = .52;
-                    mult = .52;
+                    start = _startMake[3];
+                    mult = _multsMake[3];
                     break;
                 case Type.MechShields:
-                    start = 1;
-                    mult = .78;
+                    start = _startMake[4];
+                    mult = _multsMake[4];
                     break;
                 case Type.MechArmor:
-                    start = .39;
-                    mult = 1;
+                    start = _startMake[5];
+                    mult = _multsMake[5];
                     break;
                 default: throw new Exception();
             }

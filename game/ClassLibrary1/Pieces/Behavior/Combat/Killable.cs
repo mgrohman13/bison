@@ -48,10 +48,15 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
             _defenses = [.. GetOther(values).Select(v => new Defense(piece, v))];
 
             _resilience = resilience;
-            _defended = true;
-            _resetDefended = false;
+
+            ResetFlags();
 
             OnDeserialization(this);
+        }
+        private void ResetFlags()
+        {
+            _defended = true;
+            _resetDefended = false;
         }
 
         T IBehavior.GetBehavior<T>()
@@ -60,7 +65,7 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
         }
 
         void IKillable.SetHits(int cur, int max) => Hits.SetHits(cur, max);
-        void IKillable.Upgrade(IReadOnlyList<Values> values, double resilience, IReadOnlyList<int> setCur)
+        void IKillable.Upgrade(IReadOnlyList<Values> values, double resilience, bool resetFlags, IReadOnlyList<int> setCur)
         {
             double energy = 0, mass = 0;
             foreach (var cur in Game.Rand.Iterate(Protection.Where(d1 => !values.Any(d2 => d1.Type == d2.Type))))
@@ -96,7 +101,11 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
             }
 
             _resilience = resilience;
+
+            if (resetFlags)
+                ResetFlags();
         }
+
         private static Values GetHits(IEnumerable<Values> values) =>
             values.Single(d => d.Type == CombatTypes.DefenseType.Hits);
         private static IEnumerable<Values> GetOther(IEnumerable<Values> values) =>

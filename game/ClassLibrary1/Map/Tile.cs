@@ -44,7 +44,7 @@ namespace ClassLibrary1.Map
             }
 
             public double Height() => Height(this);
-            public static double Height(Tile? tile) => tile?.Terrain is Island i ? i.Height : 0;
+            public static double Height(Tile tile) => tile?.Terrain is Island i ? i.Height : 0;
 
             public bool ShowMove() => Visible && GetAdjacentPoints().Where(Map.Visible).Skip(3).Any();
 
@@ -132,6 +132,8 @@ namespace ClassLibrary1.Map
                 //ALT
             }
             public double MoveDistTo(Tile other) => MoveDistTo(other, true);
+            //performance optimization for comparisons - MoveDistTo is O(n)
+            public bool MoveDistTo(Tile other, double curMove) => GetDistance(other) <= curMove && MoveDistTo(other, true) <= curMove;
             internal double MoveDistTo(Tile other, bool visibleOnly = false)
             {
                 double dist = GetDistance(other);
@@ -154,12 +156,17 @@ namespace ClassLibrary1.Map
                 return [];
             }
             public static IEnumerable<Point> GetVision(Map map, Point point, double vision) =>
-                GetAllVision(map, point, vision, true);//.Distinct();
+                GetAllVision(map, point, vision, true);
             internal static IEnumerable<Point> GetAllVision(Map map, Point point, double vision) =>
-                GetAllVision(map, point, vision, false);//.Distinct();
+                GetAllVision(map, point, vision, false);
             private static IEnumerable<Point> GetAllVision(Map map, Point from, double vision, bool visibleOnly)
             {
-                yield return from;
+                double BlockRadius = (1 + Math.Sqrt(2)) / 4.0;
+
+                if (!map.Visible(from))
+                    yield return from;
+                HashSet<Point> returned = [from];
+
                 if (vision >= 1)
                 {
                     double height = 0;
@@ -171,53 +178,50 @@ namespace ClassLibrary1.Map
                     vision += height;
 
                     List<Point> enumerable = [.. GetPointsInRange(from, vision).Where(p => p != from)];
-                    List<Point> blocks = [.. enumerable.Where(NullTile).OrderBy(b => GetDistance(from, b))];
+                    List<Point> blocks = [.. enumerable.Where(NullTile).OrderBy(Dist)];
                     List<Point> heights = [.. enumerable.Where(Visible).Where(p => GetHeight(p) >= height)
-                        .OrderByDescending(GetHeight).OrderBy(b => GetDistance(from, b))];
+                        .OrderByDescending(GetHeight).OrderBy(Dist)];
+
+
+                    ////can make this check smarter based on how alt alg is implemented
+                    //if (blocks.Count + heights.Count > vision)
+                    //{
+                    //    //use alt algorithm that doesnt loop through all blocks 
+                    //    //need to get all points within the block angle for each to?
+                    //    //ideally use GetLinePoints, but that will return a different result 
+                    //    //instead, could change both algorithms to do something similar to GetLinePoints but different
+                    //    //GetLinePoints is not ideal anyways because it wont show inset corners
+                    //}
+
 
                     foreach (Point to in Game.Rand.Iterate(enumerable))
                         if (!map.Visible(to))
                         {
-                            double distance = GetDistance(from.X, from.Y, to.X, to.Y);
-                            //if (distance <= vision)
-                            //{
-                            Point? Select(IEnumerable<Point> points) => points.Select(p => (Point?)p).FirstOrDefault();
+                            double a = (to.Y - from.Y) / (double)(to.X - from.X);
+                            double c = from.Y - a * from.X;
 
-                            var plateau = Select(heights.Where(p => Blocks(from, to, p)).Where(h => distance + GetHeight(h) > vision));
-                            //&& GetHeight(add) >= GetHeight(h)));// doesn't work, still gives away tile info even if you dont see it
-                            if (plateau.HasValue && distance + GetHeight(plateau.Value) > vision)
+                            double distance = Dist(to);
+                            double check = vision - distance;
+                            var h = Select(heights.Where(h => GetHeight(h) > check));
+                            var b = Select(blocks);
+                            Point retVal = ((Point?[])[h, b]).Where(p => p.HasValue).OrderBy(DistN).FirstOrDefault()
+                                ?? to;
+                            if (!returned.Contains(retVal) && !map.Visible(retVal))
                             {
-                                //yield return plateau.Value;
+                                yield return retVal;
+                                returned.Add(retVal);
                             }
-                            else
-                            {
-                                var block = Select(blocks.Where(p => Blocks(from, to, p)));
-                                if (!block.HasValue)
-                                    yield return to;
-                                //yield return block.Value;
-                                //else
-                            }
-                            //}
+
+                            Point? Select(IEnumerable<Point> points) => points.Where(Blocks).Select(p => (Point?)p).FirstOrDefault();
+                            bool Blocks(Point block) => Dist(block) < distance && LineDist(from, a, c, block) < BlockRadius
+                                && (GetAngleDiff(GetAngle(block.X - from.X, block.Y - from.Y),
+                                    GetAngle(to.X - from.X, to.Y - from.Y)) < HALF_PI);
                         }
-                }
 
-            }
-
-            private readonly static double BlockRadius = (1 + Math.Sqrt(2)) / 4.0;
-            private static bool Blocks(Point from, Point to, Point block)
-            {
-                return GetDistance(from, block) < GetDistance(from, to)
-                    && Dist(from, new(to.X, to.Y), block) < BlockRadius
-                    && (GetAngleDiff(GetAngle(block.X - from.X, block.Y - from.Y), GetAngle(to.X - from.X, to.Y - from.Y)) < HALF_PI);
-
-                static double Dist(Point segment1, PointD segment2, Point point)
-                {
-                    if (segment2.X == segment1.X) return Math.Abs(point.X - segment1.X);
-                    //merge with CalcLine?
-                    double a = (segment2.Y - segment1.Y) / (double)(segment2.X - segment1.X);
-                    double b = -1;
-                    double c = segment1.Y - a * segment1.X;
-                    return PointLineDistanceAbs(a, b, c, point);
+                    double DistN(Point? other) => other.HasValue ? Dist(other.Value) : double.MaxValue;
+                    double Dist(Point other) => GetDistance(from, other);
+                    static double LineDist(Point from, double a, double c, Point point) =>
+                        double.IsFinite(a) ? PointLineDistanceAbs(a, -1, c, point) : Math.Abs(point.X - from.X);
                 }
             }
             //, bool blockMap, Piece blockFor)
@@ -283,7 +287,9 @@ namespace ClassLibrary1.Map
                 if (piece != null && !(piece.GetBehavior<IKillable>()?.Dead ?? false))
                 {
                     Tile start = piece.Tile;
-                    var attacks = attacker.Attacks.Where(a => a.CanAttack());
+                    IEnumerable<Attack> attacks = attacker.Attacks;
+                    if (visibleOnly)
+                        attacks = attacks.Where(a => a.CanAttack());
                     IMovable movable = piece.GetBehavior<IMovable>();
                     bool melee = movable != null && attacks.Any(a => a.Range == Attack.MELEE_RANGE);
 

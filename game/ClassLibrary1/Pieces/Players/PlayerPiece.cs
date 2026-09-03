@@ -52,17 +52,17 @@ namespace ClassLibrary1.Pieces.Players
         public double GetRepairInc()
         {
             double result = 0;
-            if (this.HasBehavior(out Behavior.Combat.IKillable killable))
+            if (HasBehavior(out IKillable killable))
                 killable.GetHitsRepair(out result, out _);
             return result;
         }
-        public bool IsRepairing() => HasBehavior(out Behavior.Combat.IKillable killable) && killable.IsRepairing();
+        public bool IsRepairing() => HasBehavior(out IKillable killable) && killable.IsRepairing();
 
         public virtual void Disband()
         {
             if (Game.Player.CanDisband())
             {
-                Side.AddResources(0, Consts.Income(DisbandMass()));
+                Side.AddResources(0, Game.Consts.Income(DisbandMass()));
                 Die();
             }
         }

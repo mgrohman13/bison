@@ -67,20 +67,20 @@ namespace ClassLibrary1.Map
                 explored |= GetDistSqr(new(point.X, point.Y), Center) < vision * vision;
             }
 
-            public double Evaluate(Consts consts, int x, int y)
+            public double Evaluate(Map map, int x, int y)
             {
                 double offset = 1.3 + shape[0];
                 double s = offset + Math.Sin((GetAngle(Center.X - x, Center.Y - y) + Math.PI) * shape[1] + shape[2]);
                 s *= s;
                 double distance = GetDistSqr(x, y, Center) / s;
-                double centerMult = GetMult(distance, shape[5] * consts.CaveSize / offset, shape[3]);//replace shape[3] with K?
+                double centerMult = GetMult(distance, shape[5] * map.Game.Consts.CaveSize / offset, shape[3]);//replace shape[3] with K?
 
                 double connection = GetMult(ConnectionDistSqr(x, y), segSize, shape[4]);
 
                 return centerMult + connection;
 
-                static double GetMult(double distSqr, double size, double k) =>
-                    Logistic(Math.Sqrt(distSqr), k, size);
+                double GetMult(double distSqr, double size, double k) =>
+                    map.Logistic(Math.Sqrt(distSqr), k, size);
                 //(Math.Pow(size, Consts.CaveDistPow) + o) / (Math.Pow(distSqr, Consts.CaveDistPow / 2.0) + o);
             }
             public double ConnectionDistSqr(int x, int y) => PointLineDistSqr(seg1, seg2, new(x, y));

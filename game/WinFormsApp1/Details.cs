@@ -15,25 +15,25 @@ namespace WinFormsApp1
 
         public override void Refresh()
         {
-            Constructor.Cost(Program.Game, out int ce, out int cm);
-            Factory.Cost(Program.Game, out int fe, out int fm);
-            Turret.Cost(Program.Game, out int te, out int tm);
-            Generator.Cost(Program.Game, out int ge, out int gm);
-            Drone.Cost(Program.Game, out int de, out int dm);
-            Outpost.Cost(Program.Game, out int oe, out int om);
+            //Constructor.Cost(Program.Game, out int ce, out int cm);
+            //Factory.Cost(Program.Game, out int fe, out int fm);
+            //Turret.Cost(Program.Game, out int te, out int tm);
+            //Generator.Cost(Program.Game, out int ge, out int gm);
+            //Drone.Cost(Program.Game, out int de, out int dm);
+            //Outpost.Cost(Program.Game, out int oe, out int om);
 
-            this.lblCE.Text = ce.ToString();
-            this.lblCM.Text = cm.ToString();
-            this.lblFE.Text = fe.ToString();
-            this.lblFM.Text = fm.ToString();
-            this.lblTE.Text = te.ToString();
-            this.lblTM.Text = tm.ToString();
-            this.lblGE.Text = ge.ToString();
-            this.lblGM.Text = gm.ToString();
-            this.lblDE.Text = de.ToString();
-            this.lblDM.Text = dm.ToString();
-            this.lblOE.Text = oe.ToString();
-            this.lblOM.Text = om.ToString();
+            //this.lblCE.Text = ce.ToString();
+            //this.lblCM.Text = cm.ToString();
+            //this.lblFE.Text = fe.ToString();
+            //this.lblFM.Text = fm.ToString();
+            //this.lblTE.Text = te.ToString();
+            //this.lblTM.Text = tm.ToString();
+            //this.lblGE.Text = ge.ToString();
+            //this.lblGM.Text = gm.ToString();
+            //this.lblDE.Text = de.ToString();
+            //this.lblDM.Text = dm.ToString();
+            //this.lblOE.Text = oe.ToString();
+            //this.lblOM.Text = om.ToString();
 
             this.txtVictory.Text = $"{Program.Game.Victory}/{Game.POINTS_TO_WIN}";
 

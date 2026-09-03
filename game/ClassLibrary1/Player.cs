@@ -75,7 +75,6 @@ namespace ClassLibrary1
                 piece.OnResearch(type);
         }
 
-
         public bool CanDisband() => Research.HasType(Research.Type.Disband);
 
         public bool CanBurnMass() => Research.HasType(Research.Type.BurnMass);
@@ -152,9 +151,10 @@ namespace ClassLibrary1
             return details;
         }
 
-        public void GetIncome(out double energyInc, out double massInc, out int researchInc)
+        public void GetIncome(out double energyInc, out double massInc, out int researchInc) =>
+            GetIncome(out energyInc, out massInc, out researchInc, out _);
+        public void GetIncome(out double energyInc, out double massInc, out int researchInc, out double researchAvg)
         {
-            double researchAvg;
             energyInc = massInc = researchAvg = 0;
             foreach (PlayerPiece piece in IteratePieces())
                 piece.GetIncome(ref energyInc, ref massInc, ref researchAvg);
@@ -181,8 +181,8 @@ namespace ClassLibrary1
             base.EndTurn(out double energyUpk, out double massUpk);
             PostProcess(ref energyInc, researchAvg, out int researchInc);
 
-            this._energy = Consts.Income(Energy, energyInc - energyUpk);
-            this._mass = Consts.Income(Mass, massInc - massUpk);
+            this._energy = Game.Consts.Income(Energy, energyInc - energyUpk);
+            this._mass = Game.Consts.Income(Mass, massInc - massUpk);
 
             return this.Research.AddResearch(researchInc);
         }
@@ -194,7 +194,7 @@ namespace ClassLibrary1
                 energyInc += researchAvg * Game.Consts.MassPerResearchConversion * Game.Consts.EnergyMassRatio;
                 researchAvg = 0;
             }
-            researchInc = MTRandom.Round(researchAvg + _researchRand * Consts.IncomeDev(researchAvg), _researchRound);
+            researchInc = MTRandom.Round(researchAvg + _researchRand * Game.Consts.IncomeDev(researchAvg), _researchRound);
         }
     }
 }

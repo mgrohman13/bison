@@ -175,8 +175,8 @@ namespace ClassLibrary1.Pieces
             if (attacker != null && killable != null && (includeImmobile || movable != null))
             {
                 double researchMult = Research.GetResearchMult(Game.Consts, research);
-                MechBlueprint.CalcCost(Game.Consts, researchMult, 0, killable.AllDefenses.Select(d => new IKillable.Values(d)),
-                    killable.Resilience, attacker.Attacks.Select(a => new IAttacker.Values(a)),
+                MechBlueprint.CalcCost(Game, researchMult, 0, killable.AllDefenses.Select(d => new IKillable.Values(d)),
+                    killable.Resilience, attacker.Attacks.Select(a => new IAttacker.Values(Game.CombatTypes, a)),
                     new IMovable.Values(movable), out double energy, out double mass);
                 return (energy + mass * Game.Consts.EnergyMassRatio) * Consts.GetDamagedValue(killable.Piece, 1, 0);
             }

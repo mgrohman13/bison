@@ -8,7 +8,6 @@ namespace ClassLibrary1.Pieces.Terrain
     [DataContract(IsReference = true)]
     public class Island(Tile tile, double height) : Terain(tile)
     {
-        //TODO: Consts (internal hidden multiplier not used for painting)
         public const double HEIGHT = 16.9; 
 
         //public const int RangedAtt = 1;
@@ -26,6 +25,5 @@ namespace ClassLibrary1.Pieces.Terrain
     public interface ITerrain
     {
         Tile Tile { get; }
-        //dou Tile { get; }
     }
 }

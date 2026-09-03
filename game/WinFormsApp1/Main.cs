@@ -35,27 +35,25 @@ namespace WinFormsApp1
 
         public override void Refresh()
         {
-            Program.Game.Player.GetIncome(out double energyInc, out double massInc, out int researchInc);
+            Program.Game.Player.GetIncome(out double energyInc, out double massInc, out int researchInc, out double researchAvg);
             //energyInc -= energyUpk;
             //massInc -= massUpk; 
-            this.lblEnergy.Text = Format(Program.Game.Player.Energy);
+            Format(this.lblEnergy, Program.Game.Player.Energy);
             FormatInc(lblEnergyInc, energyInc);
-            this.lblMass.Text = Format(Program.Game.Player.Mass);
+            Format(this.lblMass, Program.Game.Player.Mass);
             FormatInc(lblMassInc, massInc);
             this.lblResearch.Text = string.Format("{0} / {1}", Program.Game.Player.Research.GetProgress(Program.Game.Player.Research.Researching),
                 Program.Game.Player.Research.GetCost(Program.Game.Player.Research.Researching));
             FormatInc(lblResearchInc, researchInc, "0");
-            this.lblResearching.Text = Program.Game.Player.Research.Researching.ToString();
+            lblResearching.Text = $"({researchAvg:0.0})      {Program.Game.Player.Research.Researching}";
             base.Refresh();
         }
-        private static void FormatInc(Label label, double inc, string format = "0.0")
+        private static void FormatInc(Label label, double inc, string format = "0.0") =>
+            Format(label, Math.Sign(inc), string.Format("{0}{1}", inc >= 0 ? "+" : "", inc.ToString(format)));
+        private static void Format(Label label, int value, string text = null)
         {
-            label.ForeColor = inc >= 0 ? Color.Black : Color.Red;
-            label.Text = string.Format("{0}{1}", inc >= 0 ? "+" : "", inc.ToString(format));
-        }
-        private static string Format(int value)
-        {
-            return value.ToString();
+            label.ForeColor = value >= 0 ? Color.Black : Color.Red;
+            label.Text = text ?? value.ToString();
         }
 
         private void Main_KeyDown(object sender, KeyEventArgs e)

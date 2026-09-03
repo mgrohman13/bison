@@ -66,7 +66,7 @@ namespace ClassLibrary1.Pieces.Behavior
                     double attMult = GetAttackMult(killable);
                     double a = Attack.Attack * attMult + TerrainAttMod(killable);
                     int att = Game.Rand.GaussianCappedInt(a, 1 / a, 1);
-                    Attack attack = new(Piece, new(Attack.Type, att, Attack.Range));
+                    Attack attack = new(Piece, new(Piece.Game.CombatTypes, Attack.Type, att, Attack.Range));
                     fired = attack.Missile(killable);
                     if (fired)
                     {
@@ -146,7 +146,7 @@ namespace ClassLibrary1.Pieces.Behavior
         double IBehavior.Die()
         {
             Values values = GetValues();
-            double value = _numMissiles * Piece.Game.Consts.MissileScrapRefund;
+            double value = NumMissiles * Piece.Game.Consts.MissileScrapRefund;
             return (values.Energy + values.Mass * Piece.Game.Consts.EnergyMassRatio) * value;
         }
 
@@ -194,7 +194,7 @@ namespace ClassLibrary1.Pieces.Behavior
             }
             private void SetCost(Game game, double researchMult)
             {
-                double cost = MechBlueprint.MissileCost(game.Consts, this.Attack, researchMult);
+                double cost = MechBlueprint.MissileCost(game, this.Attack, researchMult);
                 double rangeMult = this.range / START_RANGE;
                 cost *= rangeMult * this.costMult * game.Consts.MissileCostMult;
 

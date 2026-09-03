@@ -46,7 +46,7 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
             return _piece.GetBehavior<T>();
         }
 
-        void IAttacker.Upgrade(IEnumerable<Values> values, IReadOnlyList<int> setCur)
+        void IAttacker.Upgrade(IEnumerable<Values> values, bool resetFlags, IReadOnlyList<int> setCur)
         {
             Values[] attacks = [.. values];
 
@@ -70,6 +70,10 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
                 else
                     _attacks[a].Upgrade(upg, curAtt);
             }
+
+            if (resetFlags)
+                foreach (var att in Attacks)
+                    att.ResetFlags();
         }
 
         bool IAttacker.Fire(IKillable target)

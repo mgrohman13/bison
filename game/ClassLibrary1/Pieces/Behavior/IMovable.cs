@@ -16,7 +16,7 @@ namespace ClassLibrary1.Pieces.Behavior
         bool Moved { get; }
         public bool CanMove { get; }
 
-        void Upgrade(Values values, double? cur = null);
+        void Upgrade(Values values, bool resetFlags = false, double? cur = null);
         internal void Damage(double dmgPct);
         public bool Move(Tile to);
         internal bool EnemyMove(Tile to);
@@ -52,12 +52,19 @@ namespace ClassLibrary1.Pieces.Behavior
             public int MoveMax => _moveMax;
             public int MoveLimit => _moveLimit;
 
+            public static bool operator !=(Values left, Values right) => !(left == right);
+            public static bool operator ==(Values left, Values right) => left.Equals(right);
+
             public override bool Equals([NotNullWhen(true)] object obj)
             {
                 if (obj == null)
                     return false;
                 Values other = (Values)obj;
                 return _moveMax == other._moveMax && _moveLimit == other._moveLimit && _moveInc == other._moveInc;
+            }
+            public override int GetHashCode()
+            {
+                return HashCode.Combine(MoveInc, MoveMax, MoveLimit);
             }
         }
     }

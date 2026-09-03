@@ -2,10 +2,13 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Runtime.Serialization;
 
 namespace ClassLibrary1.Pieces.Behavior.Combat
 {
-    public static class CombatTypes
+    [Serializable]
+    [DataContract(IsReference = true)]
+    public class CombatTypes
     {
         public enum AttackType
         {
@@ -20,40 +23,36 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
             Shield,
         }
 
+        private readonly Dictionary<AttackType, AttTypeConsts> _attConsts = [];
+        private readonly Dictionary<DefenseType, TypeConsts> _defConsts = [];
+        public CombatTypes()
+        {
+            foreach (AttackType type in Enum.GetValues(typeof(AttackType)))
+                _attConsts.Add(type, new(type));
+            foreach (DefenseType type in Enum.GetValues(typeof(DefenseType)))
+                _defConsts.Add(type, new(type));
+        }
+
         internal static int GetStartCur(AttackType type, int attack) =>
             type == AttackType.Energy ? 0 : attack;
         internal static int GetStartCur(DefenseType type, int defense) =>
             type == DefenseType.Shield ? 0 : defense;
 
-        internal static double GetDamageMult(AttackType type) => type switch
-        {
-            AttackType.Kinetic => .91,
-            AttackType.Energy => 1,
-            AttackType.Explosive => 1.3,
-            _ => throw new Exception()
-        };
-        internal static int GetReload(AttackType attackType, int attack)
+        internal double GetDamageMult(AttackType type) => _attConsts[type].DamageMult;
+        internal int GetReload(AttackType attackType, int attack)
         {
             double avg = ReloadAvg(attackType, attack);
             int lowerCap = 1;
             int upperCap = Math.Max(attack - 1, lowerCap);
             return Math.Min(Math.Max(lowerCap, Game.Rand.GaussianInt(avg, .13)), upperCap);
         }
-        internal static double ReloadAvg(AttackType attackType, int attack)
+        internal double ReloadAvg(AttackType attackType, int attack)
         {
             double avg = ReloadAvg(attack) - 1;
-            avg *= attackType switch
-            {
-                AttackType.Kinetic => 1.5,
-                AttackType.Energy => .78,
-                AttackType.Explosive => .65,
-                _ => throw new Exception(),
-            };
-            avg++;
-            return avg;
+            avg *= _attConsts[attackType].ReloadMult;
+            return avg + 1;
         }
         internal static double ReloadAvg(int attack) => Math.Sqrt(attack);
-
 
         internal static int GetPieceDefenceChance(IKillable killable)//double attackValue)
         {
@@ -160,36 +159,74 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
                 result /= consts.RegenCostPassiveDiv;
             return result;
         }
-        internal static bool Repair(DefenseType defenseType) =>
-            defenseType == DefenseType.Hits;
+        internal static bool Repair(DefenseType defenseType) => defenseType == DefenseType.Hits;
 
-        internal static double Cost(AttackType attackType) => attackType switch
+        internal double Cost(AttackType attackType) => _attConsts[attackType].Cost;
+        internal double Cost(DefenseType defenseType) => _defConsts[defenseType].Cost;
+
+        internal double EnergyCostRatio(AttackType attackType) => _attConsts[attackType].EnergyCostRatio;
+        internal double EnergyCostRatio(DefenseType defenseType) => _defConsts[defenseType].EnergyCostRatio;
+
+        [Serializable]
+        [DataContract(IsReference = true)]
+        private class AttTypeConsts(CombatTypes.AttackType type) : TypeConsts(Cost(type), EnergyCostRatio(type))
         {
-            AttackType.Kinetic => .78,
-            AttackType.Energy => 1.3,
-            AttackType.Explosive => 1,
-            _ => throw new Exception(),
-        };
-        internal static double Cost(DefenseType defenseType) => defenseType switch
+            public readonly double DamageMult = Rand(GetDamageMult(type)), ReloadMult = Rand(GetReloadMult(type));
+
+            private static double GetDamageMult(AttackType type) => type switch
+            {
+                AttackType.Kinetic => .91,
+                AttackType.Energy => 1,
+                AttackType.Explosive => 1.3,
+                _ => throw new Exception()
+            };
+            private static double GetReloadMult(AttackType type) => type switch
+            {
+                AttackType.Kinetic => 1.5,
+                AttackType.Energy => .78,
+                AttackType.Explosive => .65,
+                _ => throw new Exception(),
+            };
+            private static new double Cost(AttackType type) => type switch
+            {
+                AttackType.Kinetic => .75,
+                AttackType.Energy => 1.13,
+                AttackType.Explosive => 1,
+                _ => throw new Exception(),
+            };
+            private static new double EnergyCostRatio(AttackType type) => type switch
+            {
+                AttackType.Kinetic => .21,
+                AttackType.Energy => .65,
+                AttackType.Explosive => .39,
+                _ => throw new Exception(),
+            };
+        }
+        [Serializable]
+        [DataContract(IsReference = true)]
+        private class TypeConsts(double cost, double energyCostRatio)
         {
-            DefenseType.Hits => .78,
-            DefenseType.Shield => 1.3,
-            DefenseType.Armor => 1,
-            _ => throw new Exception(),
-        };
-        internal static double EnergyCostRatio(AttackType attackType) => attackType switch
-        {
-            AttackType.Kinetic => .21,
-            AttackType.Energy => .65,
-            AttackType.Explosive => .39,
-            _ => throw new Exception(),
-        };
-        internal static double EnergyCostRatio(DefenseType defenseType) => defenseType switch
-        {
-            DefenseType.Hits => .26,
-            DefenseType.Shield => .78,
-            DefenseType.Armor => .13,
-            _ => throw new Exception(),
-        };
+            public readonly double Cost = Rand(cost), EnergyCostRatio = Rand(energyCostRatio);
+            public TypeConsts(DefenseType type)
+                : this(GetCost(type), GetEnergyCostRatio(type))
+            { }
+
+            private static double GetCost(DefenseType type) => type switch
+            {
+                DefenseType.Hits => .65,
+                DefenseType.Shield => 1.3,
+                DefenseType.Armor => 1,
+                _ => throw new Exception(),
+            };
+            private static double GetEnergyCostRatio(DefenseType type) => type switch
+            {
+                DefenseType.Hits => .26,
+                DefenseType.Shield => .78,
+                DefenseType.Armor => .13,
+                _ => throw new Exception(),
+            };
+
+            protected static double Rand(double value) => Game.Rand.GaussianCapped(value, .13, .01);
+        }
     }
 }

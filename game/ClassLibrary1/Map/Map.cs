@@ -163,7 +163,7 @@ namespace ClassLibrary1.Map
         internal void Clear(Point center, double range)
         {
             ClearTerrain(Tile.GetPointsInRange(center, range).SelectMany(e => Tile.GetPointsInRange(e, Rand())));
-            double Rand() => Game.Rand.GaussianCapped(range / 2.0, 1);
+            double Rand() => Game.Rand.DoubleHalf(range);
         }
         internal void CheckStart()
         {
@@ -290,8 +290,8 @@ namespace ClassLibrary1.Map
             GeneratePlateaus(point);
 
             double mult = 0;
-            mult += _paths.Sum(p => p.Evaluate(point));
-            mult += _caves.Sum(c => c.Evaluate(Game.Consts, x, y));
+            mult += _paths.Sum(p => p.Evaluate(this, point));
+            mult += _caves.Sum(c => c.Evaluate(this, x, y));
 
             double eval = _noise.Evaluate(x, y);
             double dist = Tile.GetDistance(point, new(0, 0)) + 1;// + Math.Sqrt(Consts.FeatureDist);
@@ -364,7 +364,7 @@ namespace ClassLibrary1.Map
             if (heightCache.TryGetValue(p, out float value))
                 return value;
 
-            List<Tuple<Elevation, double>> hills = [.. _elevation.Select(e => Tuple.Create(e, e.Dist(p, evaluate)))];
+            List<Tuple<Elevation, double>> hills = [.. _elevation.Select(e => Tuple.Create(e, e.Dist(Game.Consts, p, evaluate)))];
             double minDist = hills.Min(h => h.Item2);
             double m1 = Elevation.Evaluate(Game.Consts, minDist);
 
@@ -384,7 +384,7 @@ namespace ClassLibrary1.Map
             if (island)
             {
                 height -= cutoff;
-                height *= Island.HEIGHT;
+                height *= Game.Consts.ElevationHeight;
 
                 Elevation elevation = hills.Where(e => e.Item2 == minDist).Select(e => e.Item1).First();
                 height = elevation.Round(Game.Consts, height, _elevation);
@@ -584,10 +584,11 @@ namespace ClassLibrary1.Map
             return invalid;
         }
 
-        internal double GetMapSize() => Math.Sqrt(_explored.Select(p => new PointD(p.X, p.Y)) //PointD add
-            .Concat(_pieces.Values.OfType<Hive>().Select(h => h.Tile.LocationD))
-            //.Append(add)
-            .Max(p => GetDistSqr(new(p.X, p.Y), new(0, 0))));
+        internal double GetMapSize() => Math.Max(Game.Consts.CaveDistance,
+            Math.Sqrt(_explored.Select(p => new PointD(p.X, p.Y)) //PointD add
+                .Concat(_pieces.Values.OfType<Hive>().Select(h => h.Tile.LocationD))
+                //.Append(add)
+                .Max(p => (double?)GetDistSqr(new(p.X, p.Y), new(0, 0))) ?? 0));
 
         internal void Explore(Point point, double vision)
         {
@@ -604,7 +605,7 @@ namespace ClassLibrary1.Map
                 Tile tile = GetTile();
 
                 bool island = tile.Terrain is Island;
-                double islandMult = tile.Terrain is Island i ? Math.Sqrt(i.Height / Island.HEIGHT) : 1;
+                double islandMult = tile.Terrain is Island i ? Math.Sqrt(i.Height / Game.Consts.ElevationHeight) : 1;
 
                 double fMult = 0;
                 if (Game.TEST_MAP_GEN.HasValue || !tile.Visible)
@@ -684,7 +685,7 @@ namespace ClassLibrary1.Map
             }
             static int CountAdjacent(Tile tile)
             {
-                static double Weight(Tile t) => t.Piece is Foundation ? 1 : t.Terrain is Island i ? .5 + .5 * i.Height / Island.HEIGHT : 0;
+                static double Weight(Tile t) => t.Piece is Foundation ? 1 : t.Terrain is Island i ? .5 + .5 * i.Height / t.Map.Game.Consts.ElevationHeight : 0;
                 double count = tile.GetAdjacentTiles().Sum(Weight) + Weight(tile) * 2;
                 return Game.Rand.Round(1 + (1 + count) * count);
             }
@@ -854,9 +855,7 @@ namespace ClassLibrary1.Map
                 .Concat(_caves.Where(c => !c.Explored).Select(c => c.Center))
                 .OrderBy(p =>
                 {
-                    if (dists.TryAdd(p, Math.Sqrt(GetDistSqr(tile.X, tile.Y, p)) + Game.Rand.OE(Game.Consts.CavePathWidth)))
-                        ;
-                    else
+                    if (!dists.TryAdd(p, Math.Sqrt(GetDistSqr(tile.X, tile.Y, p)) + Game.Rand.OE(Game.Consts.CavePathWidth)))
                         ; //if never hit can remove dists dict
                     return dists[p];
                 }).Select(point => SpawnTile(point, Game.Consts.PathWidth + Game.Consts.CaveSize, false, Valid: ValidRetreat));
@@ -925,7 +924,7 @@ namespace ClassLibrary1.Map
                         {
                             Tile t1 = GetTile(p1, visibleOnly);
                             Tile t2 = GetTile(p, visibleOnly);
-                            if (t1 != null && t2 != null && t1.MoveDistTo(t2) > firstMove)
+                            if (t1 != null && t2 != null && !t1.MoveDistTo(t2, firstMove))
                                 return false;
                         }
                         var tile = GetTile(p, visibleOnly);

@@ -8,8 +8,9 @@ namespace ClassLibrary1.Map
 {
     public partial class Map
     {
-        public static double Logistic(double dist, double k, double width) =>
-            (2 - 2 / (1 + Math.Pow(Math.E, -k * (dist / width - 1))));
+        public double Logistic(double dist, double k, double width) =>
+            (2 - 2 / (1 + Math.Pow(Math.E, -k * (dist / width - 1)))) + (dist < Game.Consts.EnforcePathDist
+                ? (Math.Sqrt(Game.Consts.EnforcePathDist - dist + 1) - 1) / Math.Sqrt(Game.Consts.EnforcePathDist) : 0);
         private static double GenK() => Game.Rand.GaussianOE(1, 1 / Math.PI, .5);
 
         [Serializable]
@@ -131,7 +132,7 @@ namespace ClassLibrary1.Map
             //public void Turn(int turn) => _spawn.Turn(turn);
             public int SpawnChance(int turn, double? enemyMove) => _spawn.Chance;
             public Tile SpawnTile(Map map)
-                => map.SpawnTile(ExploredPoint(), map.Game. Consts.PathWidth * 1.69, true);
+                => map.SpawnTile(ExploredPoint(), map.Game.Consts.PathWidth * 1.69, true);
             public PointD ExploredPoint(double buffer = 0) => GetLinePoint(ExploredDist + buffer);
             private PointD GetLinePoint(double dist)
             {
@@ -141,9 +142,9 @@ namespace ClassLibrary1.Map
 
             public override string ToString() => "Path " + (float)Angle;
 
-            internal double Evaluate(Point p)
+            internal double Evaluate(Map map, Point p)
             {
-                double Logistic(double dist) => Map.Logistic(dist, K, Width);
+                double Logistic(double dist) => map.Logistic(dist, K, Width);
 
                 double backMult = 1;
                 double direction = PointLineDistanceSigned(Start, Angle + Map.HALF_PI, p);

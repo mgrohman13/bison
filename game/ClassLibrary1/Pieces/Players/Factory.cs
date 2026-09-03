@@ -28,7 +28,8 @@ namespace ClassLibrary1.Pieces.Players
 
             SetBehavior(
                 new Killable(this, new IKillable.Values(), Values.Resilience),
-                new Repair(this, new()));
+                new Repair(this, new()),
+                new Builder.BuildExtractor(this, new()));
             Unlock();
         }
 
@@ -53,7 +54,7 @@ namespace ClassLibrary1.Pieces.Players
         protected override bool CanReplace<T>(out Tuple<double, double> rounding)
         {
             rounding = new(GetValues(Game).Rounding, _rounding);
-            return true;
+            return typeof(T) != this.GetType();
         }
 
         internal override void OnResearch(Research.Type type)

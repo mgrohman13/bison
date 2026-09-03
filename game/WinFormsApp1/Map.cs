@@ -24,7 +24,7 @@ namespace WinFormsApp1
 {
     public partial class Map : UserControl
     {
-        private const float padding = 1f, scrollTime = 39f, scrollSpeed = 13f, scaleCutoff = 13f;
+        private const float padding = 0f, scrollTime = 39f, scrollSpeed = 13f, scaleCutoff = 13f;
 
         private float xStart, yStart, _scale;
         private Point? _selected, _moused;
@@ -43,7 +43,7 @@ namespace WinFormsApp1
         public Map()
         {
             InitializeComponent();
-            lblMouse.Text = "";
+            this.lblMouse.Text = "";
             lblMouseAtt.Font = new Font(FontFamily.GenericSansSerif, 11.7f, FontStyle.Bold);
             //lblMouse.AutoSize\
             //lblMouse.
@@ -113,6 +113,7 @@ namespace WinFormsApp1
             }
         }
         private List<Point> mousePath = null;
+        private HashSet<Point> pathVision = null;
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public Tile MouseTile
         {
@@ -127,6 +128,7 @@ namespace WinFormsApp1
                 _moused = p;
 
                 mousePath = null;
+                pathVision = null;
                 if (!timer.Enabled && SelTile?.Piece != null && SelTile.Piece.HasBehavior(out IMovable movable))
                 {
                     if (_moused.HasValue && (shift))// || MouseTile == null || MouseTile.Piece is Block))
@@ -162,7 +164,9 @@ namespace WinFormsApp1
         private void PathFind(object sender, DoWorkEventArgs e)
         {
             using BackgroundWorker worker = sender as BackgroundWorker;
-            if (SelTile?.Piece?.HasBehavior(out IMovable movable) == true && MouseTile != null && worker != null)
+
+            Piece piece = SelTile?.Piece;
+            if (piece?.HasBehavior(out IMovable movable) == true && MouseTile != null && worker != null)
             {
                 var from = SelTile;
                 var to = MouseTile;
@@ -175,11 +179,11 @@ namespace WinFormsApp1
                     //find the best stopping point on the path if piece move will fill up this turn
                     //otherwise, we don't care and can simply follow the path
                     double innerRange = Consts.LimitedMove(movable, out bool limitMove);
-                    if (limitMove && !Stop())//&& !Program.TurnPath(movable).Contains(to.Location)
+                    if (limitMove)
                     {
                         double pathDist = 0;
-                        for (int d = 1; d < path.Count; d++)
-                            pathDist += GetTile(path[d - 1]).MoveDistTo(GetTile(path[d]));
+                        for (int a = 1; a < path.Count; a++)
+                            pathDist += GetTile(path[a - 1]).MoveDistTo(GetTile(path[a]));
                         if (pathDist > moveCur)
                         {
                             List<Tile> tiles = [.. GetTiles(path)];
@@ -187,33 +191,32 @@ namespace WinFormsApp1
 
                             double stepsDist = 0;
                             double distDiff = double.MaxValue;
-                            int a = 1;
-                            while (a < tiles.Count)
+                            int skip = 1;
+                            for (int b = skip; b < tiles.Count && stepsDist < moveCur && !Stop(); b++)
                             {
-                                Tile[] line = [.. GetLine(tiles[a - 1], tiles[a])];
-                                //double minHeight = Math.Min(Height(tiles[a - 1]), Height(tiles[a]));
+                                Tile[] line = [.. GetLine(tiles[b - 1], tiles[b])];
                                 double maxHeight = line.Max(Height);
 
-                                double dist = from.MoveDistTo(tiles[a]);
+                                double dist = from.MoveDistTo(tiles[b]);
                                 //evaluate each potential stopping point in between path tiles
-                                for (int b = 1; b < line.Length; b++)
+                                for (int c = 1; c < line.Length; c++)
                                 {
-                                    var other = line[b];
-                                    Piece piece = other.Piece;
-                                    if (piece == null || (piece.IsPlayer && piece.HasBehavior<IMovable>()))
+                                    var other = line[c];
+                                    Piece p2 = other.Piece;
+                                    if (p2 == null || (p2.IsPlayer && p2.HasBehavior<IMovable>()))
                                     {
                                         //prevent stepping to lower ground where piece would have to climb back up
                                         double height = Height(other);
-                                        double minHeight = b + 1 < line.Length ? line.Skip(b + 1).Max(Height) : 0;
-                                        minHeight = Math.Min(minHeight, line.Take(b).Max(Height));
+                                        double minHeight = c + 1 < line.Length ? line.Skip(c + 1).Max(Height) : 0;
+                                        minHeight = Math.Min(minHeight, line.Take(c).Max(Height));
                                         if (height >= minHeight)
                                         {
                                             //prevent taking a bad angle that paths through higher ground
-                                            double lineHeight = GetLine(tiles[a - 1], other).Max(Height);
+                                            double lineHeight = GetLine(tiles[b - 1], other).Max(Height);
                                             if (lineHeight <= maxHeight)
                                             {
                                                 //check both direct move and move through last path tile 
-                                                dist = tiles[a - 1].MoveDistTo(other);
+                                                dist = tiles[b - 1].MoveDistTo(other);
                                                 double newStep = stepsDist + dist;
                                                 double direct = from.MoveDistTo(other);
                                                 dist = Math.Min(newStep, direct);
@@ -228,10 +231,13 @@ namespace WinFormsApp1
                                                     distDiff = diff;
                                                     //replace if direct path is better, otherwise append to move one step at a time
                                                     if (dist <= moveCur)
+                                                    {
                                                         if (direct > newStep)
                                                             move.Add(other);
                                                         else
                                                             move = [other];
+                                                        skip = b;
+                                                    }
                                                 }
                                             }
                                         }
@@ -239,40 +245,38 @@ namespace WinFormsApp1
                                 }
                                 //anchor to last path tile
                                 stepsDist = dist;
-                                if (stepsDist < moveCur)
-                                    a++;
-                                else
-                                    break;
                             }
 
                             //reassemble path back together with new stopping points
                             if (move.Count > 0)
-                                path = [from.Location, .. move.Select(t => t.Location), .. path.Skip(a)];
+                                path = [from.Location, .. move.Select(t => t.Location), .. path.Skip(skip)];
                         }
                     }
 
                     if (!Stop())
                     {
                         //remove any unecessary intermediate steps
-                        int b = 1;
+                        int skip = 1, stop = -1;
                         double total = 0;
-                        for (; b < path.Count; b++)
+                        for (; skip < path.Count; skip++)
                         {
-                            Tile next = GetTile(path[b]);
-                            total += GetTile(path[b - 1]).MoveDistTo(next);
+                            Tile next = GetTile(path[skip]);
+                            total += GetTile(path[skip - 1]).MoveDistTo(next);
                             double direct = from.MoveDistTo(next);
                             if (direct > moveCur || direct > total + Error())
                                 break;
-                            //if (limitMove && direct > innerRange)
-                            //{
-                            //    b++;
-                            //    break;
-                            //}
-                            double Error() => total / (1ul << MTRandom.DOUBLE_BITS - Game.Rand.Round(2 + Math.Log2(b)));
+                            //save the initial stopping point 
+                            if (limitMove && direct > innerRange && stop < 0)
+                                stop = skip;
+                            double Error() => total / (1ul << MTRandom.DOUBLE_BITS - Game.Rand.Round(2 + Math.Log2(skip)));
                         }
-                        if (b > 2)
-                            Debug.WriteLine($"path remove {b - 1} ({path.Count})");
-                        path = [path[0], .. path.Skip(b - 1)];
+                        skip--;
+                        //don't use initial stopping point if we can move all the way to the target
+                        if (stop > 0 && from.MoveDistTo(GetTile(path[^1])) > moveCur)
+                            skip = stop;
+                        if (skip > 1)
+                            Debug.WriteLine($"path remove {skip} ({path.Count})");
+                        path = [path[0], .. path.Skip(skip)];
                     }
 
                     if (!Stop())
@@ -280,6 +284,18 @@ namespace WinFormsApp1
                         mousePath = path;
                         Invalidate();
                         Invoke(() => ShowMouseInfo());
+                    }
+
+                    if (piece is PlayerPiece pp && !Stop())
+                    {
+                        IEnumerable<Point> enumerable = ShowVision(piece, movable, to, pp);
+
+                        if (!Stop())
+                        {
+                            pathVision = [.. enumerable];
+                            Invalidate();
+                            Invoke(() => ShowMouseInfo());
+                        }
                     }
                 }
             }
@@ -424,13 +440,14 @@ namespace WinFormsApp1
             ClassLibrary1.Map.Map.LogEvalTime();
 
             Rectangle gameRect = Program.Game.Map.GameRect();
-            Scale = Math.Min((this.Width - 1 - padding * 2) / (float)gameRect.Width, (this.Height - 1 - padding * 2) / (float)gameRect.Height);
-            xStart = GetX(gameRect.X);
-            yStart = GetY(gameRect.Y);
+            Scale = Math.Min((ClientSize.Width) / ((float)gameRect.Width - 1f),
+                (ClientSize.Height) / ((float)gameRect.Height - 1f));
+            xStart = GetX(gameRect.X + 1);
+            yStart = GetY(gameRect.Y + 1);
+
+            this.lblMouse.Location = new DPoint(0, ClientSize.Height - lblMouse.Height);
 
             RefreshRanges();
-
-            lblMouse.Location = new DPoint(0, this.ClientSize.Height - lblMouse.Height);
 
             ClassLibrary1.Map.Map.LogEvalTime();
         }
@@ -553,21 +570,21 @@ namespace WinFormsApp1
             Brush indicatorBase = Brushes.Black;
             Brush indicatorAtt = Brushes.Red;
             Brush indicatorAccent = Brushes.DarkGray;
-            Brush indicator4 = Brushes.LightGray;
+            Brush indicatorMerge = Brushes.LightYellow;
             Brush healBrush = Brushes.HotPink;
             ellipses.Add(playerBrush, []);
             ellipses.Add(playerLight, []);
             ellipses.Add(indicatorBase, []);
             ellipses.Add(indicatorAtt, []);
             ellipses.Add(indicatorAccent, []);
-            ellipses.Add(indicator4, []);
+            ellipses.Add(indicatorMerge, []);
             ellipses.Add(healBrush, []);
             polygons.Add(playerBrush, []);
             polygons.Add(playerLight, []);
             polygons.Add(indicatorBase, []);
             polygons.Add(indicatorAtt, []);
             polygons.Add(indicatorAccent, []);
-            polygons.Add(indicator4, []);
+            polygons.Add(indicatorMerge, []);
             polygons.Add(healBrush, []);
 
             HashSet<Brush> terrainBrushes = [];
@@ -776,8 +793,10 @@ namespace WinFormsApp1
                             {
                                 AddEllipse(indicatorAccent, 6.5f);
                             }
+                        //Debug.WriteLine($"ElapsedMilliseconds: {watch.ElapsedMilliseconds}"); 
                         if (Program.MoveLeft(playerPiece, out bool canAttack))
                             AddEllipse(canAttack ? indicatorAtt : indicatorBase, 16.9f);
+                        //Debug.WriteLine($"ElapsedMilliseconds: {watch.ElapsedMilliseconds} ({playerPiece})");
                         //if (playerPiece.HasBehavior(out IAttacker a) && a.Attacks.Any(a => a.CanAttack()))
                         //    redCircle.Add(GetEllipse(16.9f));
                         void AddEllipse(Brush brush, float padDiv) =>
@@ -795,11 +814,11 @@ namespace WinFormsApp1
                     {
                         PointF[] corner = Corner();
                         PointF mid = new(rect.X + rect.Width * 3f / 4f, rect.Y + rect.Height / 4f);
-                        polygons[indicator4].Add([corner[0], corner[1], mid]);
+                        polygons[indicatorMerge].Add([corner[0], corner[1], mid]);
                         polygons[indicatorAccent].Add([corner[1], corner[2], mid]);
                     }
                     else if (combine)
-                        polygons[indicator4].Add(Corner());
+                        polygons[indicatorMerge].Add(Corner());
                     else if (hasUpgrade)
                         polygons[indicatorAccent].Add(Corner());
 
@@ -994,7 +1013,7 @@ namespace WinFormsApp1
                 e.Graphics.FillRectangles(Brushes.White, allrects);
 
             HashSet<Brush> afterBrushes = [ Brushes.White, Brushes.Black, Brushes.LightPink,
-                Brushes.DarkGray, Brushes.LightSlateGray, Brushes.SkyBlue, Brushes.LightGray, Brushes.SandyBrown, Brushes.MediumPurple,
+                Brushes.DarkGray, Brushes.LightSlateGray, Brushes.SkyBlue, Brushes.LightYellow, Brushes.SandyBrown, Brushes.MediumPurple,
             ];
             foreach (var p in Game.Rand.Iterate(fill))
                 if (terrainBrushes.Contains(p.Key))
@@ -1229,19 +1248,13 @@ namespace WinFormsApp1
                 //Debug.WriteLine("5 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
                 if (piece is PlayerPiece pp && movable != null && MouseTile != null)
                 {
-                    Tile tile = MouseTile;
-                    if (mousePath != null && mousePath.Count > 1)
-                        tile = GetTile(mousePath[1]);
-
+                    Tile tile = GetPathTile();
                     if (tile.Piece == null || tile.Piece.HasBehavior<IMovable>())
                     {
-                        IEnumerable<Point> enumerable = [];
-                        if (moveTiles.Contains(tile.Location))
-                            enumerable = Tile.GetVision(pp, tile.Location);
-                        if (enumerable.All(Program.Game.Map.Visible))
-                            enumerable = Tile.GetVision(Program.Game.Map, MouseTile.Location, pp.Vision);
-
-                        ranges[White].Add([.. enumerable.Where(p => !Program.Game.Map.Visible(p))]);
+                        if (shift)
+                            pathVision = [.. ShowVision(piece, movable, tile, pp)];
+                        if (pathVision != null)
+                            ranges[White].Add(pathVision);
 
                         if (piece.HasBehavior(out IBuilder b) && b.Range >= 1) //moveTiles.Contains(MouseTile.Location) &&
                             ranges[Blue].Add([.. MouseTile.GetPointsInRange(b)]);
@@ -1372,6 +1385,25 @@ namespace WinFormsApp1
 
             //watch.Stop();
         }
+        private IEnumerable<Point> ShowVision(Piece piece, IMovable movable, Tile to, PlayerPiece pp)
+        {
+            Tile tile = GetPathTile();
+            IEnumerable<Point> enumerable = [];
+            if (piece.Tile.MoveDistTo(tile, movable.MoveCur) && !shift)
+                enumerable = Tile.GetVision(pp, tile.Location);
+            if (!enumerable.Any())
+                enumerable = Tile.GetVision(Program.Game.Map, to.Location, pp.Vision);
+            return enumerable;
+        }
+        private Tile GetPathTile()
+        {
+            Tile tile = MouseTile;
+            var mousePath = this.mousePath;
+            if (mousePath != null && mousePath.Count > 1)
+                tile = GetTile(mousePath[1]);
+            return tile;
+        }
+
         private static HashSet<Point> GetMoveTiles(IMovable movable)
         {
             Tile t;
@@ -1683,8 +1715,8 @@ namespace WinFormsApp1
                     scrollRight = true;
                 if (scrollDown || scrollLeft || scrollUp || scrollRight)
                 {
-                    timer.Start();
                     Timer_Tick(sender, null);
+                    timer.Start();
                 }
 
                 //Debug.WriteLine(scrollDown || scrollLeft || scrollUp || scrollRight);
@@ -1729,7 +1761,7 @@ namespace WinFormsApp1
             scrollAmt *= (scrollTime + paintTime) / scrollTime;
             scrollAmt = Game.Rand.Gaussian(scrollAmt, .013f);
 
-            Debug.WriteLine("scrollAmt " + scrollAmt);
+            //Debug.WriteLine("scrollAmt " + scrollAmt);
 
             if (scrollDown && !scrollUp)
                 this.yStart -= scrollAmt;
@@ -1746,7 +1778,7 @@ namespace WinFormsApp1
 
             timer.Interval = Math.Max(1, Game.Rand.Round(scrollTime - paintTime));
 
-            Debug.WriteLine("timer.Interval " + timer.Interval);
+            //Debug.WriteLine("timer.Interval " + timer.Interval);
         }
         public void Map_MouseWheel(object sender, MouseEventArgs e)
         {

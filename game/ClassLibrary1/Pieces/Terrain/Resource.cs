@@ -11,7 +11,7 @@ namespace ClassLibrary1.Pieces.Terrain
     public abstract class Resource : Piece, IIncome
     {
         public readonly double Sustain;
-
+        public readonly double Resilience;
         private readonly double _energyMult, _massMult, _rounding;
 
         private double _value;
@@ -52,12 +52,18 @@ namespace ClassLibrary1.Pieces.Terrain
                 const double offset = .01;
                 sustain += Game.Rand.Range(1.0, 3.0) * offset / 2.0 - offset;
             }
+            this.Sustain = sustain;
+
+            double resilience = consts.ExtractorResilience;
+            if (resilience > .5)
+                throw new Exception();
+            this.Resilience = Game.Rand.Bool() ? Game.Rand.Weighted(resilience) : Game.Rand.Bool()
+                ? Game.Rand.GaussianCapped(resilience, Game.Rand.DoubleFull(.169)) : Game.Rand.DoubleFull(resilience);
 
             this._energyMult = Game.Rand.GaussianOE(1, .065, .021);
             this._massMult = Game.Rand.GaussianOE(Math.Sqrt(1 / this._energyMult), .039, .013);
             this._rounding = Game.Rand.NextDouble();
             this._value = value;
-            this.Sustain = sustain;
         }
 
         public void GetIncome(out double energyInc, out double massInc, out double researchInc) =>
@@ -80,6 +86,7 @@ namespace ClassLibrary1.Pieces.Terrain
             double mult = Math.Sqrt(inc);
             mult = Math.Pow((this.Value + mult) / (inc + mult), Game.Consts.ExtractorCostPow);
             mult *= Math.Pow(Sustain, Game.Consts.ExtractorSustainCostPow);
+            mult *= Math.Pow(.39 + Resilience * 2, Game.Consts.ExtractorResilienceCostPow);
             mult *= costMult;
             energy = MTRandom.Round(baseEnergy * _energyMult * mult, Consts.MAX_ROUND - _rounding);
             mass = MTRandom.Round(baseMass * _massMult * mult, _rounding);

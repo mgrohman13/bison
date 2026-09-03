@@ -15,23 +15,30 @@ namespace ClassLibrary1.Pieces.Players
 {
     [Serializable]
     [DataContract(IsReference = true)]
-    public class MechBlueprint : IComparable<MechBlueprint>
+    public class MechBlueprint : IComparable<MechBlueprint>, IBlueprint
     {
         public readonly MechBlueprint UpgradeFrom;
         public MechBlueprint UpgradeTo { get; private set; }
+
+        private readonly Dictionary<MechBlueprint, MechBlueprint> _combinations = [];
+        private List<MechBlueprint> _comboFrom = [];
+        //private IEnumerable<MechBlueprint> _comboFrom = new List<MechBlueprint>();
+
         public readonly string BlueprintNum;
         public readonly int Energy;
         public readonly int Mass;
-        public readonly int ResearchLevel;
-        public readonly double Vision;
+        public int ResearchLevel { get; }
+        public double Vision { get; }
         public readonly double Resilience;
-        public readonly IReadOnlyList<IKillable.Values> Killable;
-        public readonly IReadOnlyList<IAttacker.Values> Attacker;
+        public IReadOnlyList<IKillable.Values> Killable { get; }
+        public IReadOnlyList<IAttacker.Values> Attacker { get; }
         public readonly IMovable.Values Movable;
 
         public IKillable.Values Hits => Killable.Single(d => d.Type == CombatTypes.DefenseType.Hits);
+        public MechBlueprint CombinesWith(MechBlueprint other) => _combinations.GetValueOrDefault(other);
+        public IEnumerable<MechBlueprint> ComboFrom => _comboFrom;
 
-        private MechBlueprint(Consts consts, int blueprintNum, MechBlueprint upgrade, int research, double vision,
+        private MechBlueprint(Game game, int blueprintNum, MechBlueprint upgrade, int research, double vision,
             IEnumerable<IKillable.Values> killable, double resilience, IEnumerable<IAttacker.Values> attacker, IMovable.Values movable)
         {
             this.BlueprintNum = "";
@@ -50,45 +57,57 @@ namespace ClassLibrary1.Pieces.Players
             this.Attacker = CombatTypes.OrderAtt(attacker);
             this.Movable = movable;
 
-            CalcCost(consts, out double energy, out double mass);
-            this.Energy = Game.Rand.Round(energy / 10.0) * 10;
-            this.Mass = Game.Rand.Round((mass + (energy - this.Energy) / consts.EnergyMassRatio) / 5.0) * 5;
+            CalcCost(game, out double energy, out double mass);
+            RoundCosts(game, energy, mass, out this.Energy, out this.Mass);
         }
-        private void CalcCost(Consts consts, out double energy, out double mass)
+
+        internal static void RoundCosts(Game game, double e, double m, out int energy, out int mass)
         {
-            double researchMult = Research.GetResearchMult(consts, ResearchLevel);
-            CalcCost(consts, researchMult, Vision, Killable, Resilience, Attacker, Movable, out energy, out mass);
+            energy = Game.Rand.Round(e / 10.0) * 10;
+            mass = Game.Rand.Round((m + (e - energy) / game.Consts.EnergyMassRatio) / 5.0) * 5;
         }
-        public static void CalcCost(Consts consts, double researchMult, double vision, IEnumerable<IKillable.Values> killable, double resilience,
+
+        private void CalcCost(Game game, out double energy, out double mass)
+        {
+            double researchMult = Research.GetResearchMult(game.Consts, ResearchLevel);
+            CalcCost(game, researchMult, Vision, Killable, Resilience, Attacker, Movable, out energy, out mass);
+        }
+        public static void CalcCost(Game game, double researchMult, double vision, IEnumerable<IKillable.Values> killable, double resilience,
             IEnumerable<IAttacker.Values> attacker, IMovable.Values? movable, out double energy, out double mass)
         {
+            Consts consts = game.Consts;
+            CombatTypes combatTypes = game.CombatTypes;
+
+            researchMult = Math.Pow(researchMult, 1 / consts.MechCostPow);
             double baseMove = consts.MoveValue(movable);
-            double r = Math.Pow(Math.Pow(resilience, Math.Log(3) / Math.Log(2)) * 1.5 + 0.5, .26);
+            double r = Math.Pow(Math.Pow(resilience, Math.Log(3) / Math.Log(2)) * 1.5 + 0.5, consts.CostResiliencePow);
 
             double AttCost(IAttacker.Values a)
             {
                 double rangeMult = 1;
                 if (a.Range > Attack.MELEE_RANGE)
                     rangeMult = (a.Range + Attack.MELEE_RANGE) / (Math.PI * Attack.MIN_RANGED);
-                rangeMult = Math.Pow(rangeMult, 1.17);
-                return BaseAttCost(a)
-                    * Math.Pow((a.Reload + .5) / (CombatTypes.ReloadAvg(a.Attack) + .5), .91)
+                else
+                    rangeMult = Math.Sqrt((baseMove + consts.CostMoveAdd) / (2 * consts.CostMoveAdd * consts.CostMoveMult));
+                rangeMult = Math.Pow(rangeMult, consts.CostRangePow);
+                return BaseAttCost(combatTypes, a)
+                    * Math.Pow((a.Reload + .5) / (CombatTypes.ReloadAvg(a.Attack) + .5), consts.CostReloadPow)
                     * rangeMult;
             }
 
-            double DefCost(IKillable.Values d) => Consts.StatValue(d.Defense) * CombatTypes.Cost(d.Type)
-                * (d.Type == DefenseType.Hits ? Math.Pow(r, 1.56) * .78 : 1.04);
+            double DefCost(IKillable.Values d) => Consts.StatValue(d.Defense) * combatTypes.Cost(d.Type)
+                * (d.Type == DefenseType.Hits ? Math.Pow(r, consts.CostResilienceHitsPow) : 1);
 
-            double attPow = Math.Pow(1 + (MoveCostMult + baseMove) / 3.9 / MoveCostMult, .21);
-            double att = MultAttCost(Math.Pow(attacker.Sum(AttCost), attPow), researchMult);
-            double def = killable.Sum(DefCost) / researchMult * StatsCostMult;
+            double attPow = Math.Pow(1 + (consts.CostMoveMult + baseMove) / consts.CostAttMoveDiv / consts.CostMoveMult, consts.CostAttMovePow);
+            double att = MultAttCost(consts, Math.Pow(attacker.Sum(AttCost), attPow), researchMult);
+            double def = killable.Sum(DefCost) / researchMult * consts.CostStatsMult;
 
-            double mult = Math.Sqrt(researchMult);
-            double move = (baseMove + MoveCostAdd) * MoveCostMult / mult;
+            researchMult = Math.Sqrt(researchMult);
+            double move = (baseMove + consts.CostMoveAdd) * consts.CostMoveMult / researchMult;
             double v = vision;
-            v = (v + 6.5) * 3.9 / mult;
+            v = (v + consts.CostVisionAdd) * consts.CostVisionMult / researchMult;
 
-            double total = (att + v) * (def + move) * r * consts.MechCostMult;
+            double total = CalcCost(consts, att, def, move, v, r);
 
             //Debug.WriteLine($"total: {total}");
 
@@ -96,10 +115,10 @@ namespace ClassLibrary1.Pieces.Players
             energyPct *= move / (move + def + v);
             energyPct = Math.Sqrt(energyPct);
 
-            double attEnergy = attacker.Sum(a => AttCost(a) * CombatTypes.EnergyCostRatio(a.Type));
-            double defEnergy = killable.Sum(d => DefCost(d) * CombatTypes.EnergyCostRatio(d.Type));
-            double attMass = attacker.Sum(a => AttCost(a) * (1 - CombatTypes.EnergyCostRatio(a.Type)));
-            double defMass = killable.Sum(d => DefCost(d) * (1 - CombatTypes.EnergyCostRatio(d.Type)));
+            double attEnergy = attacker.Sum(a => AttCost(a) * combatTypes.EnergyCostRatio(a.Type));
+            double defEnergy = killable.Sum(d => DefCost(d) * combatTypes.EnergyCostRatio(d.Type));
+            double attMass = attacker.Sum(a => AttCost(a) * (1 - combatTypes.EnergyCostRatio(a.Type)));
+            double defMass = killable.Sum(d => DefCost(d) * (1 - combatTypes.EnergyCostRatio(d.Type)));
 
             energyPct *= (attEnergy + defEnergy) / (attEnergy + defEnergy + attMass + defMass);
             energyPct = Math.Sqrt(energyPct);
@@ -107,16 +126,19 @@ namespace ClassLibrary1.Pieces.Players
             energy = total * energyPct;
             mass = (total - energy) / consts.EnergyMassRatio;
         }
-        private const double MoveCostAdd = 3.9;
-        private const double MoveCostMult = 6.5;
-        private const double StatsCostMult = 2.1;
-        private static double BaseAttCost(IAttacker.Values a) =>
-            Consts.StatValue(a.Attack) * CombatTypes.Cost(a.Type);
-        private static double MultAttCost(double cost, double researchMult) =>
-            cost / researchMult * StatsCostMult;
-        internal static double MissileCost(Consts consts, IAttacker.Values missile, double researchMult) =>
-             (MultAttCost(BaseAttCost(missile), researchMult) + 0)
-                * (StatsCostMult + MoveCostAdd * MoveCostMult) * 1 * consts.MechCostMult;
+
+        private static double BaseAttCost(CombatTypes combatTypes, IAttacker.Values a) =>
+            Consts.StatValue(a.Attack) * combatTypes.Cost(a.Type);
+        private static double MultAttCost(Consts consts, double cost, double researchMult) =>
+            cost / researchMult * consts.CostStatsMult;
+        internal static double MissileCost(Game game, IAttacker.Values missile, double researchMult) =>
+            CalcCost(game.Consts, MultAttCost(game.Consts, BaseAttCost(game.CombatTypes, missile), researchMult),
+                game.Consts.CostStatsMult, game.Consts.CostMoveAdd * game.Consts.CostMoveMult, 0, 1);
+        private static double CalcCost(Consts consts, double att, double def, double move, double vision, double resilience)
+        {
+            resilience = Math.Sqrt(resilience);
+            return Math.Pow((att + vision) * (def * resilience + move) * resilience, consts.MechCostPow) * consts.MechCostMult;
+        }
 
         public int TotalCost()
         {
@@ -127,35 +149,50 @@ namespace ClassLibrary1.Pieces.Players
             return Energy + Mass * consts.EnergyMassRatio;
         }
 
-        internal static MechBlueprint MechOneOff(Consts consts, IResearch research, int researchLevel)
+        internal static MechBlueprint MechOneOff(IResearch research, int researchLevel)
         {
-            return GenBlueprint(consts, null, research, research.Game.GetPieceNum(typeof(MechBlueprint)), researchLevel, false);
+            return GenBlueprint(research.Game, null, research, research.Game.GetPieceNum(typeof(MechBlueprint)), researchLevel, false);
         }
-        internal static MechBlueprint Alien(Consts consts, IResearch research)
+        internal static MechBlueprint Alien(IResearch research)
         {
-            return GenBlueprint(consts, null, research, 0, research.GetBlueprintLevel(), true);
+            return GenBlueprint(research.Game, null, research, 0, research.GetBlueprintLevel(), true);
         }
-        internal static MechBlueprint OnResearch(Consts consts, IResearch research, SortedSet<MechBlueprint> blueprints)
+        internal static MechBlueprint OnResearch(IResearch research, SortedSet<MechBlueprint> blueprints)
         {
+            Game game = research.Game;
+            Consts consts = game.Consts;
             int researchLevel = research.GetBlueprintLevel();
 
             IEnumerable<object> select = blueprints;
             if (Game.Rand.Bool())
             {
-                var existing = research.Game.Player.PiecesOfType<Mech>().Select(m => m.Blueprint);
+                var existing = game.Player.PiecesOfType<Mech>().Select(m => m.Blueprint);
                 if (Game.Rand.Bool())
                     select = select.Concat(existing).Append("");
                 else
                     select = existing;
             }
 
+            select = select.Select(o =>
+            {
+                if (o is MechBlueprint b)
+                {
+                    while (b.UpgradeTo != null)
+                        b = b.UpgradeTo;
+                    return b;
+                }
+                return o;
+            });
+
             var doubles = select.Append("").ToLookup(b => b, b =>
             {
                 double chance;
                 if (b is MechBlueprint blueprint)
                 {
+                    if (blueprint.UpgradeTo != null)
+                        throw new Exception();
                     chance = researchLevel - blueprint.ResearchLevel;
-                    if (chance < 0 || blueprint.UpgradeTo != null)
+                    if (chance < 0)
                         chance = 0;
                 }
                 else
@@ -164,6 +201,7 @@ namespace ClassLibrary1.Pieces.Players
                 }
                 return (chance * chance);
             });
+
             double mult = 1;
             double sum = doubles.Sum(p => p.Sum());
             double max = int.MaxValue - 13 * doubles.Count;
@@ -171,9 +209,11 @@ namespace ClassLibrary1.Pieces.Players
                 mult = max / sum;
             var ints = doubles.ToDictionary(p => p.Key, p => Game.Rand.Round(p.Sum() * mult));
 
+            if (research.GetType() == Type.MechUpgrades)
+                ints[""] = 0;
             MechBlueprint upgrade = Game.Rand.SelectValue(ints) as MechBlueprint;
 
-            MechBlueprint newBlueprint = GenBlueprint(consts, upgrade, research, research.Game.GetPieceNum(typeof(MechBlueprint)), researchLevel, false);
+            MechBlueprint newBlueprint = GenBlueprint(game, upgrade, research, game.GetPieceNum(typeof(MechBlueprint)), researchLevel, false);
             blueprints.Add(newBlueprint);
             if (upgrade != null)
             {
@@ -182,18 +222,19 @@ namespace ClassLibrary1.Pieces.Players
             }
             return newBlueprint;
         }
-        private static MechBlueprint GenBlueprint(Consts consts, MechBlueprint upgrade, IResearch research, int blueprintNum, int researchLevel, bool alien)
+        private static MechBlueprint GenBlueprint(Game game, MechBlueprint upgrade, IResearch research, int blueprintNum, int researchLevel, bool alien)
         {
+            Consts consts = game.Consts;
             MechBlueprint blueprint;
 
             bool valid = false;
             do
             {
                 if (upgrade == null)
-                    blueprint = CheckCost(consts, NewBlueprint(consts, research, blueprintNum, researchLevel, alien),
+                    blueprint = CheckCost(game, NewBlueprint(game, research, blueprintNum, researchLevel, alien),
                         upgrade, research, blueprintNum, researchLevel, alien);
                 else do
-                    blueprint = CheckCost(consts, UpgradeBlueprint(consts, upgrade, research, blueprintNum, researchLevel),
+                    blueprint = CheckCost(game, UpgradeBlueprint(game, upgrade, research, blueprintNum, researchLevel),
                         upgrade, research, blueprintNum, researchLevel, alien);
                 while (!UpgradeValid(consts, blueprint, upgrade, research));
 
@@ -220,18 +261,22 @@ namespace ClassLibrary1.Pieces.Players
             return blueprint;
         }
 
-        private static MechBlueprint NewBlueprint(Consts consts, IResearch research, int blueprintNum, int researchLevel, bool alien)
+        private static MechBlueprint NewBlueprint(Game game, IResearch research, int blueprintNum, int researchLevel, bool alien)
         {
             double vision = alien ? 0 : GenVision(research);
             double resilience = GenResilience(research);
             IReadOnlyList<IKillable.Values> killable = GenKillable(research);
             IReadOnlyList<IAttacker.Values> attacker = GenAttacker(research);
-            IMovable.Values movable = GenMovable(consts, research, killable, attacker);
-            return new(consts, blueprintNum, null, researchLevel, vision, killable, resilience, attacker, movable);
+            IMovable.Values movable = GenMovable(game.Consts, research, killable, attacker);
+            return new(game, blueprintNum, null, researchLevel, vision, killable, resilience, attacker, movable);
         }
 
-        internal static MechBlueprint Combine(Game game, MechBlueprint bp1, MechBlueprint bp2, int researchLevel, double discount)
+        internal static MechBlueprint Combine(Game game, MechBlueprint bp1, MechBlueprint bp2, int researchLevel, double costMult)
         {
+            MechBlueprint existing = bp1.CombinesWith(bp2);
+            if (existing != null)
+                return existing;
+
             Consts consts = game.Consts;
             int blueprintNum = game.GetPieceNum(typeof(MechBlueprint));
 
@@ -241,9 +286,9 @@ namespace ClassLibrary1.Pieces.Players
             static double GetStr(IAttacker.Values values) => Consts.StatValue(values.Attack);
             static double GetRange(IAttacker.Values values) => values.Range;
             static double GetReload(IAttacker.Values values) => values.Reload;
-            static double GetAtt(MechBlueprint bp, AttackType type, bool ranged, Func<IAttacker.Values, double> GetStat) =>
+            static double GetAtt(MechBlueprint bp, AttackType type, bool ranged, Func<IAttacker.Values, double> GetStat, double defaultValue = 0) =>
                 bp.Attacker.Where(k => k.Type == type && ranged == k.Range > Attack.MELEE_RANGE)
-                    .Sum(a => (double?)GetStat(a)) ?? 0;
+                    .Sum(a => (double?)GetStat(a)) ?? defaultValue;
             static double GetDef(MechBlueprint bp, DefenseType type) =>
                 bp.Killable.Where(k => k.Type == type).Select(k => Consts.StatValue(k.Defense)).SingleOrDefault(0);
             Tuple<double, double> GetStatRange(Func<MechBlueprint, double> GetStat)
@@ -284,20 +329,25 @@ namespace ClassLibrary1.Pieces.Players
                 minStr[3 + a] = temp.Item1;
                 maxStr[3 + a] = temp.Item2;
 
-                temp = GetStatRange(bp => GetAtt(bp, type, range, GetReload));
-                minReload[a] = temp.Item1;
-                maxReload[a] = temp.Item2;
-
-                if (range)
+                if (maxStr[3 + a] > 0)
                 {
-                    temp = GetStatRange(bp => GetAtt(bp, type, range, GetRange));
-                    minRange[a / 2] = Math.Max(Game.Rand.Range(Attack.MELEE_RANGE, Attack.MIN_RANGED), temp.Item1);
-                    maxRange[a / 2] = temp.Item1;
+                    temp = GetStatRange(bp => GetAtt(bp, type, range, GetReload));
+                    minReload[a] = temp.Item1;
+                    maxReload[a] = temp.Item2;
+
+                    if (range)
+                    {
+                        temp = GetStatRange(bp => GetAtt(bp, type, range, GetRange, Attack.MIN_RANGED));
+                        minRange[a / 2] = temp.Item1;
+                        maxRange[a / 2] = temp.Item2;
+                    }
                 }
+                else
+                    ;
             }
 
             for (int a = 0; a < countStr; a++)
-                maxStr[a] *= Math.Sqrt(discount);
+                maxStr[a] *= Math.Sqrt(costMult);
 
             double minVision = Min(bp1.Vision, bp2.Vision);
             double maxVision = Math.Max(bp1.Vision, bp2.Vision);
@@ -311,7 +361,7 @@ namespace ClassLibrary1.Pieces.Players
             double minMoveLimit = Min(bp1.Movable.MoveLimit, bp2.Movable.MoveLimit);
             double maxMoveLimit = Math.Max(bp1.Movable.MoveLimit, bp2.Movable.MoveLimit);
 
-            double target = (bp1.EnergyEquivalent(consts) + bp2.EnergyEquivalent(consts)) * discount;
+            double target = (bp1.EnergyEquivalent(consts) + bp2.EnergyEquivalent(consts)) * costMult;
             double tolerance = 0;
 
             while (true)
@@ -353,13 +403,19 @@ namespace ClassLibrary1.Pieces.Players
                     attacker.Add(new(AttackType.Explosive, valStr[8], valRange[2], Math.Max(1, valReload[5])));
 
                 IMovable.Values movable = new(moveInc, moveMax, moveLimit);
-                MechBlueprint result = new(consts, blueprintNum, null, researchLevel, vision,
+                MechBlueprint result = new(game, blueprintNum, null, researchLevel, vision,
                     Game.Rand.Iterate(killable), resilience, Game.Rand.Iterate(attacker), movable);
                 double cost = result.EnergyEquivalent(consts);
 
                 tolerance += Game.Rand.NextDouble();
                 if (Math.Abs(cost - target) < tolerance)
+                {
+                    bp1._combinations.Add(bp2, result);
+                    if (bp1 != bp2)
+                        bp2._combinations.Add(bp1, result);
+                    result._comboFrom = [.. new MechBlueprint[] { bp1, bp2 }.Order()];
                     return result;
+                }
 
                 for (int a = 0; a < countStr; a++)
                     valStr[a] = Game.Rand.Round(Consts.StatValue(valStr[a]));
@@ -421,8 +477,11 @@ namespace ClassLibrary1.Pieces.Players
             }
         }
 
-        private static MechBlueprint UpgradeBlueprint(Consts consts, MechBlueprint upgrade, IResearch research, int blueprintNum, int researchLevel)
+        private static MechBlueprint UpgradeBlueprint(Game game, MechBlueprint upgrade, IResearch research, int blueprintNum, int researchLevel)
         {
+            Consts consts = game.Consts;
+            CombatTypes combatTypes = game.CombatTypes;
+
             double resilience = upgrade.Resilience;
             double vision = upgrade.Vision;
             List<IKillable.Values> killable = [.. upgrade.Killable];
@@ -431,7 +490,7 @@ namespace ClassLibrary1.Pieces.Players
 
             Type upgType = research.GetType();
             HashSet<Type> done = [];
-            int times = 1 + Game.Rand.OEInt(.5);
+            int times = 1 + Game.Rand.OEInt();
             for (int a = 0; a < times; a++)
             {
                 switch (upgType)
@@ -453,7 +512,7 @@ namespace ClassLibrary1.Pieces.Players
                                         type = newAttacker.Type;
                                 }
                             }
-                            return UpgAttack(attacker, attack, type, att, range);
+                            return UpgAttack(combatTypes, attacker, attack, type, att, range);
                         })];
                         break;
                     case Type.MechRange:
@@ -471,7 +530,7 @@ namespace ClassLibrary1.Pieces.Players
                                 if (Game.Rand.Bool() || CheckTypeRange(attack, newAttacker))
                                     type = newAttacker.Type;
                             }
-                            return UpgAttack(attacker, attack, type, att, range);
+                            return UpgAttack(combatTypes,attacker, attack, type, att, range);
                         })];
                         break;
                     case Type.MechExplosives:
@@ -532,17 +591,20 @@ namespace ClassLibrary1.Pieces.Players
                             movable = new IMovable.Values(newMovable);
                         }
                         break;
+                    case Type.CombineMechs:
+                        times += Game.Rand.Next(6);
+                        break;
                     default:
                         throw new Exception();
                 }
                 if (!done.Add(upgType))
                     ;
-                upgType = Game.Rand.SelectValue(Enum.GetValues<Research.Type>().Where(Research.IsMech)
+                upgType = Game.Rand.SelectValue(Enum.GetValues<Type>().Where(Research.IsMech)
                     .Concat([Type.MechMove]) //more likely to pick
                     .Where(t => !done.Contains(t) || Game.Rand.Next(13) == 0) //small chance of picking the same type again
                     .Concat([Type.MechResilience, Type.MechVision])); //can pick multiple times
             }
-            return new(consts, blueprintNum, upgrade, researchLevel, vision, killable, resilience, attacker, movable);
+            return new(game, blueprintNum, upgrade, researchLevel, vision, killable, resilience, attacker, movable);
 
             void UpgAttackType(AttackType upgAtt)
             {
@@ -560,13 +622,13 @@ namespace ClassLibrary1.Pieces.Players
                         if (Game.Rand.Bool() || CheckTypeRange(attack, newAttacker))
                             range = newAttacker.Range;
                     }
-                    return UpgAttack(attacker, attack, type, att, range);
+                    return UpgAttack(combatTypes, attacker, attack, type, att, range);
                 })];
 
                 double trgAtts = NumAtts(research);
                 int numAttacks = attacker.Count;
                 if (CheckNumAtts())
-                    AddAttack(attacker, GenAtt());
+                    AddAttack(combatTypes, attacker, GenAtt());
                 numAttacks = attacker.Count;
                 attacker = [.. Game.Rand.Iterate(attacker).Where(a =>
                 {
@@ -648,7 +710,7 @@ namespace ClassLibrary1.Pieces.Players
             return valid;
         }
 
-        private static MechBlueprint CheckCost(Consts consts, MechBlueprint blueprint, MechBlueprint upgrade, IResearch research, int blueprintNum, int researchLevel, bool alien)
+        private static MechBlueprint CheckCost(Game game, MechBlueprint blueprint, MechBlueprint upgrade, IResearch research, int blueprintNum, int researchLevel, bool alien)
         {
             Type researching = research.GetType();
             int minTotal, maxTotal;
@@ -663,11 +725,10 @@ namespace ClassLibrary1.Pieces.Players
                 }
                 if (researching != Type.Mech)
                 {
-                    const double minDev = .13;
-                    minTotal = Game.Rand.GaussianCappedInt(minTotal, minDev);
-                    const double maxDev = .21, maxOE = .169;
+                    const double dev = .26, oe = .091;
+                    minTotal = Game.Rand.GaussianOEInt(minTotal, dev, oe, 520);
                     if (maxTotal > minTotal)
-                        maxTotal = Game.Rand.GaussianOEInt(maxTotal, maxDev, maxOE, minTotal);
+                        maxTotal = Game.Rand.GaussianOEInt(maxTotal, dev, oe, minTotal);
                     else
                         maxTotal = Game.Rand.Round(minTotal * Game.Rand.Range(1, 1 + Game.Rand.Weighted(.13)));
                 }
@@ -683,7 +744,7 @@ namespace ClassLibrary1.Pieces.Players
                 Debug.WriteLine($"blueprint ({(blueprint.BlueprintNum == "" ? "Alien" : blueprint.BlueprintNum)}) {oldCost} -> {newCost}");
 
             if ((!canKeep || research.GetType() == Type.Mech || Game.Rand.Bool()) && (newCost < minTotal || newCost > maxTotal))
-                blueprint = GenBlueprint(consts, upgrade, research, blueprintNum, researchLevel, alien);
+                blueprint = GenBlueprint(game, upgrade, research, blueprintNum, researchLevel, alien);
 
             return blueprint;
 
@@ -828,11 +889,11 @@ namespace ClassLibrary1.Pieces.Players
                 Action Inc = Game.Rand.SelectValue(chances);
                 Inc();
 
-                blueprint = new(consts, blueprintNum, blueprint.UpgradeFrom, blueprint.ResearchLevel, newVision, newKillable, newResilience, newAttacker, newMovable);
+                blueprint = new(game, blueprintNum, blueprint.UpgradeFrom, blueprint.ResearchLevel, newVision, newKillable, newResilience, newAttacker, newMovable);
                 return true;
             }
         }
-        private static IAttacker.Values UpgAttack(List<IAttacker.Values> attacker, IAttacker.Values oldAttack,
+        private static IAttacker.Values UpgAttack(CombatTypes combatTypes, List<IAttacker.Values> attacker, IAttacker.Values oldAttack,
             AttackType type, int att, double range)
         {
             bool rangeChange = (oldAttack.Range > Attack.MELEE_RANGE) != (range > Attack.MELEE_RANGE);
@@ -846,7 +907,9 @@ namespace ClassLibrary1.Pieces.Players
                         range = oldAttack.Range;
                 }
             }
-            return new(type, att, range, oldAttack.Attack == att ? oldAttack.Reload : null);
+            if (oldAttack.Attack == att)
+                return new(type, att, range, oldAttack.Reload);
+            return new(combatTypes, type, att, range);
         }
 
         private static double GenVision(IResearch research)
@@ -880,12 +943,30 @@ namespace ClassLibrary1.Pieces.Players
         }
         private static ReadOnlyCollection<IKillable.Values> GenKillable(IResearch research)
         {
-            IKillable.Values hits = GenType(DefenseType.Hits, null, 1.04);
+            bool shields = research.GetType() == Type.MechShields || research.MakeType(Type.MechShields);
+            bool armor = research.GetType() == Type.MechArmor || research.MakeType(Type.MechArmor);
+            if (shields && armor && Game.Rand.Bool())
+                if (Game.Rand.Bool())
+                    shields = false;
+                else
+                    armor = false;
+
+            double hitsMult = 1.04;
+            if (shields && Game.Rand.Bool())
+                hitsMult *= .91;
+            if (armor && Game.Rand.Bool())
+                hitsMult *= .65;
+            if (!shields && !armor
+                    && ((research.HasType(Type.MechShields) && Game.Rand.Bool())
+                    || (research.HasType(Type.MechArmor) && Game.Rand.Bool())))
+                hitsMult *= 1.3;
+
+            IKillable.Values hits = GenType(DefenseType.Hits, null, hitsMult);
             List<IKillable.Values> defenses = [hits];
-            if (research.GetType() == Type.MechShields || research.MakeType(Type.MechShields))
-                defenses.Add(GenType(DefenseType.Shield, Type.MechShields, 0.65));
-            if (research.GetType() == Type.MechArmor || research.MakeType(Type.MechArmor))
-                defenses.Add(GenType(DefenseType.Armor, Type.MechArmor, 0.91));
+            if (shields)
+                defenses.Add(GenType(DefenseType.Shield, Type.MechShields, armor && Game.Rand.Bool() ? .52 : .78));
+            if (armor)
+                defenses.Add(GenType(DefenseType.Armor, Type.MechArmor, 1.17));
             return defenses.AsReadOnly();
 
             IKillable.Values GenType(DefenseType type, Type? additionalResearch, double mult)
@@ -905,6 +986,8 @@ namespace ClassLibrary1.Pieces.Players
 
         private static ReadOnlyCollection<IAttacker.Values> GenAttacker(IResearch research)
         {
+            CombatTypes combatTypes = research.Game.CombatTypes;
+
             int numAttacks = research.GetType() == Type.Mech ? 1 : Game.Rand.GaussianOEInt(NumAtts(research), .26, .13, 1);
             if (numAttacks < 1)
                 numAttacks = 1;
@@ -936,7 +1019,7 @@ namespace ClassLibrary1.Pieces.Players
                 attAvg *= researchMult;
 
                 //modify for attack type
-                attAvg *= CombatTypes.GetDamageMult(type);
+                attAvg *= combatTypes.GetDamageMult(type);
 
                 //modify for multiple attacks and range
                 attAvg = 1 + (attAvg - 1) * Math.Sqrt(rangeAvg / range / numAttacks);
@@ -971,7 +1054,7 @@ namespace ClassLibrary1.Pieces.Players
                     }
                 }
 
-                AddAttack(attacks, new(type, attack, range));
+                AddAttack(combatTypes, attacks, new(combatTypes, type, attack, range));
             }
             return attacks.AsReadOnly();
 
@@ -1043,7 +1126,7 @@ namespace ClassLibrary1.Pieces.Players
                 return apply;
             }
         }
-        private static void AddAttack(List<IAttacker.Values> attacker, IAttacker.Values values)
+        private static void AddAttack(CombatTypes combatTypes, List<IAttacker.Values> attacker, IAttacker.Values values)
         {
             AttackType type = values.Type;
             double range = values.Range;
@@ -1053,7 +1136,7 @@ namespace ClassLibrary1.Pieces.Players
                 var other = attacker[existing];
                 int attack = Game.Rand.Round(Consts.StatValueInverse(Consts.StatValue(values.Attack) + Consts.StatValue(other.Attack)));
                 range = (range + other.Range) / 2;
-                attacker[existing] = new(type, attack, range);
+                attacker[existing] = new(combatTypes, type, attack, range);
             }
             else
             {
@@ -1076,10 +1159,11 @@ namespace ClassLibrary1.Pieces.Players
             avg += 0.91;
 
             oe /= Math.Sqrt(avg);
+            avg++;
             double cap = Game.Rand.Range(Game.Rand.Range(1, Math.Sqrt(2) + 1), Math.Sqrt(2) * 2 + Game.Rand.DoubleHalf());
-            if (avg < cap)
-                ;
-            double move = Game.Rand.GaussianOE(1 + avg, dev, oe, cap);
+            while (avg < cap)
+                cap -= Game.Rand.NextDouble();
+            double move = Game.Rand.GaussianOE(avg, dev, oe, cap);
             int MinMax() => (int)Math.Ceiling(move) + 1;
             int max = Game.Rand.GaussianOEInt(1 + move * 2, dev * 2.6, oe * 1.3, MinMax());
             int limit = Game.Rand.GaussianOEInt(1 + move + max, dev * 2.6, oe * 2.6, max + (int)move);

@@ -3,7 +3,6 @@ using ClassLibrary1.Pieces.Behavior;
 using ClassLibrary1.Pieces.Behavior.Combat;
 using ClassLibrary1.Pieces.Enemies;
 using ClassLibrary1.Pieces.Players;
-using ClassLibrary1.Pieces.Terrain;
 using MattUtil;
 using System;
 using System.Collections.Generic;
@@ -66,7 +65,7 @@ namespace ClassLibrary1
         private static Dictionary<IKillable, Dictionary<IKillable, int>> PlayTurn(EnemyPiece piece, double difficulty, double aggression, bool clearPaths, HashSet<EnemyPiece> moved,
             Dictionary<Tile, double> playerAttacks, Dictionary<IKillable, Dictionary<IKillable, int>> allTargets, double avgHp, double avgWeight)
         {
-            //if (piece.ToString() == "Alien 56")
+            //if (piece.ToString() == "Alien 28")
             //    ;
 
             Game game = piece.Game;
@@ -128,7 +127,7 @@ namespace ClassLibrary1
 
             double attValue = SumAttacks(attacks, orig, null);
             double maxMoveAttRange = (movable?.MoveCur ?? 0) + (attacks.Max(a => a?.Range) ?? 0);
-            HashSet<IKillable> extendedTargets = [.. allTargets.Keys.Where(k => orig.MoveDistTo(k.Piece.Tile) < maxMoveAttRange).SelectMany(k => allTargets[k].Keys)];
+            HashSet<IKillable> extendedTargets = [.. allTargets.Keys.Where(k => orig.MoveDistTo(k.Piece.Tile, maxMoveAttRange)).SelectMany(k => allTargets[k].Keys)];
 
             AIState prev = piece.State;
             AIState state = piece.TurnState(difficulty, aggression, clearPaths, playerAttacks, moveTiles, extendedTargets, out List<Point> fullPath);
@@ -208,7 +207,7 @@ namespace ClassLibrary1
                             int d = c;
                             for (int e = c - 2; e >= 0; e--)
                             {
-                                if (limitMove && flag && orig.MoveDistTo(pathTiles[e]) <= innerRange)
+                                if (limitMove && flag && orig.MoveDistTo(pathTiles[e], innerRange))
                                 {
                                     flag = false;
                                     d = e + 1;
@@ -297,6 +296,8 @@ namespace ClassLibrary1
                         }
                     }
 
+                    bool validRetreat = state == AIState.Retreat && alien.ValidRetreatTile(moveTile, playerAttacks);
+
                     double pathWeight = 1;
                     double padding = Math.Sqrt(moveValue + 1);
                     if (HasPortal(moveTile))
@@ -339,7 +340,7 @@ namespace ClassLibrary1
                             pathWeight = Math.Max(pathWeight, weight);
                         }
 
-                        if (state == AIState.Retreat && alien.ValidRetreatTile(moveTile, playerAttacks))
+                        if (validRetreat)
                             pathWeight *= pathWeight + 1;
 
                         if (limitMove && moveDist > innerRange)
@@ -418,11 +419,11 @@ namespace ClassLibrary1
                     }
 
                     double moveHeight = Tile.Height(moveTile);
-                    double terrainWeight = Math.Pow(1 + 3.9 * Math.Sqrt(moveHeight / Island.HEIGHT), 1 + 1 / difficulty);
+                    double terrainWeight = Math.Pow(1 + 3.9 * Math.Sqrt(moveHeight / consts.ElevationHeight), 1 + 1 / difficulty);
                     double origHeight = Tile.Height(orig);
                     if (moveHeight < origHeight)
                     {
-                        const double offset = Island.HEIGHT / 5;
+                        double offset = consts.ElevationHeight / 5;
                         terrainWeight *= Math.Pow((moveHeight + offset) / (origHeight + offset), 1 + difficulty);
                     }
 
@@ -507,11 +508,11 @@ namespace ClassLibrary1
                     }
                     result *= div * moveTiles.Count;
 
-                    if (result <= 0)
-                        throw new Exception();
+                    if (validRetreat)
+                        result *= 1 + weights.Max();
 
-                    if (!double.IsNormal(result))
-                        ;
+                    if (result <= 0 || !double.IsNormal(result))
+                        throw new Exception();
 
                     dictDbl.Add(moveTile, result);
                 }
@@ -624,6 +625,10 @@ namespace ClassLibrary1
                                 //fully re-load all targets since this kill could affect target grouping
                                 if (kill)
                                     allTargets = GetAllTargets(game);
+                                else //handle corner case where splash damage kills a passive defender
+                                    foreach (var pair in Game.Rand.Iterate(allTargets))
+                                        if (pair.Key.Dead)
+                                            allTargets.Remove(pair.Key);
                             }
                             else if (CanTarget(target))
                             { }

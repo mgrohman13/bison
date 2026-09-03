@@ -1,6 +1,7 @@
 ﻿using ClassLibrary1.Pieces;
 using ClassLibrary1.Pieces.Behavior;
 using ClassLibrary1.Pieces.Behavior.Combat;
+using ClassLibrary1.Pieces.Terrain;
 using MattUtil;
 using System;
 using System.Runtime.Serialization;
@@ -16,13 +17,14 @@ namespace ClassLibrary1
         internal const double MAX_ROUND = MTRandom.DOUBLE_DIV / MTRandom.DOUBLE_DIV_1;
 
         internal readonly double Scale;
-        internal readonly double PathMinSeparation, PathWidth, PathDev, PathWidthMin, FeatureDist, FeatureMin, NoiseDistance;
+        internal readonly double PathMinSeparation, PathWidth, PathDev, PathWidthMin, EnforcePathDist, FeatureDist, FeatureMin, NoiseDistance;
         internal readonly double CaveDistance, CaveDev, CaveOE, CaveMinDist, CaveSize, CavePathWidth;
         internal readonly double TreasureDiv;
 
-        public readonly double ElevationDensity, ElevationMaxEffectDist;
+        public readonly double ElevationDensity, ElevationMaxEffectDist, ElevationHeight;
 
         internal readonly double ResearchFactor;
+        internal readonly double CombineResearchBuffer;
         internal readonly int ExploreForResearch;
 
         internal readonly double DifficultySetting, EnemyStartEnergy, ExploreEnergy, EnemyIncomeMatchFactor,
@@ -30,21 +32,21 @@ namespace ClassLibrary1
         internal readonly double DifficultyEnergyPow, DifficultyResearchPow, DifficultyAIPow, AgressionTurns;
         internal readonly double SpawnEnergyDiv, SpawnTurnAdd, SpawnTurnDiv, SpawnNeg;
         internal readonly double PortalSpawnTime, PortalSpawnStrMult, PortalCost, PortalExitDef, PortalEntranceDef,
-            PortalDecayRate, PortalRewardPct, PortalLoan, PortalMinDist;
+            PortalDecayRate, PortalRewardPct, PortalLoan, PortalMinDist, PortalIncomeDiv;
 
         internal readonly double MoveDev, MoveLimitPow, MoveIncCost, MoveMaxCost, MoveLimitCost;
 
         public readonly double CoreEnergy, CoreMass, CoreResearch;
-        internal readonly double CoreEnergyLow, CoreEnergyMid, CoreEnergyHigh, CoreExtractTurns;
+        internal readonly double CoreEnergyLow, CoreEnergyMid, CoreEnergyHigh, CoreExtractTurns, IncomeDevAdd, IncomeDevDiv;
 
         internal readonly double DroneCost, DroneMassCostMult, DroneRefund;
 
         internal readonly double ResourceAvgDist, ResourceDistAdd, ResourceDistDiv, ResourceDistPow, ResourceSustainValuePow,
-            ExtractTurns, ExtractPow, ExtractSustainPow, ExtractorSustainCostPow, ExtractorHitsPow, ResourceDev, ResourceOE, FoundationAmt;
+            ExtractTurns, ExtractPow, ExtractSustainPow, ExtractorSustainCostPow, ExtractorResilienceCostPow, ExtractorHitsPow, ResourceDev, ResourceOE, FoundationAmt;
 
         internal readonly double BiomassEnergyInc, BiomassSustain, BiomassResearchDiv, BiomassResearchPow,
             MetalMassInc, MetalSustain, MetalEnergyUpkDiv, ArtifactResearchInc, ArtifactSustain, ArtifactMassIncDiv, ArtifactEnergyUpkMult;
-        internal readonly double ExtractorCostPow, BiomassExtractorEnergyCost, BiomassExtractorMassCost,
+        internal readonly double ExtractorCostPow, ExtractorResilience, BiomassExtractorEnergyCost, BiomassExtractorMassCost,
             MetalExtractorEnergyCost, MetalExtractorMassCost, ArtifactExtractorEnergyCost, ArtifactExtractorMassCost;
 
         internal readonly double GeneratorEnergyInc, GeneratorResearchUpk, GeneratorEnergyCost, GeneratorMassCost;
@@ -54,7 +56,10 @@ namespace ClassLibrary1
 
         internal readonly double EnergyPerMove, EnergyPerAttack, EnergyPerShield, MassPerArmor, RegenCostPassiveDiv;
 
-        internal readonly double MechCostMult, EnergyMassRatio;
+        internal readonly double MechCostMult, MechCostPow, EnergyMassRatio, TurretCost;
+
+        internal readonly double CostAttMoveDiv, CostAttMovePow, CostVisionAdd, CostVisionMult, CostResilienceHitsPow, // CostResilienceHitsMult,
+            CostReloadPow, CostResiliencePow, CostRangePow, CostMoveAdd, CostMoveMult, CostMovePow, CostStatsMult;
 
         internal readonly double MissileCostMult, MissileEnergyCostRatio, MissileHitRefundPct, MissileScrapRefund, MissileAttImmobileMult, MissileAttMaxMult;
 
@@ -89,8 +94,25 @@ namespace ClassLibrary1
             MassPerArmor = EnergyPerShield / 2.0;
             RegenCostPassiveDiv = 2;
 
-            MechCostMult = Rand(.13, div: 3, cap: .78);
+            MechCostMult = Rand(5.2, div: 2, cap: .52);
+            MechCostPow = Rand(.65, div: 3, cap: .65);
             ResearchFactor = Rand(780 * Math.E, div: 4, cap: .91);
+            CombineResearchBuffer = Rand(ResearchFactor, cap: .78);
+            TurretCost = Rand(.78, div: 3, cap: .78);
+
+            CostAttMoveDiv = Rand(3.9, div: 2, cap: .52);
+            CostAttMovePow = Rand(.21, div: 3, cap: .65);
+            CostVisionAdd = Rand(6.5, cap: .39);
+            CostVisionMult = Rand(3.9, div: 2, cap: .52);
+            //CostResilienceHitsMult = Rand(.78, div: 2, cap: .52);
+            CostReloadPow = RandCap(1.3, div: 3, cap: 1);
+            CostResiliencePow = Rand(.104, div: 3, cap: .78);
+            CostResilienceHitsPow = RandCap(.21 / CostResiliencePow, div: 4, cap: 1);
+            CostRangePow = RandCap(1.13, div: 4, cap: 1);
+            CostMoveAdd = Rand(3.9, cap: .39);
+            CostMoveMult = Rand(6.5, div: 2, cap: .52);
+            CostMovePow = RandCap(1.5, div: 4, cap: 1.3);
+            CostStatsMult = Rand(2.1, div: 2, cap: .52);
 
             DisbandValue = Rand(.26, div: 4, cap: .78);
             RepairCost = Rand(.169, div: 5, cap: .91);
@@ -113,6 +135,7 @@ namespace ClassLibrary1
             PathWidth = RandCap(Scale * 16.9, div: 3, cap: PathWidthMin);
             PathDev = Rand(.21);
             PathMinSeparation = Rand(Scale * Math.PI * 1.3);
+            EnforcePathDist = RandCap(Math.Sqrt(5), cap: 1);
             FeatureDist = Rand(Scale * 260, div: 2);
             FeatureMin = Rand(FeatureDist / Math.PI);
             NoiseDistance = RandCap(CaveDistance / Math.Sqrt(Scale), cap: FeatureMin);
@@ -125,11 +148,12 @@ namespace ClassLibrary1
 
             ElevationDensity = Rand(Scale * 26, div: 2);
             ElevationMaxEffectDist = Rand(Math.Sqrt(Scale) * 39);
+            ElevationHeight = Rand(Island.HEIGHT, div: 2, cap: .52);
 
             DifficultySetting = Rand(Math.E / Math.PI, div: 5, cap: .91);
-            ExploreEnergy = Rand(3900, div: 4, cap: .78);
-            EnemyStartEnergy = Rand(ExploreEnergy, div: 2, cap: .52);
-            EnemyIncomeMatchFactor = Rand(5200, div: 4, cap: .78);
+            ExploreEnergy = Rand(2600, div: 4, cap: .78);
+            EnemyStartEnergy = Rand(5200, div: 2, cap: .52);
+            EnemyIncomeMatchFactor = Rand(6500, div: 4, cap: .78);
             EnemyEnergy = Rand(169, div: 3, cap: .65);
             EnemyEnergyRampTurns = Rand(91, div: 2, cap: .52);
             EnemyUnlockTurns = Rand(210, div: 2, cap: .65);
@@ -141,7 +165,7 @@ namespace ClassLibrary1
             DifficultyAIPow = Rand(.91);
             AgressionTurns = Rand(26, div: 2, cap: .65);
 
-            SpawnEnergyDiv = Rand(EnemyStartEnergy * 7.8, div: 3, cap: .65);
+            SpawnEnergyDiv = Rand(169 * 169, div: 3, cap: .65);
             SpawnTurnAdd = Rand(13);
             SpawnTurnDiv = Rand(21, div: 2, cap: .52);
             SpawnNeg = Rand(.26);
@@ -153,8 +177,9 @@ namespace ClassLibrary1
             PortalEntranceDef = Rand(169);
             PortalDecayRate = Rand(16.9, div: 3, cap: .52);
             PortalRewardPct = Rand(.39, div: 3, cap: .65);
-            PortalLoan = Rand(10.4);
+            PortalLoan = Rand(3.9);
             PortalMinDist = Rand(Math.Sqrt(Scale) * 78, div: 2, cap: .78);
+            PortalIncomeDiv = Rand(3.9, div: 2, cap: .13);
 
             MoveDev = Rand(.013);
             MoveLimitPow = RandCap(1.3, div: 4, cap: 1);
@@ -170,6 +195,9 @@ namespace ClassLibrary1
             CoreEnergyHigh = CoreEnergy - CoreEnergyMid - CoreEnergyLow; //199
             CoreExtractTurns = Rand(91, div: 4, cap: .91); //0.98901098901098901098901098901099
 
+            IncomeDevAdd = Rand(.65, div: 2, cap: .39);
+            IncomeDevDiv = Rand(65, div: 3, cap: .52);
+
             DroneCost = Rand(16.9, div: 4, cap: .78);
             DroneMassCostMult = RandCap(1.69, div: 3, cap: 1);
             DroneRefund = Rand(.65, div: 2, cap: .52);
@@ -181,10 +209,11 @@ namespace ClassLibrary1
             ResourceSustainValuePow = Rand(.26, div: 2);
             ResourceDev = Rand(.21, cap: .78);
             ResourceOE = Rand(.26, cap: .65);
-            FoundationAmt = RandCap(1.3, div: 2, cap: 1); // (Math.E + Math.PI) / 2.0; //~2.930
+            FoundationAmt = RandCap(1.69, div: 3, cap: 1.3); // (Math.E + Math.PI) / 2.0; //~2.930
             ExtractTurns = Rand(65, div: 5, cap: .91); //0.98461538461538461538461538461538
             ExtractSustainPow = Rand(.26, div: 3, cap: .65);
             ExtractorSustainCostPow = Rand(.65, div: 2, cap: .52);
+            ExtractorResilienceCostPow = Rand(.065, div: 3, cap: .65);
             ExtractorHitsPow = Rand(.39, div: 2, cap: .78);
             //ExtractPow=x/(1-x) where x is desired exponent when sustain=1 
             //inverse: x=ExtractPow/(ExtractPow+1)
@@ -203,6 +232,7 @@ namespace ClassLibrary1
             ArtifactEnergyUpkMult = 2.5;
 
             ExtractorCostPow = Rand(.91, div: 4, cap: .78);
+            ExtractorResilience = Rand(.3, div: 2, cap: .39);
             BiomassExtractorEnergyCost = Rand(750, div: 3, cap: .65);
             BiomassExtractorMassCost = Rand(910, div: 4, cap: .65);
             MetalExtractorEnergyCost = Rand(780, div: 4, cap: .65);
@@ -245,7 +275,7 @@ namespace ClassLibrary1
         //    return StatValueInverse(stats.Sum(StatValue));
         //}
         internal double MoveValue(IMovable.Values? movable) =>
-            Math.Pow(MoveValue(movable?.MoveInc ?? 0, movable?.MoveMax ?? 0, movable?.MoveLimit ?? 0), 1.5);
+            Math.Pow(MoveValue(movable?.MoveInc ?? 0, movable?.MoveMax ?? 0, movable?.MoveLimit ?? 0), CostMovePow);
         internal double MoveValue(double moveInc, double moveMax, double moveLimit)
         {
             double move = MoveIncCost * moveInc / 1.0 + MoveMaxCost * moveMax / 2.1 + MoveLimitCost * moveLimit / 5.2;
@@ -264,7 +294,7 @@ namespace ClassLibrary1
             return (float)(limitMove ? movable.MoveCur + movable.MoveInc - movable.MoveMax : movable.MoveCur);
         }
 
-        internal static int Income(int cur, double income) => IncomeRounding(cur + Income(income));
+        internal int Income(int cur, double income) => IncomeRounding(cur + Income(income));
         internal static int IncomeRounding(double avg)
         {
             const int divMult = 5;
@@ -277,8 +307,8 @@ namespace ClassLibrary1
                 div = Game.Rand.Bool() ? 1 : divMult;
             return Game.Rand.Round(avg / div) * div;
         }
-        internal static double Income(double income) => income + Game.Rand.Gaussian(IncomeDev(income));
-        internal static double IncomeDev(double income) => .65 + Math.Abs(income) / 65.0;
+        internal double Income(double income) => income + Game.Rand.Gaussian(IncomeDev(income));
+        internal double IncomeDev(double income) => IncomeDevAdd + Math.Abs(income) / IncomeDevDiv;
 
         internal static double GetPct(double pct, double mult)
         {

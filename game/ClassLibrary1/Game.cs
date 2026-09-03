@@ -1,4 +1,5 @@
 ﻿using ClassLibrary1.Pieces;
+using ClassLibrary1.Pieces.Behavior.Combat;
 using ClassLibrary1.Pieces.Enemies;
 using ClassLibrary1.Pieces.Players;
 using ClassLibrary1.Pieces.Terrain;
@@ -6,6 +7,7 @@ using MattUtil;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Runtime.Serialization;
 using static ClassLibrary1.Map.Map;
 
@@ -23,10 +25,11 @@ namespace ClassLibrary1
         {
             Rand = new MTRandom();
             Rand.StartTick();
-            //TEST_MAP_GEN = Rand.GaussianCappedInt(1.3 * Consts.CaveDistance * Math.Sqrt(2), .13);
+            //TEST_MAP_GEN = Rand.GaussianCappedInt(65 * Math.E * Math.Sqrt(2), .13); //57.33
         }
 
         public readonly Consts Consts;
+        public readonly CombatTypes CombatTypes;
 
         public readonly Map.Map Map;
         public readonly Player Player;
@@ -50,6 +53,7 @@ namespace ClassLibrary1
         public Game(string savePath)
         {
             this.Consts = new();
+            this.CombatTypes = new();
             this.ResearchUpgValues = new(Consts);
 
             this.Map = new(this);
@@ -177,6 +181,7 @@ namespace ClassLibrary1
         internal void SaveGame()
         {
             Debug.WriteLine("SaveGame");
+            Directory.CreateDirectory(Path.GetDirectoryName(SavePath));
             TBSUtil.SaveGame(this, SavePath);
         }
         public static Game LoadGame<T>(string filePath, out T data) // where T : ISerializable

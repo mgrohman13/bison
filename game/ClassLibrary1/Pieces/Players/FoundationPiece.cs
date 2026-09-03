@@ -35,11 +35,15 @@ namespace ClassLibrary1.Pieces.Players
             Factory.Cost(Game, out int energyCost, out int massCost);
             return Replace(doReplace, ref replaceable, out energy, out mass, energyCost, massCost, f => Factory.NewFactory(f));
         }
-        public Turret ReplaceTurret(bool doReplace, out int energy, out int mass, out bool replaceable)
+        public Turret ReplaceTurret(bool doReplace, bool laser, out int energy, out int mass, out bool replaceable)
         {
             replaceable = HasBehavior<IBuilder.IBuildTurret>();
-            Turret.Cost(Game, out int energyCost, out int massCost);
-            return Replace(doReplace, ref replaceable, out energy, out mass, energyCost, massCost, f => Turret.NewTurret(f));
+            var b = Turret.GetBlueprints(Game)[laser ? 1 : 0];
+            int energyCost = b.Energy;
+            int massCost = b.Mass;
+            if (this is Turret turret)
+                replaceable &= (turret.Version.Laser != laser || turret.Version.Version < b.Version);
+            return Replace(doReplace, ref replaceable, out energy, out mass, energyCost, massCost, f => Turret.NewTurret(f, laser));
         }
         public Generator ReplaceGenerator(bool doReplace, out int energy, out int mass, out bool replaceable)
         {
@@ -52,7 +56,7 @@ namespace ClassLibrary1.Pieces.Players
         {
             T newPiece = null;
 
-            replaceable &= CanReplace<T>(out var tuple) && typeof(T) != this.GetType();
+            replaceable &= CanReplace<T>(out var tuple) && Game.Player.Research.HasType(Research.Type.ReplaceBuildings);
             if (replaceable)
             {
 

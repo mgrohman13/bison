@@ -1,13 +1,9 @@
 ﻿using ClassLibrary1.Pieces.Behavior;
 using ClassLibrary1.Pieces.Behavior.Combat;
 using ClassLibrary1.Pieces.Terrain;
-using MattUtil;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.Serialization;
-using AttackType = ClassLibrary1.Pieces.Behavior.Combat.CombatTypes.AttackType;
-using DefenseType = ClassLibrary1.Pieces.Behavior.Combat.CombatTypes.DefenseType;
 using Tile = ClassLibrary1.Map.Map.Tile;
 using UpgType = ClassLibrary1.ResearchUpgValues.UpgType;
 
@@ -17,75 +13,108 @@ namespace ClassLibrary1.Pieces.Players
     [DataContract(IsReference = true)]
     public class Turret : FoundationPiece, IKillable.IRepairable
     {
-        public const int MAX_ATTACKS = 3;
-        public const int MAX_DEFENSES = 3;
-        public static double Resilience => Values.Resilience;
+        //public const int MAX_ATTACKS = 3;
+        //public const int MAX_DEFENSES = 3;
+        //public static double Resilience => Values.Resilience;
 
-        private readonly double _shieldMult, _armorMult, _rounding;
-        private readonly double[] _attMult = new double[MAX_ATTACKS];
+        //private readonly double _shieldMult, _armorMult, _rounding;
+        //private readonly double[] _attMult = new double[MAX_ATTACKS];
 
-        private Turret(Tile tile)
+        internal readonly Blueprint Version;
+        //{
+        //    get;
+        //    private set;
+        //}
+
+        private Turret(Tile tile, bool laser)
             : base(tile, 0)
         {
-            this._shieldMult = Game.Rand.GaussianCapped(1, .13, .5);
-            this._armorMult = Game.Rand.GaussianCapped(1 / _shieldMult, .13, .5 / _shieldMult);
-            this._rounding = Game.Rand.NextDouble();
-            double attMults = 1;
-            for (int a = 0; a < MAX_ATTACKS; a++)
-            {
-                double devMult = (MAX_ATTACKS - a) / (double)MAX_ATTACKS;
-                double mult = 1 / Game.Rand.GaussianCapped(attMults, .13 * devMult, attMults * (1 - .5 * devMult));
-                this._attMult[a] = mult;
-                attMults *= mult;
-            }
+            //this._shieldMult = Game.Rand.GaussianCapped(1, .13, .5);
+            //this._armorMult = Game.Rand.GaussianCapped(1 / _shieldMult, .13, .5 / _shieldMult);
+            //this._rounding = Game.Rand.NextDouble();
+            //double attMults = 1;
+            //for (int a = 0; a < MAX_ATTACKS; a++)
+            //{
+            //    double devMult = (MAX_ATTACKS - a) / (double)MAX_ATTACKS;
+            //    double mult = 1 / Game.Rand.GaussianCapped(attMults, .13 * devMult, attMults * (1 - .5 * devMult));
+            //    this._attMult[a] = mult;
+            //    attMults *= mult;
+            //}
+
+            Values values = GetValues(Game);
+            this.Version = laser ? values.Laser : values.Turret;
+            this.Vision = Version.Vision;
 
             SetBehavior(
-                new Killable(this, new IKillable.Values(), Values.Resilience),
-                new Attacker(this, []));
+                new Killable(this, Version.Killable, Version.Resilience),
+                new Attacker(this, Version.Attacker));
             Unlock();
         }
-        internal static Turret NewTurret(Foundation foundation)
+        internal static Turret NewTurret(Foundation foundation, bool laser)
         {
             Tile tile = foundation.Tile;
             foundation.Die();
 
-            Turret obj = new(tile);
+            Turret obj = new(tile, laser);
             foundation.Game.AddPiece(obj);
             return obj;
         }
-        public static void Cost(Game game, out int energy, out int mass)
+        //public static void Cost(Game game, out int energy, out int mass)
+        //{
+        //    Values values = GetValues(game);
+        //    energy = values.Energy;
+        //    mass = values.Mass;
+        //}
+        //internal override void Cost(out int energy, out int mass) =>
+        //    Cost(Game, out energy, out mass);
+        internal override void Cost(out int energy, out int mass)
+        {
+            energy = Version.Energy;
+            mass = Version.Mass;
+        }
+
+        //TODO:
+        public bool CanUpgrade(Game game)
         {
             Values values = GetValues(game);
-            energy = values.Energy;
-            mass = values.Mass;
+            Blueprint bp = Version.Laser ? values.Laser : values.Turret;
+            return Version.Version < bp.Version;
         }
-        internal override void Cost(out int energy, out int mass) =>
-            Cost(Game, out energy, out mass);
+
+        public static List<Blueprint> GetBlueprints(Game game)
+        {
+            List<Blueprint> blueprints = [];
+            Values values = GetValues(game);
+            if (game.Player.Research.HasType(Research.Type.Turret))
+                blueprints.Add(values.Turret);
+            if (game.Player.Research.HasType(Research.Type.LaserTurret))
+                blueprints.Add(values.Laser);
+            return blueprints;
+        }
 
         protected override bool CanReplace<T>(out Tuple<double, double> rounding)
         {
-            rounding = new(GetValues(Game).Rounding, _rounding);
-            return typeof(T) == typeof(Generator);
+            rounding = new(GetValues(Game).Rounding, 0);
+            return (typeof(T) == typeof(Turret) || typeof(T) == typeof(Generator));
         }
 
         internal override void OnResearch(Research.Type type)
         {
             Unlock();
         }
-        private void Upgrade()
-        {
-            Values values = GetValues(Game);
-            GetBehavior<IKillable>().Upgrade(values.GetKillable(Game.Player.Research, _shieldMult, _armorMult, _rounding), Values.Resilience);
-            GetBehavior<IAttacker>().Upgrade(values.GetAttacks(Game.Player.Research, _attMult, _rounding));
-            Builder.UpgradeAll(this, new(.5));
-            this.Vision = values.Vision;
-        }
+        //private void Upgrade()
+        //{
+        //    Values values = GetValues(Game);
+        //    GetBehavior<IKillable>().Upgrade(values.GetKillable(Game.Player.Research, _shieldMult, _armorMult, _rounding), Values.Resilience);
+        //    GetBehavior<IAttacker>().Upgrade(values.GetAttacks(Game.Player.Research, _attMult, _rounding));           
+        //    this.Vision = values.Vision;
+        //}
         private void Unlock()
         {
             Research research = Game.Player.Research;
             if (!HasBehavior<IBuilder.IBuildGenerator>() && research.HasType(Research.Type.AmbientGenerator))
                 SetBehavior(new Builder.BuildGenerator(this, new()));
-            Upgrade();
+            Builder.UpgradeAll(this, new(.5));
         }
         private static Values GetValues(Game game) => game.Player.GetUpgradeValues<Values>();
 
@@ -105,96 +134,107 @@ namespace ClassLibrary1.Pieces.Players
             return "Turret " + PieceNum;
         }
 
+        internal const double LASER_RANGE_MULT = 1.5;
+
         [Serializable]
         [DataContract(IsReference = true)]
-        private class Values : IUpgradeValues
+        private class Values() : IUpgradeValues
         {
-            public const double Resilience = .6;
+            private readonly double attLaser = Rand(.65), rangeLaser = Rand(LASER_RANGE_MULT, min: 1),
+                defLaser = Rand(.78), protLaser = Rand(1.3);
+            private double energy, mass, energyLaser, massLaser;
+            private double costMult, att, def, protection, range, resilience, vision;
 
-            private int energy, mass;
-            private double rounding, vision;
-
-            private readonly IKillable.Values[] defenses = new IKillable.Values[MAX_DEFENSES];
-            private readonly IAttacker.Values[] attacks = new IAttacker.Values[MAX_ATTACKS];
-
-            public int Energy => energy;
-            public int Mass => mass;
-            public double Vision => vision;
-            public double[] AttackRange => [.. attacks.Select(v => v.Range)];
-            public double Rounding => rounding;
-
-            public List<IKillable.Values> GetKillable(Research research, double shieldMult, double armorMult, double rounding)
+            public double Rounding
             {
-                List<IKillable.Values> results = [];
-
-                double hitsMult = 1;
-                for (int a = MAX_ATTACKS; --a >= 0;)
-                {
-                    IKillable.Values defense = this.defenses[a];
-                    double mult = a switch { 0 => hitsMult, 1 => shieldMult, 2 => armorMult, _ => throw new Exception() };
-                    int def = MTRandom.Round(Consts.StatValueInverse(Consts.StatValue(defense.Defense) * mult), Consts.MAX_ROUND - rounding);
-                    def = Math.Max(def, 1);
-                    bool has = a == 0
-                        || (a == 1 && research.HasType(Research.Type.TurretShields))
-                        || (a == 2 && research.HasType(Research.Type.TurretArmor));
-                    if (has)
-                    {
-                        results.Add(new(defense.Type, def));
-                        hitsMult *= Consts.StatValueInverse(Consts.StatValue(defense.Defense) / Consts.StatValue(def));
-                    }
-                    else
-                        ;
-                }
-
-                results.Reverse();
-                return results;
+                get;
+                private set;
             }
-            public List<IAttacker.Values> GetAttacks(Research research, double[] attMult, double rounding)
+            public Blueprint Turret
             {
-                List<IAttacker.Values> results = [];
-
-                for (int a = 0; a < MAX_ATTACKS; a++)
-                {
-                    IAttacker.Values attack = this.attacks[a];
-                    AttackType type = attack.Type;
-
-                    int baseAtt = attack.Attack;
-                    int att = MTRandom.Round(baseAtt * attMult[a], rounding);
-                    if (att < 1)
-                        att = 1;
-                    double mult = Math.Sqrt(Consts.StatValue(baseAtt) / Consts.StatValue(att));
-
-                    double baseReload = (1 + CombatTypes.ReloadAvg(type, baseAtt)) / 2.0;
-                    int reload = MTRandom.Round(baseReload * mult, rounding);
-                    reload = Math.Min(Math.Max(reload, 1), att);
-                    mult *= baseReload / reload;
-
-                    double range = attack.Range * Math.Sqrt(mult);
-                    range = Math.Max(range, Attack.MIN_RANGED);
-
-                    results.Add(new(type, att, range, reload));
-                }
-
-                if (!research.HasType(Research.Type.TurretExplosives))
-                    results.RemoveAt(2);
-                if (!research.HasType(Research.Type.TurretLasers))
-                    results.RemoveAt(1);
-
-                return results;
+                get;
+                private set;
+            }
+            public Blueprint Laser
+            {
+                get;
+                private set;
             }
 
             public void Init(Game game)
             {
-                for (int a = 0; a < MAX_DEFENSES; a++)
-                    defenses[a] = new(DefenseType.Hits, 1);
-                for (int a = 0; a < MAX_ATTACKS; a++)
-                    attacks[a] = new(AttackType.Kinetic, 1, Attack.MELEE_RANGE);
-
-                UpgradeBuildingCost(game, 1);
-                UpgradeTurretDefense(game, 1);
-                UpgradeTurretAttack(game, 1);
-                UpgradeTurretRange(game, 1);
+                Consts consts = game.Consts;
+                //TODO: increase on TurretShields
+                SetCost(consts, .52, .91, out this.energy, out this.mass);
+                SetCost(consts, 1, consts.EnergyMassRatio, out this.energyLaser, out this.massLaser);
             }
+            private void SetCost(Consts consts, double r1, double r2, out double e, out double m)
+            {
+                double r = Game.Rand.Range(r1, r2);
+                double c = consts.EnergyMassRatio;
+                double v = consts.TurretCost * costMult;
+                //equivalencies:
+                //e + m * c = v  
+                //e = m * r
+                e = v / (1 + c / r);
+                e = Game.Rand.GaussianCapped(e, Dev(e, .13), Math.Max(2 * e - v, 0));
+                m = (v - e) / c;
+                m = Rand(m, Dev(m, .026), 0);
+                static double Dev(double ratio, double dev) => Math.Min(dev, dev / ratio);
+            }
+
+            private void Generate(Game game, bool laser)
+            {
+                Research research = game.Player.Research;
+                Blueprint Gen()
+                {
+                    double energyCost = laser ? this.energyLaser : this.energy;
+                    double massCost = laser ? this.massLaser : this.mass;
+                    byte version = (laser ? Laser : Turret)?.Version ?? 0;
+                    double resilience = Game.Rand.GaussianCapped(this.resilience, .13 / this.resilience, Math.Max(2 * this.resilience - 1, 0));
+                    return new(game, energyCost, massCost, laser, ++version, research.GetTotalLevel(), vision, resilience,
+                    GetKillable(research, laser), GetAttacks(game, laser));
+                }
+
+                if (!laser)
+                    this.Turret = Gen();
+                else if (research.HasType(Research.Type.LaserTurret))
+                    this.Laser = Gen();
+
+                this.Rounding = Game.Rand.NextDouble();
+            }
+            public List<IKillable.Values> GetKillable(Research research, bool laser)
+            {
+                List<IKillable.Values> results = [];
+
+                double d = this.def * (laser ? this.defLaser : 1);
+                int def = RandInt(d);
+                results.Add(new(CombatTypes.DefenseType.Hits, def));
+
+                if (laser || research.HasType(Research.Type.TurretShields))
+                {
+                    CombatTypes.DefenseType type = laser ? CombatTypes.DefenseType.Armor : CombatTypes.DefenseType.Shield;
+                    d = this.protection * (laser ? this.protLaser : 1);
+                    def = RandInt(d);
+                    results.Add(new(type, def));
+                }
+
+                return results;
+            }
+            public List<IAttacker.Values> GetAttacks(Game game, bool laser)
+            {
+                double a = this.att * (laser ? this.attLaser : 1);
+                int att = RandInt(a);
+                CombatTypes.AttackType type = laser ? CombatTypes.AttackType.Energy : CombatTypes.AttackType.Kinetic;
+                double range = this.range * (laser ? this.rangeLaser : 1);
+                range = Rand(range, .104, Attack.MIN_RANGED);
+                return [new(game.CombatTypes, type, att, range)];
+            }
+            private static double Rand(double avg, double dev = .169, double min = .5) =>
+                Game.Rand.GaussianOE(avg, dev, dev / Math.E, min);
+            private static int RandInt(double a) =>
+                Game.Rand.GaussianOEInt(a, .13, .091, 1);
+
             public void Upgrade(Game game, Research.Type type, double researchMult)
             {
                 if (type == Research.Type.BuildingCost)
@@ -205,79 +245,83 @@ namespace ClassLibrary1.Pieces.Players
                     UpgradeTurretRange(game, researchMult);
                 else if (type == Research.Type.TurretAttack)
                     UpgradeTurretAttack(game, researchMult);
+                else if (type == Research.Type.TurretShields)
+                    UpgradeTurretShields(game);//, researchMult);
+
+                switch (type)
+                {
+                    case Research.Type.TurretDefense:
+                    case Research.Type.TurretRange:
+                    case Research.Type.TurretAttack:
+                        Generate(game, false);
+                        Generate(game, true);
+                        break;
+                    case Research.Type.Turret:
+                    case Research.Type.TurretShields:
+                        Generate(game, false);
+                        break;
+                    case Research.Type.LaserTurret:
+                        Generate(game, true);
+                        break;
+                }
             }
+
             private void UpgradeBuildingCost(Game game, double researchMult)
             {
-                this.rounding = Game.Rand.NextDouble();
-                double costMult = game.ResearchUpgValues.Calc(UpgType.TurretCost, researchMult);
-                double e = 1150 * costMult;
-                double m = 1550 * costMult;
-                this.energy = MTRandom.Round(e, rounding);
-                this.mass = MTRandom.Round(m, Consts.MAX_ROUND - rounding);
+                this.costMult = game.ResearchUpgValues.Calc(UpgType.TurretCost, researchMult);
             }
             private void UpgradeTurretDefense(Game game, double researchMult)
             {
-                this.vision = game.ResearchUpgValues.Calc(UpgType.TurretVision, researchMult);
-
-                for (int a = 0; a < MAX_DEFENSES; a++)
-                {
-                    UpgType upgType = a switch
-                    {
-                        0 => UpgType.TurretDefense,
-                        1 => UpgType.TurretShieldDefense,
-                        2 => UpgType.TurretArmorDefense,
-                        _ => throw new Exception(),
-                    };
-                    DefenseType type = a switch
-                    {
-                        0 => DefenseType.Hits,
-                        1 => DefenseType.Shield,
-                        2 => DefenseType.Armor,
-                        _ => throw new Exception(),
-                    };
-
-                    int defense = Game.Rand.Round(game.ResearchUpgValues.Calc(upgType, researchMult));
-                    this.defenses[a] = new(type, defense);
-                }
+                this.def = game.ResearchUpgValues.Calc(UpgType.TurretDefense, researchMult);
+                this.protection = game.ResearchUpgValues.Calc(UpgType.TurretProtection, researchMult);
+                double resilience = game.ResearchUpgValues.Calc(UpgType.TurretResilience, researchMult);
+                this.resilience = ResearchUpgValues.TurretResilience + (1 - ResearchUpgValues.TurretResilience) * (1 - resilience);
             }
             private void UpgradeTurretRange(Game game, double researchMult)
             {
-                for (int a = 0; a < MAX_ATTACKS; a++)
-                {
-                    UpgType upgType = a switch
-                    {
-                        0 => UpgType.TurretRange,
-                        1 => UpgType.TurretLaserRange,
-                        2 => UpgType.TurretExplosivesRange,
-                        _ => throw new Exception(),
-                    };
-
-                    double range = game.ResearchUpgValues.Calc(upgType, researchMult);
-                    this.attacks[a] = new(attacks[a].Type, attacks[a].Attack, range, 1);
-                }
+                this.range = game.ResearchUpgValues.Calc(UpgType.TurretRange, researchMult);
+                this.vision = game.ResearchUpgValues.Calc(UpgType.TurretVision, researchMult);
             }
             private void UpgradeTurretAttack(Game game, double researchMult)
             {
-                for (int a = 0; a < MAX_ATTACKS; a++)
-                {
-                    UpgType upgType = a switch
-                    {
-                        0 => UpgType.TurretAttack,
-                        1 => UpgType.TurretLaserAttack,
-                        2 => UpgType.TurretExplosivesAttack,
-                        _ => throw new Exception(),
-                    };
-                    AttackType type = a switch
-                    {
-                        0 => AttackType.Kinetic,
-                        1 => AttackType.Energy,
-                        2 => AttackType.Explosive,
-                        _ => throw new Exception(),
-                    };
+                this.att = game.ResearchUpgValues.Calc(UpgType.TurretAttack, researchMult);
+            }
+            private void UpgradeTurretShields(Game game)//, double researchMult)
+            {
+                SetCost(game.Consts, this.energy / this.mass, 1.3, out this.energy, out this.mass);
+            }
+        }
 
-                    int attack = Game.Rand.Round(game.ResearchUpgValues.Calc(upgType, researchMult));
-                    this.attacks[a] = new(type, attack, attacks[a].Range, 1);
-                }
+        [Serializable]
+        [DataContract(IsReference = true)]
+        public class Blueprint(bool laser, byte version, int researchLevel, double vision, double resilience,
+            IReadOnlyList<IKillable.Values> killable, IReadOnlyList<IAttacker.Values> attacker) : IBlueprint
+        {
+            public static string GetName(bool laser) => (laser ? "Laser " : "") + "Turret";
+            public string Name => GetName(Laser);
+
+            public readonly bool Laser = laser;
+            public readonly byte Version = version;
+            public int ResearchLevel => researchLevel;
+
+            public readonly int Energy;
+            public readonly int Mass;
+
+            public double Vision => vision;
+            public readonly double Resilience = resilience;
+            public IReadOnlyList<IKillable.Values> Killable => killable;
+            public IReadOnlyList<IAttacker.Values> Attacker => attacker;
+
+            public Blueprint(Game game, double energyCost, double massCost, bool laser, byte version, int researchLevel, double vision, double resilience,
+                IReadOnlyList<IKillable.Values> killable, IReadOnlyList<IAttacker.Values> attacker)
+                    : this(laser, version, researchLevel, vision, resilience, killable, attacker)
+            {
+                MechBlueprint.CalcCost(game, Research.GetResearchMult(game.Consts, researchLevel), vision,
+                    killable, resilience, attacker, null, out double energy, out double mass);
+                double total = energy + mass * game.Consts.EnergyMassRatio;
+                energy = total * energyCost;
+                mass = total * massCost;
+                MechBlueprint.RoundCosts(game, energy, mass, out this.Energy, out this.Mass);
             }
         }
     }

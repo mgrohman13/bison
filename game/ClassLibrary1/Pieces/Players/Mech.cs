@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 using static ClassLibrary1.Pieces.Behavior.Combat.CombatTypes;
-using static ClassLibrary1.ResearchUpgValues;
 using Tile = ClassLibrary1.Map.Map.Tile;
 
 namespace ClassLibrary1.Pieces.Players
@@ -15,15 +14,23 @@ namespace ClassLibrary1.Pieces.Players
     [DataContract(IsReference = true)]
     public class Mech : PlayerPiece, IKillable.IRepairable
     {
-        private bool _canCombine;
+        //private bool _canCombine;
 
         public MechBlueprint Blueprint { get; private set; }
-        public bool CanCombine => _canCombine;
+        public bool CanCombine
+        {
+            get
+            {
+                Values values = GetValues(Game);
+                return values.CanCombine &&
+                    Game.Player.Research.HasType(Research.Type.CombineMechs) && Blueprint.ResearchLevel < values.FromLevel;
+            }
+        }
 
         private Mech(Tile tile, MechBlueprint blueprint)
             : base(tile, blueprint.Vision)
         {
-            this._canCombine = tile.Map.Game.Player.Research.HasType(Research.Type.CombineMechs);
+            //this._canCombine = tile.Map.Game.Player.Research.HasType(Research.Type.CombineMechs);
             this.Blueprint = blueprint;
             SetBehavior(new Killable(this, blueprint.Killable, blueprint.Resilience), new Attacker(this, blueprint.Attacker), new Movable(this, blueprint.Movable));
         }
@@ -44,12 +51,7 @@ namespace ClassLibrary1.Pieces.Players
                 while (upgradeTo.UpgradeTo != null)
                     upgradeTo = upgradeTo.UpgradeTo;
 
-                //refund is based on research level difference, centered around UpgRefundValue when difference=ResearchFactor
-                double refund = Math.Sqrt((upgradeTo.ResearchLevel - Blueprint.ResearchLevel) / Game.Consts.ResearchFactor);
-                if (refund > 1)
-                    refund = Game.Consts.UpgRefundValue / refund;
-                else
-                    refund = 1 - (1 - Game.Consts.UpgRefundValue) * Math.Sqrt(refund);
+                double refund = GetRefundPct(upgradeTo.ResearchLevel);
 
                 //use unrelated double-precision values for rounding entropy
                 MTRandom rounding = new(MTRandom.GenerateSeed([Blueprint.Resilience, upgradeTo.Resilience, Blueprint.Vision, upgradeTo.Vision,]));
@@ -64,39 +66,57 @@ namespace ClassLibrary1.Pieces.Players
             }
             return false;
         }
+        private double GetRefundPct(int upgradeTo, double mult = 1)
+        {
+            //refund is based on research level difference, centered around UpgRefundValue when difference=ResearchFactor*mult
+            double refund = Math.Sqrt((upgradeTo - Blueprint.ResearchLevel) / Game.Consts.ResearchFactor / mult);
+            if (refund > 1)
+                refund = Game.Consts.UpgRefundValue / refund;
+            else
+                refund = 1 - (1 - Game.Consts.UpgRefundValue) * Math.Sqrt(refund);
+            return refund;
+        }
+
         public bool Upgrade()
         {
             if (CanUpgrade(out MechBlueprint upgradeTo, out int energy, out int mass) && Game.Player.Spend(energy, mass))
             {
                 this.Vision = upgradeTo.Vision;
-                GetBehavior<IKillable>().Upgrade(upgradeTo.Killable, upgradeTo.Resilience);
-                GetBehavior<IAttacker>().Upgrade(upgradeTo.Attacker);
-                GetBehavior<IMovable>().Upgrade(upgradeTo.Movable);
+                GetBehavior<IKillable>().Upgrade(upgradeTo.Killable, upgradeTo.Resilience, true);
+                GetBehavior<IAttacker>().Upgrade(upgradeTo.Attacker, true);
+                GetBehavior<IMovable>().Upgrade(upgradeTo.Movable, true);
                 this.Blueprint = upgradeTo;
                 return true;
             }
             return false;
         }
-        public bool CanCombineNow() => GetCombine() != null;
-        private Mech GetCombine()
+        public bool CanCombineNow() => GetCombinations().Any();
+        public IEnumerable<Mech> GetCombinations()
         {
             if (CanCombine)
             {
                 var choices = Tile.GetAdjacentTiles().Select(t => t.Piece)
                     .Where(p => p?.Side == Side).OfType<Mech>().Where(m => m.CanCombine && m != this);
                 if (choices.Any())
-                    return Game.Rand.SelectValue(choices);
+                    return choices;
             }
-            return null;
+            return [];
         }
-        public bool Combine()
+        public bool Combine(Mech other)
         {
-            Mech other = GetCombine();
+            //Mech other = GetCombine();
             if (other != null)
             {
-                Values values = Game.Player.GetUpgradeValues<Values>();
-                int level = Game.Rand.RangeInt(Game.Rand.RangeInt(Blueprint.ResearchLevel, other.Blueprint.ResearchLevel), values.ResearchLevel);
-                this.Blueprint = MechBlueprint.Combine(Game, this.Blueprint, other.Blueprint, level, values.Discount);
+                Values values = GetValues(Game);
+                int level = values.GenResearchLevel(Math.Max(Blueprint.ResearchLevel, other.Blueprint.ResearchLevel));
+                //level =  Game.Rand.RangeInt(Game.Rand.RangeInt(Blueprint.ResearchLevel, other.Blueprint.ResearchLevel), values.ToLevel);
+
+                double thisCost = this.Blueprint.EnergyEquivalent(Game.Consts);
+                double otherCost = other.Blueprint.EnergyEquivalent(Game.Consts);
+                double refund = (this.GetRefundPct(level, 2) * thisCost + other.GetRefundPct(level, 2) * otherCost) / (thisCost + otherCost);
+
+                this.Blueprint = MechBlueprint.Combine(Game, this.Blueprint, other.Blueprint, level, refund);
+                Game.Player.Research.Combined(this.Blueprint);
 
                 IKillable killable = GetBehavior<IKillable>();
                 IAttacker attacker = GetBehavior<IAttacker>();
@@ -130,22 +150,28 @@ namespace ClassLibrary1.Pieces.Players
                     curAtt.Add(Game.Rand.Round(Consts.StatValueInverse(avg)));
                 }
 
-                killable.Upgrade(Blueprint.Killable, Blueprint.Resilience, curDef);
-                attacker.Upgrade(Blueprint.Attacker, curAtt);
-                movable.Upgrade(Blueprint.Movable, movable.MoveCur + other.GetBehavior<IMovable>().MoveCur);
+                killable.Upgrade(Blueprint.Killable, Blueprint.Resilience, true, curDef);
+                attacker.Upgrade(Blueprint.Attacker, true, curAtt);
+                movable.Upgrade(Blueprint.Movable, true, movable.MoveCur + other.GetBehavior<IMovable>().MoveCur);
 
-                other.Die();
+                //don't refund resources, since they get incorporated into the new mech
+                other.Die(out _, out _);
 
-                _canCombine = false;
+                //_canCombine = false;
                 return true;
             }
             return false;
         }
+        private static Values GetValues(Game game) => game.Player.GetUpgradeValues<Values>();
+        internal static int CombineLevel(Game game) => GetValues(game).FromLevel;
 
         internal override void OnResearch(Research.Type type)
         {
             if (type == Research.Type.CombineMechs)
-                _canCombine = true;
+                Game.Player.Research.Obsolete(GetValues(Game).FromLevel);
+
+            //if (type == Research.Type.CombineMechs)
+            //    _canCombine = true;
         }
 
         internal override void Cost(out int energy, out int mass)
@@ -178,25 +204,34 @@ namespace ClassLibrary1.Pieces.Players
         [DataContract(IsReference = true)]
         private class Values : IUpgradeValues
         {
-            private int researchLevel;
-            private double discount;
+            private static int MinLevel => Game.Rand.GaussianOEInt(Game.Rand.RangeInt(52, 65), .13, .169, 1);
 
-            public int ResearchLevel => researchLevel;
-            public double Discount => discount;
+            private int toLevel, fromLevel;
+            private double deviation;
+
+            private int ToLevel => toLevel;
+            public int FromLevel => fromLevel;
+            public bool CanCombine => ToLevel > FromLevel;
+            public int GenResearchLevel(int min) => Game.Rand.GaussianCappedInt(ToLevel, (deviation += Game.Rand.OE()) / Math.Sqrt(ToLevel), min + 1);
 
             public void Init(Game game)
             {
-                UpgradeCombineMechs(game, 1);
+                this.toLevel = 0;
+                this.fromLevel = MinLevel + Game.Rand.RangeInt(MinLevel, Game.Rand.Round(game.Consts.CombineResearchBuffer));
+                this.deviation = Game.Rand.DoubleFull() + Game.Rand.OE();
             }
             public void Upgrade(Game game, Research.Type type, double researchMult)
             {
                 if (type == Research.Type.CombineMechs)
-                    UpgradeCombineMechs(game, researchMult);
+                    UpgradeCombineMechs(game);
             }
-            private void UpgradeCombineMechs(Game game, double researchMult)
+
+            private void UpgradeCombineMechs(Game game)
             {
-                this.researchLevel = game.Player?.Research.GetTotalLevel() ?? 0;
-                this.discount = game.ResearchUpgValues.Calc(UpgType.CombineMechs, researchMult);
+                this.toLevel = Math.Max(this.toLevel + 1, game.Player?.Research.GetBlueprintLevel() ?? 0);
+                int minUpg = game.Player?.PiecesOfType<Mech>().Select(m => m.Blueprint.ResearchLevel).Order().Skip(1).FirstOrDefault() ?? 0;
+                this.fromLevel = Game.Rand.RangeInt(Math.Max(minUpg, this.fromLevel) + 1, Math.Max(MinLevel, Game.Rand.Round(this.toLevel - game.Consts.CombineResearchBuffer)));
+                this.deviation = Math.Sqrt(deviation + 1) - 1;
             }
         }
     }

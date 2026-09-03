@@ -19,7 +19,7 @@ namespace ClassLibrary1.Pieces.Players
 
         private double _income = 1, _incomeTrg = 1, _hitsResearchMult = 1;
 
-        bool IKillable.IRepairable.AutoRepair => true;
+        bool IKillable.IRepairable.AutoRepair => !Game.GameOver;
         double IKillable.IRepairable.RepairCost => short.MaxValue; //32,767 - should never be used
 
         private Core(Tile tile)

@@ -37,7 +37,7 @@ namespace ClassLibrary1.Pieces.Behavior
         }
         public interface IBuildTurret : IBuilder//: IReplacer<FoundationPiece>
         {
-            public Turret Build(Foundation foundation);
+            public Turret Build(Foundation foundation, bool laser);
         }
         public interface IBuildGenerator : IBuilder //: IReplacer<FoundationPiece>
         {

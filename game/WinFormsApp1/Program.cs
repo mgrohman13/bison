@@ -109,7 +109,7 @@ namespace WinFormsApp1
                 if (!Directory.Exists(savePath))
                     savePath = null;
             }
-            savePath ??= ".";
+            savePath ??= "." + Path.DirectorySeparatorChar + "save";
             if (!savePath.EndsWith('/') && !savePath.EndsWith('\\') && !savePath.EndsWith(Path.PathSeparator))
                 savePath += Path.DirectorySeparatorChar;
             savePath += "game.sav";
@@ -316,7 +316,7 @@ namespace WinFormsApp1
             bool move = false;
             canAttack = false;
 
-            if (data.Moved.Contains(piece))
+            if (piece == null || data.Moved.Contains(piece))
                 return false;
 
             piece.HasBehavior(out IKillable killable);
@@ -335,7 +335,7 @@ namespace WinFormsApp1
                 //not quite right
                 if (attack.Range == Attack.MELEE_RANGE && attacker.HasBehavior(out IMovable movable))
                     attackFrom = friendly.Tile.GetVisibleAdjacentTiles().Where(t => t.Piece == null || t.Piece.HasBehavior<IMovable>())
-                        .FirstOrDefault(t => attackFrom.MoveDistTo(t) <= movable.MoveCur);
+                        .FirstOrDefault(t => attackFrom.MoveDistTo(t, movable.MoveCur));
                 return attack.GetDefenders(friendly, attackFrom);
             }
 
@@ -351,12 +351,12 @@ namespace WinFormsApp1
                 if (!move && piece.HasBehavior(out IBuilder.IBuildConstructor constructorB))
                 {
                     Constructor.Cost(Game, out int e, out int m);
-                    move |= Game.Player.Has(e, m) && Notify(constructorB);
+                    move |= Game.Player.Has(e, m) && GetNotify(constructorB);
                 }
                 if (!move && piece.HasBehavior(out IBuilder.IBuildDrone droneB))
                 {
                     Drone.Cost(Game, out int e, out int m);
-                    move |= Game.Player.Has(e, m) && Notify(droneB);
+                    move |= Game.Player.Has(e, m) && GetNotify(droneB);
                 }
                 if (!move && piece.HasBehavior<IBuilder.IBuildExtractor>())
                     move |= piece.Tile.GetVisibleTilesInRange(builder).Select(t => t.Piece as Resource).Where(r => r != null).Any(r =>
@@ -370,22 +370,22 @@ namespace WinFormsApp1
                         if (piece.HasBehavior(out IBuilder.IBuildOutpost outpostB))
                         {
                             Outpost.Cost(Game, out int e, out int m);
-                            move |= Game.Player.Has(e, m) && Notify(outpostB);
+                            move |= Game.Player.Has(e, m) && GetNotify(outpostB);
                         }
                         if (!move && piece.HasBehavior(out IBuilder.IBuildFactory factoryB))
                         {
                             Factory.Cost(Game, out int e, out int m);
-                            move |= Game.Player.Has(e, m) && Notify(factoryB);
+                            move |= Game.Player.Has(e, m) && GetNotify(factoryB);
                         }
                         if (!move && piece.HasBehavior(out IBuilder.IBuildTurret turretB))
                         {
-                            Turret.Cost(Game, out int e, out int m);
-                            move |= Game.Player.Has(e, m) && Notify(turretB);
+                            bool has = Turret.GetBlueprints(Game).Any(bp => Game.Player.Has(bp.Energy, bp.Mass));
+                            move |= has && GetNotify(turretB);
                         }
                         if (!move && piece.HasBehavior(out IBuilder.IBuildGenerator generatorB))
                         {
                             Generator.Cost(Game, out int e, out int m);
-                            move |= Game.Player.Has(e, m) && Notify(generatorB);
+                            move |= Game.Player.Has(e, m) && GetNotify(generatorB);
                         }
                     }
 
@@ -395,25 +395,27 @@ namespace WinFormsApp1
                     if (!move)
                     {
                         foundationPiece.ReplaceOutpost(false, out int e, out int m, out replaceable);
-                        move |= replaceable && Game.Player.Has(e, m) && Notify(foundationPiece.GetBehavior<IBuilder.IBuildOutpost>(), true);
+                        move |= replaceable && Game.Player.Has(e, m) && GetNotify(foundationPiece.GetBehavior<IBuilder.IBuildOutpost>(), true);
                     }
                     if (!move)
                     {
                         foundationPiece.ReplaceFactory(false, out int e, out int m, out replaceable);
-                        move |= replaceable && Game.Player.Has(e, m) && Notify(foundationPiece.GetBehavior<IBuilder.IBuildFactory>(), true);
+                        move |= replaceable && Game.Player.Has(e, m) && GetNotify(foundationPiece.GetBehavior<IBuilder.IBuildFactory>(), true);
                     }
-                    if (!move)
-                    {
-                        foundationPiece.ReplaceTurret(false, out int e, out int m, out replaceable);
-                        move |= replaceable && Game.Player.Has(e, m) && Notify(foundationPiece.GetBehavior<IBuilder.IBuildTurret>(), true);
-                    }
+                    foreach (bool laser in (bool[])[false, true])
+                        if (!move)
+                        {
+                            foundationPiece.ReplaceTurret(false, laser, out int e, out int m, out replaceable);
+                            move |= replaceable && Game.Player.Has(e, m) && GetNotify(foundationPiece.GetBehavior<IBuilder.IBuildTurret>(), true);
+                        }
                     if (!move)
                     {
                         foundationPiece.ReplaceGenerator(false, out int e, out int m, out replaceable);
-                        move |= replaceable && Game.Player.Has(e, m) && Notify(foundationPiece.GetBehavior<IBuilder.IBuildGenerator>(), true);
+                        move |= replaceable && Game.Player.Has(e, m) && GetNotify(foundationPiece.GetBehavior<IBuilder.IBuildGenerator>(), true);
                     }
                 }
 
+                //Debug.WriteLine($"TickCount 1: {Environment.TickCount} ({piece})");
                 if (!move && piece.HasBehavior(out IMovable movable))
                 {
                     //need to support rallying long distances to uncomment this enhancement
@@ -428,6 +430,7 @@ namespace WinFormsApp1
                         move |= attDefPairs.Any(t => t.Item1 >= t.Item2);
                     }
                 }
+                //Debug.WriteLine($"TickCount 2: {Environment.TickCount} ({piece})");
 
                 if (!move && piece.HasBehavior(out IMissileSilo silo))
                 {
@@ -458,12 +461,13 @@ namespace WinFormsApp1
                         .Where(e => e.HasBehavior<IKillable>() && piece.Tile.GetDistance(e.Tile) <= meleeRange)
                         .SelectMany(e => e.Tile.GetVisibleAdjacentTiles())
                         .Where(t => t.Piece == null || (t.Piece.IsPlayer && t.Piece.HasBehavior<IMovable>())).ToHashSet();
-                    canAttack = meleeTiles.Any(t => piece.Tile.MoveDistTo(t) <= movable.MoveCur);
+                    canAttack = meleeTiles.Any(t => piece.Tile.MoveDistTo(t, movable.MoveCur));
                     //if (!canAttack)
                     //    canAttack = TurnPath(movable).Select(Game.Map.GetVisibleTile).Any(meleeTiles.Contains);
                 }
                 move |= canAttack;
             }
+            //Debug.WriteLine($"TickCount 3: {Environment.TickCount} ({piece})");
 
             if (move)
                 Wake(piece);
@@ -575,24 +579,24 @@ namespace WinFormsApp1
         //    //return true;
         //}
 
-        internal static void SetNotify(MechBlueprint blueprint, bool value)
+        internal static bool GetNotify(IBlueprint blueprint)
+        {
+            return !data.NotifyOff.Contains(blueprint);
+        }
+        internal static void SetNotify(IBlueprint blueprint, bool value)
         {
             if (value)
                 data.NotifyOff.Remove(blueprint);
             else
                 data.NotifyOff.Add(blueprint);
         }
-        internal static bool GetNotify(MechBlueprint blueprint)
-        {
-            return !data.NotifyOff.Contains(blueprint);
-        }
 
-        public static bool Notify(IBuilder builder, bool replace = false)
+        public static bool GetNotify(IBuilder builder, bool replace = false)
         {
             var n = replace ? data.NotfiyReplace : data.Notfiy;
-            return n.GetValueOrDefault(builder.GetType().Name, true);
+            return n.GetValueOrDefault(builder.GetType().Name, !replace || builder is not IBuilder.IBuildOutpost);
         }
-        public static void Notify(IBuilder builder, bool value, bool replace = false)
+        public static void SetNotify(IBuilder builder, bool value, bool replace = false)
         {
             var n = replace ? data.NotfiyReplace : data.Notfiy;
             n[builder.GetType().Name] = value;
@@ -604,9 +608,9 @@ namespace WinFormsApp1
         {
             public readonly HashSet<PlayerPiece> Moved = [], Sleep = [];
 
-            public Dictionary<string, bool> Notfiy = new();
-            public Dictionary<string, bool> NotfiyReplace = new();
-            public readonly HashSet<MechBlueprint> NotifyOff = [];
+            public Dictionary<string, bool> Notfiy = [];
+            public Dictionary<string, bool> NotfiyReplace = [];
+            public readonly HashSet<IBlueprint> NotifyOff = [];
 
             public bool AlertResearch = false;
             [NonSerialized]

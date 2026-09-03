@@ -17,13 +17,18 @@ namespace ClassLibrary1.Pieces.Behavior
         private IMovable.Values _values = values;
 
         private double _moveCur = moveCur;
-        private bool _moved = true;
+        private bool _moved;
 
         public Piece Piece => _piece;
 
         public Movable(Piece piece, IMovable.Values values)
             : this(piece, values, 0)
         {
+            ResetFlags();
+        }
+        private void ResetFlags()
+        {
+            _moved = true;
         }
 
         public T GetBehavior<T>() where T : class, IBehavior
@@ -38,7 +43,7 @@ namespace ClassLibrary1.Pieces.Behavior
         public int MoveLimit => _values.MoveLimit;
         public bool Moved => _moved;
 
-        void IMovable.Upgrade(IMovable.Values values, double? setCur)
+        void IMovable.Upgrade(IMovable.Values values, bool resetFlags, double? setCur)
         {
             _values = values;
 
@@ -54,6 +59,9 @@ namespace ClassLibrary1.Pieces.Behavior
 
             if (!_values.Equals(values))
                 _moved = true;
+
+            if (resetFlags)
+                ResetFlags();
         }
 
         void IMovable.Damage(double dmgPct)

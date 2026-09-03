@@ -115,7 +115,7 @@ namespace ClassLibrary1.Pieces.Terrain
 
             MechBlueprint blueprint;
             do
-                blueprint = MechBlueprint.MechOneOff(Game.Consts, new ResearchMinMaxCost(research, min, max), researchLevel);
+                blueprint = MechBlueprint.MechOneOff(new ResearchMinMaxCost(research, min, max), researchLevel);
             while (Game.Map.PathFindCore(tile, GetMove(blueprint.Movable), blocked => blocked.Count == 0) == null);
             static double GetMove(IMovable.Values movable) => (movable.MoveMax + movable.MoveLimit) / 2.0;
             Players.Mech.NewMech(tile, blueprint);

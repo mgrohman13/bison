@@ -35,7 +35,7 @@ namespace ClassLibrary1
             : base(game, Game.Rand.Round(game.Consts.EnemyStartEnergy), 0)
         {
             this._research = new EnemyResearch(game);
-            this._nextAlien = MechBlueprint.Alien(game.Consts, _research);
+            this._nextAlien = MechBlueprint.Alien(_research);
             this._portalSpawn = 0;
             this._aggression = 1;
             this._debt = 0;
@@ -131,12 +131,16 @@ namespace ClassLibrary1
 
             this._portalSpawn += Game.Rand.OE(inc / Game.Consts.PortalSpawnTime);
 
-            bool portal = false;
             double needed = 1;
             if (hasExit && !hasEntrance)
                 needed = .5 - Game.Rand.OE();
             else if (hasEntrance && !hasExit)
                 needed = Game.Rand.DoubleHalf();
+            else if (hasEntrance && hasExit)
+                needed = Math.Sqrt(count);
+            needed += Game.Rand.OE(.13);
+
+            bool portal = false;
             if (_portalSpawn > needed)
                 if (hasExit)
                 {
@@ -164,8 +168,10 @@ namespace ClassLibrary1
                 Map.Map map = Game.Map;
 
                 //exits place near core, avoiding stronger immediate player attacks and potential turret range
-                double turretRange = (new[] { UpgType.TurretRange, UpgType.TurretLaserRange, UpgType.TurretExplosivesRange, })
-                    .Max(u => Game.ResearchUpgValues.Calc(u, ClassLibrary1.Research.GetResearchMult(Game.Consts, player.Research.ResearchCur)));
+                double turretRange = Turret.LASER_RANGE_MULT * Game.ResearchUpgValues.Calc(UpgType.TurretRange,
+                    ClassLibrary1.Research.GetResearchMult(Game.Consts, player.Research.ResearchCur));
+                //double turretRange = (new[] { UpgType.TurretRange, UpgType.TurretLaserRange, UpgType.TurretExplosivesRange, })
+                //    .Max(u => Game.ResearchUpgValues.Calc(u, ClassLibrary1.Research.GetResearchMult(Game.Consts, player.Research.ResearchCur)));
                 IEnumerable<FoundationPiece> turrets = player.PiecesOfType<Turret>();
                 if (turrets.Any())
                     turretRange = Math.Max(turretRange,
@@ -218,6 +224,7 @@ namespace ClassLibrary1
                             mult /= div;
                             mult *= portalTile.GetDistance(coreTile) / Game.Consts.PortalMinDist;
                             mult *= mult;
+                            mult *= Math.Sqrt(piece.Cost);
                             select.Add(piece, Game.Rand.Round(mult + 1));
                         }
                     }
@@ -227,11 +234,12 @@ namespace ClassLibrary1
                     return false;
             }
 
+            double spawnCost = GetPct(exit);
+
             Portal portal = Portal.NewPortal(tile, difficulty, exit, out double cost);
             AddDebt(cost);
-            Loan(Game.Rand.GaussianOE(IncomeReference() * Game.Consts.PortalLoan + cost * 1.69, .26, .13));
+            Loan(Game.Rand.GaussianOE(Game.Consts.PortalLoan * spawnCost * IncomeReference() + Game.Rand.DoubleHalf(cost), .169, .065));
 
-            double spawnCost = GetPct(exit);
             this._portalSpawn -= spawnCost;
             IncAggression(spawnCost / 2.1);
 
@@ -254,14 +262,14 @@ namespace ClassLibrary1
         {
             var portals = PiecesOfType<Portal>();
             double energy = portals.Any(p => p.Exit) ? IncomeReference() : 0;
-            Loan(Math.Sqrt(portals.Count() / 2.0) * energy);
+            Loan(Math.Sqrt(portals.Count() / Game.Consts.PortalIncomeDiv) * energy);
         }
         private void IncPortals(double inc)
         {
             if (inc > 0)
             {
                 this._portalSpawn += Game.Rand.Gaussian(inc, .039 / Math.Sqrt(inc));
-                Loan(26 * inc * IncomeReference());
+                Loan(Game.Consts.PortalLoan * inc * IncomeReference());
             }
         }
 
@@ -288,7 +296,12 @@ namespace ClassLibrary1
 
         private void Loan(double energy)
         {
-            int loan = Game.Rand.GaussianOEInt(energy, .13, .13);
+            double pct = IncomeReference();
+            pct /= (pct + GetInterest(energy) + GetPayment());
+            energy *= pct * pct;
+
+            int loan = Game.Rand.GaussianOEInt(energy, .13, .091);
+            Debug.WriteLine($"Loan: {loan} ({(float)energy})");
             AddResources(loan);
             AddDebt(loan);
         }
@@ -300,7 +313,7 @@ namespace ClassLibrary1
         {
             double inc = Math.Sqrt(IncomeReference());
 
-            double interest = Math.Sqrt(_debt + 1) - 1;
+            double interest = GetInterest();
             AddDebt(interest);
             double payment = GetPayment();
             if (Math.Min(interest, payment) > Game.Rand.DoubleFull(inc))
@@ -312,6 +325,7 @@ namespace ClassLibrary1
             double trgPayment = (1 + interest) * inc;
             this._payment = Math.Max(0, _payment + Game.Rand.DoubleHalf(_payment < trgPayment ? inc : -inc));
         }
+        private double GetInterest(double add = 0) => Math.Sqrt(_debt + Game.Rand.DoubleHalf(add) + 1) - 1;
         private double GetPayment() => Math.Min(_debt, _payment);
 
         internal void HiveDamaged(Hive hive, Tile defTile, Map.Map.SpawnChance spawn, ref double energy,
@@ -321,14 +335,16 @@ namespace ClassLibrary1
             {
                 double inc = Game.Victory + PiecesOfType<Hive>().Select(h => h.GetBehavior<IKillable>())
                     .Sum(k => (k.MaxDefenseValue - k.CurDefenseValue) / k.MaxDefenseValue);
+
                 double ramp = Game.POINTS_TO_WIN / 2.1;
                 if (inc > ramp)
                 {
-                    ramp = 1 + (inc - ramp) * 1.69 / (Game.POINTS_TO_WIN - ramp);
-                    inc *= ramp *= ramp;
+                    ramp = 1 + (inc - ramp) / (Game.POINTS_TO_WIN - ramp);
+                    inc *= ramp * ramp;
                 }
+
                 double div = hive.Dead ? 1 : hive.GetBehavior<IKillable>().AllDefenses.Sum(d => d.DefenseMax);
-                inc /= Game.POINTS_TO_WIN * div;
+                inc /= Game.POINTS_TO_WIN * div * Math.Sqrt(3);
 
                 IncAggression(inc);
                 IncPortals(inc);
@@ -357,7 +373,7 @@ namespace ClassLibrary1
                     Tile tile = Game.Map.RandTile(defTile.LocationD, dev);
 
                     while (Alien.GetPathFindingMovement(NextAlien.Movable) < Game.Map.GetMinSpawnMove(tile))
-                        this._nextAlien = MechBlueprint.Alien(Game.Consts, _research);
+                        this._nextAlien = MechBlueprint.Alien(_research);
 
                     return tile;
                 });
@@ -408,7 +424,7 @@ namespace ClassLibrary1
                     int max = Game.Rand.Round(value.Value * 1.3);
                     research = new ResearchMinMaxCost(research, min, max);
                 }
-                this._nextAlien = MechBlueprint.Alien(Game.Consts, research);
+                this._nextAlien = MechBlueprint.Alien(research);
             }
 
             if (value.HasValue)

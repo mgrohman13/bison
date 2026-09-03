@@ -13,7 +13,7 @@ namespace ClassLibrary1.Pieces.Players
     [DataContract(IsReference = true)]
     public class Extractor : PlayerPiece, IKillable.IRepairable
     {
-        public static double Resilience => Values.Resilience;
+        //public static double Resilience => Values.Resilience;
 
         public readonly Resource Resource;
 
@@ -26,7 +26,7 @@ namespace ClassLibrary1.Pieces.Players
             this.Resource = Resource;
             this._rounding = Game.Rand.NextDouble();
 
-            SetBehavior(new Killable(this, new IKillable.Values(), Values.Resilience));
+            SetBehavior(new Killable(this, new IKillable.Values(), Resource.Resilience));
             Upgrade(Research.Type.Mech);
         }
 
@@ -58,7 +58,7 @@ namespace ClassLibrary1.Pieces.Players
                 this._rounding = Game.Rand.NextDouble();
 
             Values values = GetValues(Game);
-            GetBehavior<IKillable>().Upgrade([values.GetKillable(HitsMult(), _rounding)], Values.Resilience);
+            GetBehavior<IKillable>().Upgrade([values.GetKillable(HitsMult(), _rounding)], Resource.Resilience);
             this.Vision = values.Vision;
         }
         private static Values GetValues(Game game) => game.Player.GetUpgradeValues<Values>();
@@ -171,7 +171,7 @@ namespace ClassLibrary1.Pieces.Players
         [DataContract(IsReference = true)]
         private class Values : IUpgradeValues
         {
-            public const double Resilience = .3;
+            //public const double Resilience = .3;
 
             private double costMult, vision, hits, valueMult, sustainMult;
 

@@ -64,7 +64,7 @@ namespace ClassLibrary1.Pieces.Behavior
             //check blocks
             return tile != null && tile.Visible && tile.GetDistance(Piece.Tile) <= Range
                 && (empty ? tile.Piece == null : !tile.Piece.HasBehavior(out IMissileSilo silo) || silo.NumMissiles == 0);
-        } 
+        }
 
         [Serializable]
         [DataContract(IsReference = true)]
@@ -185,15 +185,17 @@ namespace ClassLibrary1.Pieces.Behavior
         [DataContract(IsReference = true)]
         public class BuildTurret(Piece piece, IBuilder.Values values) : Builder(piece, values), IBuilder.IBuildTurret
         {
-            public Turret Build(Foundation foundation)
+            public Turret Build(Foundation foundation, bool laser)
             {
                 if (foundation != null && Validate(foundation.Tile, false))
                 {
-                    Turret.Cost(Piece.Game, out int energy, out int mass);
+                    Turret.Blueprint bp = Turret.GetBlueprints(Piece.Game)[laser ? 1 : 0];
+                    int energy = bp.Energy;
+                    int mass = bp.Mass;
                     if (Piece.Game.Player.Spend(energy, mass))
                     {
                         _built = true;
-                        return Turret.NewTurret(foundation);
+                        return Turret.NewTurret(foundation, laser);
                     }
                 }
                 return null;

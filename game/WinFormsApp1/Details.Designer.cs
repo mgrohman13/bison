@@ -64,6 +64,7 @@ namespace WinFormsApp1
             label1.TabIndex = 0;
             label1.Text = "Constructor";
             label1.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+            label1.Visible = false;
             // 
             // lblCE
             // 
@@ -74,6 +75,7 @@ namespace WinFormsApp1
             lblCE.TabIndex = 1;
             lblCE.Text = "lblCE";
             lblCE.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            lblCE.Visible = false;
             // 
             // label3
             // 
@@ -84,6 +86,7 @@ namespace WinFormsApp1
             label3.Size = new System.Drawing.Size(43, 15);
             label3.TabIndex = 2;
             label3.Text = "Energy";
+            label3.Visible = false;
             // 
             // label4
             // 
@@ -94,6 +97,7 @@ namespace WinFormsApp1
             label4.TabIndex = 3;
             label4.Text = "Mass";
             label4.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+            label4.Visible = false;
             // 
             // lblCM
             // 
@@ -104,6 +108,7 @@ namespace WinFormsApp1
             lblCM.TabIndex = 4;
             lblCM.Text = "lblCM";
             lblCM.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            lblCM.Visible = false;
             // 
             // lblFM
             // 
@@ -114,6 +119,7 @@ namespace WinFormsApp1
             lblFM.TabIndex = 7;
             lblFM.Text = "lblFM";
             lblFM.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            lblFM.Visible = false;
             // 
             // lblFE
             // 
@@ -124,6 +130,7 @@ namespace WinFormsApp1
             lblFE.TabIndex = 6;
             lblFE.Text = "lblFE";
             lblFE.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            lblFE.Visible = false;
             // 
             // label6
             // 
@@ -134,6 +141,7 @@ namespace WinFormsApp1
             label6.TabIndex = 5;
             label6.Text = "Factory";
             label6.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+            label6.Visible = false;
             // 
             // lblTM
             // 
@@ -144,6 +152,7 @@ namespace WinFormsApp1
             lblTM.TabIndex = 10;
             lblTM.Text = "lblTM";
             lblTM.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            lblTM.Visible = false;
             // 
             // lblTE
             // 
@@ -154,6 +163,7 @@ namespace WinFormsApp1
             lblTE.TabIndex = 9;
             lblTE.Text = "lblTE";
             lblTE.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            lblTE.Visible = false;
             // 
             // label9
             // 
@@ -164,13 +174,14 @@ namespace WinFormsApp1
             label9.TabIndex = 8;
             label9.Text = "Turret";
             label9.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+            label9.Visible = false;
             // 
             // btnCancel
             // 
             btnCancel.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
             btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             btnCancel.Location = new System.Drawing.Point(179, 127);
-            btnCancel.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            btnCancel.Margin = new System.Windows.Forms.Padding(2);
             btnCancel.Name = "btnCancel";
             btnCancel.Size = new System.Drawing.Size(78, 20);
             btnCancel.TabIndex = 14;
@@ -182,7 +193,7 @@ namespace WinFormsApp1
             btnOK.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
             btnOK.DialogResult = System.Windows.Forms.DialogResult.OK;
             btnOK.Location = new System.Drawing.Point(97, 127);
-            btnOK.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            btnOK.Margin = new System.Windows.Forms.Padding(2);
             btnOK.Name = "btnOK";
             btnOK.Size = new System.Drawing.Size(78, 20);
             btnOK.TabIndex = 13;
@@ -256,6 +267,7 @@ namespace WinFormsApp1
             lblGM.TabIndex = 22;
             lblGM.Text = "lblGM";
             lblGM.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            lblGM.Visible = false;
             // 
             // lblGE
             // 
@@ -266,6 +278,7 @@ namespace WinFormsApp1
             lblGE.TabIndex = 21;
             lblGE.Text = "lblGE";
             lblGE.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            lblGE.Visible = false;
             // 
             // label10
             // 
@@ -276,6 +289,7 @@ namespace WinFormsApp1
             label10.TabIndex = 20;
             label10.Text = "Generator";
             label10.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+            label10.Visible = false;
             // 
             // lblOM
             // 
@@ -286,6 +300,7 @@ namespace WinFormsApp1
             lblOM.TabIndex = 25;
             lblOM.Text = "lblOM";
             lblOM.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            lblOM.Visible = false;
             // 
             // lblOE
             // 
@@ -296,6 +311,7 @@ namespace WinFormsApp1
             lblOE.TabIndex = 24;
             lblOE.Text = "lblOE";
             lblOE.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            lblOE.Visible = false;
             // 
             // label11
             // 
@@ -306,6 +322,7 @@ namespace WinFormsApp1
             label11.TabIndex = 23;
             label11.Text = "Outpost";
             label11.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+            label11.Visible = false;
             // 
             // Details
             // 
@@ -339,7 +356,7 @@ namespace WinFormsApp1
             Controls.Add(lblCE);
             Controls.Add(label1);
             FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
-            Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            Margin = new System.Windows.Forms.Padding(2);
             Name = "Details";
             ShowIcon = false;
             Text = "Details";

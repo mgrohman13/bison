@@ -19,7 +19,7 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
         //public double TotalAttackCurValue2 { get; }
         //public double TotalAttackMaxValue2 { get; }
 
-        void Upgrade(IEnumerable<Values> values, IReadOnlyList<int> setCur = null);
+        void Upgrade(IEnumerable<Values> values, bool resetFlags = false, IReadOnlyList<int> setCur = null);
         public bool Fire(IKillable killable);
         internal bool EnemyFire(IKillable killable, Attack attack = null);
 
@@ -44,27 +44,36 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
 
             private readonly double _range;
 
-            public Values(AttackType type, int attack, double range, int? reload = null)
+            public Values(AttackType type, int attack, double range, int reload)
+                : this(null, type, attack, range, reload)
+            { }
+            public Values(CombatTypes combatTypes, AttackType type, int attack, double range)
+                : this(combatTypes, type, attack, range, null)
+            { }
+            private Values(CombatTypes combatTypes, AttackType type, int attack, double range, int? reload)
             {
                 Type = type;
                 if (attack < 1)
                     attack = 1;
                 _attack = attack;
                 _range = range;
-                _reload = reload ?? CombatTypes.GetReload(type, attack);
+                _reload = reload ?? combatTypes.GetReload(type, attack);
                 if (Attack < 1 || Range < 1 || Reload < 1 || Attack < Reload)
                     throw new Exception();
             }
-            public Values(Attack attack)
-                : this(attack.Type, attack.AttackMax, attack.RangeBase, attack.ReloadBase)
+            public Values(CombatTypes combatTypes, Attack attack)
+                : this(combatTypes, attack.Type, attack.AttackMax, attack.RangeBase, attack.ReloadBase)
             { }
-            public Values(Values attack)
-                : this(attack.Type, attack.Attack, attack.Range, attack.Reload)
+            public Values(CombatTypes combatTypes, Values attack)
+                : this(combatTypes, attack.Type, attack.Attack, attack.Range, attack.Reload)
             { }
 
             public int Attack => _attack;
             public double Range => _range;
             public int Reload => _reload;
+
+            public static bool operator !=(Values left, Values right) => !(left == right);
+            public static bool operator ==(Values left, Values right) => left.Equals(right);
 
             public override bool Equals([NotNullWhen(true)] object obj)
             {
@@ -73,6 +82,11 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
                 Values other = (Values)obj;
                 return Type == other.Type && _attack == other._attack
                     && _reload == other._reload && _range == other._range;
+            }
+
+            public override int GetHashCode()
+            {
+                return HashCode.Combine(Type, Attack, Reload, Range);
             }
         }
 

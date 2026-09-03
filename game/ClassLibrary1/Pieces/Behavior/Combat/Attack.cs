@@ -44,8 +44,13 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
             _values = values;
 
             _attackCur = cur ?? CombatTypes.GetStartCur(values.Type, values.Attack);
+            
+            ResetFlags();
+        }
+        internal void ResetFlags()
+        {
             _attacked = true;
-            _restrictMove = false;
+            _restrictMove = true;
         }
 
         internal void Upgrade(Values values, int? cur = null)
@@ -170,7 +175,7 @@ namespace ClassLibrary1.Pieces.Behavior.Combat
             }
             return false;
         }
-        public static int TerrainAttMod(Tile? from, Tile? to)
+        public static int TerrainAttMod(Tile from, Tile to)
         {
             double a = from?.Height() ?? 0;
             double d = to?.Height() ?? 0;

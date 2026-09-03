@@ -92,8 +92,10 @@ namespace WinFormsApp1
                 btnBuild.Text = "Build";
                 btnBuild.Show();
             }
+            //combine with combine button
             else if (HasUpgrade() || HasConstructorUpgrade())
             {
+                //and turret upg
                 btnBuild.Text = "Upgrade";
                 btnBuild.Show();
                 //animateTimer.Start();
@@ -761,9 +763,13 @@ namespace WinFormsApp1
         }
         private void BtnCombine_Click(object sender, EventArgs e)
         {
-            if (CanCombine() && MessageBox.Show("Combine with an adjacent Mech?",
-                    "Combine", MessageBoxButtons.OKCancel) == DialogResult.OK)
-                ((Mech)SelTile.Piece).Combine();
+            if (CanCombine())// && MessageBox.Show("Combine with an adjacent Mech?",
+                             //"Combine", MessageBoxButtons.OKCancel) == DialogResult.OK)
+            {
+                Piece result = Program.BuildForm.CombineDialog(SelTile);
+                if (result != null)
+                    Program.RefreshChanged();
+            }
         }
         private void BtnDisband_Click(object sender, EventArgs e)
         {
@@ -826,7 +832,8 @@ namespace WinFormsApp1
                 if (!replaceable)
                     foundationPiece.ReplaceFactory(false, out _, out _, out replaceable);
                 if (!replaceable)
-                    foundationPiece.ReplaceTurret(false, out _, out _, out replaceable);
+                    foreach (bool laser in (bool[])[false, true])
+                        foundationPiece.ReplaceTurret(false, laser, out _, out _, out replaceable);
                 if (!replaceable)
                     foundationPiece.ReplaceGenerator(false, out _, out _, out replaceable);
                 if (replaceable)
@@ -871,6 +878,11 @@ namespace WinFormsApp1
                 silo.Producing = ((CheckBox)sender).Checked;
                 Program.RefreshChanged();
             }
+        }
+
+        internal static string FormatDown(object vision)
+        {
+            throw new NotImplementedException();
         }
     }
 }

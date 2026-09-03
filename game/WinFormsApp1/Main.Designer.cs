@@ -50,9 +50,7 @@ namespace WinFormsApp1
             mapMain.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
             mapMain.Location = new System.Drawing.Point(353, 22);
             mapMain.Margin = new System.Windows.Forms.Padding(1);
-            mapMain.MouseTile = null;
             mapMain.Name = "mapMain";
-            mapMain.SelTile = null;
             mapMain.Size = new System.Drawing.Size(420, 541);
             mapMain.TabIndex = 2;
             // 
@@ -61,9 +59,7 @@ namespace WinFormsApp1
             mapMini.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
             mapMini.Location = new System.Drawing.Point(574, 10);
             mapMini.Margin = new System.Windows.Forms.Padding(1);
-            mapMini.MouseTile = null;
             mapMini.Name = "mapMini";
-            mapMini.SelTile = null;
             mapMini.Size = new System.Drawing.Size(200, 200);
             mapMini.TabIndex = 3;
             mapMini.Visible = false;
@@ -191,11 +187,10 @@ namespace WinFormsApp1
             // infoMain
             // 
             infoMain.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
-            infoMain.Location = new System.Drawing.Point(0, 30);
+            infoMain.Location = new System.Drawing.Point(3, 25);
             infoMain.Margin = new System.Windows.Forms.Padding(2);
             infoMain.Name = "infoMain";
-            //infoMain.Selected = null;
-            infoMain.Size = new System.Drawing.Size(350, 520);
+            infoMain.Size = new System.Drawing.Size(344, 535);
             infoMain.TabIndex = 14;
             // 
             // progressBar1

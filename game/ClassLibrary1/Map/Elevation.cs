@@ -38,11 +38,13 @@ namespace ClassLibrary1.Map
                 return ret;
             }
 
-            public double Dist(Point p, Tuple<float, float> evaluate)
+            public double Dist(Consts consts, Point p, Tuple<float, float> evaluate)
             {
-                double h = Math.Pow(2 * evaluate.Item1, .65) - 1;
-                h *= 16.9;
-                return Tile.GetDistanceD(_center.X, _center.Y, p.X, p.Y) + _fudge + h;
+                double h = Math.Pow(2 * evaluate.Item1, 3.9) - 1;
+                h *= Math.Sqrt(consts.ElevationMaxEffectDist) * _fudge;
+                if (h < 0)
+                    h *= consts.ElevationMaxEffectDist / (consts.ElevationMaxEffectDist - h) / 2;
+                return Tile.GetDistanceD(_center.X, _center.Y, p.X, p.Y) + h;
             }
             public static double Evaluate(Consts consts, double dist) =>
                 1.75 * consts.ElevationMaxEffectDist / (2 * Math.Min(dist + 1, consts.ElevationMaxEffectDist) + consts.ElevationMaxEffectDist);
